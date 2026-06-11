@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 
 import app from './app.js';
 import { connectDB } from './config/db.js';
-import { initializeGemini } from './config/nvidia.js';
+import { initializeGemini } from './config/gemini.js';
 import { socketAuthMiddleware } from './middleware/socketAuth.js';
 import {
   registerUserSocket,

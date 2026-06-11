@@ -1,6 +1,6 @@
 // ── AI Controller — Google Gemini (gemini-2.0-flash, FREE) ─────────────────
 // Uses Google's REST API directly — no extra SDK needed, just fetch()
-import { getGeminiKey, isGeminiReady } from '../config/nvidia.js';
+import { getGeminiKey, isGeminiReady } from '../config/gemini.js';
 
 const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
