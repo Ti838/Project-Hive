@@ -1,0 +1,74 @@
+{
+  "buildCommand": "echo 'Static site - no build needed'",
+  "outputDirectory": "public",
+  "installCommand": "echo 'No dependencies to install for static site'",
+  "framework": "static",
+  "regions": ["sfo1"],
+  "env": {
+    "REACT_APP_API_URL": {
+      "description": "Backend API URL",
+      "example": "https://projecthive-api.render.com/api"
+    },
+    "REACT_APP_SOCKET_URL": {
+      "description": "Socket.IO server URL",
+      "example": "https://projecthive-api.render.com"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    },
+    {
+      "source": "/assets/.*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/pages/auth/.*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://projecthive-api.render.com/api/:path*"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/pages/:path*",
+      "destination": "/pages/:path*.html"
+    },
+    {
+      "source": "/:path*",
+      "destination": "/:path*.html"
+    }
+  ]
+}

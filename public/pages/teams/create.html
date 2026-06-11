@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create Team - ProjectHive">
+    <title>Create Team - ProjectHive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <link rel="stylesheet" href="../../assets/css/custom.css">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' font-weight='bold' fill='%231f2937'></text></svg>">
+</head>
+<body class="bg-slate-50">
+    <div class="min-h-screen">
+        <nav class="bg-white border-b border-slate-200 px-6 py-4">
+            <div class="max-w-4xl mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-slate-900">Create New Team</h1>
+                <a href="../../pages/teams/index.html" class="text-slate-600 hover:text-indigo-600">← Back</a>
+            </div>
+        </nav>
+
+        <main class="max-w-4xl mx-auto px-6 py-8">
+            <form onsubmit="handleCreateTeam(event)" class="bg-white rounded-lg border border-slate-200 p-8 space-y-6">
+                <!-- Team Name -->
+                <div>
+                    <label for="teamName" class="block text-lg font-bold text-slate-900 mb-2">Team Name</label>
+                    <input
+                        type="text"
+                        id="teamName"
+                        name="teamName"
+                        placeholder="e.g., AI Legends, Code Wizards"
+                        required
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg"
+                    >
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-lg font-bold text-slate-900 mb-2">Description</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        placeholder="What is your team building? What's your goal?"
+                        rows="4"
+                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
+                    ></textarea>
+                </div>
+
+                <!-- Max Members -->
+                <div>
+                    <label for="maxMembers" class="block text-lg font-bold text-slate-900 mb-2">Maximum Team Size</label>
+                    <select id="maxMembers" name="maxMembers" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg">
+                        <option value="">Select size</option>
+                        <option value="2">2 people</option>
+                        <option value="3">3 people</option>
+                        <option value="4">4 people</option>
+                        <option value="5">5 people</option>
+                        <option value="6">6+ people</option>
+                    </select>
+                </div>
+
+                <!-- Required Skills -->
+                <div>
+                    <label class="block text-lg font-bold text-slate-900 mb-2">Required Skills</label>
+                    <div class="space-y-2 mb-4">
+                        <div class="flex gap-2">
+                            <input type="text" id="skillInput" placeholder="e.g., React, Design, Leadership" class="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition">
+                            <button type="button" onclick="addRequiredSkill()" class="px-4 py-2 bg-indigo-100 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-200 transition">
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                    <div id="skillsList" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- Messages -->
+                <div id="error-message" class="hidden bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg"></div>
+                <div id="success-message" class="hidden bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg"></div>
+
+                <!-- Buttons -->
+                <div class="flex gap-4 pt-4">
+                    <button type="submit" class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition">
+                        Create Team
+                    </button>
+                    <a href="../../pages/teams/index.html" class="px-8 py-3 border-2 border-slate-300 text-slate-700 font-bold rounded-lg hover:bg-slate-50 transition text-center">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </main>
+    </div>
+
+    <script src="../../assets/js/core/api.js"></script>
+    <script src="../../assets/js/core/auth.js"></script>
+
+    <script>
+        Auth.requireAuth();
+        const requiredSkills = [];
+
+        function addRequiredSkill() {
+            const input = document.getElementById('skillInput');
+            const skill = input.value.trim();
+            
+            if (skill && !requiredSkills.includes(skill)) {
+                requiredSkills.push(skill);
+                input.value = '';
+                renderSkills();
+            }
+        }
+
+        function removeSkill(skill) {
+            requiredSkills.splice(requiredSkills.indexOf(skill), 1);
+            renderSkills();
+        }
+
+        function renderSkills() {
+            const skillsList = document.getElementById('skillsList');
+            skillsList.innerHTML = requiredSkills.map(skill => `
+                <div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full">
+                    <span>${skill}</span>
+                    <button type="button" onclick="removeSkill('${skill}')" class="font-bold hover:text-indigo-900">×</button>
+                </div>
+            `).join('');
+        }
+
+        async function handleCreateTeam(event) {
+            event.preventDefault();
+
+            const teamData = {
+                name: document.getElementById('teamName').value,
+                description: document.getElementById('description').value,
+                maxMembers: parseInt(document.getElementById('maxMembers').value),
+                requiredSkills,
+            };
+
+            const errorMsg = document.getElementById('error-message');
+            const successMsg = document.getElementById('success-message');
+            errorMsg.classList.add('hidden');
+            successMsg.classList.add('hidden');
+
+            try {
+                const response = await API.teams.createTeam(teamData);
+                if (response.ok) {
+                    successMsg.textContent = 'Team created successfully! Redirecting...';
+                    successMsg.classList.remove('hidden');
+                    setTimeout(() => {
+                        window.location.href = `/pages/teams/${response.team._id}.html`;
+                    }, 1500);
+                } else {
+                    errorMsg.textContent = response.message || 'Failed to create team';
+                    errorMsg.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('[v0] Error creating team:', error);
+                errorMsg.textContent = 'An error occurred. Please try again.';
+                errorMsg.classList.remove('hidden');
+            }
+        }
+    </script>
+
+    
+    <!-- Global Modal -->
+    <div id="global-modal-backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xl p-8 rounded-3xl max-w-sm w-full text-center border border-slate-200 dark:border-slate-700 transform scale-90 transition-all duration-300" id="global-toast">
+            <img src="../../assets/svg/logo.svg" alt="ProjectHive Logo" class="w-16 h-16 mx-auto mb-5 animate-pulse">
+            <p id="global-toast-msg" class="text-lg font-semibold mb-8 text-slate-700 dark:text-slate-200 leading-relaxed"></p>
+            <button onclick="hideModal()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all font-semibold shadow-lg shadow-indigo-200 dark:shadow-none hover:scale-[1.02] active:scale-95">Got it, thanks!</button>
+        </div>
+    </div>
+    <script>
+        function showToast(message) {
+            const backdrop = document.getElementById('global-modal-backdrop');
+            const msgEl = document.getElementById('global-toast-msg');
+            const modal = document.getElementById('global-toast');
+            if (backdrop && msgEl) {
+                msgEl.innerHTML = message;
+                backdrop.classList.remove('hidden');
+                // Force reflow
+                void backdrop.offsetWidth;
+                backdrop.classList.remove('opacity-0');
+                modal.classList.remove('scale-90');
+                modal.classList.add('scale-100');
+            }
+        }
+        function hideModal() {
+            const backdrop = document.getElementById('global-modal-backdrop');
+            const modal = document.getElementById('global-toast');
+            if (backdrop) {
+                backdrop.classList.add('opacity-0');
+                modal.classList.remove('scale-100');
+                modal.classList.add('scale-90');
+                setTimeout(() => backdrop.classList.add('hidden'), 300);
+            }
+        }
+    </script>
+
+    <script>
+        const projectInfo = {
+            'security': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Enterprise-Grade Security</h3><p class='text-base text-slate-600 dark:text-slate-400'>We protect your academic and personal data with industry-leading end-to-end encryption. ProjectHive is fully SOC 2 compliant and GDPR ready.</p>",
+            'status': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>System Status</h3><div class='flex items-center justify-center space-x-2 text-green-500 mb-2'><span class='relative flex h-3 w-3'><span class='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span><span class='relative inline-flex rounded-full h-3 w-3 bg-green-500'></span></span><span class='font-semibold'>All systems operational</span></div><p class='text-sm text-slate-500'>API: 12ms | Database: 8ms | Storage: Normal</p>",
+            'about': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>About ProjectHive</h3><p class='text-base text-slate-600 dark:text-slate-400'>ProjectHive is an AI-powered collaboration platform designed exclusively for university students. Find your dream team, generate breakthrough project ideas using AI, and showcase your work to a global audience.</p>",
+            'blog': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>ProjectHive Blog</h3><p class='text-base text-slate-600 dark:text-slate-400'>Discover the latest platform updates, success stories from student developers, and tips for building award-winning projects.</p>",
+            'contact': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Contact Us</h3><p class='text-base text-slate-600 dark:text-slate-400'>Have a question or want to partner with us? Reach out to our team at <a href='mailto:support@projecthive.com' class='text-indigo-500 hover:underline'>support@projecthive.com</a></p>",
+            'careers': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Careers</h3><p class='text-base text-slate-600 dark:text-slate-400'>Join our mission to empower student innovation globally. We're actively hiring engineers, designers, and community managers.</p>",
+            'press': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Press Kit</h3><p class='text-base text-slate-600 dark:text-slate-400'>Download high-resolution logos, brand assets, and official media guidelines for featuring ProjectHive.</p>",
+            'privacy': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Privacy Policy</h3><p class='text-base text-slate-600 dark:text-slate-400'>Your data belongs to you. We never sell your personal information or student projects to third parties. Built with privacy-first architecture.</p>",
+            'terms': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Terms of Service</h3><p class='text-base text-slate-600 dark:text-slate-400'>Standard usage terms apply. We maintain a zero-tolerance policy for academic plagiarism and harassment within our community.</p>",
+            'cookies': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Cookie Policy</h3><p class='text-base text-slate-600 dark:text-slate-400'>We use strictly necessary cookies to keep you securely logged in. No third-party tracking or advertising cookies are used on this platform.</p>",
+            'dpa': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Data Processing</h3><p class='text-base text-slate-600 dark:text-slate-400'>Data Processing Agreements (DPA) are available upon request for university enterprise partners integrating with our API.</p>",
+            'help': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Help Center</h3><p class='text-base text-slate-600 dark:text-slate-400'>Explore our comprehensive guides, FAQs, and video tutorials to get the most out of your ProjectHive experience.</p>",
+            'docs': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Documentation</h3><p class='text-base text-slate-600 dark:text-slate-400'>Read our extensive API references, SDK guides, and integration tutorials to build powerful applications on top of our platform.</p>",
+            'support': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Support</h3><p class='text-base text-slate-600 dark:text-slate-400'>Need technical assistance? Open a ticket via your dashboard or email our 24/7 student support team directly.</p>"
+        };
+
+        function showProjectInfo(key) {
+            showToast(projectInfo[key]);
+        }
+    </script>
+</body>
+</html>
