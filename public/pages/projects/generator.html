@@ -1,313 +1,526 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AI Project Generator - ProjectHive">
-    <title>AI Project Generator - ProjectHive</title>
+    <meta name="description" content="AI Project Idea Generator powered by NVIDIA NIM — ProjectHive">
+    <title>AI Idea Generator — ProjectHive</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' };
+        // Theme init
+        (function() {
+            const t = localStorage.getItem('theme');
+            const dark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.classList.toggle('dark', dark);
+        })();
     </script>
     <link rel="stylesheet" href="../../assets/css/custom.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' font-weight='bold' fill='%231f2937'></text></svg>">
+    <link rel="icon" type="image/svg+xml" href="../../assets/svg/logo.svg">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+
+        /* ── Animated gradient bg ── */
+        .gen-bg {
+            background: radial-gradient(ellipse at 20% 20%, #4f46e520 0%, transparent 50%),
+                        radial-gradient(ellipse at 80% 80%, #7c3aed20 0%, transparent 50%),
+                        radial-gradient(ellipse at 50% 50%, #0f172a 0%, #0f172a 100%);
+        }
+
+        /* ── Loading shimmer ── */
+        @keyframes shimmer {
+            0%   { background-position: -1000px 0; }
+            100% { background-position:  1000px 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-radius: 0.75rem;
+        }
+
+        /* ── Floating particles ── */
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        .float-1 { animation: float 4s ease-in-out infinite; }
+        .float-2 { animation: float 5s ease-in-out infinite 1s; }
+        .float-3 { animation: float 6s ease-in-out infinite 2s; }
+
+        /* ── Card hover ── */
+        .idea-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .idea-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px -12px rgba(79,70,229,0.35);
+        }
+
+        /* ── Score ring ── */
+        .score-ring {
+            background: conic-gradient(#6366f1 calc(var(--pct) * 1%), #1e293b 0%);
+        }
+
+        /* ── Spinner ── */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner { animation: spin 0.9s linear infinite; }
+
+        /* ── Pulse glow ── */
+        @keyframes glow {
+            0%,100% { box-shadow: 0 0 20px #6366f140; }
+            50%      { box-shadow: 0 0 40px #6366f180; }
+        }
+        .glow-btn:not(:disabled) { animation: glow 2.5s ease-in-out infinite; }
+
+        /* ── Tag chips ── */
+        .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; font-weight: 600; letter-spacing: 0.03em; }
+
+        /* Input focus ring */
+        .ph-input:focus { outline: none; box-shadow: 0 0 0 3px rgba(99,102,241,0.35); }
+    </style>
 </head>
-<body class="bg-slate-50">
-    <div class="min-h-screen">
-        <!-- Navigation -->
-        <nav class="bg-white border-b border-slate-200 px-6 py-4 sticky top-0 z-40">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <a href="../../pages/dashboard.html" class="text-2xl font-bold text-slate-900"><img src="../../assets/svg/logo.svg" alt="Logo" class="w-8 h-8 inline-block mr-2">ProjectHive</a>
-                <button onclick="handleLogout()" class="text-slate-600 hover:text-red-600">Logout</button>
-            </div>
-        </nav>
 
-        <!-- Main Content -->
-        <main class="max-w-4xl mx-auto px-6 py-8">
-            <!-- Header -->
-            <div class="text-center mb-12">
-                <div class="text-6xl mb-4">💡</div>
-                <h1 class="text-4xl font-bold text-slate-900 mb-2">AI Project Idea Generator</h1>
-                <p class="text-slate-600">Generate breakthrough project ideas powered by NVIDIA AI</p>
-            </div>
+<body class="min-h-screen gen-bg text-slate-100">
 
-            <!-- Generator Form -->
-            <form id="generator-form" onsubmit="handleGenerate(event)" class="bg-white rounded-lg border border-slate-200 p-8 mb-8">
-                <!-- Domain -->
-                <div class="mb-6">
-                    <label for="domain" class="block text-lg font-bold text-slate-900 mb-2">Project Domain</label>
-                    <input
-                        type="text"
-                        id="domain"
-                        name="domain"
-                        placeholder="e.g., Healthcare, Finance, Education, Gaming, Social Media"
-                        required
-                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg"
-                    >
-                    <p class="text-slate-500 text-sm mt-2">What field or industry interests you?</p>
-                </div>
-
-                <!-- Team Size -->
-                <div class="mb-6">
-                    <label for="teamSize" class="block text-lg font-bold text-slate-900 mb-2">Team Size</label>
-                    <select id="teamSize" name="teamSize" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg">
-                        <option value="">Select team size</option>
-                        <option value="1">Solo project</option>
-                        <option value="2">2 people</option>
-                        <option value="3">3 people</option>
-                        <option value="4">4 people</option>
-                        <option value="5">5+ people</option>
-                    </select>
-                </div>
-
-                <!-- Timeline -->
-                <div class="mb-6">
-                    <label for="timeline" class="block text-lg font-bold text-slate-900 mb-2">Timeline</label>
-                    <select id="timeline" name="timeline" required class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition text-lg">
-                        <option value="">Select timeline</option>
-                        <option value="1">1 week (Hackathon)</option>
-                        <option value="4">4 weeks (Sprint)</option>
-                        <option value="8">8 weeks (Semester Project)</option>
-                        <option value="16">16 weeks (Capstone)</option>
-                        <option value="26">6 months (Long-term)</option>
-                    </select>
-                </div>
-
-                <!-- Skills -->
-                <div class="mb-6">
-                    <label for="skills" class="block text-lg font-bold text-slate-900 mb-2">Team Skills</label>
-                    <textarea
-                        id="skills"
-                        name="skills"
-                        placeholder="List your team's skills separated by commas. e.g., React, Python, Machine Learning, UI Design"
-                        rows="3"
-                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-                    ></textarea>
-                </div>
-
-                <!-- Constraints -->
-                <div class="mb-6">
-                    <label for="constraints" class="block text-lg font-bold text-slate-900 mb-2">Constraints & Requirements</label>
-                    <textarea
-                        id="constraints"
-                        name="constraints"
-                        placeholder="Any constraints? e.g., Low budget, must use AWS, needs mobile app, etc. (Optional)"
-                        rows="3"
-                        class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none transition"
-                    ></textarea>
-                </div>
-
-                <!-- Error/Success Messages -->
-                <div id="error-message" class="hidden mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg"></div>
-                <div id="success-message" class="hidden mb-4 bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-lg"></div>
-                <div id="loading-message" class="hidden mb-4 bg-blue-50 border border-blue-200 text-blue-600 px-4 py-3 rounded-lg flex items-center">
-                    <div class="spinner mr-3"></div>
-                    <span>Generating ideas with NVIDIA AI...</span>
-                </div>
-
-                <!-- Submit Button -->
-                <button
-                    type="submit"
-                    id="submit-btn"
-                    class="w-full px-6 py-3 bg-indigo-600 text-white font-bold text-lg rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    🤖 Generate Project Ideas
-                </button>
-            </form>
-
-            <!-- Results Section -->
-            <div id="results-section" class="hidden">
-                <h2 class="text-3xl font-bold text-slate-900 mb-6">Generated Project Ideas</h2>
-                <div id="ideas-container" class="space-y-6">
-                    <!-- Ideas will be inserted here -->
-                </div>
-
-                <!-- Regenerate Button -->
-                <button onclick="document.getElementById('generator-form').scrollIntoView({ behavior: 'smooth' })" class="mt-8 w-full px-6 py-3 border-2 border-indigo-600 text-indigo-600 font-bold rounded-lg hover:bg-indigo-50 transition">
-                    ↑ Try Again with Different Parameters
-                </button>
-            </div>
-
-            <!-- Tips Section -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mt-12">
-                <h3 class="font-bold text-blue-900 mb-3">💡 Tips for Better Ideas</h3>
-                <ul class="text-blue-800 space-y-2 text-sm">
-                    <li>• Be specific about your domain (e.g., "Healthcare + AI" vs just "Healthcare")</li>
-                    <li>• List all relevant skills your team has - the more specific, the better</li>
-                    <li>• Mention constraints early - they help narrow down realistic ideas</li>
-                    <li>• You can generate multiple times with different parameters</li>
-                </ul>
-            </div>
-        </main>
+    <!-- ── Floating decorations ── -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <div class="float-1 absolute top-20 left-10 w-32 h-32 rounded-full bg-indigo-600/10 blur-3xl"></div>
+        <div class="float-2 absolute top-60 right-20 w-48 h-48 rounded-full bg-purple-600/10 blur-3xl"></div>
+        <div class="float-3 absolute bottom-40 left-1/3 w-40 h-40 rounded-full bg-violet-600/10 blur-3xl"></div>
     </div>
 
-    <!-- Scripts -->
+    <!-- ── Navbar ── -->
+    <nav class="relative z-50 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 px-6 py-4 sticky top-0">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <a href="../../index.html" class="flex items-center gap-2.5 group">
+                <img src="../../assets/svg/logo.svg" alt="ProjectHive" class="w-9 h-9 transition-transform group-hover:scale-110">
+                <span class="text-lg font-bold text-white">ProjectHive</span>
+            </a>
+            <div class="flex items-center gap-3">
+                <a href="../dashboard.html" class="text-slate-400 hover:text-white text-sm transition hidden sm:block">← Dashboard</a>
+                <button id="theme-btn" onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition">
+                    <span id="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-12">
+
+        <!-- ── Hero ── -->
+        <div class="text-center mb-14">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 text-sm font-semibold mb-6">
+                <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+                Powered by NVIDIA NIM · meta/llama-3.1-405b
+            </div>
+            <h1 class="text-4xl sm:text-6xl font-black text-white mb-4 leading-tight">
+                AI Project<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-400 to-purple-400">Idea Generator</span>
+            </h1>
+            <p class="text-slate-400 text-lg max-w-xl mx-auto">
+                Describe your team and domain. Our AI generates 5 breakthrough project ideas tailored to your skills and timeline.
+            </p>
+        </div>
+
+        <!-- ── Form ── -->
+        <div class="bg-slate-900/70 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 mb-10 shadow-2xl">
+            <form id="generator-form" onsubmit="handleGenerate(event)">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+                    <!-- Domain -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">
+                            🎯 Project Domain <span class="text-indigo-400">*</span>
+                        </label>
+                        <input
+                            type="text" id="domain" required
+                            placeholder="e.g. Healthcare AI, EdTech, Fintech, Smart City, Gaming..."
+                            class="ph-input w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-white placeholder-slate-500 transition"
+                        >
+                    </div>
+
+                    <!-- Skills -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">
+                            🛠️ Team Skills
+                        </label>
+                        <textarea
+                            id="skills" rows="2"
+                            placeholder="e.g. React, Python, Machine Learning, UI/UX Design, Node.js..."
+                            class="ph-input w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-white placeholder-slate-500 resize-none transition"
+                        ></textarea>
+                    </div>
+
+                    <!-- Team Size -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">
+                            👥 Team Size
+                        </label>
+                        <select id="teamSize" class="ph-input w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-white transition cursor-pointer">
+                            <option value="1">Solo project</option>
+                            <option value="2">2 people</option>
+                            <option value="3" selected>3 people</option>
+                            <option value="4">4 people</option>
+                            <option value="5">5+ people</option>
+                        </select>
+                    </div>
+
+                    <!-- Timeline -->
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">
+                            ⏱️ Timeline
+                        </label>
+                        <select id="timeline" class="ph-input w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-white transition cursor-pointer">
+                            <option value="1">1 week — Hackathon</option>
+                            <option value="4">4 weeks — Sprint</option>
+                            <option value="8" selected>8 weeks — Semester</option>
+                            <option value="16">16 weeks — Capstone</option>
+                            <option value="26">6 months — Long-term</option>
+                        </select>
+                    </div>
+
+                    <!-- Constraints -->
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-300 mb-2">
+                            📌 Constraints <span class="text-slate-500 font-normal">(optional)</span>
+                        </label>
+                        <textarea
+                            id="constraints" rows="2"
+                            placeholder="e.g. Open-source only, must have mobile app, low budget, use AWS..."
+                            class="ph-input w-full px-4 py-3.5 bg-slate-800/80 border border-slate-600/60 rounded-xl text-white placeholder-slate-500 resize-none transition"
+                        ></textarea>
+                    </div>
+                </div>
+
+                <!-- Error / Loading -->
+                <div id="error-box" class="hidden mb-5 flex items-start gap-3 px-4 py-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300 text-sm"></div>
+
+                <div id="loading-box" class="hidden mb-5 flex items-center gap-3 px-4 py-3.5 bg-indigo-500/10 border border-indigo-500/30 rounded-xl text-indigo-300 text-sm">
+                    <svg class="spinner w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity="0.25"/>
+                        <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+                    </svg>
+                    <span id="loading-text">Connecting to NVIDIA NIM...</span>
+                </div>
+
+                <!-- Submit -->
+                <button
+                    type="submit" id="submit-btn"
+                    class="glow-btn w-full py-4 px-6 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-lg rounded-2xl transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:animate-none flex items-center justify-center gap-3"
+                >
+                    <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+                    </svg>
+                    Generate 5 Project Ideas with AI
+                </button>
+            </form>
+        </div>
+
+        <!-- ── Shimmer Skeletons (loading) ── -->
+        <div id="skeleton-section" class="hidden space-y-5 mb-10">
+            <div class="shimmer h-52 w-full"></div>
+            <div class="shimmer h-52 w-full"></div>
+            <div class="shimmer h-52 w-full"></div>
+        </div>
+
+        <!-- ── Results ── -->
+        <div id="results-section" class="hidden">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-white">✨ Your Generated Ideas</h2>
+                <button onclick="scrollToForm()" class="text-sm text-indigo-400 hover:text-indigo-300 transition flex items-center gap-1">
+                    ↑ Generate Again
+                </button>
+            </div>
+            <div id="ideas-container" class="space-y-6"></div>
+
+            <button onclick="scrollToForm()" class="mt-8 w-full py-3.5 border-2 border-indigo-600/60 hover:border-indigo-500 text-indigo-400 hover:text-indigo-300 font-semibold rounded-2xl transition-all">
+                🔄 Generate New Ideas
+            </button>
+        </div>
+
+        <!-- ── Tips ── -->
+        <div class="mt-16 p-6 rounded-2xl bg-slate-900/50 border border-slate-700/30">
+            <h3 class="text-slate-300 font-semibold mb-3">💡 Tips for Better Results</h3>
+            <ul class="text-slate-500 text-sm space-y-1.5">
+                <li>• Be specific: <em>"Healthcare + Computer Vision"</em> beats just <em>"Healthcare"</em></li>
+                <li>• List all skills your team has — the AI tailors ideas to what you can actually build</li>
+                <li>• Short timeline = simpler scope. 16 weeks = ambitious features!</li>
+                <li>• Add constraints like "no paid APIs" or "must run offline" for creative ideas</li>
+            </ul>
+        </div>
+    </main>
+
+    <!-- ── Scripts ── -->
     <script src="../../assets/js/core/api.js"></script>
     <script src="../../assets/js/core/auth.js"></script>
-
     <script>
-        Auth.requireAuth();
+        // ── Theme ──
+        function toggleTheme() {
+            const dark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', dark ? 'dark' : 'light');
+            document.getElementById('theme-icon').textContent = dark ? '🌙' : '☀️';
+        }
+        document.getElementById('theme-icon').textContent =
+            document.documentElement.classList.contains('dark') ? '🌙' : '☀️';
 
+        // ── Helpers ──
+        function scrollToForm() {
+            document.getElementById('generator-form').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('error-box');
+            el.innerHTML = `<span>⚠️</span><span>${msg}</span>`;
+            el.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('error-box').classList.add('hidden');
+        }
+
+        function showLoading(text) {
+            document.getElementById('loading-text').textContent = text;
+            document.getElementById('loading-box').classList.remove('hidden');
+            document.getElementById('skeleton-section').classList.remove('hidden');
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-box').classList.add('hidden');
+            document.getElementById('skeleton-section').classList.add('hidden');
+        }
+
+        // ── Loading text animation ──
+        const loadingMessages = [
+            'Connecting to NVIDIA NIM...',
+            'Llama 3.1 405B is thinking...',
+            'Generating innovative ideas...',
+            'Almost ready...',
+        ];
+        let loadingInterval = null;
+
+        function startLoadingAnimation() {
+            let i = 0;
+            loadingInterval = setInterval(() => {
+                i = (i + 1) % loadingMessages.length;
+                const el = document.getElementById('loading-text');
+                if (el) el.textContent = loadingMessages[i];
+            }, 2000);
+        }
+
+        function stopLoadingAnimation() {
+            if (loadingInterval) clearInterval(loadingInterval);
+        }
+
+        // ── Difficulty badge color ──
+        function difficultyColor(d) {
+            if (!d) return 'bg-slate-700 text-slate-300';
+            const l = d.toLowerCase();
+            if (l === 'beginner') return 'bg-green-500/20 text-green-300 border border-green-500/30';
+            if (l === 'intermediate') return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+            return 'bg-red-500/20 text-red-300 border border-red-500/30';
+        }
+
+        // ── Score color ──
+        function scoreColor(s) {
+            if (s >= 8) return 'text-green-400';
+            if (s >= 5) return 'text-amber-400';
+            return 'text-red-400';
+        }
+
+        // ── Render ideas ──
+        function displayIdeas(ideas) {
+            const container = document.getElementById('ideas-container');
+            container.innerHTML = ideas.map((idea, idx) => {
+                const score = idea.innovationScore || idea.noveltyScore || 0;
+                const pct = Math.round(score * 10);
+                const features = (idea.features || []).slice(0, 4);
+                const stack = (idea.techStack || idea.tech_stack || []).slice(0, 7);
+                const diff = idea.difficulty || 'Intermediate';
+                const name = idea.name || idea.title || `Idea ${idx + 1}`;
+
+                return `
+                <div class="idea-card bg-slate-900/80 border border-slate-700/50 rounded-2xl p-6 sm:p-8 backdrop-blur-xl">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between gap-4 mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-indigo-400 font-black text-lg">#${idx + 1}</span>
+                                <span class="tag ${difficultyColor(diff)}">${diff}</span>
+                            </div>
+                            <h3 class="text-xl sm:text-2xl font-bold text-white leading-tight">${name}</h3>
+                        </div>
+                        <!-- Innovation Score Ring -->
+                        ${score ? `
+                        <div class="flex-shrink-0 flex flex-col items-center gap-1">
+                            <div class="w-14 h-14 rounded-full score-ring flex items-center justify-center" style="--pct:${pct}">
+                                <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center">
+                                    <span class="text-sm font-black ${scoreColor(score)}">${score}</span>
+                                </div>
+                            </div>
+                            <span class="text-xs text-slate-500">Score</span>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Description -->
+                    <p class="text-slate-300 text-sm leading-relaxed mb-5">${idea.description || ''}</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
+                        <!-- Features -->
+                        <div>
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Key Features</h4>
+                            <ul class="space-y-2">
+                                ${features.map(f => `
+                                <li class="flex items-start gap-2 text-sm text-slate-300">
+                                    <span class="mt-0.5 w-4 h-4 rounded-full bg-indigo-600/30 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-2.5 h-2.5 text-indigo-400" viewBox="0 0 12 12" fill="currentColor">
+                                            <path d="M9.7 3.3a1 1 0 010 1.4L5.4 9a1 1 0 01-1.4 0L2.3 7.3a1 1 0 111.4-1.4l1 1 3.6-3.6a1 1 0 011.4 0z"/>
+                                        </svg>
+                                    </span>
+                                    ${f}
+                                </li>`).join('')}
+                            </ul>
+                        </div>
+
+                        <!-- Tech Stack -->
+                        <div>
+                            <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">Tech Stack</h4>
+                            <div class="flex flex-wrap gap-2">
+                                ${stack.map(t => `
+                                <span class="tag bg-indigo-600/20 text-indigo-300 border border-indigo-500/30">${t}</span>
+                                `).join('')}
+                            </div>
+                            ${idea.estimatedWeeks ? `
+                            <p class="mt-3 text-xs text-slate-500">
+                                ⏱️ Estimated: <strong class="text-slate-400">${idea.estimatedWeeks} weeks</strong>
+                            </p>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-3 pt-4 border-t border-slate-700/50">
+                        <button onclick="copyIdea(${idx})" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold rounded-xl transition flex items-center justify-center gap-2">
+                            📋 Copy
+                        </button>
+                        <button onclick="saveIdea('${name.replace(/'/g, "\\'")}')" class="flex-1 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 text-sm font-semibold rounded-xl border border-indigo-500/30 transition flex items-center justify-center gap-2">
+                            💾 Save Idea
+                        </button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // ── Copy ──
+        let lastIdeas = [];
+
+        function copyIdea(idx) {
+            if (!lastIdeas[idx]) return;
+            const idea = lastIdeas[idx];
+            const text = `${idea.name || idea.title}\n\n${idea.description}\n\nFeatures:\n${(idea.features||[]).join('\n')}\n\nTech Stack: ${(idea.techStack||[]).join(', ')}`;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Idea copied to clipboard! 📋');
+            });
+        }
+
+        function saveIdea(title) {
+            showToast(`"${title}" saved to your profile! ✅`);
+        }
+
+        // ── Main generate function ──
         async function handleGenerate(event) {
             event.preventDefault();
 
             const domain = document.getElementById('domain').value.trim();
-            const teamSize = document.getElementById('teamSize').value;
-            const timeline = document.getElementById('timeline').value;
-            const skills = document.getElementById('skills').value.split(',').map(s => s.trim()).filter(s => s);
+            const skills = document.getElementById('skills').value.trim();
+            const teamSize = parseInt(document.getElementById('teamSize').value);
+            const timeline = parseInt(document.getElementById('timeline').value);
             const constraints = document.getElementById('constraints').value.trim();
 
-            const errorMsg = document.getElementById('error-message');
-            const successMsg = document.getElementById('success-message');
-            const loadingMsg = document.getElementById('loading-message');
-            const submitBtn = document.getElementById('submit-btn');
+            if (!domain) {
+                showError('Please enter a project domain.');
+                return;
+            }
 
-            errorMsg.classList.add('hidden');
-            successMsg.classList.add('hidden');
-            loadingMsg.classList.remove('hidden');
-            submitBtn.disabled = true;
+            hideError();
+            document.getElementById('results-section').classList.add('hidden');
+            document.getElementById('submit-btn').disabled = true;
+            showLoading('Connecting to NVIDIA NIM...');
+            startLoadingAnimation();
 
             try {
-                const response = await API.ai.generateProjectIdeas(
-                    domain,
-                    skills,
-                    parseInt(teamSize),
-                    parseInt(timeline),
-                    constraints
-                );
+                // Try authenticated first, fall back to public endpoint
+                let response;
+                const token = localStorage.getItem('access_token');
 
-                loadingMsg.classList.add('hidden');
+                if (token) {
+                    response = await API.ai.generateProjectIdeas(domain, skills, teamSize, timeline, constraints);
+                } else {
+                    // Use public endpoint
+                    const res = await fetch(`${window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                        ? 'http://localhost:5000'
+                        : ''}/api/ai/generate-ideas-public`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ domain, skills, teamSize, timelineWeeks: timeline, constraints }),
+                    });
+                    response = await res.json();
+                    response.ok = res.ok;
+                }
 
-                if (response.ok && response.ideas) {
+                stopLoadingAnimation();
+                hideLoading();
+
+                if (response.ok && response.ideas && response.ideas.length > 0) {
+                    lastIdeas = response.ideas;
                     displayIdeas(response.ideas);
                     document.getElementById('results-section').classList.remove('hidden');
-                    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth' });
+                    setTimeout(() => {
+                        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 100);
                 } else {
-                    errorMsg.textContent = response.message || 'Failed to generate ideas. Please try again.';
-                    errorMsg.classList.remove('hidden');
+                    showError(response.error || 'No ideas generated. Please try again with a different domain.');
                 }
             } catch (error) {
-                console.error('[v0] Generation error:', error);
-                errorMsg.textContent = 'An error occurred. Please try again.';
-                errorMsg.classList.remove('hidden');
-                loadingMsg.classList.add('hidden');
+                console.error('[ProjectHive] Generation error:', error);
+                stopLoadingAnimation();
+                hideLoading();
+
+                if (error.message && error.message.includes('fetch')) {
+                    showError('Cannot connect to the server. Make sure the backend is running on port 5000.');
+                } else {
+                    showError('Something went wrong. Please try again.');
+                }
             } finally {
-                submitBtn.disabled = false;
-            }
-        }
-
-        function displayIdeas(ideas) {
-            const container = document.getElementById('ideas-container');
-            container.innerHTML = ideas.map((idea, index) => `
-                <div class="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-lg transition">
-                    <div class="flex items-start justify-between mb-4">
-                        <h3 class="text-2xl font-bold text-indigo-600 flex-1">${idea.title}</h3>
-                        <span class="ml-4 px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm font-medium">
-                            Difficulty: ${idea.difficulty || 'Medium'}
-                        </span>
-                    </div>
-
-                    <p class="text-slate-700 mb-4">${idea.description}</p>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <h4 class="font-semibold text-slate-900 mb-2">Tech Stack</h4>
-                            <div class="flex flex-wrap gap-2">
-                                ${idea.techStack.map(tech => `<span class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs font-medium">${tech}</span>`).join('')}
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="font-semibold text-slate-900 mb-2">Key Features</h4>
-                            <ul class="text-sm text-slate-600 space-y-1">
-                                ${idea.features.slice(0, 3).map(feature => `<li>✓ ${feature}</li>`).join('')}
-                            </ul>
-                        </div>
-                    </div>
-
-                    ${idea.noveltyScore ? `
-                        <div class="text-sm text-slate-600 pt-4 border-t border-slate-200">
-                            <span class="font-semibold">Innovation Score:</span> ${idea.noveltyScore}/10
-                        </div>
-                    ` : ''}
-
-                    <button onclick="saveIdea('${idea.title}')" class="mt-4 w-full px-4 py-2 bg-indigo-100 text-indigo-600 font-semibold rounded-lg hover:bg-indigo-200 transition">
-                        💾 Save Idea
-                    </button>
-                </div>
-            `).join('');
-        }
-
-        function saveIdea(title) {
-            // In full implementation, this would save to user's profile
-            showToast(`Idea "${title}" saved! You can view it in your profile.`);
-        }
-
-        function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                Auth.logout();
+                document.getElementById('submit-btn').disabled = false;
             }
         }
     </script>
 
-    
-    <!-- Global Modal -->
-    <div id="global-modal-backdrop" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[90] flex items-center justify-center p-4 transition-all duration-300 opacity-0">
-        <div class="bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-2xl p-8 rounded-3xl max-w-sm w-full text-center border border-slate-200 dark:border-slate-700 transform scale-90 transition-all duration-300" id="global-toast">
-            <img src="../../assets/svg/logo.svg" alt="ProjectHive Logo" class="w-16 h-16 mx-auto mb-5 animate-pulse">
-            <p id="global-toast-msg" class="text-lg font-semibold mb-8 text-slate-700 dark:text-slate-200 leading-relaxed"></p>
-            <button onclick="hideModal()" class="w-full py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-all font-semibold shadow-lg shadow-indigo-200 dark:shadow-none hover:scale-[1.02] active:scale-95">Got it, thanks!</button>
+    <!-- Global Toast Modal -->
+    <div id="global-modal-backdrop" class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-[90] flex items-center justify-center p-4 transition-all duration-300 opacity-0">
+        <div class="bg-slate-900 border border-slate-700 shadow-2xl p-8 rounded-3xl max-w-sm w-full text-center transform scale-90 transition-all duration-300" id="global-toast">
+            <img src="../../assets/svg/logo.svg" alt="ProjectHive Logo" class="w-14 h-14 mx-auto mb-4">
+            <p id="global-toast-msg" class="text-base font-semibold mb-6 text-slate-200 leading-relaxed"></p>
+            <button onclick="hideModal()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold transition">Got it!</button>
         </div>
     </div>
     <script>
-        function showToast(message) {
-            const backdrop = document.getElementById('global-modal-backdrop');
-            const msgEl = document.getElementById('global-toast-msg');
-            const modal = document.getElementById('global-toast');
-            if (backdrop && msgEl) {
-                msgEl.innerHTML = message;
-                backdrop.classList.remove('hidden');
-                // Force reflow
-                void backdrop.offsetWidth;
-                backdrop.classList.remove('opacity-0');
-                modal.classList.remove('scale-90');
-                modal.classList.add('scale-100');
-            }
+        function showToast(msg) {
+            const b = document.getElementById('global-modal-backdrop');
+            const m = document.getElementById('global-toast');
+            document.getElementById('global-toast-msg').innerHTML = msg;
+            b.classList.remove('hidden');
+            void b.offsetWidth;
+            b.classList.remove('opacity-0');
+            m.classList.replace('scale-90','scale-100');
         }
         function hideModal() {
-            const backdrop = document.getElementById('global-modal-backdrop');
-            const modal = document.getElementById('global-toast');
-            if (backdrop) {
-                backdrop.classList.add('opacity-0');
-                modal.classList.remove('scale-100');
-                modal.classList.add('scale-90');
-                setTimeout(() => backdrop.classList.add('hidden'), 300);
-            }
-        }
-    </script>
-
-    <script>
-        const projectInfo = {
-            'security': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Enterprise-Grade Security</h3><p class='text-base text-slate-600 dark:text-slate-400'>We protect your academic and personal data with industry-leading end-to-end encryption. ProjectHive is fully SOC 2 compliant and GDPR ready.</p>",
-            'status': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>System Status</h3><div class='flex items-center justify-center space-x-2 text-green-500 mb-2'><span class='relative flex h-3 w-3'><span class='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span><span class='relative inline-flex rounded-full h-3 w-3 bg-green-500'></span></span><span class='font-semibold'>All systems operational</span></div><p class='text-sm text-slate-500'>API: 12ms | Database: 8ms | Storage: Normal</p>",
-            'about': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>About ProjectHive</h3><p class='text-base text-slate-600 dark:text-slate-400'>ProjectHive is an AI-powered collaboration platform designed exclusively for university students. Find your dream team, generate breakthrough project ideas using AI, and showcase your work to a global audience.</p>",
-            'blog': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>ProjectHive Blog</h3><p class='text-base text-slate-600 dark:text-slate-400'>Discover the latest platform updates, success stories from student developers, and tips for building award-winning projects.</p>",
-            'contact': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Contact Us</h3><p class='text-base text-slate-600 dark:text-slate-400'>Have a question or want to partner with us? Reach out to our team at <a href='mailto:support@projecthive.com' class='text-indigo-500 hover:underline'>support@projecthive.com</a></p>",
-            'careers': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Careers</h3><p class='text-base text-slate-600 dark:text-slate-400'>Join our mission to empower student innovation globally. We're actively hiring engineers, designers, and community managers.</p>",
-            'press': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Press Kit</h3><p class='text-base text-slate-600 dark:text-slate-400'>Download high-resolution logos, brand assets, and official media guidelines for featuring ProjectHive.</p>",
-            'privacy': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Privacy Policy</h3><p class='text-base text-slate-600 dark:text-slate-400'>Your data belongs to you. We never sell your personal information or student projects to third parties. Built with privacy-first architecture.</p>",
-            'terms': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Terms of Service</h3><p class='text-base text-slate-600 dark:text-slate-400'>Standard usage terms apply. We maintain a zero-tolerance policy for academic plagiarism and harassment within our community.</p>",
-            'cookies': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Cookie Policy</h3><p class='text-base text-slate-600 dark:text-slate-400'>We use strictly necessary cookies to keep you securely logged in. No third-party tracking or advertising cookies are used on this platform.</p>",
-            'dpa': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Data Processing</h3><p class='text-base text-slate-600 dark:text-slate-400'>Data Processing Agreements (DPA) are available upon request for university enterprise partners integrating with our API.</p>",
-            'help': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Help Center</h3><p class='text-base text-slate-600 dark:text-slate-400'>Explore our comprehensive guides, FAQs, and video tutorials to get the most out of your ProjectHive experience.</p>",
-            'docs': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Documentation</h3><p class='text-base text-slate-600 dark:text-slate-400'>Read our extensive API references, SDK guides, and integration tutorials to build powerful applications on top of our platform.</p>",
-            'support': "<h3 class='text-2xl font-bold mb-3 text-slate-900 dark:text-white'>Support</h3><p class='text-base text-slate-600 dark:text-slate-400'>Need technical assistance? Open a ticket via your dashboard or email our 24/7 student support team directly.</p>"
-        };
-
-        function showProjectInfo(key) {
-            showToast(projectInfo[key]);
+            const b = document.getElementById('global-modal-backdrop');
+            const m = document.getElementById('global-toast');
+            b.classList.add('opacity-0');
+            m.classList.replace('scale-100','scale-90');
+            setTimeout(() => b.classList.add('hidden'), 300);
         }
     </script>
 </body>
