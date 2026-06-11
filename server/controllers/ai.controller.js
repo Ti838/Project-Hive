@@ -1,144 +1,171 @@
-import { getNvidiaClient } from '../config/nvidia.js';
+// ── AI Controller — Groq (Free LLaMA 3.3 70B) ──────────────────────────────
+import { getGroqClient, isGroqReady } from '../config/nvidia.js';
 
-const MAX_REQUESTS_PER_HOUR = 10;
-const userRequestCounts = new Map();
+const GROQ_MODEL = 'llama-3.3-70b-versatile'; // Best free model on Groq
 
-function checkRateLimit(userId) {
-  const key = `${userId}-${new Date().getHours()}`;
-  const count = userRequestCounts.get(key) || 0;
-  if (count >= MAX_REQUESTS_PER_HOUR) return false;
-  userRequestCounts.set(key, count + 1);
+// In-memory rate limiter (per user/IP per hour)
+const rateLimitMap = new Map();
+
+function checkLimit(key, max) {
+  const hourKey = `${key}-${new Date().getHours()}`;
+  const count = rateLimitMap.get(hourKey) || 0;
+  if (count >= max) return false;
+  rateLimitMap.set(hourKey, count + 1);
   return true;
 }
 
-// ── Shared idea generation logic ────────────────────────────────────────────
-async function runGeneration({ domain, skills, teamSize, timelineWeeks, constraints }) {
-  const client = getNvidiaClient();
+// ── Core generation logic ────────────────────────────────────────────────────
+async function generateIdeas({ domain, skills, teamSize, timelineWeeks, constraints }) {
+  const client = getGroqClient();
+  if (!client) {
+    throw new Error('AI_NOT_CONFIGURED');
+  }
 
   const skillsList = Array.isArray(skills)
-    ? skills.join(', ')
+    ? skills.filter(Boolean).join(', ')
     : (skills || 'General programming');
 
-  const prompt = `You are an expert mentor helping university students generate innovative project ideas.
+  const systemPrompt = `You are an expert university project advisor. 
+Generate creative, realistic, and implementable project ideas for students.
+Always respond with ONLY a valid JSON array — no markdown, no explanation, no extra text.`;
 
-Generate exactly 5 unique, realistic, and implementable project ideas based on:
+  const userPrompt = `Generate exactly 5 unique and innovative university project ideas for:
 - Domain: ${domain}
 - Team Skills: ${skillsList}
-- Team Size: ${teamSize} people
-- Timeline: ${timelineWeeks} weeks
+- Team Size: ${teamSize || 3} people
+- Timeline: ${timelineWeeks || 8} weeks
 - Constraints: ${constraints || 'None'}
 
-Return ONLY a valid JSON array (no markdown, no extra text) with exactly 5 objects, each having:
+Return a JSON array of exactly 5 objects. Each object must have these exact keys:
 {
-  "name": "Project Name",
-  "description": "2-3 sentence description of what it does and why it matters",
+  "name": "Short catchy project name",
+  "description": "2-3 sentences explaining what it does and why it matters for students/society",
   "features": ["Feature 1", "Feature 2", "Feature 3", "Feature 4"],
   "techStack": ["Tech1", "Tech2", "Tech3", "Tech4", "Tech5"],
-  "difficulty": "Beginner" | "Intermediate" | "Advanced",
-  "innovationScore": <number 1-10>,
-  "estimatedWeeks": <number>
-}`;
+  "difficulty": "Beginner" or "Intermediate" or "Advanced",
+  "innovationScore": <integer 1-10>,
+  "estimatedWeeks": <integer>
+}
 
-  const response = await client.chat.completions.create({
-    model: 'meta/llama-3.1-405b-instruct',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0.75,
+Only output the raw JSON array. No markdown. No \`\`\`json blocks.`;
+
+  const completion = await client.chat.completions.create({
+    model: GROQ_MODEL,
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+    temperature: 0.8,
+    max_tokens: 3000,
     top_p: 0.9,
-    max_tokens: 2500,
   });
 
-  const content = response.choices[0].message.content.trim();
+  let content = completion.choices[0].message.content.trim();
 
-  let ideas = [];
+  // Strip markdown fences if model adds them
+  content = content.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
+  let ideas;
   try {
-    // Try direct parse
     ideas = JSON.parse(content);
   } catch {
-    // Strip markdown code fences if present
-    const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/) || content.match(/(\[[\s\S]*\])/);
-    if (jsonMatch) {
-      ideas = JSON.parse(jsonMatch[1] || jsonMatch[0]);
-    } else {
-      throw new Error('AI returned non-JSON response. Please try again.');
-    }
+    // Try to extract JSON array from content
+    const match = content.match(/\[[\s\S]*\]/);
+    if (!match) throw new Error('AI returned invalid format. Please try again.');
+    ideas = JSON.parse(match[0]);
   }
 
   if (!Array.isArray(ideas)) ideas = [ideas];
 
+  // Normalize fields
+  ideas = ideas.slice(0, 5).map((idea, i) => ({
+    name: idea.name || idea.title || `Project Idea ${i + 1}`,
+    description: idea.description || '',
+    features: Array.isArray(idea.features) ? idea.features.slice(0, 4) : [],
+    techStack: Array.isArray(idea.techStack || idea.tech_stack) 
+      ? (idea.techStack || idea.tech_stack).slice(0, 7) 
+      : [],
+    difficulty: idea.difficulty || 'Intermediate',
+    innovationScore: Number(idea.innovationScore || idea.noveltyScore || 7),
+    estimatedWeeks: Number(idea.estimatedWeeks || timelineWeeks || 8),
+  }));
+
   return {
-    ideas: ideas.slice(0, 5),
+    ideas,
+    model: GROQ_MODEL,
     usage: {
-      promptTokens: response.usage?.prompt_tokens || 0,
-      completionTokens: response.usage?.completion_tokens || 0,
+      promptTokens: completion.usage?.prompt_tokens || 0,
+      completionTokens: completion.usage?.completion_tokens || 0,
+      totalTokens: completion.usage?.total_tokens || 0,
     },
   };
 }
 
-// ── Authenticated endpoint (with rate limiting per user) ─────────────────────
+// ── Authenticated endpoint (10 req/hr per user) ──────────────────────────────
 export async function generateProjectIdeas(req, res, next) {
   try {
-    const userId = req.user?.id || req.user?.userId || 'anon';
-
-    if (!checkRateLimit(userId)) {
-      return res.status(429).json({
-        error: 'Rate limit exceeded. Maximum 10 AI requests per hour.',
+    if (!isGroqReady()) {
+      return res.status(503).json({
+        error: 'AI service not configured.',
+        setup: 'Add GROQ_API_KEY to server/.env — get free key at https://console.groq.com',
       });
     }
 
-    const { domain, skills, teamSize, timelineWeeks, constraints } = req.body;
+    const userId = req.user?.id || req.user?.userId || 'anon';
+    if (!checkLimit(`user-${userId}`, 10)) {
+      return res.status(429).json({ error: 'Rate limit: 10 AI requests per hour per user.' });
+    }
 
-    if (!domain) {
+    const { domain, skills, teamSize, timelineWeeks, constraints } = req.body;
+    if (!domain?.trim()) {
       return res.status(400).json({ error: 'Domain is required.' });
     }
 
-    const result = await runGeneration({ domain, skills, teamSize, timelineWeeks, constraints });
-
-    console.log(`[ProjectHive] Generated ${result.ideas.length} ideas for user: ${userId}`);
+    const result = await generateIdeas({ domain, skills, teamSize, timelineWeeks, constraints });
+    console.log(`[ProjectHive] ✅ Generated ${result.ideas.length} ideas for user: ${userId}`);
 
     return res.json({
       ok: true,
-      message: 'Project ideas generated successfully',
       ideas: result.ideas,
+      model: result.model,
       generatedAt: new Date().toISOString(),
       usage: result.usage,
     });
   } catch (error) {
-    console.error('[ProjectHive] Generate ideas error:', error.message);
-
-    if (error.status === 401 || (error.message && error.message.includes('API key'))) {
-      return res.status(500).json({ error: 'AI service not configured. Add NVIDIA_NIM_API_KEY to server/.env' });
+    console.error('[ProjectHive] AI error:', error.message);
+    if (error.message === 'AI_NOT_CONFIGURED') {
+      return res.status(503).json({ error: 'AI not configured. See server/.env' });
     }
     if (error.status === 429) {
-      return res.status(429).json({ error: 'NVIDIA AI rate limit hit. Please wait a moment.' });
+      return res.status(429).json({ error: 'Groq rate limit hit. Wait a moment and try again.' });
     }
-
     next(error);
   }
 }
 
-// ── Public endpoint (no auth needed, rate limited by IP) ─────────────────────
-const ipCounts = new Map();
-
+// ── Public endpoint (5 req/hr per IP — no login needed) ─────────────────────
 export async function generateProjectIdeasPublic(req, res, next) {
   try {
-    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-    const key = `${ip}-${new Date().getHours()}`;
-    const count = ipCounts.get(key) || 0;
-
-    if (count >= 5) {
-      return res.status(429).json({
-        error: 'Rate limit: 5 free generations per hour. Sign up for more!',
+    if (!isGroqReady()) {
+      return res.status(503).json({
+        error: 'AI service not configured.',
+        setup: 'Add GROQ_API_KEY to server/.env — free key at https://console.groq.com',
       });
     }
-    ipCounts.set(key, count + 1);
+
+    const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    if (!checkLimit(`ip-${ip}`, 5)) {
+      return res.status(429).json({
+        error: 'Rate limit: 5 free generations/hour. Sign up for more!',
+      });
+    }
 
     const { domain, skills, teamSize, timelineWeeks, constraints } = req.body;
-
-    if (!domain) {
+    if (!domain?.trim()) {
       return res.status(400).json({ error: 'Domain is required.' });
     }
 
-    const result = await runGeneration({
+    const result = await generateIdeas({
       domain,
       skills: skills || 'General programming',
       teamSize: teamSize || 3,
@@ -146,20 +173,19 @@ export async function generateProjectIdeasPublic(req, res, next) {
       constraints,
     });
 
-    console.log(`[ProjectHive] Public generation from IP: ${ip}`);
+    console.log(`[ProjectHive] ✅ Public generation from IP: ${ip}`);
 
     return res.json({
       ok: true,
       ideas: result.ideas,
+      model: result.model,
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[ProjectHive] Public generate error:', error.message);
-
-    if (error.status === 401 || (error.message && error.message.includes('API key'))) {
-      return res.status(500).json({ error: 'AI service not configured. See README for setup.' });
+    console.error('[ProjectHive] Public AI error:', error.message);
+    if (error.status === 429) {
+      return res.status(429).json({ error: 'AI rate limit. Please try again in a moment.' });
     }
-
     next(error);
   }
 }

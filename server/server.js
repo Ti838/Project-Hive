@@ -4,6 +4,7 @@ import { Server } from 'socket.io';
 
 import app from './app.js';
 import { connectDB } from './config/db.js';
+import { initializeGroq } from './config/nvidia.js';
 import { socketAuthMiddleware } from './middleware/socketAuth.js';
 import {
   registerUserSocket,
@@ -18,7 +19,7 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    console.log('[v0] Starting ProjectHive Backend Server...');
+    console.log('[ProjectHive] Starting ProjectHive Backend Server...');
 
     // Connect to MongoDB
     await connectDB();
@@ -34,14 +35,16 @@ async function startServer() {
       }
     }
 
-    // Initialize NVIDIA NIM (optional)
+    // Initialize Groq AI (free — https://console.groq.com)
     try {
-      if (process.env.NVIDIA_NIM_API_KEY) {
-        const { initializeNvidiaNIM } = await import('./config/nvidia.js');
-        initializeNvidiaNIM();
+      if (process.env.GROQ_API_KEY) {
+        initializeGroq();
+      } else {
+        console.warn('[ProjectHive] ⚠️  GROQ_API_KEY not set — AI idea generator disabled.');
+        console.warn('[ProjectHive]    Get a free key at: https://console.groq.com');
       }
     } catch (error) {
-      console.warn('[v0] NVIDIA NIM initialization optional, continuing without it');
+      console.warn('[ProjectHive] Groq init failed:', error.message);
     }
 
     // Create HTTP server
