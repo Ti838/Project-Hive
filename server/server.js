@@ -4,7 +4,7 @@ import { Server } from 'socket.io';
 
 import app from './app.js';
 import { connectDB } from './config/db.js';
-import { initializeGroq } from './config/nvidia.js';
+import { initializeGemini } from './config/nvidia.js';
 import { socketAuthMiddleware } from './middleware/socketAuth.js';
 import {
   registerUserSocket,
@@ -35,16 +35,16 @@ async function startServer() {
       }
     }
 
-    // Initialize Groq AI (free — https://console.groq.com)
+    // Initialize Google Gemini AI (free — https://aistudio.google.com/apikey)
     try {
-      if (process.env.GROQ_API_KEY) {
-        initializeGroq();
+      if (process.env.GEMINI_API_KEY) {
+        initializeGemini();
       } else {
-        console.warn('[ProjectHive] ⚠️  GROQ_API_KEY not set — AI idea generator disabled.');
-        console.warn('[ProjectHive]    Get a free key at: https://console.groq.com');
+        console.warn('[ProjectHive] ⚠️  GEMINI_API_KEY not set — AI idea generator disabled.');
+        console.warn('[ProjectHive]    Get free key at: https://aistudio.google.com/apikey');
       }
     } catch (error) {
-      console.warn('[ProjectHive] Groq init failed:', error.message);
+      console.warn('[ProjectHive] Gemini init failed:', error.message);
     }
 
     // Create HTTP server

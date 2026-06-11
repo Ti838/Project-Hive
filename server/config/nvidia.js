@@ -1,41 +1,34 @@
-// ── Groq AI Client (Free — No credit card needed) ──────────────────────────
-// Sign up free at: https://console.groq.com
-// Go to API Keys → Create API Key → copy the key starting with "gsk_..."
-// Paste it in server/.env as GROQ_API_KEY=gsk_xxxxxxxxxxxx
-//
-// Free limits: 14,400 requests/day, 30 req/min — perfect for ProjectHive
-// Model: llama-3.3-70b-versatile (best free model on Groq)
+// ── Google Gemini AI Client (FREE — works with any Gmail) ───────────────────
+// Free limits: 1,500 requests/day, 15 req/min
+// Model: gemini-1.5-flash (fast, smart, free)
+// Get your key at: https://aistudio.google.com/apikey
 
-import OpenAI from 'openai';
+let geminiApiKey = null;
 
-let groqClient = null;
-
-export function initializeGroq() {
-  const apiKey = process.env.GROQ_API_KEY;
+export function initializeGemini() {
+  const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
-    console.warn('[ProjectHive] GROQ_API_KEY not set — AI features disabled.');
-    console.warn('[ProjectHive] Get your free key at: https://console.groq.com');
+    console.warn('[ProjectHive] ⚠️  GEMINI_API_KEY not set — AI features disabled.');
+    console.warn('[ProjectHive]    Get free key at: https://aistudio.google.com/apikey');
     return null;
   }
 
-  groqClient = new OpenAI({
-    apiKey,
-    baseURL: 'https://api.groq.com/openai/v1',
-  });
-
-  console.log('[ProjectHive] ✅ Groq AI client initialized (LLaMA 3.3 70B — FREE)');
-  return groqClient;
+  geminiApiKey = apiKey;
+  console.log('[ProjectHive] ✅ Google Gemini AI initialized (gemini-2.0-flash — FREE)');
+  return apiKey;
 }
 
-export function getGroqClient() {
-  return groqClient;
+export function getGeminiKey() {
+  return geminiApiKey;
 }
 
-export function isGroqReady() {
-  return groqClient !== null;
+export function isGeminiReady() {
+  return geminiApiKey !== null;
 }
 
-// Keep backward compat with old NVIDIA NIM references
-export const initializeNvidiaNIM = initializeGroq;
-export const getNvidiaClient = getGroqClient;
+// Backward compat
+export const initializeNvidiaNIM = initializeGemini;
+export const initializeGroq = initializeGemini;
+export const getNvidiaClient = () => geminiApiKey;
+export const getGroqClient = () => geminiApiKey;
