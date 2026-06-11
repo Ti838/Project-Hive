@@ -1,14 +1,21 @@
-# 🐝 ProjectHive — Phase 1 MVP
+<p align="center">
+  <img src="public/assets/svg/logo.svg" alt="ProjectHive Bee Logo" width="90" height="90" />
+</p>
 
-> **The Home of Student Innovation**
+<h1 align="center">🐝 ProjectHive</h1>
+<p align="center"><strong>The Home of Student Innovation</strong></p>
 
-ProjectHive is an AI-powered university collaboration platform that helps students form high-performance teams, generate innovative project ideas using NVIDIA NIM, and showcase their completed work.
+<p align="center">
+  <a href="https://github.com/Ti838/Project-Hive"><img src="https://img.shields.io/badge/GitHub-Ti838%2FProject--Hive-181717?logo=github" alt="GitHub"></a>
+  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase" alt="Supabase"></a>
+  <a href="https://vercel.com"><img src="https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel" alt="Vercel"></a>
+  <a href="https://socket.io"><img src="https://img.shields.io/badge/Realtime-Socket.IO-010101?logo=socket.io" alt="Socket.IO"></a>
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
+</p>
 
-[![GitHub Repo](https://img.shields.io/badge/GitHub-Ti838%2FProject--Hive-181717?logo=github)](https://github.com/Ti838/Project-Hive)
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-339933?logo=node.js)](https://nodejs.org/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)](https://www.mongodb.com/atlas)
-[![Socket.IO](https://img.shields.io/badge/Socket.IO-4.x-010101?logo=socket.io)](https://socket.io/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+---
+
+ProjectHive is an AI-powered university collaboration platform. Students can form high-performance teams, generate innovative project ideas using NVIDIA NIM AI, and showcase their completed work — all in one place.
 
 ---
 
@@ -21,14 +28,14 @@ ProjectHive is an AI-powered university collaboration platform that helps studen
 - ✅ Profile setup wizard on first login
 
 ### 👤 User Profiles
-- ✅ Comprehensive profile with skills, bio, university, and availability
+- ✅ Comprehensive profile — skills, bio, university, availability
 - ✅ Avatar upload with preview
 - ✅ Profile completion tracking
 - ✅ Skill management (add/remove skills)
 
 ### 🤝 Team Building
 - ✅ Browse and search for teams
-- ✅ Create new teams with requirements
+- ✅ Create new teams with skill requirements
 - ✅ Join request workflow
 - ✅ Team member management
 - ✅ Real-time team status via Socket.IO
@@ -39,11 +46,10 @@ ProjectHive is an AI-powered university collaboration platform that helps studen
 - ✅ Message history retrieval
 - ✅ Real-time notifications
 
-### 🤖 AI Features
-- ✅ NVIDIA NIM-powered project idea generator
-- ✅ Generate 5 unique ideas based on domain, skills, and timeline
+### 🤖 AI Features (NVIDIA NIM)
+- ✅ Generate 5 unique project ideas from domain, skills & timeline
 - ✅ Innovation scoring for each idea
-- ✅ Save ideas to profile
+- ✅ Save ideas to your profile
 
 ### 🚀 Project Showcase
 - ✅ Browse published student projects
@@ -57,33 +63,34 @@ ProjectHive is an AI-powered university collaboration platform that helps studen
 
 ```
 ProjectHive
-├── Frontend        Pure HTML5 + CSS + Vanilla JavaScript  (served via Vercel)
-├── Backend         Node.js + Express.js + Socket.IO       (hosted on Render)
-└── Database        MongoDB Atlas (M10 cluster)
+├── Frontend        HTML5 + Tailwind CSS CDN + Vanilla JS  →  Vercel
+├── Backend         Node.js + Express.js + Socket.IO       →  Render (or local)
+└── Database        Supabase (PostgreSQL)                  →  Supabase Cloud
 ```
 
-### Frontend
-- **Technology**: Pure HTML5 + Vanilla CSS + Vanilla JavaScript
-- **State Management**: Observable pattern for reactive updates
-- **Auth**: JWT token management with auto-refresh
-- **Real-time**: Socket.IO client integration
-- **Design**: Glassmorphic dark/light theme, fully responsive
+### Frontend (Vercel)
+- Pure HTML5 + Tailwind CSS (CDN) + Vanilla JavaScript
+- Multi-page application (MPA) with observable state pattern
+- JWT token management with auto-refresh
+- Socket.IO client integration
+- Glassmorphic dark/light theme, fully responsive
 
 ### Backend (`/server`)
-- **Technology**: Node.js + Express.js
-- **Real-time**: Socket.IO with Redis adapter
-- **Authentication**: JWT with HS256 (development) / RS256 (production)
-- **Rate Limiting**: `express-rate-limit` (100 req/min global)
-- **Security**: Helmet.js, CORS whitelist, input validation with Joi
+- **Runtime**: Node.js + Express.js
+- **Real-time**: Socket.IO
+- **Auth**: JWT with bcrypt
+- **Security**: Helmet.js, CORS whitelist, `express-rate-limit`, Joi validation
 
-### Database (MongoDB Atlas)
-- **Collections**: `users`, `teams`, `messages`, `projects`, `notifications`
-- **ORM**: Mongoose
+### Database (Supabase)
+- **Provider**: [Supabase](https://supabase.com) — managed PostgreSQL
+- **Tables**: `users`, `teams`, `messages`, `projects`, `notifications`, `join_requests`
+- **Auth**: Supabase Auth (optional — can be used alongside JWT)
+- **Storage**: Supabase Storage for avatars and project assets
 
 ### AI Integration (NVIDIA NIM)
 - **Model**: `meta/llama-3.1-405b-instruct`
 - **Endpoint**: `https://integrate.api.nvidia.com/v1/chat/completions`
-- **Server-side only** — API keys never exposed to frontend
+- **Server-side only** — API key never exposed to frontend
 - **Rate Limit**: 10 requests per user per hour
 
 ---
@@ -92,18 +99,16 @@ ProjectHive
 
 ```
 Project-Hive/
-├── public/                         # Frontend static files
+├── public/                         # Frontend (deployed to Vercel)
 │   ├── index.html                  # Landing page
 │   ├── pages/
 │   │   ├── auth/
 │   │   │   ├── login.html
 │   │   │   └── register.html
-│   │   ├── profile/
-│   │   │   └── edit.html
+│   │   ├── profile/edit.html
 │   │   ├── teams/
 │   │   │   ├── index.html          # Team finder
-│   │   │   ├── create.html
-│   │   │   └── [id].html           # Team detail
+│   │   │   └── create.html
 │   │   ├── projects/
 │   │   │   ├── showcase.html
 │   │   │   └── generator.html      # AI idea generator
@@ -112,29 +117,30 @@ Project-Hive/
 │   │   ├── notifications.html
 │   │   └── settings.html
 │   └── assets/
-│       ├── css/
-│       │   └── custom.css
-│       └── js/
-│           └── core/
-│               ├── api.js          # Fetch wrapper
-│               ├── auth.js         # Auth utilities
-│               ├── store.js        # State management
-│               └── socket.js       # Socket.IO client
+│       ├── css/custom.css
+│       ├── svg/logo.svg            # 🐝 Bee logo
+│       └── js/core/
+│           ├── api.js
+│           ├── auth.js
+│           ├── store.js
+│           └── socket.js
 │
-├── server/                         # Backend Node.js app
-│   ├── app.js
+├── server/                         # Backend API
 │   ├── server.js
+│   ├── app.js
 │   ├── config/
+│   │   ├── db.js                   # Supabase connection
+│   │   └── nvidia.js
 │   ├── controllers/
 │   ├── middleware/
 │   ├── models/
 │   ├── routes/
 │   ├── services/
 │   ├── utils/
-│   ├── .env.example                # ← Copy to .env and fill in values
+│   ├── .env.example                # ← Copy to .env and fill values
 │   └── package.json
 │
-├── vercel.json                     # Vercel deployment config
+├── vercel.json                     # Vercel routing config
 ├── package.json
 └── README.md
 ```
@@ -145,7 +151,7 @@ Project-Hive/
 
 ### Prerequisites
 - **Node.js** v18+
-- **MongoDB** (local or Atlas connection string)
+- **Supabase** project (free tier works fine)
 - **NVIDIA NIM** API key (for AI features)
 
 ### 1. Clone the Repository
@@ -155,13 +161,40 @@ git clone https://github.com/Ti838/Project-Hive.git
 cd Project-Hive
 ```
 
-### 2. Set Up the Backend
+### 2. Configure the Backend
 
 ```bash
 cd server
-cp .env.example .env        # Fill in your secrets
+cp .env.example .env
+```
+
+Fill in your `.env`:
+
+```env
+NODE_ENV=development
+PORT=5000
+
+# Supabase
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+
+# JWT
+JWT_SECRET=your-secret-here
+JWT_EXPIRES_IN=24h
+REFRESH_TOKEN_EXPIRES_IN=7d
+
+# NVIDIA NIM
+NVIDIA_NIM_API_KEY=your-nvidia-key
+
+# Frontend (for CORS)
+FRONTEND_URL=http://localhost:3000
+FRONTEND_URL_PROD=https://your-app.vercel.app
+```
+
+```bash
 npm install
-npm run dev                 # Starts on http://localhost:5000
+npm run dev       # Starts on http://localhost:5000
 ```
 
 ### 3. Serve the Frontend
@@ -170,25 +203,25 @@ From the project root:
 
 ```bash
 npm install
-npm run dev                 # Serves public/ on http://localhost:3000
+npm run dev       # Serves public/ on http://localhost:3000
 ```
 
-Or use any static server:
+Navigate to **http://localhost:3000**
+
+### 4. Deploy to Vercel
 
 ```bash
-npx serve public -p 3000
+vercel deploy
 ```
 
-Then navigate to **http://localhost:3000**
+Or connect your GitHub repo at [vercel.com](https://vercel.com) for automatic deployments on every push.
 
 ---
 
 ## 🔌 API Quick Reference
 
-All frontend API calls go through `assets/js/core/api.js`:
-
 ```javascript
-// Authentication
+// Auth
 API.auth.register(userData)
 API.auth.login(email, password)
 API.auth.logout()
@@ -220,17 +253,17 @@ API.projects.getProject(projectId)
 
 ---
 
-## 🔐 Security Features
+## 🔐 Security
 
 | Layer | Mechanism |
 |---|---|
-| Authentication | JWT (HS256 dev / RS256 prod) with refresh tokens |
-| Password Storage | bcrypt hashing |
-| Transport | HTTPS enforced (TLS 1.3) |
-| Headers | Helmet.js (CSP, XSS, HSTS, etc.) |
+| Authentication | JWT (HS256) with bcrypt password hashing |
+| Database | Supabase Row-Level Security (RLS) policies |
+| Transport | HTTPS / TLS enforced |
+| Headers | Helmet.js (CSP, XSS, HSTS) |
 | CORS | Whitelisted origins only |
-| Rate Limiting | 100 req/min global, 10 req/min on auth |
-| Input Validation | Joi (server-side) + client-side checks |
+| Rate Limiting | 100 req/min global, 10 req/min on auth endpoints |
+| Validation | Joi (server-side) + client-side checks |
 
 ---
 
@@ -256,13 +289,12 @@ demo2@berkeley.edu  /  Demo123!
 
 ## 🔄 Phase 2 Roadmap
 
-- [ ] OAuth2 social login (Google, GitHub)
+- [ ] OAuth2 social login (Google, GitHub) via Supabase Auth
 - [ ] Advanced search and filtering
 - [ ] AI team compatibility scoring
-- [ ] File upload for projects (Cloudinary)
-- [ ] Email notifications (SendGrid)
+- [ ] File upload for projects (Supabase Storage)
+- [ ] Email notifications (Supabase Edge Functions)
 - [ ] PWA support for offline viewing
-- [ ] Mobile-responsive refinements
 
 ---
 
@@ -282,6 +314,10 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Built with ❤️ by [Ti838](https://github.com/Ti838)**
-
-*Making university collaboration effortless, one team at a time.*
+<p align="center">
+  <img src="public/assets/svg/logo.svg" width="32" height="32" />
+  <br/>
+  <strong>Built with ❤️ by <a href="https://github.com/Ti838">Ti838</a></strong>
+  <br/>
+  <em>Making university collaboration effortless, one team at a time.</em>
+</p>
