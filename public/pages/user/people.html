@@ -1,0 +1,209 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Find People — ProjectHive</title>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/ph-design.css">
+<link rel="stylesheet" href="../../assets/css/ph-system.css">
+<script src="../../assets/js/core/ph-toast.js"></script>
+<script src="../../assets/js/core/ph-sidebar.js"></script>
+<style>
+body{background:var(--bg);color:var(--tx);margin:0}
+.hero{background:linear-gradient(135deg,#ec4899 0%,#8b5cf6 50%,#6366f1 100%);padding:40px 32px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(255,255,255,.05);top:-120px;right:-80px}
+.hero::after{content:'';position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);bottom:-60px;left:80px}
+.hi{position:relative;z-index:1;max-width:1100px;margin:0 auto}
+.fp-wrap{max-width:1100px;margin:-50px auto 0;padding:0 24px 60px;position:relative;z-index:1}
+.search-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,.1);padding:18px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:20px}
+.s-wrap{position:relative;flex:1;min-width:200px}
+.s-inp{width:100%;background:var(--sf2);border:1.5px solid var(--bd);border-radius:11px;padding:10px 14px 10px 40px;font-size:13px;color:var(--tx);font-family:'Inter',sans-serif;outline:none;transition:border .2s,box-shadow .2s;box-sizing:border-box}
+.s-inp:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac-light)}
+.s-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-family:'Material Symbols Outlined';font-size:18px;color:var(--sub)}
+.chip{padding:7px 14px;border-radius:999px;border:1.5px solid var(--bd);background:var(--sf2);color:var(--sub);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif}
+.chip:hover,.chip.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.tabs{display:flex;gap:4px;background:var(--sf2);border-radius:11px;padding:4px;margin-bottom:20px;width:fit-content}
+.tab{padding:8px 18px;border-radius:9px;border:none;background:transparent;color:var(--sub);font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.tab.on{background:var(--sf);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.stats{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.stat{background:var(--sf);border:1.5px solid var(--bd);border-radius:14px;padding:14px 18px;display:flex;align-items:center;gap:10px}
+.stat-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.ucard{background:var(--sf);border:1.5px solid var(--bd);border-radius:18px;overflow:hidden;transition:all .2s;display:flex;flex-direction:column}
+.ucard:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,.1);border-color:var(--bd2)}
+.ucard-banner{height:68px;position:relative;flex-shrink:0}
+.ucard-av{width:58px;height:58px;border-radius:14px;border:3px solid var(--sf);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;position:absolute;bottom:-20px;left:16px;box-shadow:0 4px 12px rgba(0,0,0,.15);overflow:hidden}
+.ucard-av img{width:100%;height:100%;object-fit:cover;display:none}
+.ucard-body{padding:28px 16px 14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.ucard-name{font-size:14px;font-weight:800;color:var(--tx)}
+.ucard-meta{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.ucard-bio{font-size:12px;color:var(--tx2,var(--sub));line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.spip{display:inline-flex;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;background:var(--ac-light);color:var(--ac)}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ucard-foot{padding:10px 16px;border-top:1px solid var(--bd);display:flex;gap:7px}
+.btn-add{flex:1;padding:8px;border-radius:10px;border:none;background:linear-gradient(135deg,#ec4899,#8b5cf6);color:#fff;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:5px;transition:all .15s}
+.btn-add:hover{opacity:.9;transform:translateY(-1px)}
+.btn-add:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-add.sent{background:var(--sf2);color:var(--sub);border:1.5px solid var(--bd)}
+.btn-add.friends{background:rgba(16,185,129,.1);color:#10b981;border:1.5px solid rgba(16,185,129,.25)}
+.btn-msg{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--bd);background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-family:'Material Symbols Outlined';font-size:17px}
+.btn-msg:hover{border-color:var(--ac);color:var(--ac);background:var(--ac-light)}
+.skel{background:linear-gradient(90deg,var(--sf2) 25%,var(--sf) 50%,var(--sf2) 75%);background-size:200%;animation:sh 1.4s infinite;border-radius:8px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.empty{text-align:center;padding:64px 20px;grid-column:1/-1}
+.empty-ic{font-family:'Material Symbols Outlined';font-size:64px;color:var(--bd2)}
+.req-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px}
+.req-av{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
+</style>
+</head>
+<body data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+<div class="ph-page">
+<div class="ph-topbar">
+  <span style="font-family:'Material Symbols Outlined';color:var(--ac)">group_add</span>
+  <h1 style="font-size:17px;font-weight:800;margin:0;flex:1;color:var(--tx)">Find People</h1>
+  <div id="req-badge" style="display:none;background:rgba(236,72,153,.1);border:1.5px solid rgba(236,72,153,.3);border-radius:10px;padding:5px 12px;font-size:12px;font-weight:700;color:#ec4899;cursor:pointer" onclick="switchTab('requests')">
+    <span style="font-family:'Material Symbols Outlined';font-size:14px;vertical-align:middle">pending</span>
+    <span id="req-cnt">0</span> Requests
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hi">
+    <div style="font-size:28px;font-weight:900;color:#fff;margin-bottom:8px">👥 Find Your People</div>
+    <div style="font-size:14px;color:rgba(255,255,255,.78);max-width:480px">Connect with students, discover collaborators, and grow your academic network</div>
+  </div>
+</div>
+
+<div class="fp-wrap">
+  <div class="stats">
+    <div class="stat"><div class="stat-ic" style="background:rgba(99,102,241,.12);color:#6366f1">people</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-total">—</div><div style="font-size:11px;color:var(--sub)">Students</div></div></div>
+    <div class="stat"><div class="stat-ic" style="background:rgba(16,185,129,.12);color:#10b981">handshake</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-friends">—</div><div style="font-size:11px;color:var(--sub)">My Friends</div></div></div>
+    <div class="stat"><div class="stat-ic" style="background:rgba(236,72,153,.12);color:#ec4899">pending</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-pending">—</div><div style="font-size:11px;color:var(--sub)">Pending</div></div></div>
+  </div>
+
+  <div class="tabs">
+    <button id="tab-discover" class="tab on" onclick="switchTab('discover')">🔍 Discover</button>
+    <button id="tab-friends" class="tab" onclick="switchTab('friends')">✅ My Friends</button>
+    <button id="tab-requests" class="tab" onclick="switchTab('requests')">📬 Requests</button>
+  </div>
+
+  <div id="search-area" class="search-card">
+    <div class="s-wrap"><span class="s-ico">search</span><input id="s-inp" class="s-inp" placeholder="Search name, university, skill…" oninput="debSearch()"></div>
+    <div style="display:flex;gap:7px;flex-wrap:wrap">
+      <button class="chip on" onclick="setFilter('all',this)">All</button>
+      <button class="chip" onclick="setFilter('available',this)">✅ Available</button>
+      <button class="chip" onclick="setFilter('web',this)">🌐 Web Dev</button>
+      <button class="chip" onclick="setFilter('ai',this)">🤖 AI/ML</button>
+      <button class="chip" onclick="setFilter('mobile',this)">📱 Mobile</button>
+    </div>
+  </div>
+
+  <div id="fp-grid" class="grid">
+    <div class="ucard"><div class="ucard-banner skel"></div><div class="ucard-body"><div class="skel" style="height:14px;width:55%;margin-top:22px"></div><div class="skel" style="height:11px;width:38%;margin-top:4px"></div><div class="skel" style="height:30px;margin-top:4px"></div></div></div>
+    <div class="ucard"><div class="ucard-banner skel"></div><div class="ucard-body"><div class="skel" style="height:14px;width:55%;margin-top:22px"></div><div class="skel" style="height:11px;width:38%;margin-top:4px"></div><div class="skel" style="height:30px;margin-top:4px"></div></div></div>
+    <div class="ucard"><div class="ucard-banner skel"></div><div class="ucard-body"><div class="skel" style="height:14px;width:55%;margin-top:22px"></div><div class="skel" style="height:11px;width:38%;margin-top:4px"></div><div class="skel" style="height:30px;margin-top:4px"></div></div></div>
+  </div>
+</div>
+</div>
+<script>
+(function(){
+  const TK=localStorage.getItem('access_token');
+  if(!TK){location.href='../auth/login.html';return;}
+  PHSidebar.init('people','../../');
+  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const COLS=['#6366F1','#7C3AED','#EC4899','#10B981','#F59E0B','#3B82F6','#EF4444','#14B8A6'];
+  function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+  let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],tab='discover',filter='all',sTimer=null;
+
+  async function init(){
+    try{const me=await fetch('/api/users/me',{headers:H}).then(r=>r.json());myId=me._id||me.id||'';}catch(e){}
+    const [users,friends,pending]=await Promise.all([
+      fetch('/api/users/search?q=&limit=80',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch('/api/friends',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch('/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+    ]);
+    allUsers=Array.isArray(users)?users:(users.users||[]);
+    const fl=Array.isArray(friends)?friends:(friends.friends||[]);
+    fl.forEach(f=>{const id=f._id||f.id||f.friend?._id;if(id)myFriends.add(id);});
+    inReqs=Array.isArray(pending)?pending:(pending.requests||[]);
+    document.getElementById('st-total').textContent=allUsers.length;
+    document.getElementById('st-friends').textContent=myFriends.size;
+    document.getElementById('st-pending').textContent=inReqs.length;
+    if(inReqs.length){document.getElementById('req-badge').style.display='flex';document.getElementById('req-cnt').textContent=inReqs.length;}
+    render();
+  }
+
+  window.switchTab=function(t){
+    tab=t;
+    ['discover','friends','requests'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('on',x===t));
+    document.getElementById('search-area').style.display=t==='discover'?'flex':'none';
+    render();
+  };
+  window.setFilter=function(f,btn){filter=f;document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();};
+  window.debSearch=function(){clearTimeout(sTimer);sTimer=setTimeout(async()=>{const q=document.getElementById('s-inp').value.trim();if(q){try{const r=await fetch(`/api/users/search?q=${encodeURIComponent(q)}&limit=60`,{headers:H});const d=await r.json();allUsers=Array.isArray(d)?d:(d.users||[]);}catch(e){}}render();},400);};
+
+  function render(){
+    const g=document.getElementById('fp-grid');
+    if(tab==='friends'){
+      const list=allUsers.filter(u=>myFriends.has(u._id||u.id));
+      g.innerHTML=list.length?list.map(u=>card(u,'friends')).join(''):empty('handshake','No friends yet','Discover people and add them!');return;
+    }
+    if(tab==='requests'){
+      if(!inReqs.length){g.innerHTML=empty('pending','No pending requests','You are all caught up!');return;}
+      g.innerHTML='<div style="display:flex;flex-direction:column;gap:12px;grid-column:1/-1">'+inReqs.map(req=>{const u=req.sender||req;const nm=`${u.firstName||''} ${u.lastName||''}`.trim()||'Someone';const c=u.avatarColor||avC(nm);return `<div class="req-card"><div class="req-av" style="background:${c}">${((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase()||'?'}</div><div style="flex:1"><div style="font-size:14px;font-weight:800;color:var(--tx)">${nm}</div><div style="font-size:12px;color:var(--sub)">${u.university||''} ${u.major?'· '+u.major:''}</div><div style="font-size:12px;color:var(--ac);font-weight:600;margin-top:4px">Wants to connect with you</div></div><div style="display:flex;gap:8px"><button class="btn-add" style="background:linear-gradient(135deg,#10b981,#059669);flex:none;padding:8px 14px" onclick="respond('${req._id||req.id}','accept',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">check</span>Accept</button><button class="btn-add" style="background:rgba(239,68,68,.1);color:#ef4444;border:1.5px solid rgba(239,68,68,.2);flex:none;padding:8px 14px" onclick="respond('${req._id||req.id}','reject',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">close</span>Decline</button></div></div>`}).join('')+'</div>';
+      return;
+    }
+    let list=allUsers.filter(u=>(u._id||u.id)!==myId);
+    const q=document.getElementById('s-inp').value.trim().toLowerCase();
+    if(q)list=list.filter(u=>`${u.firstName} ${u.lastName} ${u.university||''} ${(u.skills||[]).map(s=>s.name||s).join(' ')}`.toLowerCase().includes(q));
+    if(filter==='available')list=list.filter(u=>!u.status||u.status==='available');
+    if(filter==='web')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/react|vue|html|css|javascript|web|next/)));
+    if(filter==='ai')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/python|ml|ai|machine|tensor|pytorch/)));
+    if(filter==='mobile')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/flutter|react native|android|ios|mobile/)));
+    g.innerHTML=list.length?list.map(u=>{const id=u._id||u.id;return card(u,myFriends.has(id)?'friends':sentReqs.has(id)?'sent':'none');}).join(''):empty('search_off','No one found','Try different search or filter');
+  }
+
+  function card(u,state){
+    const id=u._id||u.id;
+    const nm=`${u.firstName||''} ${u.lastName||''}`.trim()||'Anonymous';
+    const ini=((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase()||'?';
+    const c=u.avatarColor||avC(nm);
+    const skills=(u.skills||[]).slice(0,3).map(s=>`<span class="spip">${s.name||s}</span>`).join('');
+    const sd=u.status==='available'?'#10b981':u.status==='busy'?'#f59e0b':'#94a3b8';
+    const sl=u.status==='available'?'Available':u.status==='busy'?'Busy':'Not looking';
+    const photoEl=u.avatar?`<img src="${u.avatar}" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:11px">`:ini;
+    const btn=state==='friends'?`<button class="btn-add friends" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">check</span>Friends</button>`:state==='sent'?`<button class="btn-add sent" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">schedule</span>Sent</button>`:`<button class="btn-add" onclick="addFriend('${id}',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_add</span>Add Friend</button>`;
+    return `<div class="ucard"><div class="ucard-banner" style="background:linear-gradient(135deg,${c}cc,${c}55)"><div class="ucard-av" style="background:${c}">${photoEl}</div></div><div class="ucard-body"><div><div class="ucard-name">${nm}</div><div class="ucard-meta"><span class="sdot" style="background:${sd}"></span><span>${sl}</span>${u.university?`<span>·</span><span>${u.university}</span>`:''}</div></div>${u.bio?`<div class="ucard-bio">${u.bio}</div>`:''} ${skills?`<div style="display:flex;flex-wrap:wrap;gap:4px">${skills}</div>`:''}</div><div class="ucard-foot">${btn}<button class="btn-msg" onclick="window.location.href='messages.html'" title="Message">chat</button></div></div>`;
+  }
+
+  function empty(ic,t,s){return `<div class="empty"><div class="empty-ic">${ic}</div><div style="font-size:17px;font-weight:800;color:var(--tx);margin:10px 0 6px">${t}</div><div style="font-size:13px;color:var(--sub)">${s}</div></div>`;}
+
+  window.addFriend=async function(uid,btn){
+    btn.disabled=true;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">progress_activity</span>';
+    try{
+      const r=await fetch(`/api/friends/request/${uid}`,{method:'POST',headers:H});
+      if(r.ok||r.status===201){sentReqs.add(uid);btn.className='btn-add sent';btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">schedule</span>Sent';btn.disabled=true;PHToast?.success('Friend request sent!');}
+      else{btn.disabled=false;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">person_add</span>Add Friend';PHToast?.error('Could not send request');}
+    }catch(e){btn.disabled=false;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">person_add</span>Add Friend';PHToast?.error('Server offline');}
+  };
+
+  window.respond=async function(reqId,action,btn){
+    btn.disabled=true;
+    try{
+      const r=await fetch(`/api/friends/${action}/${reqId}`,{method:'POST',headers:H});
+      if(r.ok){
+        if(action==='accept'){PHToast?.success('Friend added! 🎉');}else{PHToast?.success('Declined');}
+        inReqs=inReqs.filter(req=>(req._id||req.id)!==reqId);
+        document.getElementById('st-pending').textContent=inReqs.length;
+        if(!inReqs.length)document.getElementById('req-badge').style.display='none';
+        render();
+      }
+    }catch(e){PHToast?.error('Server offline');}
+  };
+
+  init();
+})();
+</script>
+</body></html>

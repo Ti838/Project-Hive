@@ -15,11 +15,13 @@ const userSchema = new mongoose.Schema({
   passwordHash: { type: String, required: true },
 
   // Profile
-  avatar: { type: String, default: null },
+  avatar:      { type: String, default: null },   // base64 or URL profile photo
+  bannerImage: { type: String, default: null },   // base64 or URL banner photo
+  avatarColor: { type: String, default: '#6366F1' }, // fallback color
   bio: { type: String, default: '' },
-  university: { type: String, required: true },
-  major: { type: String, required: true },
-  yearOfStudy: { type: Number, enum: [1, 2, 3, 4, 5], required: true },
+  university: { type: String, default: '' },
+  major: { type: String, default: '' },
+  yearOfStudy: { type: Number, enum: [1, 2, 3, 4, 5, null], default: null },
 
   // Skills
   skills: [skillSchema],
@@ -34,14 +36,21 @@ const userSchema = new mongoose.Schema({
   portfolio: { type: String, default: null },
 
   // Platform
-  role: { type: String, enum: ['user', 'admin'], default: 'user' },
+  role: { type: String, enum: ['user', 'student', 'admin'], default: 'student' },
   isVerified: { type: Boolean, default: false },
+  isBanned: { type: Boolean, default: false },
   isPublic: { type: Boolean, default: true },
   completionPercentage: { type: Number, default: 0 },
   lastSeen: { type: Date, default: Date.now },
 
   // Auth
   refreshTokens: [{ type: String }],
+
+  // Friends
+  friends: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
+  // Activity Status
+  onlineStatus: { type: String, enum: ['online', 'offline'], default: 'offline' },
 
   // Stats
   teamsCreated: { type: Number, default: 0 },
@@ -73,19 +82,17 @@ userSchema.methods.comparePassword = async function(plainPassword) {
 
 // Method to calculate completion percentage
 userSchema.methods.calculateCompletionPercentage = function() {
-  let completion = 0;
   const fields = [
     this.firstName && this.lastName,
-    this.avatar,
-    this.bio,
+    this.avatar || this.avatarColor,
+    this.bio && this.bio.length > 10,
     this.university,
     this.major,
     this.yearOfStudy,
     this.skills && this.skills.length > 0,
     this.github || this.linkedin || this.portfolio,
   ];
-  
-  completion = Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  const completion = Math.round((fields.filter(Boolean).length / fields.length) * 100);
   this.completionPercentage = completion;
   return completion;
 };

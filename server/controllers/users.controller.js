@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import bcryptjs from 'bcryptjs';
 
 export async function getCurrentUser(req, res, next) {
   try {
@@ -177,6 +178,27 @@ export async function removeSkill(req, res, next) {
     });
   } catch (error) {
     console.error('[v0] Remove skill error:', error);
+    next(error);
+  }
+}
+
+export async function changePassword(req, res, next) {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
+    if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
+
+    const user = await User.findById(req.user.id);
+    const valid = await bcryptjs.compare(currentPassword, user.passwordHash);
+    if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
+
+    const salt = await bcryptjs.genSalt(12);
+    user.passwordHash = await bcryptjs.hash(newPassword, salt);
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('[v0] Change password error:', error);
     next(error);
   }
 }

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Project Showcase — ProjectHive</title>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<link rel="icon" href="../../../assets/svg/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="stylesheet" href="../../../assets/css/ph-system.css">
+<script src="../../../assets/js/core/ph-toast.js"></script>
+<script src="../../../assets/js/core/ph-sidebar.js"></script>
+<style>
+body{font-family:'Inter',sans-serif;}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;vertical-align:middle;}
+.project-card{transition:all .25s;}
+.project-card:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(99,102,241,.15);}
+.tag{display:inline-flex;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(99,102,241,.1);color:#6366f1;}
+.dark .tag{background:rgba(99,102,241,.2);}
+</style>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"accent":"#6366f1","accent-dark":"#818cf8"}}}}</script>
+<style id="ph-design-vars">
+:root{--bg:#F0F2F9;--surface:#FFFFFF;--surface2:#F5F7FF;--border:#E2E8F0;--text:#0F172A;--sub:#64748B;--accent:#6366F1;--accent-hover:#4F46E5;--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(99,102,241,.06);}
+html.dark{--bg:#0C0D14;--surface:#13141E;--surface2:#1A1B27;--border:#252636;--text:#E4E1EB;--sub:#8884A0;--accent:#818CF8;--accent-hover:#6366F1;--card-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);}
+*,*::before,*::after{box-sizing:border-box;}
+html{transition:color-scheme .2s;}
+body{background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
+.ph-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);transition:all .2s;}
+.ph-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(99,102,241,.12);}
+.ph-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border .2s,box-shadow .2s;}
+.ph-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
+.ph-btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .2s;font-family:inherit;}
+.ph-btn:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.3);}
+.ph-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.ph-btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--sub);font-weight:600;font-size:14px;padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;font-family:inherit;}
+.ph-btn-ghost:hover{background:var(--surface2);color:var(--text);}
+.ph-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(99,102,241,.1);color:var(--accent);}
+.ph-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
+.ph-topbar{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);}
+.ph-page{margin-left:260px;min-height:100vh;}
+@media(max-width:768px){.ph-page{margin-left:0;}}
+.material-symbols-outlined{font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24;display:inline-block;vertical-align:middle;line-height:1;}
+</style></head>
+<body class="bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen" data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+
+<div class="ml-[260px] min-h-screen max-md:ml-0">
+  <header class="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-8 h-16 flex items-center gap-4 max-md:px-4">
+    <div id="ph-hamburger-slot"></div>
+    <span class="material-symbols-outlined text-indigo-500">star</span>
+    <h1 class="font-bold text-lg">Project Showcase</h1>
+    <div class="ml-auto flex gap-3">
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
+        <input id="search-inp" type="text" placeholder="Search projects…" oninput="doSearch(this.value)"
+          class="bg-slate-100 dark:bg-gray-800 border-none rounded-full pl-9 pr-4 py-2 text-sm w-52 outline-none focus:ring-2 focus:ring-indigo-400 transition-all max-md:w-36">
+      </div>
+      <button onclick="openSubmitModal()" class="flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors">
+        <span class="material-symbols-outlined text-base">upload</span> Submit
+      </button>
+    </div>
+  </header>
+
+  <main class="p-8 max-md:p-4">
+    <!-- Filter bar -->
+    <div class="flex gap-2 mb-6 overflow-x-auto pb-1">
+      <button class="filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-indigo-500 text-white transition-all" data-filter="all" onclick="setFilter('all',this)">All Projects</button>
+      <button class="filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 transition-all" data-filter="ai" onclick="setFilter('ai',this)">AI / ML</button>
+      <button class="filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 transition-all" data-filter="web" onclick="setFilter('web',this)">Web</button>
+      <button class="filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 transition-all" data-filter="mobile" onclick="setFilter('mobile',this)">Mobile</button>
+      <button class="filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 transition-all" data-filter="mine" onclick="setFilter('mine',this)">My Projects</button>
+    </div>
+
+    <!-- Grid -->
+    <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+      <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+        <span class="material-symbols-outlined text-5xl animate-pulse">folder_open</span>
+        <p class="text-sm">Loading projects…</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Submit Project Modal -->
+<div id="submit-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-900">
+      <h3 class="font-bold">Submit Your Project</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="submit-form" class="p-5 flex flex-col gap-4">
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Project Title *</label>
+        <input id="f-title" type="text" required class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="e.g. BioScan AI">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Description *</label>
+        <textarea id="f-desc" rows="3" required class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400 resize-none" placeholder="What does your project do?"></textarea>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Category</label>
+        <select id="f-cat" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400">
+          <option value="web">Web</option>
+          <option value="mobile">Mobile</option>
+          <option value="ai">AI / ML</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Tech Stack (comma separated)</label>
+        <input id="f-tech" type="text" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="React, Node.js, MongoDB…">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">GitHub URL</label>
+        <input id="f-github" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://github.com/…">
+      </div>
+      <div>
+        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Live Demo URL</label>
+        <input id="f-demo" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://…">
+      </div>
+      <button type="submit" id="submit-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined">upload</span> Submit Project
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  const TK=localStorage.getItem('access_token');
+  if(!TK){window.location.href='../../auth/login.html';return;}
+  try{
+    const p=JSON.parse(atob(TK.split('.')[1]));
+    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');window.location.href='../../auth/login.html';return;}
+  }catch(e){window.location.href='../../auth/login.html';return;}
+  PHSidebar.init('showcase','../../../');
+
+  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+  function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+
+  let allProjects=[], myId='', activeFilter='all';
+
+  fetch('/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{if(u)myId=u._id||u.id;}).catch(()=>{});
+
+  function render(list){
+    const el=document.getElementById('projects-grid');
+    if(!list.length){
+      el.innerHTML=`<div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+        <span class="material-symbols-outlined text-5xl">folder_open</span>
+        <p class="text-sm">No projects found. <button onclick="openSubmitModal()" class="text-indigo-500 underline">Submit yours!</button></p>
+      </div>`;
+      return;
+    }
+    el.innerHTML=list.map(p=>{
+      const col=avC(p.title||'P');
+      const tech=(p.techStack||p.tags||[]).slice(0,4);
+      const isMine=(p.author?._id||p.author)===myId;
+      return `<div class="project-card bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <!-- Header banner -->
+        <div class="h-20 flex items-center justify-center relative" style="background:linear-gradient(135deg,${col}22,${col}44)">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg" style="background:${col}">${(p.title||'P')[0].toUpperCase()}</div>
+          ${isMine?'<span class="absolute top-2 right-2 bg-indigo-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Mine</span>':''}
+          ${p.category?`<span class="absolute top-2 left-2 bg-black/30 text-white text-xs font-semibold px-2 py-0.5 rounded-full capitalize">${p.category}</span>`:''}
+        </div>
+        <div class="p-5">
+          <h3 class="font-bold text-base mb-1 truncate">${p.title||'Untitled'}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">${p.description||'No description.'}</p>
+          ${tech.length?`<div class="flex flex-wrap gap-1.5 mb-3">${tech.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
+          <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold" style="background:${avC((p.author?.firstName||'?'))}">
+                ${(p.author?.firstName||'?')[0]}
+              </div>
+              ${p.author?.firstName||'Anonymous'}
+            </div>
+            <div class="flex gap-1">
+              ${p.github?`<a href="${p.github}" target="_blank" class="p-1.5 text-gray-400 hover:text-indigo-500 transition-colors"><span class="material-symbols-outlined text-base">code</span></a>`:''}
+              ${p.demoUrl||p.liveUrl?`<a href="${p.demoUrl||p.liveUrl}" target="_blank" class="p-1.5 text-gray-400 hover:text-green-500 transition-colors"><span class="material-symbols-outlined text-base">open_in_new</span></a>`:''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.doSearch=function(q){
+    const f=q?allProjects.filter(p=>(p.title||'').toLowerCase().includes(q.toLowerCase())||(p.description||'').toLowerCase().includes(q.toLowerCase())):allProjects;
+    render(applyFilter(f));
+  };
+
+  function applyFilter(list){
+    if(activeFilter==='all')return list;
+    if(activeFilter==='mine')return list.filter(p=>(p.author?._id||p.author)===myId);
+    return list.filter(p=>p.category===activeFilter);
+  }
+
+  window.setFilter=function(f,btn){
+    activeFilter=f;
+    document.querySelectorAll('.filter-btn').forEach(b=>{
+      b.className='filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-slate-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-indigo-50 transition-all';
+    });
+    btn.className='filter-btn whitespace-nowrap px-4 py-2 rounded-full text-sm font-semibold bg-indigo-500 text-white transition-all';
+    render(applyFilter(allProjects));
+  };
+
+  /* Submit modal */
+  window.openSubmitModal=function(){document.getElementById('submit-modal').classList.replace('hidden','flex');};
+  window.closeModal=function(){document.getElementById('submit-modal').classList.replace('flex','hidden');};
+  document.getElementById('submit-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+  document.getElementById('submit-form').onsubmit=async function(e){
+    e.preventDefault();
+    const btn=document.getElementById('submit-btn');
+    btn.innerHTML='<span class="material-symbols-outlined animate-spin">progress_activity</span> Submitting…';btn.disabled=true;
+    try{
+      const r=await fetch('/api/projects',{method:'POST',headers:H,body:JSON.stringify({
+        title:document.getElementById('f-title').value.trim(),
+        description:document.getElementById('f-desc').value.trim(),
+        category:document.getElementById('f-cat').value,
+        techStack:document.getElementById('f-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
+        github:document.getElementById('f-github').value.trim(),
+        demoUrl:document.getElementById('f-demo').value.trim(),
+      })});
+      if(r.ok){PHToast?.success('Project submitted!');closeModal();this.reset();load();}
+      else{const d=await r.json();PHToast?.error(d.message||'Failed');}
+    }catch(e){PHToast?.error('Server offline');}
+    btn.innerHTML='<span class="material-symbols-outlined">upload</span> Submit Project';btn.disabled=false;
+  };
+
+  async function load(){
+    try{
+      const r=await fetch('/api/projects',{headers:H});
+      if(r.ok){const d=await r.json();allProjects=d.projects||d||[];render(allProjects);}
+      else throw new Error();
+    }catch(e){
+      document.getElementById('projects-grid').innerHTML=`<div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+        <span class="material-symbols-outlined text-5xl">cloud_off</span><p class="text-sm">Could not load projects</p></div>`;
+    }
+  }
+  load();
+})();
+</script>
+</body></html>

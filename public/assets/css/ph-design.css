@@ -1,0 +1,270 @@
+﻿/* ═══════════════════════════════════
+   ProjectHive Design System v2
+   Dark / Light Mode via CSS Variables
+═══════════════════════════════════ */
+
+/* ─── Fonts ─── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ─── Variables ─── */
+:root {
+  --bg:       #F0F2F9;
+  --sf:       #FFFFFF;
+  --sf2:      #F5F7FF;
+  --sf3:      #EEF0FA;
+  --bd:       #E2E8F0;
+  --bd2:      #CBD5E1;
+  --tx:       #0F172A;
+  --tx2:      #334155;
+  --sub:      #64748B;
+  --ac:       #6366F1;
+  --ac2:      #4F46E5;
+  --ac-light: rgba(99,102,241,.1);
+  --green:    #10B981;
+  --yellow:   #F59E0B;
+  --red:      #EF4444;
+  --purple:   #8B5CF6;
+  --blue:     #3B82F6;
+  --shadow:   0 1px 3px rgba(0,0,0,.05), 0 4px 16px rgba(99,102,241,.06);
+  --shadow-lg:0 8px 32px rgba(99,102,241,.12);
+}
+
+html.dark {
+  --bg:       #0C0D14;
+  --sf:       #13141E;
+  --sf2:      #1A1B27;
+  --sf3:      #21222F;
+  --bd:       #252636;
+  --bd2:      #2E2F43;
+  --tx:       #E4E1EB;
+  --tx2:      #C4C1D4;
+  --sub:      #8884A0;
+  --ac:       #818CF8;
+  --ac2:      #6366F1;
+  --ac-light: rgba(129,140,248,.12);
+  --green:    #34D399;
+  --yellow:   #FCD34D;
+  --red:      #F87171;
+  --purple:   #A78BFA;
+  --blue:     #60A5FA;
+  --shadow:   0 1px 3px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.2);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.35);
+}
+
+/* ─── Base ─── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--tx);
+  font-family: 'Inter', system-ui, sans-serif;
+  transition: background .25s, color .25s;
+  margin: 0;
+}
+
+/* ─── Page Layout ─── */
+.ph-page {
+  margin-left: 260px;
+  min-height: 100vh;
+}
+@media(max-width: 768px) {
+  .ph-page { margin-left: 0; }
+}
+
+/* ─── Topbar ─── */
+.ph-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: 64px;
+  background: var(--bg);
+  border-bottom: 1.5px solid var(--bd);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 32px;
+  transition: background .25s, border-color .25s;
+}
+@media(max-width: 600px) { .ph-topbar { padding: 0 16px; } }
+
+/* ─── Cards ─── */
+.ph-card {
+  background: var(--sf);
+  border: 1.5px solid var(--bd);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  transition: background .25s, border-color .25s, transform .2s, box-shadow .2s;
+}
+.ph-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+.ph-card-static {
+  background: var(--sf);
+  border: 1.5px solid var(--bd);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  transition: background .25s, border-color .25s;
+}
+
+/* ─── Inputs ─── */
+.ph-input {
+  width: 100%;
+  background: var(--sf2);
+  border: 1.5px solid var(--bd);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--tx);
+  font-family: 'Inter', sans-serif;
+  outline: none;
+  transition: border .2s, box-shadow .2s, background .25s;
+}
+.ph-input:focus {
+  border-color: var(--ac);
+  box-shadow: 0 0 0 3px var(--ac-light);
+}
+.ph-input::placeholder { color: var(--sub); }
+.ph-input:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ─── Buttons ─── */
+.ph-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: var(--ac);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 22px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background .2s, transform .2s, box-shadow .2s, opacity .2s;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+  white-space: nowrap;
+}
+.ph-btn:hover:not(:disabled) {
+  background: var(--ac2);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99,102,241,.3);
+}
+.ph-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+.ph-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--tx);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 9px 18px;
+  border-radius: 12px;
+  border: 1.5px solid var(--bd);
+  cursor: pointer;
+  transition: all .2s;
+  font-family: 'Inter', sans-serif;
+  line-height: 1;
+}
+.ph-btn-outline:hover { background: var(--sf2); border-color: var(--bd2); }
+
+.ph-btn-danger {
+  background: var(--red);
+  color: #fff;
+}
+.ph-btn-danger:hover:not(:disabled) {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(239,68,68,.3);
+}
+
+/* ─── Tags / Badges ─── */
+.ph-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--ac-light);
+  color: var(--ac);
+  transition: background .25s;
+}
+
+/* ─── Section label ─── */
+.ph-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sub);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* ─── Material Icons ─── */
+.ms {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 1;
+  font-family: 'Material Symbols Outlined';
+}
+
+/* ─── Toggle switch ─── */
+.ph-toggle {
+  position: relative;
+  width: 46px;
+  height: 26px;
+  background: var(--bd2);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background .2s;
+  flex-shrink: 0;
+  border: none;
+}
+.ph-toggle.on { background: var(--ac); }
+.ph-toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left .2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+}
+.ph-toggle.on::after { left: 23px; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sub); }
+
+/* ─── Selection ─── */
+::selection { background: var(--ac-light); color: var(--ac); }
+
+/* ─── Animations ─── */
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes spin   { to { transform: rotate(360deg); } }
+.anim-fadeup { animation: fadeUp .3s ease forwards; }
+.anim-spin   { animation: spin .7s linear infinite; }
+
+/* ═══ Smooth theme transitions ═══ */
+body, .ph-card, .ph-card-static, .ph-topbar, .ph-input,
+.ph-btn, .ph-btn-outline, .ph-tag, .chip, .lvl,
+header, aside, main, section, div, a, button, input, textarea, select,
+[class*="bg-"], [class*="text-"], [class*="border-"] {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: .22s;
+  transition-timing-function: ease;
+}
+/* Exception: don't transition transform-based animations */
+.ph-btn:hover, .ph-card:hover, .ph-topbar-theme:hover { transition-duration: .15s; }

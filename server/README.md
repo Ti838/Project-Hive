@@ -1,257 +1,85 @@
-# ProjectHive — Backend API
+# ProjectHive — Backend Server
 
-Node.js + Express + Socket.IO backend for the ProjectHive student collaboration platform.
+## Quick Start
 
-## ⚡ Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Runtime | Node.js 18+ |
-| Framework | Express.js 4 |
-| AI | Google Gemini 2.0 Flash (FREE) |
-| Database | Supabase (PostgreSQL) |
-| Real-time | Socket.IO 4 |
-| Auth | JWT + bcrypt |
-| Security | Helmet, CORS, express-rate-limit, Joi |
-
----
-
-## 🚀 Quick Start
-
-### 1. Install dependencies
 ```bash
-cd server
 npm install
+npm start        # Production
+npm run dev      # Development (nodemon)
 ```
 
-### 2. Create your `.env` file
-```bash
-cp .env.example .env
-```
+## Environment Variables
 
-### 3. Fill in `.env`
-```env
-NODE_ENV=development
-PORT=5000
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `GEMINI_API_KEY` | No | — | Google Gemini AI key (free at aistudio.google.com) |
+| `MONGODB_URI` | No | in-memory | MongoDB connection string |
+| `JWT_SECRET` | No | auto-generated | JWT signing secret |
+| `JWT_REFRESH_SECRET` | No | auto-generated | Refresh token secret |
+| `PORT` | No | `5000` | Server port |
+| `NODE_ENV` | No | `development` | Environment |
 
-# Supabase (https://supabase.com — free tier)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# Google Gemini AI (FREE — https://aistudio.google.com/apikey)
-GEMINI_API_KEY=your_gemini_key_here
-
-# JWT
-JWT_SECRET=your-secret-here
-JWT_EXPIRES_IN=24h
-
-# Frontend (for CORS)
-FRONTEND_URL=http://localhost:3000
-FRONTEND_URL_PROD=https://your-app.vercel.app
-```
-
-### 4. Start the server
-```bash
-npm run dev     # Development (auto-restarts on change)
-npm start       # Production
-```
-
-Server runs on **http://localhost:5000**
-
----
-
-## 📁 Project Structure
+## Architecture
 
 ```
 server/
-├── config/
-│   ├── db.js              # Database connection
-│   ├── gemini.js          # Google Gemini AI client
-│   └── redis.js           # Redis adapter (optional)
-├── controllers/           # Business logic
-│   ├── ai.controller.js   # AI idea generator (Gemini)
-│   ├── auth.controller.js
-│   ├── users.controller.js
-│   ├── teams.controller.js
-│   ├── projects.controller.js
-│   ├── messages.controller.js
-│   └── notifications.controller.js
-├── middleware/
-│   ├── auth.js            # JWT verification
-│   ├── socketAuth.js      # Socket.IO auth
-│   └── errorHandler.js    # Global error handler
-├── models/                # Data schemas
-│   ├── User.js
+├── server.js          # HTTP + Socket.IO bootstrap
+├── app.js             # Express app, middleware, route registration
+├── models/            # Mongoose schemas
+│   ├── User.js        # avatar, bannerImage, isBanned, completionPercentage
 │   ├── Team.js
 │   ├── Project.js
 │   ├── Message.js
-│   ├── JoinRequest.js
-│   └── Notification.js
-├── routes/                # API routes
-├── services/              # Socket.IO service
-├── utils/                 # JWT utilities
-├── app.js                 # Express app setup
-├── server.js              # Entry point
-└── .env.example           # Environment template
+│   ├── Notification.js
+│   ├── FriendRequest.js
+│   └── JoinRequest.js
+├── routes/            # Express routers (53 endpoints total)
+├── controllers/       # Business logic
+├── middleware/
+│   ├── auth.js        # authMiddleware, optionalAuthMiddleware
+│   └── errorHandler.js
+├── config/
+│   ├── db.js          # MongoDB + in-memory fallback
+│   └── gemini.js      # Gemini AI initialization
+└── services/
+    └── socket.service.js  # Real-time Socket.IO events
 ```
 
----
+## Key User Model Fields
 
-## 🔌 API Endpoints
-
-### Auth
-```
-POST /api/auth/register     Register new user
-POST /api/auth/login        Login
-POST /api/auth/refresh      Refresh token
-POST /api/auth/logout       Logout
-```
-
-### Users
-```
-GET  /api/users/me          Get current user
-GET  /api/users/:id         Get user profile
-PUT  /api/users/me          Update profile
-GET  /api/users/search      Search users
-```
-
-### Teams
-```
-POST /api/teams             Create team
-GET  /api/teams             List teams
-GET  /api/teams/:id         Get team
-POST /api/teams/:id/join    Request to join
-GET  /api/teams/my-teams    My teams
+```js
+{
+  firstName, lastName, email, passwordHash,
+  avatar,       // base64 data URL or external URL
+  bannerImage,  // base64 data URL or external URL  
+  avatarColor,  // CSS hex fallback color
+  bio, university, major, yearOfStudy,
+  skills: [{ name, level, endorsements }],
+  github, linkedin, portfolio,
+  status,       // 'available' | 'busy' | 'not-looking'
+  role,         // 'student' | 'admin' | 'user'
+  isBanned,     // boolean
+  isPublic,     // boolean
+  completionPercentage,  // 0-100, auto-calculated
+  friends: [ObjectId],
+  onlineStatus  // 'online' | 'offline'
+}
 ```
 
-### Projects
-```
-POST /api/projects          Submit project
-GET  /api/projects          List projects
-GET  /api/projects/:id      Get project
-POST /api/projects/:id/like Like project
-```
+## Socket.IO Events
 
-### AI (Gemini)
-```
-POST /api/ai/generate-ideas         Generate ideas (auth, 10/hr/user)
-POST /api/ai/generate-ideas-public  Generate ideas (public, 5/hr/IP)
-```
+| Event | Direction | Description |
+|-------|-----------|-------------|
+| `register` | Client→Server | Register user socket on login |
+| `join_room` | Client→Server | Join team chat room |
+| `send_message` | Client→Server | Send message to room |
+| `new_message` | Server→Client | Broadcast message to room |
+| `typing` | Client→Server | Typing indicator |
+| `user_typing` | Server→Client | Broadcast typing state |
+| `disconnect` | Auto | Set user offline |
 
-### Messages
-```
-GET  /api/messages/teams/:teamId    Get chat history
-POST /api/messages                  Save message
-```
+## Database Notes
 
-### Notifications
-```
-GET  /api/notifications             Get notifications
-PUT  /api/notifications/:id/read    Mark as read
-PUT  /api/notifications/read-all    Mark all read
-```
-
----
-
-## 🔴 Socket.IO Events
-
-### Client → Server
-```javascript
-socket.emit('join:room',    roomId);
-socket.emit('leave:room');
-socket.emit('message:send', { content, roomId });
-socket.emit('typing:start', { roomId });
-socket.emit('typing:stop',  { roomId });
-```
-
-### Server → Client
-```javascript
-socket.on('user:online',       ({ userId, timestamp }));
-socket.on('user:offline',      ({ userId, timestamp }));
-socket.on('message:received',  { id, content, sender, roomId, createdAt });
-socket.on('user:typing',       { userId });
-socket.on('user:stop-typing',  { userId });
-socket.on('notification:new',  notification);
-```
-
----
-
-## 🤖 AI — Google Gemini
-
-- **Model**: `gemini-2.0-flash`
-- **Free limit**: 1,500 requests/day, 15 req/min
-- **Get key**: [aistudio.google.com/apikey](https://aistudio.google.com/apikey) (any Gmail, no credit card)
-- **Rate limit**: 10 req/hr per authenticated user, 5 req/hr per IP (public)
-
----
-
-## 🔐 Security
-
-| Feature | Implementation |
-|---|---|
-| Auth | JWT (HS256) with bcrypt |
-| Headers | Helmet.js |
-| CORS | Whitelisted origins only |
-| Rate Limiting | express-rate-limit |
-| Validation | Joi schemas |
-| Password | bcrypt |
-
----
-
-## 🧪 Test the API
-
-```bash
-# Register
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"firstName":"John","lastName":"Doe","email":"john@uni.edu","password":"Pass123!"}'
-
-# Login
-curl -X POST http://localhost:5000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"john@uni.edu","password":"Pass123!"}'
-
-# Test AI (public, no auth needed)
-curl -X POST http://localhost:5000/api/ai/generate-ideas-public \
-  -H "Content-Type: application/json" \
-  -d '{"domain":"Healthcare AI","skills":"Python, React","teamSize":3,"timelineWeeks":8}'
-```
-
----
-
-## 🌐 Deployment (Render.com)
-
-1. Connect GitHub repo
-2. New Web Service → `server/` directory
-3. Build: `npm install` | Start: `npm start`
-4. Add environment variables from `.env.example`
-
-### Production env vars needed:
-```
-NODE_ENV=production
-PORT=5000
-SUPABASE_URL=
-SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-GEMINI_API_KEY=
-JWT_SECRET=
-FRONTEND_URL_PROD=
-```
-
----
-
-## 🐛 Troubleshooting
-
-**AI not working?**
-- Check `GEMINI_API_KEY` is set in `.env`
-- Get free key at [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
-- Check server console for `[ProjectHive] ✅ Google Gemini AI initialized`
-
-**Socket.IO not connecting?**
-- Check CORS origins in `server.js`
-- Verify JWT token in handshake
-
-**Auth errors?**
-- Check `JWT_SECRET` is set
-- Verify token not expired
+- **Development**: Uses `mongodb-memory-server` — no MongoDB installation needed
+- **Production**: Set `MONGODB_URI` to your MongoDB Atlas or self-hosted connection string
+- Data is **not persisted** between restarts in dev mode (in-memory)

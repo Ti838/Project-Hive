@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create New Hive | ProjectHive</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#1b1a29",
+                    "on-secondary": "#ffffff",
+                    "on-error": "#ffffff",
+                    "on-tertiary": "#ffffff",
+                    "surface-tint": "#544fc0",
+                    "on-secondary-container": "#fffbff",
+                    "on-error-container": "#93000a",
+                    "surface": "#f7f9fb",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "surface-variant": "#e0e3e5",
+                    "on-tertiary-fixed-variant": "#464555",
+                    "tertiary-fixed-dim": "#c7c4d8",
+                    "secondary": "#712ae2",
+                    "on-tertiary-container": "#b0adc1",
+                    "on-background": "#191c1e",
+                    "surface-container": "#eceef0",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#5a00c6",
+                    "on-surface-variant": "#464553",
+                    "secondary-container": "#8a4cfc",
+                    "secondary-fixed-dim": "#d2bbff",
+                    "primary-fixed": "#e2dfff",
+                    "on-primary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "outline-variant": "#c8c4d5",
+                    "tertiary": "#2c2b3a",
+                    "surface-bright": "#f7f9fb",
+                    "background": "#f7f9fb",
+                    "on-surface": "#191c1e",
+                    "on-primary-fixed": "#0f0069",
+                    "primary": "#1f108e",
+                    "inverse-primary": "#c3c0ff",
+                    "outline": "#777584",
+                    "on-secondary-fixed": "#25005a",
+                    "tertiary-container": "#424151",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#3b35a7",
+                    "secondary-fixed": "#eaddff",
+                    "inverse-surface": "#2d3133",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-container-high": "#e6e8ea",
+                    "on-primary-container": "#a9a7ff",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary-fixed": "#e4e0f5",
+                    "surface-dim": "#d8dadc",
+                    "primary-container": "#3730a3"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "280px",
+                    "container-max": "1440px",
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "40px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .accent-gradient {
+            background: linear-gradient(135deg, #712ae2 0%, #1f108e 100%);
+        }
+        .soft-shadow {
+            box-shadow: 0px 4px 20px rgba(55, 48, 163, 0.04);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #712ae2 !important;
+            box-shadow: 0 0 0 2px rgba(113, 42, 226, 0.1);
+        }
+    </style>
+<link rel="stylesheet" href="../../assets/css/ph-system.css">
+<script src="../../assets/js/core/ph-sidebar.js"></script>
+<style id="ph-dark-override">
+/* ProjectHive — Dark mode override for Tailwind custom colors */
+:root{--tw-bg:#F8FAFC;--tw-surf:#FFFFFF;--tw-surf2:#F1F5F9;--tw-surf3:#E8EDF5;--tw-bd:#E2E8F0;--tw-tx:#0F172A;--tw-sub:#64748B;}
+html.dark{--tw-bg:#0B0C14;--tw-surf:#12131D;--tw-surf2:#181926;--tw-surf3:#1E2030;--tw-bd:#242538;--tw-tx:#E2DEEE;--tw-sub:#8A86A2;}
+body{background-color:var(--tw-bg)!important;color:var(--tw-tx)!important;}
+html.dark .bg-background{background-color:var(--tw-bg)!important;}
+html.dark .bg-surface,.dark .bg-surface{background-color:var(--tw-surf)!important;}
+html.dark .bg-surface-container-lowest{background-color:var(--tw-surf)!important;}
+html.dark .bg-surface-container-low{background-color:var(--tw-surf2)!important;}
+html.dark .bg-surface-container{background-color:var(--tw-surf3)!important;}
+html.dark .bg-surface-container-high{background-color:var(--tw-surf3)!important;}
+html.dark .bg-surface-variant{background-color:var(--tw-surf2)!important;}
+html.dark .border-surface-variant{border-color:var(--tw-bd)!important;}
+html.dark .border-outline-variant{border-color:var(--tw-bd)!important;}
+html.dark .divide-surface-variant>*+*{border-color:var(--tw-bd)!important;}
+html.dark .text-on-surface{color:var(--tw-tx)!important;}
+html.dark .text-on-surface-variant{color:var(--tw-sub)!important;}
+html.dark .text-on-background{color:var(--tw-tx)!important;}
+html.dark .text-outline{color:var(--tw-sub)!important;}
+html.dark header{background-color:rgba(11,12,20,.9)!important;border-bottom-color:var(--tw-bd)!important;}
+html.dark input,html.dark textarea,html.dark select{background-color:var(--tw-surf2)!important;color:var(--tw-tx)!important;border-color:var(--tw-bd)!important;}
+body,header,aside,main,section,div{transition:background-color .25s,border-color .25s,color .25s;}
+</style></head>
+<body class="bg-surface text-on-surface" data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+
+<!-- Persistent Sidebar Navigation -->
+
+
+<!-- Main Content Canvas -->
+<main class="ml-[260px] p-margin-desktop min-h-screen">
+<header class="mb-stack-lg flex justify-between items-center">
+<script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Assemble Your Hive</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Create a new collaborative research team and start your next breakthrough.</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-10 w-10 rounded-full bg-secondary-fixed overflow-hidden border-2 border-surface-container">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYm7DCJ_mXYqWdMJsZx9TkvaHstMescaYORNrfXcn8TMpaYWf9qMy-Y7NF4rwyZU5vyMHAfxgbQau6DrKUocTACd5NCi2hfJtVqRcdPJTWbzTLA3PzfqzmyrFEfv_fNJKZNBJ3kxRYuNSN7ee3hiji4fHlp4hdmqUYEgo-ZaCTyzEomsw92yLCswc7XecedBFMUkfND2BBySmQnNTObOu_puKUJvdLK8cY6jw9NryVT5MA4zzGVmEGxLI7mAkmOGMgqVfCT1OElIk"/>
+</div>
+</div>
+</header>
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Creation Form -->
+<section class="col-span-8">
+<div class="bg-white rounded-xl soft-shadow p-8 border border-surface-container-high">
+<form class="space-y-6" id="hive-form">
+<div class="grid grid-cols-2 gap-6">
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Team Name</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" id="hive-name-input" placeholder="e.g. Quantum Computing Research Lab" type="text" value="Project: Neural Synthesis"/>
+</div>
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Description</label>
+<textarea class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md resize-none" id="hive-desc-input" placeholder="Briefly describe the research objectives and team culture..." rows="4">Investigating the intersection of artificial neural networks and biological synaptic plasticity to develop more efficient learning algorithms.</textarea>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Category</label>
+<select class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" id="hive-category-input">
+<option value="Computer Science">Computer Science</option>
+<option value="Biotechnology">Biotechnology</option>
+<option value="Theoretical Physics">Theoretical Physics</option>
+<option value="Social Sciences">Social Sciences</option>
+<option value="Engineering">Engineering</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Max Members</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" max="20" min="2" type="number" value="6"/>
+</div>
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Required Skills (Tags)</label>
+<div class="flex flex-wrap gap-2 p-3 border border-outline-variant bg-surface-container-lowest rounded-lg">
+<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">
+                                        Python <button class="material-symbols-outlined text-[14px]" type="button">close</button>
+</div>
+<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">
+                                        TensorFlow <button class="material-symbols-outlined text-[14px]" type="button">close</button>
+</div>
+<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">
+                                        Data Analysis <button class="material-symbols-outlined text-[14px]" type="button">close</button>
+</div>
+<input class="border-none bg-transparent p-0 focus:ring-0 font-body-sm text-body-sm flex-1 min-w-[100px]" placeholder="Add skill..." type="text"/>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Visibility</label>
+<div class="flex items-center gap-4 py-2">
+<span class="font-body-md text-body-md">Open to Applications</span>
+<button class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
+<div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
+</button>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">External Project Link (Optional)</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" placeholder="https://github.com/..." type="url"/>
+</div>
+</div>
+<div class="pt-6 border-t border-surface-container">
+<button class="accent-gradient text-white w-full py-4 rounded-xl font-headline-md text-headline-md flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg" type="button">
+<span class="material-symbols-outlined">hub</span>
+                                Create Hive
+                            </button>
+</div>
+</form>
+</div>
+</section>
+<!-- Live Preview -->
+<aside class="col-span-4 sticky top-margin-desktop">
+<div class="flex flex-col gap-6">
+<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest px-1">Live Preview</h3>
+<!-- Card Preview -->
+<div class="bg-white rounded-xl soft-shadow overflow-hidden border border-surface-container-high transition-transform duration-300">
+<div class="h-32 bg-secondary-container relative overflow-hidden">
+<div class="absolute inset-0 opacity-20">
+
+</div>
+<div class="absolute bottom-4 left-4">
+<span class="px-3 py-1 bg-white/90 backdrop-blur text-primary text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm" id="preview-category">Computer Science</span>
+</div>
+</div>
+<div class="p-6">
+<h4 class="font-headline-md text-headline-md text-primary mb-2 line-clamp-1" id="preview-name">Project: Neural Synthesis</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4 line-clamp-2" id="preview-desc">Investigating the intersection of artificial neural networks and biological synaptic plasticity...</p>
+<div class="mb-4">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-2 tracking-tighter">Looking For</p>
+<div class="flex flex-wrap gap-2" id="preview-tags">
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">Python</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">TensorFlow</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">+2 more</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-surface-container">
+<div class="flex -space-x-2">
+<div class="h-8 w-8 rounded-full border-2 border-white bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold">JD</div>
+<div class="h-8 w-8 rounded-full border-2 border-white bg-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</div>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[18px]">group</span>
+<span>1/6</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Help Tooltip -->
+<div class="bg-tertiary-container text-on-tertiary-container p-5 rounded-xl flex gap-4">
+<span class="material-symbols-outlined text-primary-fixed-dim">info</span>
+<div>
+<p class="font-label-md text-label-md text-white mb-1">Pro Tip</p>
+<p class="text-body-sm text-body-sm opacity-90">Detailed descriptions attract 40% more qualified researchers. Highlight your tech stack clearly.</p>
+</div>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<script>
+        // Simple live-update logic
+        const nameInput = document.getElementById('hive-name-input');
+        const descInput = document.getElementById('hive-desc-input');
+        const categoryInput = document.getElementById('hive-category-input');
+        
+        const previewName = document.getElementById('preview-name');
+        const previewDesc = document.getElementById('preview-desc');
+        const previewCategory = document.getElementById('preview-category');
+
+        nameInput.addEventListener('input', (e) => {
+            previewName.textContent = e.target.value || 'New Project Title';
+        });
+
+        descInput.addEventListener('input', (e) => {
+            previewDesc.textContent = e.target.value || 'Brief project description...';
+        });
+
+        categoryInput.addEventListener('change', (e) => {
+            previewCategory.textContent = e.target.value;
+        });
+
+        // Toggle interaction
+        const toggleBtn = document.querySelector('button[type="button"].relative');
+        let isOpen = true;
+        toggleBtn.addEventListener('click', () => {
+            isOpen = !isOpen;
+            const indicator = toggleBtn.querySelector('div');
+            if (isOpen) {
+                toggleBtn.classList.replace('bg-surface-variant', 'bg-secondary');
+                indicator.classList.replace('left-1', 'right-1');
+            } else {
+                toggleBtn.classList.replace('bg-secondary', 'bg-surface-variant');
+                indicator.classList.replace('right-1', 'left-1');
+            }
+        });
+    </script>
+<link rel="stylesheet" href="../../assets/css/app.css">
+<script src="../../assets/js/core/api.js"></script>
+<script src="../../assets/js/core/auth.js"></script>
+
+<script>Auth.requireAuth(); "PHSidebar.init('teams', '../../')" ;</script>
+<script>
+// Theme toggle
+document.addEventListener('DOMContentLoaded',function(){
+  var toggles=document.querySelectorAll('[onclick*="theme"],[onclick*="Theme"],[data-theme],[class*="theme-toggle"],[id*="theme"]');
+  toggles.forEach(function(el){
+    el.addEventListener('click',function(){
+      var dark=document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme',dark?'dark':'light');
+    });
+  });
+});
+</script><script> "PHSidebar.init('teams', '../../')" ;</script>
+
+<script>
+(function(){
+  const tk = localStorage.getItem('access_token');
+  if (!tk) { window.location.href = '../../pages/auth/login.html'; return; }
+  try {
+    const p = JSON.parse(atob(tk.split('.')[1]));
+    if (p.exp && Date.now() >= p.exp * 1000) {
+      localStorage.removeItem('access_token');
+      window.location.href = '../../pages/auth/login.html'; return;
+    }
+
+  } catch(e) { window.location.href = '../../pages/auth/login.html'; return; }
+})();
+</script>
+</body></html>

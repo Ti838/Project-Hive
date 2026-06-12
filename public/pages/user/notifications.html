@@ -1,0 +1,189 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notifications — ProjectHive</title>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/ph-design.css">
+<link rel="stylesheet" href="../../assets/css/ph-system.css">
+<script src="../../assets/js/core/ph-toast.js"></script>
+<script src="../../assets/js/core/ph-sidebar.js"></script>
+<style>
+body{background:var(--bg);color:var(--tx);margin:0}
+.hero{background:linear-gradient(135deg,#6366f1 0%,#7c3aed 60%,#a855f7 100%);padding:36px 32px 78px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.05);top:-80px;right:-60px}
+.nt-wrap{max-width:720px;margin:-48px auto 0;padding:0 24px 60px;position:relative;z-index:1}
+.top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;background:var(--sf);border:1.5px solid var(--bd);border-radius:12px;padding:4px}
+.tab{padding:7px 16px;border-radius:9px;border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.tab.on{background:var(--ac);color:#fff}
+.mark-btn{display:flex;align-items:center;gap:5px;padding:8px 14px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sf);color:var(--sub);font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.mark-btn:hover{border-color:var(--ac);color:var(--ac)}
+.n-list{display:flex;flex-direction:column;gap:10px}
+.n-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:16px;padding:16px;display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.n-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.09);border-color:var(--bd2)}
+.n-card.unread{border-left-width:3px}
+.n-card.unread::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.03),transparent);pointer-events:none}
+.n-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:20px;flex-shrink:0}
+.n-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.n-time{font-size:11px;color:var(--sub)}
+.n-msg{font-size:13px;line-height:1.55;color:var(--tx)}
+.n-msg.fw{font-weight:700}
+.empty{text-align:center;padding:64px 20px}
+.empty-ic{font-family:'Material Symbols Outlined';font-size:64px;color:var(--bd2);display:block;margin-bottom:12px}
+.sum-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:16px;padding:18px 20px;display:flex;gap:20px;margin-bottom:18px;flex-wrap:wrap}
+.sum-item{display:flex;align-items:center;gap:10px;flex:1;min-width:100px}
+.sum-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:18px;flex-shrink:0}
+.skel{background:linear-gradient(90deg,var(--sf2) 25%,var(--sf) 50%,var(--sf2) 75%);background-size:200%;animation:sh 1.4s infinite;border-radius:8px}
+@keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
+</head>
+<body data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+<div class="ph-page">
+
+<div class="ph-topbar">
+  <span style="font-family:'Material Symbols Outlined';color:var(--ac)">notifications</span>
+  <h1 style="font-size:17px;font-weight:800;margin:0;flex:1;color:var(--tx)">Notifications</h1>
+  <div id="unread-pill" style="display:none;background:var(--ac);color:#fff;border-radius:999px;padding:4px 11px;font-size:12px;font-weight:700">
+    <span id="unread-cnt">0</span> unread
+  </div>
+</div>
+
+<div class="hero">
+  <div style="position:relative;z-index:1">
+    <div style="font-size:26px;font-weight:900;color:#fff">Your Activity</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.78);margin-top:6px">Stay updated on teams, projects and connections</div>
+  </div>
+</div>
+
+<div class="nt-wrap">
+  <!-- Summary -->
+  <div class="sum-card">
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(99,102,241,.12);color:#6366f1">notifications</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-total">—</div><div style="font-size:11px;color:var(--sub)">Total</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(236,72,153,.12);color:#ec4899">mark_email_unread</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-unread">—</div><div style="font-size:11px;color:var(--sub)">Unread</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(16,185,129,.12);color:#10b981">group</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-team">—</div><div style="font-size:11px;color:var(--sub)">Team</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(245,158,11,.12);color:#f59e0b">person_add</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-friend">—</div><div style="font-size:11px;color:var(--sub)">Friends</div></div></div>
+  </div>
+
+  <div class="top-row">
+    <div class="tabs">
+      <button id="tab-all" class="tab on" onclick="setTab('all',this)">All</button>
+      <button id="tab-unread" class="tab" onclick="setTab('unread',this)">Unread</button>
+      <button id="tab-team" class="tab" onclick="setTab('team',this)">Teams</button>
+      <button id="tab-friend" class="tab" onclick="setTab('friend',this)">Friends</button>
+      <button id="tab-project" class="tab" onclick="setTab('project',this)">Projects</button>
+    </div>
+    <button class="mark-btn" onclick="markAll()">
+      <span style="font-family:'Material Symbols Outlined';font-size:16px">done_all</span>Mark all read
+    </button>
+  </div>
+
+  <div id="n-list" class="n-list">
+    <div class="n-card skel" style="height:76px"></div>
+    <div class="n-card skel" style="height:76px"></div>
+    <div class="n-card skel" style="height:76px"></div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  const TK=localStorage.getItem('access_token');
+  if(!TK){location.href='../auth/login.html';return;}
+  PHSidebar.init('notifications','../../');
+  const H={Authorization:'Bearer '+TK};
+
+  const ICONS={team:'group',project:'folder_special',message:'chat',friend:'person_add',system:'info',default:'circle_notifications'};
+  const COLORS={team:'#3b82f6',project:'#8b5cf6',message:'#10b981',friend:'#f59e0b',system:'#6366f1',default:'#6366f1'};
+
+  function ago(d){if(!d)return '';const s=Math.floor((Date.now()-new Date(d))/1000);if(s<60)return 'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return Math.floor(s/86400)+'d ago';}
+
+  let all=[], currentTab='all';
+
+  function stats(){
+    const uc=all.filter(n=>!n.read).length;
+    document.getElementById('s-total').textContent=all.length;
+    document.getElementById('s-unread').textContent=uc;
+    document.getElementById('s-team').textContent=all.filter(n=>n.type==='team').length;
+    document.getElementById('s-friend').textContent=all.filter(n=>n.type==='friend').length;
+    if(uc>0){document.getElementById('unread-pill').style.display='block';document.getElementById('unread-cnt').textContent=uc;}
+    else document.getElementById('unread-pill').style.display='none';
+    const ub=document.getElementById('tab-unread');
+    ub.textContent=uc?`Unread (${uc})`:'Unread';
+  }
+
+  function render(list){
+    const el=document.getElementById('n-list');
+    if(!list.length){el.innerHTML=`<div class="empty"><span class="empty-ic">notifications_none</span><div style="font-size:17px;font-weight:800;color:var(--tx);margin-bottom:6px">${currentTab==='unread'?'All caught up! 🎉':'Nothing here yet'}</div><div style="font-size:13px;color:var(--sub)">${currentTab==='unread'?'No unread notifications':'Notifications will appear here'}</div></div>`;return;}
+    el.innerHTML=list.map(n=>{
+      const t=n.type||'default';
+      const ic=ICONS[t]||ICONS.default;
+      const co=COLORS[t]||COLORS.default;
+      const ur=!n.read;
+      return `<div class="n-card${ur?' unread':''}" id="nc-${n._id}" onclick="readN('${n._id}',this)" style="${ur?'border-left-color:'+co:''}" title="${ur?'Click to mark as read':''}">
+        <div class="n-ic" style="background:${co}18;color:${co}">${ic}</div>
+        <div style="flex:1;min-width:0">
+          <div class="n-msg${ur?' fw':''}">${n.message||n.title||'New notification'}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <span class="n-time">${ago(n.createdAt)}</span>
+            ${n.type?`<span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:${co}18;color:${co}">${n.type}</span>`:''}
+          </div>
+        </div>
+        ${ur?`<div class="n-dot" style="background:${co}"></div>`:'<span style="font-family:\'Material Symbols Outlined\';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0">check_circle</span>'}
+      </div>`;
+    }).join('');
+  }
+
+  window.setTab=function(t,btn){
+    currentTab=t;
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    render(t==='all'?all:t==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===t));
+  };
+
+  window.readN=async function(id,el){
+    const n=all.find(x=>x._id===id);
+    if(!n||n.read)return;
+    try{await fetch(`/api/notifications/${id}/read`,{method:'PUT',headers:H});}catch(e){}
+    n.read=true;
+    el.classList.remove('unread');
+    el.querySelector('.n-msg')?.classList.remove('fw');
+    el.querySelector('.n-dot')?.remove();
+    const ic=document.createElement('span');
+    ic.style.cssText="font-family:'Material Symbols Outlined';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0";
+    ic.textContent='check_circle';
+    el.appendChild(ic);
+    stats();
+    if(currentTab==='unread')render(all.filter(n=>!n.read));
+  };
+
+  window.markAll=async function(){
+    try{await fetch('/api/notifications/read-all',{method:'PUT',headers:H});}catch(e){}
+    all.forEach(n=>n.read=true);
+    stats();
+    render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
+    PHToast?.success('All marked as read ✅');
+  };
+
+  // Generate demo notifications if API returns nothing
+  function demoNotifs(){
+    return [
+      {_id:'d1',type:'team',message:'🎯 You were invited to join "WebCraft Team"',read:false,createdAt:new Date(Date.now()-300000)},
+      {_id:'d2',type:'friend',message:'👋 Ahmed Hassan sent you a friend request',read:false,createdAt:new Date(Date.now()-1800000)},
+      {_id:'d3',type:'project',message:'🚀 Your project "EcoRoute" received 5 new views',read:false,createdAt:new Date(Date.now()-3600000)},
+      {_id:'d4',type:'message',message:'💬 Sarah sent you a new message',read:true,createdAt:new Date(Date.now()-7200000)},
+      {_id:'d5',type:'team',message:'✅ Your team application was approved!',read:true,createdAt:new Date(Date.now()-86400000)},
+      {_id:'d6',type:'system',message:'🌟 Welcome to ProjectHive! Complete your profile to get started',read:true,createdAt:new Date(Date.now()-172800000)},
+    ];
+  }
+
+  fetch('/api/notifications?limit=60',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
+    if(d){all=d.notifications||d||[];}
+    if(!all.length)all=demoNotifs();
+    stats();render(all);
+  }).catch(()=>{all=demoNotifs();stats();render(all);});
+})();
+</script>
+</body></html>

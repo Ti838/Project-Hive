@@ -7,6 +7,7 @@ import { connectDB } from './config/db.js';
 import { initializeGemini } from './config/gemini.js';
 import { socketAuthMiddleware } from './middleware/socketAuth.js';
 import {
+  setIo,
   registerUserSocket,
   unregisterUserSocket,
   handleJoinRoom,
@@ -54,8 +55,10 @@ async function startServer() {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5000',
+      'http://localhost:5500',
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5000',
+      'http://127.0.0.1:5500',
       process.env.FRONTEND_URL,
       process.env.FRONTEND_URL_PROD,
     ].filter(Boolean);
@@ -69,6 +72,9 @@ async function startServer() {
       pingTimeout: 60000,
       pingInterval: 25000,
     });
+
+    // Store io reference in socket service (for global online status broadcasts)
+    setIo(io);
 
     // Apply Socket.IO middleware
     io.use(socketAuthMiddleware);

@@ -1,8 +1,8 @@
-// ── AI Controller — Google Gemini (gemini-2.0-flash, FREE) ─────────────────
+// ── AI Controller — Google Gemini (gemini-1.5-flash, FREE) ─────────────────
 // Uses Google's REST API directly — no extra SDK needed, just fetch()
 import { getGeminiKey, isGeminiReady } from '../config/gemini.js';
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-1.5-flash';
 const GEMINI_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 // Rate limiter
@@ -191,6 +191,65 @@ export async function generateProjectIdeasPublic(req, res, next) {
     console.error('[ProjectHive] Public AI error:', error.message);
     if (error.status === 429 || error.message === 'RATE_LIMIT') {
       return res.status(429).json({ error: 'AI rate limit. Please try again in a moment.' });
+    }
+    next(error);
+  }
+}
+
+// ── Chat endpoint (free-form Q&A) ───────────────────────────────────────────
+export async function chatWithAI(req, res, next) {
+  try {
+    if (!isGeminiReady()) {
+      return res.status(503).json({
+        error: 'AI service not configured.',
+        setup: 'Add GEMINI_API_KEY to server/.env',
+      });
+    }
+
+    const userId = req.user?.id || req.user?.userId || 'anon';
+    if (!checkLimit(`chat-${userId}`, 20)) {
+      return res.status(429).json({ error: 'Rate limit: 20 AI chats per hour.' });
+    }
+
+    const { message } = req.body;
+    if (!message?.trim()) return res.status(400).json({ error: 'Message is required.' });
+
+    const apiKey = getGeminiKey();
+    const prompt = `You are ProjectHive AI — a helpful assistant for university students working on software projects.
+Answer questions about project ideas, tech stacks, team building, and academic project planning.
+Be concise (max 4-5 lines), friendly, and practical. Use emojis sparingly.
+User message: ${message}`;
+
+    const url = `${GEMINI_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
+      }),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      const msg = err?.error?.message || `Gemini error ${response.status}`;
+      if (response.status === 429 || msg.includes('quota') || msg.includes('RATE')) {
+        const e = new Error('RATE_LIMIT'); e.status = 429; throw e;
+      }
+      throw new Error(msg);
+    }
+
+    const data = await response.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Sorry, I could not generate a response.';
+
+    return res.json({ ok: true, reply });
+  } catch (error) {
+    console.error('[ProjectHive] Chat AI error:', error.message);
+    if (error.status === 429 || error.message === 'RATE_LIMIT') {
+      return res.status(429).json({
+        error: 'AI rate limit reached. Please wait a moment.',
+        fallback: true
+      });
     }
     next(error);
   }

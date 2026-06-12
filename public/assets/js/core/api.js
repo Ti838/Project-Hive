@@ -1,8 +1,7 @@
 // ProjectHive API Module
 const API = (() => {
-    // Detect environment and configure base API URL
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const BASE_URL = isLocalhost ? 'http://localhost:5000/api' : '/api';
+    // Use relative /api so we work on any host/port without hardcoding
+    const BASE_URL = '/api';
 
     let access = localStorage.getItem('access_token');
     let refresh = localStorage.getItem('refresh_token');
@@ -135,7 +134,9 @@ const API = (() => {
                 }),
             logout: () => {
                 clearTokens();
-                window.location.href = '/pages/auth/login.html';
+                const d = (window.location.pathname.match(/\//g)||[]).length - 1;
+                const base = d <= 1 ? './' : d === 2 ? '../' : '../../';
+                window.location.href = base + 'pages/auth/login.html';
             },
         },
 
@@ -148,8 +149,17 @@ const API = (() => {
                     method: 'PUT',
                     body: JSON.stringify(data),
                 }),
-            getCurrentUser: () =>
-                request('/users/me'),
+            getCurrentUser: async () => {
+                // DEV MODE: if mock dev token, return mock user directly
+                const token = localStorage.getItem('access_token');
+                if (token && token.endsWith('.dev')) {
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        return { ...payload, ok: true, _devMode: true };
+                    } catch(e) {}
+                }
+                return request('/users/me');
+            },
             searchUsers: (query) =>
                 request(`/users/search?q=${encodeURIComponent(query)}`),
         },

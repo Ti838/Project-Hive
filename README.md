@@ -1,323 +1,277 @@
-<p align="center">
-  <img src="public/assets/svg/logo.svg" alt="ProjectHive Bee Logo" width="90" height="90" />
-</p>
+# 🐝 ProjectHive
 
-<h1 align="center">🐝 ProjectHive</h1>
-<p align="center"><strong>The Home of Student Innovation</strong></p>
+> A premium full-stack social platform for university students to discover teammates, showcase projects, and collaborate.
 
-<p align="center">
-  <a href="https://github.com/Ti838/Project-Hive"><img src="https://img.shields.io/badge/GitHub-Ti838%2FProject--Hive-181717?logo=github" alt="GitHub"></a>
-  <a href="https://supabase.com"><img src="https://img.shields.io/badge/Database-Supabase-3ECF8E?logo=supabase" alt="Supabase"></a>
-  <a href="https://vercel.com"><img src="https://img.shields.io/badge/Deployed%20on-Vercel-000000?logo=vercel" alt="Vercel"></a>
-  <a href="https://socket.io"><img src="https://img.shields.io/badge/Realtime-Socket.IO-010101?logo=socket.io" alt="Socket.IO"></a>
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License">
-</p>
+![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20Express%20%7C%20MongoDB-green)
+![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.0%20Flash-blue)
+![Realtime](https://img.shields.io/badge/Realtime-Socket.IO-orange)
 
 ---
 
-ProjectHive is an AI-powered university collaboration platform. Students can form high-performance teams, generate innovative project ideas using NVIDIA NIM AI, and showcase their completed work — all in one place.
+## ✨ Features
+
+| Module | Description |
+|--------|-------------|
+| 🔐 **Authentication** | JWT access + refresh tokens, bcrypt password hashing |
+| 👤 **Profile** | Photo upload (base64), banner upload, skills, social links, completion % |
+| ⚙️ **Settings** | Account, password change, notifications, theme, accent color, privacy |
+| 👥 **Find People** | Discover students, send/accept friend requests, filter by skill/availability |
+| 🔔 **Notifications** | Real-time updates for team invites, messages, friend requests |
+| 🏷️ **Teams** | Create/join teams, join request workflow, team chat |
+| 💬 **Messages** | Real-time Socket.IO messaging (DMs + team channels) |
+| 🚀 **Showcase** | Submit and browse student projects |
+| 🤖 **AI Generator** | Google Gemini 2.0 Flash — generate project ideas by skill/category |
+| 🛡️ **Admin Panel** | User management, ban/unban, role change, team deletion |
 
 ---
 
-## 📋 Phase 1 Features
-
-### 🔐 Authentication & Onboarding
-- ✅ JWT-based registration and login with university email validation
-- ✅ Secure password hashing with bcrypt
-- ✅ Token refresh mechanism for persistent sessions
-- ✅ Profile setup wizard on first login
-
-### 👤 User Profiles
-- ✅ Comprehensive profile — skills, bio, university, availability
-- ✅ Avatar upload with preview
-- ✅ Profile completion tracking
-- ✅ Skill management (add/remove skills)
-
-### 🤝 Team Building
-- ✅ Browse and search for teams
-- ✅ Create new teams with skill requirements
-- ✅ Join request workflow
-- ✅ Team member management
-- ✅ Real-time team status via Socket.IO
-
-### 💬 Real-Time Communication
-- ✅ Socket.IO team chat with message persistence
-- ✅ Typing indicators and online presence
-- ✅ Message history retrieval
-- ✅ Real-time notifications
-
-### 🤖 AI Features (NVIDIA NIM)
-- ✅ Generate 5 unique project ideas from domain, skills & timeline
-- ✅ Innovation scoring for each idea
-- ✅ Save ideas to your profile
-
-### 🚀 Project Showcase
-- ✅ Browse published student projects
-- ✅ Filter by category, university, and tech stack
-- ✅ Like and comment on projects
-- ✅ Project submission interface
-
----
-
-## 🏗️ Architecture
-
-```
-ProjectHive
-├── Frontend        HTML5 + Tailwind CSS CDN + Vanilla JS  →  Vercel
-├── Backend         Node.js + Express.js + Socket.IO       →  Render (or local)
-└── Database        Supabase (PostgreSQL)                  →  Supabase Cloud
-```
-
-### Frontend (Vercel)
-- Pure HTML5 + Tailwind CSS (CDN) + Vanilla JavaScript
-- Multi-page application (MPA) with observable state pattern
-- JWT token management with auto-refresh
-- Socket.IO client integration
-- Glassmorphic dark/light theme, fully responsive
-
-### Backend (`/server`)
-- **Runtime**: Node.js + Express.js
-- **Real-time**: Socket.IO
-- **Auth**: JWT with bcrypt
-- **Security**: Helmet.js, CORS whitelist, `express-rate-limit`, Joi validation
-
-### Database (Supabase)
-- **Provider**: [Supabase](https://supabase.com) — managed PostgreSQL
-- **Tables**: `users`, `teams`, `messages`, `projects`, `notifications`, `join_requests`
-- **Auth**: Supabase Auth (optional — can be used alongside JWT)
-- **Storage**: Supabase Storage for avatars and project assets
-
-### AI Integration (NVIDIA NIM)
-- **Model**: `meta/llama-3.1-405b-instruct`
-- **Endpoint**: `https://integrate.api.nvidia.com/v1/chat/completions`
-- **Server-side only** — API key never exposed to frontend
-- **Rate Limit**: 10 requests per user per hour
-
----
-
-## 📁 Project Structure
+## 🗂️ Project Structure
 
 ```
 Project-Hive/
-├── public/                         # Frontend (deployed to Vercel)
+├── public/                         # Frontend (served as static files)
 │   ├── index.html                  # Landing page
-│   ├── pages/
-│   │   ├── auth/
-│   │   │   ├── login.html
-│   │   │   └── register.html
-│   │   ├── profile/edit.html
-│   │   ├── teams/
-│   │   │   ├── index.html          # Team finder
-│   │   │   └── create.html
-│   │   ├── projects/
-│   │   │   ├── showcase.html
-│   │   │   └── generator.html      # AI idea generator
-│   │   ├── dashboard.html
-│   │   ├── messages.html
-│   │   ├── notifications.html
-│   │   └── settings.html
-│   └── assets/
-│       ├── css/custom.css
-│       ├── svg/logo.svg            # 🐝 Bee logo
-│       └── js/core/
-│           ├── api.js
-│           ├── auth.js
-│           ├── store.js
-│           └── socket.js
+│   ├── assets/
+│   │   ├── css/
+│   │   │   ├── ph-design.css       # CSS variable design tokens (light/dark)
+│   │   │   └── ph-system.css       # Sidebar, topbar, layout system
+│   │   ├── js/core/
+│   │   │   ├── ph-sidebar.js       # Centralized navigation sidebar
+│   │   │   └── ph-toast.js         # Toast notification system
+│   │   └── svg/logo.png            # Brand logo
+│   └── pages/
+│       ├── auth/
+│       │   ├── login.html
+│       │   ├── register.html
+│       │   └── forgot-password.html
+│       ├── user/
+│       │   ├── dashboard.html      # Main user dashboard
+│       │   ├── profile/edit.html   # Profile editor (photo, banner, skills)
+│       │   ├── settings.html       # Account/security/appearance settings
+│       │   ├── people.html         # Find People + friend requests
+│       │   ├── notifications.html  # Notification center
+│       │   ├── messages.html       # Real-time messaging
+│       │   ├── teams.html          # Browse & join teams
+│       │   ├── teams-create.html   # Create a new team
+│       │   └── projects/
+│       │       ├── showcase.html   # Project showcase gallery
+│       │       └── generator.html  # AI project idea generator
+│       └── admin/
+│           └── dashboard.html      # Admin control panel
 │
-├── server/                         # Backend API
-│   ├── server.js
-│   ├── app.js
-│   ├── config/
-│   │   ├── db.js                   # Supabase connection
-│   │   └── nvidia.js
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── services/
-│   ├── utils/
-│   ├── .env.example                # ← Copy to .env and fill values
-│   └── package.json
-│
-├── vercel.json                     # Vercel routing config
-├── package.json
-└── README.md
+└── server/                         # Backend (Node.js + Express)
+    ├── server.js                   # Entry point + Socket.IO setup
+    ├── app.js                      # Express app + route registration
+    ├── models/
+    │   ├── User.js                 # User schema (avatar, banner, skills, isBanned)
+    │   ├── Team.js                 # Team schema
+    │   ├── Project.js              # Project schema
+    │   ├── Message.js              # Chat message schema
+    │   ├── Notification.js         # Notification schema
+    │   ├── FriendRequest.js        # Friend request schema
+    │   └── JoinRequest.js          # Team join request schema
+    ├── routes/
+    │   ├── auth.routes.js          # /api/auth/*
+    │   ├── users.routes.js         # /api/users/*
+    │   ├── teams.routes.js         # /api/teams/*
+    │   ├── projects.routes.js      # /api/projects/*
+    │   ├── messages.routes.js      # /api/messages/*
+    │   ├── notifications.routes.js # /api/notifications/*
+    │   ├── friends.routes.js       # /api/friends/*
+    │   ├── ai.routes.js            # /api/ai/*
+    │   └── admin.routes.js         # /api/admin/* (auth guard)
+    ├── controllers/                # Business logic
+    ├── middleware/
+    │   ├── auth.js                 # JWT verify middleware
+    │   └── errorHandler.js
+    ├── config/
+    │   ├── db.js                   # MongoDB connection (in-memory fallback)
+    │   └── gemini.js               # Google Gemini AI setup
+    └── services/
+        └── socket.service.js       # Socket.IO event handlers
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
-### Prerequisites
-- **Node.js** v18+
-- **Supabase** project (free tier works fine)
-- **NVIDIA NIM** API key (for AI features)
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/Ti838/Project-Hive.git
-cd Project-Hive
-```
-
-### 2. Configure the Backend
-
+### 1. Install dependencies
 ```bash
 cd server
-cp .env.example .env
+npm install
 ```
 
-Fill in your `.env`:
-
+### 2. Set up environment variables
+Create `server/.env`:
 ```env
-NODE_ENV=development
+# Required for AI features
+GEMINI_API_KEY=your_key_here   # Free at https://aistudio.google.com/apikey
+
+# Optional — uses in-memory MongoDB if not set
+MONGODB_URI=mongodb://localhost:27017/projecthive
+
+# Optional
+JWT_SECRET=your_secret_here
+JWT_REFRESH_SECRET=your_refresh_secret
 PORT=5000
-
-# Supabase
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-
-# JWT
-JWT_SECRET=your-secret-here
-JWT_EXPIRES_IN=24h
-REFRESH_TOKEN_EXPIRES_IN=7d
-
-# NVIDIA NIM
-NVIDIA_NIM_API_KEY=your-nvidia-key
-
-# Frontend (for CORS)
-FRONTEND_URL=http://localhost:3000
-FRONTEND_URL_PROD=https://your-app.vercel.app
+NODE_ENV=development
 ```
 
+### 3. Start the server
 ```bash
-npm install
-npm run dev       # Starts on http://localhost:5000
+cd server
+npm start
 ```
 
-### 3. Serve the Frontend
-
-From the project root:
-
-```bash
-npm install
-npm run dev       # Serves public/ on http://localhost:3000
+### 4. Open in browser
 ```
-
-Navigate to **http://localhost:3000**
-
-### 4. Deploy to Vercel
-
-```bash
-vercel deploy
+http://localhost:5000
 ```
-
-Or connect your GitHub repo at [vercel.com](https://vercel.com) for automatic deployments on every push.
 
 ---
 
-## 🔌 API Quick Reference
+## 🔌 API Reference
 
+### Auth  `/api/auth`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/register` | Register new user |
+| POST | `/login` | Login → access + refresh tokens |
+| POST | `/refresh` | Refresh access token |
+| POST | `/logout` | Invalidate refresh token |
+
+### Users  `/api/users`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/me` | Get current user profile |
+| PATCH | `/me` | Update profile (name, bio, avatar, banner, skills…) |
+| PATCH | `/me/password` | Change password |
+| PATCH | `/me/skills` | Update skills array |
+| POST | `/me/skills` | Add single skill |
+| DELETE | `/me/skills` | Remove skill |
+| GET | `/search?q=&limit=` | Search users |
+| GET | `/:id` | Get user by ID |
+
+### Friends  `/api/friends`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/request/:userId` | Send friend request |
+| POST | `/accept/:requestId` | Accept request |
+| POST | `/reject/:requestId` | Reject request |
+| GET | `/` | Get my friends list |
+| GET | `/requests` | Get pending requests |
+| GET | `/dm/:friendId` | Get DM history |
+
+### Teams  `/api/teams`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/` | Create team |
+| GET | `/` | Browse teams |
+| GET | `/:id` | Team details |
+| PUT | `/:id` | Update team |
+| POST | `/:teamId/join` | Send join request |
+| GET | `/:teamId/requests` | List join requests |
+| POST | `/:teamId/requests/:id/accept` | Accept join request |
+| POST | `/:teamId/requests/:id/reject` | Reject join request |
+
+### Projects  `/api/projects`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/` | Submit project |
+| GET | `/` | Browse projects |
+| GET | `/:id` | Project details |
+| PUT | `/:id` | Update project |
+| DELETE | `/:id` | Delete project |
+| POST | `/:id/like` | Like project |
+| POST | `/:id/save` | Save project |
+
+### Notifications  `/api/notifications`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Get notifications |
+| PUT | `/:id/read` | Mark single as read |
+| PUT | `/read-all` | Mark all as read |
+| DELETE | `/:id` | Delete notification |
+
+### AI  `/api/ai`
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/chat` | Chat with Gemini AI |
+| POST | `/generate-ideas` | Generate project ideas (auth) |
+| POST | `/generate-ideas-public` | Generate ideas (no auth) |
+
+### Admin  `/api/admin` *(admin role required)*
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/stats` | Platform statistics |
+| GET | `/users` | List all users |
+| PATCH | `/users/:id/ban` | Ban/unban user |
+| PATCH | `/users/:id/role` | Change user role |
+| DELETE | `/users/:id` | Delete user |
+| GET | `/teams` | List all teams |
+| DELETE | `/teams/:id` | Delete team |
+| POST | `/promote-me` | *(dev only)* Promote self to admin |
+
+---
+
+## 🎨 Design System
+
+### CSS Variables (`ph-design.css`)
+```css
+/* Light mode */
+--bg, --sf, --sf2    /* Backgrounds */
+--bd, --bd2          /* Borders */
+--tx, --sub          /* Text */
+--ac, --ac-light     /* Accent (purple #6366f1) */
+--shadow             /* Card shadow */
+
+/* Dark mode auto-applies when html.dark class is present */
+```
+
+### Components
+- **ph-sidebar.js** — Centralized nav (all pages share one sidebar definition)
+- **ph-toast.js** — `PHToast.success()` / `.error()` / `.info()`
+- **`.ph-page`** — Main content area (auto margin-left for sidebar)
+- **`.ph-topbar`** — Sticky page header bar
+
+---
+
+## 🧑‍💻 Make Yourself Admin (Dev)
+
+While logged in, open browser console and run:
 ```javascript
-// Auth
-API.auth.register(userData)
-API.auth.login(email, password)
-API.auth.logout()
-
-// Users
-API.users.getCurrentUser()
-API.users.getProfile(userId)
-API.users.updateProfile(userId, data)
-API.users.searchUsers(query)
-
-// Teams
-API.teams.createTeam(data)
-API.teams.listTeams(filters)
-API.teams.getTeam(teamId)
-API.teams.joinTeam(teamId)
-
-// AI
-API.ai.generateProjectIdeas(domain, skills, teamSize, timeline, constraints)
-
-// Messages
-API.messages.getTeamMessages(teamId, limit, offset)
-API.messages.sendMessage(teamId, content)
-
-// Projects
-API.projects.listProjects(filters)
-API.projects.createProject(data)
-API.projects.getProject(projectId)
+fetch('/api/admin/promote-me', {
+  method: 'POST',
+  headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+}).then(r => r.json()).then(d => { alert(d.message); })
 ```
+Then **logout and log back in** to get the new admin token.
 
 ---
 
-## 🔐 Security
+## 🔒 Security Notes
 
-| Layer | Mechanism |
-|---|---|
-| Authentication | JWT (HS256) with bcrypt password hashing |
-| Database | Supabase Row-Level Security (RLS) policies |
-| Transport | HTTPS / TLS enforced |
-| Headers | Helmet.js (CSP, XSS, HSTS) |
-| CORS | Whitelisted origins only |
-| Rate Limiting | 100 req/min global, 10 req/min on auth endpoints |
-| Validation | Joi (server-side) + client-side checks |
+- Passwords hashed with **bcrypt** (12 rounds)
+- JWT access tokens expire in **15 minutes**, refresh tokens in **7 days**  
+- All sensitive routes protected by `authMiddleware`
+- Admin routes additionally protected by `requireAdmin` role check
+- `promote-me` endpoint disabled in `NODE_ENV=production`
 
 ---
 
-## 📊 Performance Targets
+## 📦 Tech Stack
 
-| Metric | Target |
-|---|---|
-| API Response (p95) | < 200ms |
-| Socket.IO Latency | < 100ms LAN / < 300ms global |
-| First Contentful Paint | < 1.2s on 4G |
-| NVIDIA NIM API | Async streaming |
-
----
-
-## 🧪 Test Accounts
-
-```
-demo1@stanford.edu  /  Demo123!
-demo2@berkeley.edu  /  Demo123!
-```
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Vanilla HTML, CSS (CSS Variables), JavaScript |
+| Backend | Node.js, Express.js |
+| Database | MongoDB (Mongoose) + in-memory fallback for dev |
+| Auth | JWT (jsonwebtoken) + bcryptjs |
+| Realtime | Socket.IO |
+| AI | Google Gemini 2.0 Flash |
+| Icons | Google Material Symbols |
+| Fonts | Inter (Google Fonts) |
 
 ---
 
-## 🔄 Phase 2 Roadmap
-
-- [ ] OAuth2 social login (Google, GitHub) via Supabase Auth
-- [ ] Advanced search and filtering
-- [ ] AI team compatibility scoring
-- [ ] File upload for projects (Supabase Storage)
-- [ ] Email notifications (Supabase Edge Functions)
-- [ ] PWA support for offline viewing
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m 'feat: add your feature'`
-4. Push to the branch: `git push origin feature/your-feature`
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-MIT — see [LICENSE](LICENSE) for details.
-
----
-
-<p align="center">
-  <img src="public/assets/svg/logo.svg" width="32" height="32" />
-  <br/>
-  <strong>Built with ❤️ by <a href="https://github.com/Ti838">Ti838</a></strong>
-  <br/>
-  <em>Making university collaboration effortless, one team at a time.</em>
-</p>
+*Built with ❤️ — ProjectHive © 2026*

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Messages — ProjectHive</title>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<link rel="stylesheet" href="../../assets/css/ph-system.css">
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+<script src="../../assets/js/core/ph-toast.js"></script>
+<script src="../../assets/js/core/ph-sidebar.js"></script>
+<style>
+body{font-family:'Inter',sans-serif;overflow:hidden;}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;vertical-align:middle;}
+.dark body{background:#0f1117;color:#e4e1eb;}
+.bubble-in{animation:bubbleIn .18s ease;}
+@keyframes bubbleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.conv-item:hover{background:rgba(99,102,241,.08);}
+.conv-item.active{background:rgba(99,102,241,.15);}
+.dark .conv-item.active{background:rgba(99,102,241,.2);}
+</style>
+<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"accent":"#6366f1","accent-dark":"#818cf8"}}}}</script>
+<style id="ph-design-vars">
+:root{--bg:#F0F2F9;--surface:#FFFFFF;--surface2:#F5F7FF;--border:#E2E8F0;--text:#0F172A;--sub:#64748B;--accent:#6366F1;--accent-hover:#4F46E5;--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(99,102,241,.06);}
+html.dark{--bg:#0C0D14;--surface:#13141E;--surface2:#1A1B27;--border:#252636;--text:#E4E1EB;--sub:#8884A0;--accent:#818CF8;--accent-hover:#6366F1;--card-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);}
+*,*::before,*::after{box-sizing:border-box;}
+html{transition:color-scheme .2s;}
+body{background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
+.ph-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);transition:all .2s;}
+.ph-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(99,102,241,.12);}
+.ph-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border .2s,box-shadow .2s;}
+.ph-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
+.ph-btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .2s;font-family:inherit;}
+.ph-btn:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.3);}
+.ph-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.ph-btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--sub);font-weight:600;font-size:14px;padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;font-family:inherit;}
+.ph-btn-ghost:hover{background:var(--surface2);color:var(--text);}
+.ph-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(99,102,241,.1);color:var(--accent);}
+.ph-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
+.ph-topbar{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);}
+.ph-page{margin-left:260px;min-height:100vh;}
+@media(max-width:768px){.ph-page{margin-left:0;}}
+.material-symbols-outlined{font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24;display:inline-block;vertical-align:middle;line-height:1;}
+</style><link rel="stylesheet" href="../../assets/css/ph-design.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100" data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+
+<!-- Full-height layout after sidebar -->
+<div class="ml-[260px] h-screen flex flex-col max-md:ml-0">
+
+  <!-- Top bar -->
+  <header class="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-5 gap-3 shrink-0 z-30">
+    <div id="ph-hamburger-slot"></div>
+    <span class="material-symbols-outlined text-indigo-500">chat</span>
+    <h1 class="font-bold text-base">Messages</h1>
+    <button onclick="openNewConv()" class="ml-auto flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full transition-colors">
+      <span class="material-symbols-outlined text-base">edit</span> New
+    </button>
+  </header>
+
+  <!-- Chat layout -->
+  <div class="flex flex-1 overflow-hidden">
+
+    <!-- Conversations panel -->
+    <aside class="w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
+      <div class="p-3">
+        <input id="conv-search" type="text" placeholder="Search conversations…"
+          oninput="filterConvs(this.value)"
+          class="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
+      </div>
+      <div id="conv-list" class="flex-1 overflow-y-auto px-2 pb-2">
+        <div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
+          <span class="material-symbols-outlined text-3xl">chat_bubble_outline</span>Loading…
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat area -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
+      <!-- Chat header -->
+      <div id="chat-hdr" class="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-5 flex items-center gap-3">
+        <div class="text-sm text-gray-400 flex items-center gap-2">
+          <span class="material-symbols-outlined">arrow_back_ios</span>
+          Select a conversation to start chatting
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="msgs" class="flex-1 overflow-y-auto p-5 flex flex-col gap-2">
+        <div class="flex flex-col items-center justify-center h-full text-gray-400 text-sm gap-3">
+          <span class="material-symbols-outlined text-5xl">waving_hand</span>
+          <p>Pick a conversation or start a new one</p>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="p-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex gap-2">
+        <input id="msg-inp" type="text" placeholder="Type a message… (Enter to send)"
+          onkeydown="if(event.key==='Enter')sendMsg()"
+          class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-full px-5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
+        <button onclick="sendMsg()" class="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center transition-colors shrink-0">
+          <span class="material-symbols-outlined text-base">send</span>
+        </button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- New Conversation Modal -->
+<div id="nc-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl w-[420px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
+      <h3 class="font-bold">New Message</h3>
+      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-3 border-b border-gray-200 dark:border-gray-800">
+      <input id="nc-inp" type="text" placeholder="Search people…" oninput="searchUsers(this.value)"
+        class="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
+    </div>
+    <div id="user-list" class="flex-1 overflow-y-auto max-h-80 p-2"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* Auth */
+  const TK = localStorage.getItem('access_token');
+  if(!TK){window.location.href='../auth/login.html';return;}
+  try{
+    const p=JSON.parse(atob(TK.split('.')[1]));
+    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');window.location.href='../auth/login.html';return;}
+  }catch(e){window.location.href='../auth/login.html';return;}
+
+  PHSidebar.init('messages','../../');
+
+  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+  function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+  function ini(f,l){return((f?.[0]||'')+(l?.[0]||'')).toUpperCase()||'?';}
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+  let ME={},convs=[],allMsgs=[],activeConv=null,allUsers=[];
+
+  /* Load self */
+  fetch('/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
+    if(!u)return;
+    ME={id:u._id||u.id};
+  }).catch(()=>{});
+
+  /* Render conversations */
+  function renderConvs(list){
+    const el=document.getElementById('conv-list');
+    if(!list.length){
+      el.innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
+        <span class="material-symbols-outlined text-3xl">chat_bubble_outline</span>
+        <p>No conversations yet</p>
+        <button onclick="openNewConv()" class="mt-1 text-indigo-500 text-xs font-semibold hover:underline">Start one</button>
+      </div>`;
+      return;
+    }
+    el.innerHTML=list.map(c=>{
+      const f=c.friend||{};
+      const name=`${f.firstName||''} ${f.lastName||''}`.trim()||'User';
+      const color=avC(name);
+      const last=c.lastMessage?.content||'Say hello!';
+      const isActive=activeConv&&(activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
+      return `<div class="conv-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-0.5${isActive?' active':''}"
+        onclick='openConv(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm truncate">${esc(name)}</div>
+          <div class="text-xs text-gray-400 truncate">${esc(last.substring(0,40))}</div>
+        </div>
+        ${c.unreadCount?`<span class="bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold shrink-0">${c.unreadCount}</span>`:''}
+      </div>`;
+    }).join('');
+  }
+
+  window.filterConvs=function(q){
+    renderConvs(q?convs.filter(c=>{const n=`${c.friend?.firstName||''} ${c.friend?.lastName||''}`.toLowerCase();return n.includes(q.toLowerCase());}):convs);
+  };
+
+  /* Open conversation */
+  window.openConv=function(conv){
+    activeConv=conv;renderConvs(convs);
+    const f=conv.friend||{};
+    const name=`${f.firstName||''} ${f.lastName||''}`.trim()||'User';
+    const color=avC(name);
+    document.getElementById('chat-hdr').innerHTML=`
+      <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+      <div>
+        <div class="font-bold text-sm">${esc(name)}</div>
+        <div class="text-xs text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Active now</div>
+      </div>`;
+    document.getElementById('msgs').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Loading…</div>`;
+
+    const friendId=f._id||conv.friendId||conv._id;
+    fetch(`/api/friends/dm/${friendId}`,{headers:H})
+      .then(r=>r.ok?r.json():[])
+      .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
+      .catch(()=>{
+        fetch(`/api/messages/${friendId}`,{headers:H})
+          .then(r=>r.ok?r.json():[])
+          .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
+          .catch(()=>{allMsgs=[];renderMsgs();});
+      });
+  };
+
+  /* Render messages */
+  function renderMsgs(){
+    if(!allMsgs.length){
+      document.getElementById('msgs').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
+        <span class="material-symbols-outlined text-4xl">waving_hand</span><p>No messages yet. Say hello! 👋</p></div>`;
+      return;
+    }
+    document.getElementById('msgs').innerHTML=allMsgs.map(m=>{
+      const mine=m.sender===ME?.id||m.sender?._id===ME?.id||m._tmp;
+      const ts=new Date(m.createdAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      return `<div class="flex ${mine?'justify-end':'justify-start'} bubble-in">
+        <div class="max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
+          ${mine?'bg-indigo-500 text-white rounded-br-sm':'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm'}">
+          ${esc(m.content)}
+          <div class="text-[10px] mt-1 opacity-60 text-right">${ts}</div>
+        </div>
+      </div>`;
+    }).join('');
+    const box=document.getElementById('msgs');box.scrollTop=box.scrollHeight;
+  }
+
+  /* Send message */
+  window.sendMsg=function(){
+    const inp=document.getElementById('msg-inp');
+    const content=inp.value.trim();
+    if(!content||!activeConv)return;
+    inp.value='';
+    allMsgs.push({content,sender:ME?.id,createdAt:new Date().toISOString(),_tmp:true});
+    renderMsgs();
+    const f=activeConv.friend||{};
+    const receiverId=f._id||activeConv.friendId;
+    fetch('/api/messages',{method:'POST',headers:H,body:JSON.stringify({receiverId,content})}).catch(()=>{});
+  };
+
+  /* New conv modal */
+  window.openNewConv=function(){
+    document.getElementById('nc-modal').classList.replace('hidden','flex');
+    document.getElementById('nc-inp').value='';
+    loadAllUsers();
+  };
+  window.closeModal=function(){document.getElementById('nc-modal').classList.replace('flex','hidden');};
+  document.getElementById('nc-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
+
+  async function loadAllUsers(){
+    if(allUsers.length){renderUserList(allUsers);return;}
+    document.getElementById('user-list').innerHTML=`<div class="text-center p-5 text-gray-400 text-sm">Loading…</div>`;
+    try{
+      const r=await fetch('/api/users?limit=50',{headers:H});
+      const d=await r.json();
+      allUsers=(d.users||d||[]).filter(u=>u._id!==ME?.id);
+      renderUserList(allUsers);
+    }catch(e){document.getElementById('user-list').innerHTML=`<div class="text-center p-5 text-red-400 text-sm">Server offline</div>`;}
+  }
+
+  function renderUserList(users){
+    document.getElementById('user-list').innerHTML=users.slice(0,30).map(u=>{
+      const name=`${u.firstName||''} ${u.lastName||''}`.trim()||'User';
+      return `<div class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        onclick="startWith('${u._id}','${u.firstName||''}','${u.lastName||''}')">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${avC(name)}">${ini(u.firstName,u.lastName)}</div>
+        <div>
+          <div class="font-semibold text-sm">${esc(name)}</div>
+          <div class="text-xs text-gray-400">${esc(u.university||u.email||'')}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.searchUsers=function(q){
+    const f=q?allUsers.filter(u=>`${u.firstName||''} ${u.lastName||''} ${u.email||''}`.toLowerCase().includes(q.toLowerCase())):allUsers;
+    renderUserList(f);
+  };
+
+  window.startWith=function(uid,fn,ln){
+    closeModal();
+    openConv({_id:uid,friendId:uid,friend:{_id:uid,firstName:fn,lastName:ln},lastMessage:null,unreadCount:0});
+  };
+
+  /* Load conversations */
+  async function loadConvs(){
+    try{
+      const r=await fetch('/api/messages/conversations',{headers:H});
+      const d=await r.json();
+      convs=d.conversations||d||[];
+      renderConvs(convs);
+    }catch(e){
+      document.getElementById('conv-list').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
+        <span class="material-symbols-outlined text-3xl">cloud_off</span><p>Server offline</p></div>`;
+    }
+  }
+
+  loadConvs();
+
+  /* Socket.IO real-time */
+  try{
+    const socket=io('/',{auth:{token:TK},transports:['websocket','polling']});
+    socket.on('messageReceived',data=>{
+      const senderId=data.sender?._id||data.sender||data.senderId;
+      const isSelf=senderId===ME?.id;
+      if(activeConv&&(senderId===(activeConv.friend?._id||activeConv.friendId)||isSelf)){
+        if(!isSelf){allMsgs.push({content:data.content,sender:senderId,createdAt:data.createdAt||new Date().toISOString()});renderMsgs();}
+      }
+      loadConvs();
+    });
+  }catch(e){}
+})();
+</script>
+</body></html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Find Teams — ProjectHive</title>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/ph-design.css">
+<link rel="stylesheet" href="../../assets/css/ph-system.css">
+<script src="../../assets/js/core/ph-toast.js"></script>
+<script src="../../assets/js/core/ph-sidebar.js"></script>
+<style>
+.team-card { transition: all .25s; }
+.team-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
+.chip { display:inline-flex;align-items:center;padding:6px 16px;border-radius:999px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:1.5px solid var(--bd);background:transparent;color:var(--sub);font-family:'Inter',sans-serif; }
+.chip:hover { background:var(--sf2); }
+.chip.sel { border-color:var(--ac);background:var(--ac-light);color:var(--ac); }
+</style>
+</head>
+<body data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+<div class="ph-page">
+
+<!-- Topbar -->
+<div class="ph-topbar">
+  <span class="ms" style="color:var(--ac)">diversity_3</span>
+  <h1 style="font-size:18px;font-weight:800;margin:0;flex:1">Find Teams</h1>
+  <div style="position:relative">
+    <span class="ms" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:18px">search</span>
+    <input id="search" type="text" placeholder="Search teams…" oninput="search(this.value)" class="ph-input" style="padding-left:40px;width:220px;height:40px;border-radius:999px">
+  </div>
+  <a href="teams-create.html" class="ph-btn" style="height:40px;border-radius:999px;text-decoration:none">
+    <span class="ms" style="font-size:18px">add</span> Create Team
+  </a>
+</div>
+
+<main style="max-width:1100px;margin:0 auto;padding:32px 24px">
+
+  <!-- Stats row -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px">
+    <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;border-radius:14px;background:var(--ac-light);color:var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">diversity_3</span></div>
+      <div><div class="ph-label" style="margin:0 0 2px">Total Teams</div><div style="font-size:26px;font-weight:800" id="st-total">—</div></div>
+    </div>
+    <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(16,185,129,.12);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">how_to_reg</span></div>
+      <div><div class="ph-label" style="margin:0 0 2px">My Teams</div><div style="font-size:26px;font-weight:800" id="st-mine">—</div></div>
+    </div>
+    <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
+      <div style="width:48px;height:48px;border-radius:14px;background:rgba(139,92,246,.12);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">group_add</span></div>
+      <div><div class="ph-label" style="margin:0 0 2px">Open to Join</div><div style="font-size:26px;font-weight:800" id="st-open">—</div></div>
+    </div>
+  </div>
+
+  <!-- Grid -->
+  <h2 style="font-size:16px;font-weight:800;margin:0 0 16px">Discover Teams</h2>
+  <div id="grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px">
+    <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)">
+      <span class="ms" style="font-size:48px;display:block;margin-bottom:8px;color:var(--ac)">groups</span>Loading teams…
+    </div>
+  </div>
+</main>
+</div>
+
+<script>
+(function(){
+  const TK=localStorage.getItem('access_token');
+  if(!TK){location.href='../auth/login.html';return;}
+  try{const p=JSON.parse(atob(TK.split('.')[1]));if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='../auth/login.html';return;}}catch(e){location.href='../auth/login.html';return;}
+  PHSidebar.init('teams','../../');
+
+  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+  function col(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+  function ini(s){return(s||'T').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'T';}
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+  let teams=[],myIds=new Set();
+
+  function render(list){
+    const g=document.getElementById('grid');
+    if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block;margin-bottom:12px">group_off</span>No teams found.<br><a href="teams-create.html" style="color:var(--ac);text-decoration:underline;font-weight:600">Create the first one!</a></div>`;return;}
+    g.innerHTML=list.map(t=>{
+      const name=t.name||'Team';const c=col(name);const isMine=myIds.has(t._id);
+      const members=t.members?.length||t.memberCount||0;
+      const tags=(t.tags||t.skills||[]).slice(0,3);const isOpen=t.isOpen!==false;
+      return `<div class="team-card ph-card" style="overflow:hidden;cursor:default">
+        <!-- Banner -->
+        <div style="height:80px;background:linear-gradient(135deg,${c}30,${c}55);position:relative;display:flex;align-items:center;justify-content:center">
+          <div style="width:52px;height:52px;border-radius:14px;background:${c};color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px ${c}60">${ini(name)}</div>
+          ${isOpen?`<span style="position:absolute;top:10px;right:12px;background:var(--green);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">Open</span>`:`<span style="position:absolute;top:10px;right:12px;background:var(--sub);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">Closed</span>`}
+        </div>
+        <!-- Body -->
+        <div style="padding:18px">
+          <h3 style="font-size:15px;font-weight:800;margin:0 0 6px;color:var(--tx)">${esc(name)}</h3>
+          <p style="font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(t.description||'No description.')}</p>
+          ${tags.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${tags.map(tg=>`<span class="ph-tag">${esc(tg)}</span>`).join('')}</div>`:''}
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1.5px solid var(--bd)">
+            <span style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px"><span class="ms" style="font-size:16px">group</span>${members} member${members!==1?'s':''}</span>
+            ${isMine
+              ?`<span style="font-size:12px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:4px"><span class="ms" style="font-size:16px">check_circle</span>Joined</span>`
+              :isOpen
+                ?`<button onclick="join('${t._id}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
+                :`<span style="font-size:12px;color:var(--sub)">Members only</span>`
+            }
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.search=function(q){render(q?teams.filter(t=>(t.name||'').toLowerCase().includes(q.toLowerCase())||(t.description||'').toLowerCase().includes(q.toLowerCase())):teams);};
+
+  window.join=async function(id,btn){
+    btn.disabled=true;btn.textContent='Joining…';
+    try{
+      const r=await fetch(`/api/teams/${id}/join`,{method:'POST',headers:H});
+      if(r.ok){btn.textContent='Joined!';btn.style.background='var(--green)';myIds.add(id);PHToast?.success('Joined!');}
+      else{const d=await r.json();PHToast?.error(d.message||'Failed');btn.textContent='Join';btn.disabled=false;}
+    }catch(e){PHToast?.error('Server offline');btn.textContent='Join';btn.disabled=false;}
+  };
+
+  async function load(){
+    try{
+      const [tr,mr]=await Promise.allSettled([fetch('/api/teams',{headers:H}).then(r=>r.json()),fetch('/api/teams/my-teams',{headers:H}).then(r=>r.json())]);
+      if(tr.status==='fulfilled'){teams=tr.value?.teams||tr.value||[];document.getElementById('st-total').textContent=teams.length;document.getElementById('st-open').textContent=teams.filter(t=>t.isOpen!==false).length;render(teams);}
+      if(mr.status==='fulfilled'){const mine=mr.value?.teams||mr.value||[];myIds=new Set(mine.map(t=>t._id));document.getElementById('st-mine').textContent=mine.length;}
+    }catch(e){document.getElementById('grid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block">cloud_off</span>Server offline</div>`;}
+  }
+  load();
+})();
+</script>
+</body>
+</html>

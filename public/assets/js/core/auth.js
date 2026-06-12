@@ -4,11 +4,26 @@
 
 const Auth = (() => {
     /**
-     * Check if user is authenticated (has valid tokens)
+     * Check if user is authenticated (has valid, non-expired token)
      */
     const isAuthenticated = () => {
         const token = localStorage.getItem('access_token');
-        return !!token;
+        if (!token) return false;
+        // Validate token can be parsed and is not expired
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            if (payload.exp && Date.now() >= payload.exp * 1000) {
+                // Token expired — clear it
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                return false;
+            }
+        } catch (e) {
+            // Malformed token
+            localStorage.removeItem('access_token');
+            return false;
+        }
+        return true;
     };
 
     /**
@@ -68,7 +83,9 @@ const Auth = (() => {
      */
     const logout = () => {
         API.clearTokens();
-        window.location.href = '/pages/auth/login.html';
+        const d = (window.location.pathname.match(/\//g)||[]).length - 1;
+        const base = d <= 1 ? './' : d === 2 ? '../' : '../../';
+        window.location.href = base + 'pages/auth/login.html';
     };
 
     /**
@@ -89,11 +106,21 @@ const Auth = (() => {
     };
 
     /**
+     * Get base path relative to current page
+     */
+    const getBase = () => {
+        const d = (window.location.pathname.match(/\//g)||[]).length - 1;
+        if (d <= 1) return './';
+        if (d === 2) return '../';
+        return '../../';
+    };
+
+    /**
      * Ensure user is authenticated, redirect if not
      */
     const requireAuth = () => {
         if (!isAuthenticated()) {
-            window.location.href = '/pages/auth/login.html';
+            window.location.href = getBase() + 'pages/auth/login.html';
         }
     };
 

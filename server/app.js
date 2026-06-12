@@ -3,6 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = path.dirname(__filename);
 
 import { errorHandler } from './middleware/errorHandler.js';
 
@@ -13,19 +18,31 @@ import projectsRoutes from './routes/projects.routes.js';
 import messagesRoutes from './routes/messages.routes.js';
 import notificationsRoutes from './routes/notifications.routes.js';
 import aiRoutes from './routes/ai.routes.js';
+import friendsRoutes from './routes/friends.routes.js';
+import adminRoutes from './routes/admin.routes.js';
+import { adminDevRouter } from './routes/admin.routes.js';
 
 const app = express();
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Disabled to allow CDN scripts (Tailwind, fonts)
+  crossOriginEmbedderPolicy: false,
+}));
+
+// Serve static frontend files from /public
+const publicDir = path.resolve(__dirname, '..', 'public');
+app.use(express.static(publicDir));
 
 // CORS
 const corsOptions = {
   origin: [
     'http://localhost:3000',
     'http://localhost:5000',
+    'http://localhost:5500',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5000',
+    'http://127.0.0.1:5500',
     process.env.FRONTEND_URL,
     process.env.FRONTEND_URL_PROD,
   ].filter(Boolean),
@@ -64,10 +81,17 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/friends', friendsRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminDevRouter); // dev only: /api/admin/promote-me
 
-// 404 handler
+// 404 handler for API routes only — HTML pages are served by express.static above
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API route not found' });
+  }
+  // For any other path, serve index.html (handles direct URL access)
+  res.sendFile(path.join(publicDir, 'index.html'));
 });
 
 // Error handler (must be last)

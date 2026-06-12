@@ -1,15 +1,26 @@
 import Message from '../models/Message.js';
 import User from '../models/User.js';
 
+let _io = null;
+export function setIo(io) { _io = io; }
+
 const activeUsers = new Map(); // userId -> socket
 
-export function registerUserSocket(socket) {
+export async function registerUserSocket(socket) {
   activeUsers.set(socket.userId, socket);
+  // Mark online in DB
+  await User.findByIdAndUpdate(socket.userId, { onlineStatus: 'online', lastSeen: new Date() });
+  // Broadcast to everyone that this user is online
+  if (_io) _io.emit('status:update', { userId: socket.userId, status: 'online' });
   console.log('[v0] User socket registered:', socket.userId);
 }
 
-export function unregisterUserSocket(userId) {
+export async function unregisterUserSocket(userId) {
   activeUsers.delete(userId);
+  // Mark offline in DB
+  await User.findByIdAndUpdate(userId, { onlineStatus: 'offline', lastSeen: new Date() });
+  // Broadcast to everyone that this user is offline
+  if (_io) _io.emit('status:update', { userId, status: 'offline' });
   console.log('[v0] User socket unregistered:', userId);
 }
 

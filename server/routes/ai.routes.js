@@ -4,6 +4,9 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+// ── Chat (free-form Q&A) ─────────────────────────────────────────────────────
+router.post('/chat', authMiddleware, aiController.chatWithAI);
+
 // ── Authenticated route (10 req/hr per user) ────────────────────────────────
 router.post('/generate-ideas', authMiddleware, aiController.generateProjectIdeas);
 

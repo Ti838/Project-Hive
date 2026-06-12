@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
+<link rel="icon" href="../../assets/svg/logo.png">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ProjectHive | Student Dashboard</title>
+<meta name="description" content="Your ProjectHive academic dashboard — track teams, projects, messages and more."/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+.qa-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:16px;padding:20px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;text-decoration:none;transition:all .2s;cursor:pointer}
+.qa-card:hover{transform:translateY(-3px);box-shadow:0 10px 28px rgba(0,0,0,.1);border-color:var(--ic-c,var(--ac))}
+.qa-ic{width:48px;height:48px;border-radius:14px;background:var(--ic-bg,var(--ac-light));color:var(--ic-c,var(--ac));display:flex;align-items:center;justify-content:center;transition:transform .2s;font-size:22px}
+.qa-card:hover .qa-ic{transform:scale(1.12)}
+.qa-lbl{font-size:12px;font-weight:700;color:var(--tx);text-align:center;line-height:1.3}
+</style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#25005a",
+                    "secondary": "#7c3aed",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#e4e0f5",
+                    "on-primary": "#ffffff",
+                    "outline-variant": "#c8c4d5",
+                    "outline": "#777584",
+                    "error": "#ba1a1a",
+                    "surface": "#f7f9fb",
+                    "inverse-primary": "#c3c0ff",
+                    "on-tertiary": "#ffffff",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#e2dfff",
+                    "inverse-surface": "#2d3133",
+                    "background": "#f7f9fb",
+                    "on-tertiary-fixed-variant": "#464555",
+                    "on-secondary-container": "#fffbff",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-container": "#8a4cfc",
+                    "on-error-container": "#93000a",
+                    "on-tertiary-fixed": "#1b1a29",
+                    "tertiary-container": "#424151",
+                    "secondary-fixed": "#eaddff",
+                    "on-primary-fixed": "#0f0069",
+                    "inverse-on-surface": "#eff1f3",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "on-secondary": "#ffffff",
+                    "surface-tint": "#544fc0",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-bright": "#f7f9fb",
+                    "on-primary-fixed-variant": "#3b35a7",
+                    "secondary-fixed-dim": "#d2bbff",
+                    "primary-container": "#3730a3",
+                    "on-secondary-fixed-variant": "#5a00c6",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-low": "#f2f4f6",
+                    "surface-variant": "#e0e3e5",
+                    "surface-dim": "#d8dadc",
+                    "on-surface-variant": "#464553",
+                    "on-surface": "#191c1e",
+                    "on-primary-container": "#a9a7ff",
+                    "tertiary-fixed-dim": "#c7c4d8",
+                    "on-tertiary-container": "#b0adc1",
+                    "tertiary": "#2c2b3a",
+                    "surface-container": "#eceef0",
+                    "error-container": "#ffdad6",
+                    "primary": "#6366f1"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "pill": "9999px"
+            },
+            "spacing": {
+                    "sidebar-width": "260px",
+                    "stack-sm": "8px",
+                    "container-max": "1440px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "40px",
+                    "stack-md": "16px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+body { font-family: 'Inter', sans-serif; }
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block; vertical-align: middle;
+}
+.accent-gradient { background: linear-gradient(135deg,#6366f1,#7c3aed); }
+.glass-card { background:rgba(255,255,255,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.3); }
+.stats-card-shadow { box-shadow:0 4px 20px rgba(55,48,163,.04); }
+
+/* ═══ DARK MODE — override all Tailwind custom colors ═══ */
+:root {
+  --tw-bg:    #F8FAFC;
+  --tw-surf:  #FFFFFF;
+  --tw-surf2: #F1F5F9;
+  --tw-surf3: #E8EDF5;
+  --tw-bd:    #E2E8F0;
+  --tw-tx:    #0F172A;
+  --tw-sub:   #64748B;
+}
+html.dark {
+  --tw-bg:    #0B0C14;
+  --tw-surf:  #12131D;
+  --tw-surf2: #181926;
+  --tw-surf3: #1E2030;
+  --tw-bd:    #242538;
+  --tw-tx:    #E2DEEE;
+  --tw-sub:   #8A86A2;
+}
+/* Apply to body & main wrappers */
+body, .min-h-screen { background-color: var(--tw-bg) !important; color: var(--tw-tx) !important; }
+
+/* Background overrides */
+html.dark .bg-background    { background-color: var(--tw-bg)    !important; }
+html.dark .bg-surface       { background-color: var(--tw-surf)  !important; }
+html.dark .bg-surface\/80   { background-color: color-mix(in srgb, var(--tw-surf) 85%, transparent) !important; }
+html.dark .bg-surface-container-lowest { background-color: var(--tw-surf)  !important; }
+html.dark .bg-surface-container-low    { background-color: var(--tw-surf2) !important; }
+html.dark .bg-surface-container        { background-color: var(--tw-surf3) !important; }
+html.dark .bg-surface-container-high   { background-color: var(--tw-surf3) !important; }
+html.dark .bg-surface-variant          { background-color: var(--tw-surf2) !important; }
+
+/* Border overrides */
+html.dark .border-surface-variant   { border-color: var(--tw-bd) !important; }
+html.dark .border-outline-variant   { border-color: var(--tw-bd) !important; }
+html.dark .divide-surface-variant > * + * { border-color: var(--tw-bd) !important; }
+
+/* Text overrides */
+html.dark .text-on-surface          { color: var(--tw-tx)  !important; }
+html.dark .text-on-surface-variant  { color: var(--tw-sub) !important; }
+html.dark .text-on-background       { color: var(--tw-tx)  !important; }
+html.dark .text-outline             { color: var(--tw-sub) !important; }
+
+/* Header / topbar */
+html.dark header {
+  background-color: rgba(11,12,20,.88) !important;
+  border-bottom-color: var(--tw-bd) !important;
+}
+/* Search input */
+html.dark .bg-surface-container-low.border-none {
+  background-color: var(--tw-surf2) !important;
+  color: var(--tw-tx) !important;
+}
+/* Stat cards */
+html.dark .stats-card-shadow {
+  box-shadow: 0 4px 20px rgba(0,0,0,.3) !important;
+}
+/* Right sidebar cards */
+html.dark aside > div {
+  background-color: var(--tw-surf) !important;
+  border-color: var(--tw-bd) !important;
+}
+
+/* Smooth all transitions on theme change */
+body, header, aside, main, section, .bg-surface-container-lowest,
+.bg-surface-container-low, .bg-surface-container, header, footer {
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease !important;
+}
+</style>
+
+<link rel="stylesheet" href="../../assets/css/ph-system.css">
+<script src="../../assets/js/core/ph-toast.js"></script>
+<script src="../../assets/js/core/api.js"></script>
+<script src="../../assets/js/core/auth.js"></script>
+<script src="../../assets/js/core/ph-sidebar.js"></script>
+<link rel="stylesheet" href="../../assets/css/ph-design.css">
+</head>
+<body class="bg-background text-on-surface min-h-screen" data-no-float-theme="1">
+<!-- Sidebar -->
+<div id="ph-sidebar"></div>
+
+<!-- TOP BAR -->
+<header class="fixed top-0 right-0 left-[260px] h-20 bg-surface/80 backdrop-blur-md z-40 flex items-center justify-between px-10 max-md:left-0 max-md:px-4">
+<div class="flex items-center gap-4">
+  <!-- Hamburger shown on mobile via CSS -->
+  <div id="ph-hamburger-slot"></div>
+  <div class="relative">
+    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+    <input id="dash-search" class="bg-surface-container-low border-none rounded-pill pl-10 pr-4 py-2 w-80 max-md:w-40 focus:ring-2 focus:ring-secondary text-body-sm transition-all" placeholder="Search research, teams, or tools..." type="text"/>
+  </div>
+</div>
+<div class="flex items-center gap-4">
+  <!-- AI Generator pill -->
+  <a href="projects/generator.html"
+    class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-bold text-white transition-all hover:scale-105"
+    style="background:linear-gradient(135deg,#6366f1,#ec4899);text-decoration:none;box-shadow:0 3px 14px rgba(99,102,241,.35)">
+    <span class="material-symbols-outlined text-[15px]">auto_awesome</span>
+    AI Generator
+  </a>
+  <div class="flex items-center gap-3 pr-6 border-r border-outline-variant">
+    <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+      <span class="material-symbols-outlined">help</span>
+    </button>
+    <div class="relative">
+      <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='notifications.html'">
+        <span class="material-symbols-outlined">notifications</span>
+      </button>
+      <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="text-right hidden sm:block">
+      <p class="font-label-md text-label-md text-on-surface" id="dash-username">—</p>
+      <p class="text-[11px] text-on-surface-variant" id="dash-role">Student</p>
+    </div>
+    <div id="dash-avatar" class="w-10 h-10 rounded-full border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">?</div>
+  </div>
+</div>
+</header>
+
+<!-- MAIN CONTENT WRAPPER -->
+<main class="ml-[260px] pt-20 flex min-h-screen max-md:ml-0">
+<!-- DASHBOARD BODY -->
+<div class="flex-1 p-10 max-w-[1000px] max-md:p-4">
+  <header class="mb-stack-lg">
+    <h1 class="font-headline-lg text-headline-lg text-primary mb-1">Good morning, <span id="dash-greeting-name">there</span></h1>
+    <p class="text-on-surface-variant font-body-md text-body-md">Here's what's happening with your academic projects today.</p>
+  </header>
+
+  <!-- Welcome Banner -->
+  <section class="accent-gradient rounded-xl p-8 mb-stack-lg relative overflow-hidden text-on-primary">
+    <div class="relative z-10 max-w-md">
+      <h2 class="font-headline-xl text-headline-xl mb-3">Welcome back, <span id="dash-welcome-name">Student</span>!</h2>
+      <p class="font-body-lg text-body-lg opacity-90 mb-6">Your research hive is buzzing. Check your notifications and team messages.</p>
+      <button onclick="window.location.href='notifications.html'" class="bg-white text-primary px-6 py-3 rounded-pill font-label-md text-label-md hover:shadow-xl transition-all flex items-center gap-2">
+        View Notifications <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+      </button>
+    </div>
+    <div class="absolute -right-10 -bottom-10 opacity-20">
+      <span class="material-symbols-outlined text-[300px]" style="font-variation-settings: 'FILL' 1;">hive</span>
+    </div>
+  </section>
+
+  <!-- Stats Row -->
+  <section class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+    <div class="bg-surface-container-lowest p-6 rounded-xl stats-card-shadow border border-surface-variant hover:border-secondary transition-all">
+      <p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider mb-2">Teams Joined</p>
+      <div class="flex items-end justify-between">
+        <span class="font-headline-xl text-headline-xl text-primary" id="stat-teams">—</span>
+        <div class="h-10 w-10 bg-primary/5 rounded-lg flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined">groups</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-xl stats-card-shadow border border-surface-variant hover:border-secondary transition-all">
+      <p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider mb-2">Friends</p>
+      <div class="flex items-end justify-between">
+        <span class="font-headline-xl text-headline-xl text-primary" id="stat-friends">—</span>
+        <div class="h-10 w-10 bg-secondary/5 rounded-lg flex items-center justify-center text-secondary">
+          <span class="material-symbols-outlined">person_add</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-xl stats-card-shadow border border-surface-variant hover:border-secondary transition-all">
+      <p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider mb-2">Projects</p>
+      <div class="flex items-end justify-between">
+        <span class="font-headline-xl text-headline-xl text-primary" id="stat-projects">—</span>
+        <div class="h-10 w-10 bg-tertiary-container/10 rounded-lg flex items-center justify-center text-tertiary">
+          <span class="material-symbols-outlined">account_tree</span>
+        </div>
+      </div>
+    </div>
+    <div class="bg-surface-container-lowest p-6 rounded-xl stats-card-shadow border border-surface-variant hover:border-secondary transition-all">
+      <p class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider mb-2">Messages</p>
+      <div class="flex items-end justify-between">
+        <span class="font-headline-xl text-headline-xl text-error" id="stat-messages">—</span>
+        <div class="h-10 w-10 bg-error/5 rounded-lg flex items-center justify-center text-error">
+          <span class="material-symbols-outlined">chat_bubble</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Profile Completion & Quick Actions Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+    <!-- Profile Progress -->
+    <div class="lg:col-span-1 rounded-xl stats-card-shadow flex flex-col justify-center" style="background:var(--sf);border:1.5px solid var(--bd);padding:28px">
+      <div style="margin-bottom:18px">
+        <h3 style="font-size:16px;font-weight:800;color:var(--tx);margin:0 0 4px">Profile Completion</h3>
+        <p style="font-size:12px;color:var(--sub);margin:0">Boost your visibility to other students.</p>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:11px;font-weight:700;background:var(--ac-light);color:var(--ac);padding:3px 10px;border-radius:999px" id="dash-profile-step">Loading…</span>
+          <span style="font-size:15px;font-weight:800;color:var(--ac)" id="dash-profile-pct">—</span>
+        </div>
+        <div style="height:7px;border-radius:999px;background:var(--bd);overflow:hidden">
+          <div id="dash-profile-bar" style="height:100%;background:linear-gradient(90deg,var(--ac),#a855f7);border-radius:999px;transition:width 1s ease;width:0%"></div>
+        </div>
+      </div>
+      <a href="profile/edit.html" style="margin-top:18px;font-size:13px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:4px;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+        Finish setting up your profile <span class="material-symbols-outlined" style="font-size:16px">chevron_right</span>
+      </a>
+    </div>
+    <!-- Quick Actions -->
+    <div class="lg:col-span-2">
+      <h3 style="font-size:15px;font-weight:800;color:var(--tx);margin:0 0 14px">Quick Actions</h3>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <a href="messages.html" class="qa-card" style="--ic-bg:rgba(59,130,246,.12);--ic-c:#3b82f6">
+          <div class="qa-ic"><span class="material-symbols-outlined">mail</span></div>
+          <span class="qa-lbl">Messages</span>
+        </a>
+        <a href="notifications.html" class="qa-card" style="--ic-bg:rgba(99,102,241,.12);--ic-c:#6366f1">
+          <div class="qa-ic"><span class="material-symbols-outlined">notifications</span></div>
+          <span class="qa-lbl">Notifications</span>
+        </a>
+        <a href="teams.html" class="qa-card" style="--ic-bg:rgba(16,185,129,.12);--ic-c:#10b981">
+          <div class="qa-ic"><span class="material-symbols-outlined">group_add</span></div>
+          <span class="qa-lbl">Find Teams</span>
+        </a>
+        <a href="projects/generator.html" class="qa-card" style="--ic-bg:rgba(124,58,237,.12);--ic-c:#7c3aed">
+          <div class="qa-ic"><span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">auto_awesome</span></div>
+          <span class="qa-lbl">AI Generator</span>
+        </a>
+        <a href="projects/showcase.html" class="qa-card" style="--ic-bg:rgba(245,158,11,.12);--ic-c:#f59e0b">
+          <div class="qa-ic"><span class="material-symbols-outlined">auto_awesome_motion</span></div>
+          <span class="qa-lbl">Showcase</span>
+        </a>
+        <a href="settings.html" class="qa-card" style="--ic-bg:rgba(236,72,153,.12);--ic-c:#ec4899">
+          <div class="qa-ic"><span class="material-symbols-outlined">settings</span></div>
+          <span class="qa-lbl">Settings</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RIGHT SIDEBAR -->
+<aside class="w-[300px] flex-shrink-0 flex flex-col gap-4 overflow-y-auto max-lg:hidden pr-1">
+
+  <!-- ① Clock — TOP of sidebar -->
+  <div class="rounded-2xl overflow-hidden relative" style="background:linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95);">
+    <div class="absolute -left-4 -top-4 w-20 h-20 rounded-full" style="background:rgba(255,255,255,.05)"></div>
+    <div class="absolute right-0 bottom-0 w-28 h-28 rounded-full" style="background:rgba(255,255,255,.04)"></div>
+    <div class="relative p-5">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-bold uppercase tracking-widest" style="color:rgba(255,255,255,.5)">Local Time</span>
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 bg-green-400 rounded-full" style="animation:pulse 2s infinite"></span>
+          <span class="text-[10px] font-semibold" style="color:rgba(255,255,255,.5)">Online</span>
+        </span>
+      </div>
+      <div id="right-clock" class="text-[28px] font-black tabular-nums text-white leading-none mb-1"></div>
+      <div id="right-date" class="text-[12px] font-medium" style="color:rgba(255,255,255,.6)"></div>
+    </div>
+  </div>
+
+  <!-- ② Notifications -->
+  <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-surface-variant">
+      <span class="font-bold text-[13px] text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[18px]">notifications</span>Notifications
+      </span>
+      <div class="flex items-center gap-2">
+        <span id="notif-badge" class="hidden bg-secondary text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"></span>
+        <button class="text-primary text-[11px] font-semibold hover:underline" id="notif-mark-all">Clear</button>
+      </div>
+    </div>
+    <div id="notif-list" class="divide-y divide-surface-variant max-h-[200px] overflow-y-auto">
+      <div class="text-center text-on-surface-variant text-[12px] py-6">Loading…</div>
+    </div>
+    <a href="notifications.html" class="flex items-center justify-center gap-1 text-primary text-[12px] font-semibold py-2.5 hover:bg-primary/5 transition-colors">
+      View all <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+    </a>
+  </div>
+
+  <!-- ③ Online Now -->
+  <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-surface-variant">
+      <span class="font-bold text-[13px] text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]" style="color:#10b981">group</span>Online Now
+      </span>
+      <span id="online-count" class="text-[11px] font-bold text-on-surface-variant"></span>
+    </div>
+    <div id="online-list" class="p-3 flex flex-col gap-2 max-h-[160px] overflow-y-auto">
+      <div class="text-center text-on-surface-variant text-[12px] py-4">Loading…</div>
+    </div>
+    <a href="messages.html" class="flex items-center justify-center gap-1 text-primary text-[12px] font-semibold py-2.5 hover:bg-primary/5 transition-colors">
+      Message friends <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+    </a>
+  </div>
+
+  <!-- ④ Quick Links -->
+  <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant p-3">
+    <p class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider px-1 mb-2">Quick Links</p>
+    <div class="grid grid-cols-2 gap-2">
+      <a href="profile/edit.html" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-surface-container hover:bg-primary/8 transition-colors text-center">
+        <span class="material-symbols-outlined text-[22px] text-primary">person_edit</span>
+        <span class="text-[11px] font-semibold text-on-surface">Edit Profile</span>
+      </a>
+      <a href="teams.html" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-surface-container hover:bg-primary/8 transition-colors text-center">
+        <span class="material-symbols-outlined text-[22px] text-secondary">diversity_3</span>
+        <span class="text-[11px] font-semibold text-on-surface">Find Teams</span>
+      </a>
+      <a href="projects/showcase.html" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-surface-container hover:bg-primary/8 transition-colors text-center">
+        <span class="material-symbols-outlined text-[22px]" style="color:#f59e0b">star</span>
+        <span class="text-[11px] font-semibold text-on-surface">Showcase</span>
+      </a>
+      <a href="projects/generator.html" class="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-surface-container hover:bg-primary/8 transition-colors text-center">
+        <span class="material-symbols-outlined text-[22px]" style="color:#ec4899">auto_awesome</span>
+        <span class="text-[11px] font-semibold text-on-surface">AI Ideas</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ⑤ AI Promo Card -->
+  <div class="rounded-2xl overflow-hidden relative" style="background:linear-gradient(135deg,#6366f1,#7c3aed,#ec4899)">
+    <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
+    <div class="relative p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="material-symbols-outlined text-white text-[20px]">auto_awesome</span>
+        <span class="text-white font-bold text-[13px]">AI Project Generator</span>
+      </div>
+      <p class="text-white/80 text-[12px] leading-relaxed mb-3">Generate 5 unique project ideas tailored to your skills — instantly!</p>
+      <a href="projects/generator.html" class="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold text-[12px] py-2 rounded-xl transition-all" style="text-decoration:none">
+        <span class="material-symbols-outlined text-[16px]">bolt</span> Try Now
+      </a>
+    </div>
+  </div>
+
+</aside>
+</main>
+
+<!-- ✨ Floating AI Assistant Popup (Gemini-style) -->
+<div id="ai-fab-wrap">
+  <button id="ai-fab-btn" onclick="toggleAIPopup()" title="AI Assistant">
+    <span class="ai-fab-glow"></span>
+    <svg id="ai-icon-open" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>
+    <svg id="ai-icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+  <div id="ai-popup" class="ai-popup">
+    <div class="ai-popup-hdr">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--tw-tx,#0f172a)">ProjectHive AI</div>
+          <div style="font-size:10px;color:#10b981;font-weight:600">● Online</div>
+        </div>
+      </div>
+      <button onclick="toggleAIPopup()" style="background:none;border:none;cursor:pointer;color:var(--tw-sub,#64748b);padding:4px;border-radius:8px;line-height:0">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ai-popup-msgs" id="ai-msgs">
+      <div class="ai-msg ai-msg-bot">
+        <div class="ai-msg-av">✨</div>
+        <div class="ai-msg-bub">Hi <strong id="ai-greet">there</strong>! 👋 I'm your AI project assistant. Ask me anything!</div>
+      </div>
+    </div>
+    <div class="ai-chips" id="ai-chips">
+      <button class="ai-chip" onclick="askAI(this.textContent)">💡 Project idea for me</button>
+      <button class="ai-chip" onclick="askAI(this.textContent)">🛠️ What tech to learn?</button>
+      <button class="ai-chip" onclick="askAI(this.textContent)">👥 How to find teammates?</button>
+      <button class="ai-chip" onclick="askAI(this.textContent)">🚀 Trending topics 2025</button>
+      <button class="ai-chip" onclick="askAI(this.textContent)">🤖 AI/ML beginner projects</button>
+      <button class="ai-chip" onclick="askAI(this.textContent)">📱 Best mobile app ideas</button>
+    </div>
+    <div class="ai-input-row">
+      <textarea id="ai-input" class="ai-textarea" placeholder="Ask anything about projects…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAI()}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+      <button id="ai-send" onclick="sendAI()" class="ai-send">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+#ai-fab-wrap{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+#ai-fab-btn{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#7c3aed,#ec4899);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 24px rgba(99,102,241,.5);transition:transform .2s,box-shadow .2s;position:relative;flex-shrink:0}
+#ai-fab-btn:hover{transform:scale(1.1);box-shadow:0 10px 32px rgba(99,102,241,.65)}
+#ai-fab-btn.is-open{background:linear-gradient(135deg,#4f46e5,#6d28d9)}
+.ai-fab-glow{position:absolute;inset:-5px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);opacity:.25;filter:blur(10px);animation:aipulse 2.5s ease-in-out infinite;z-index:-1}
+@keyframes aipulse{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.45;transform:scale(1.15)}}
+.ai-popup{position:absolute;bottom:74px;right:0;width:360px;background:var(--tw-surf,#fff);border:1.5px solid var(--tw-bd,#e2e8f0);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.18),0 4px 16px rgba(99,102,241,.12);display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(16px) scale(.96);pointer-events:none;transition:opacity .22s,transform .22s;max-height:520px}
+.ai-popup.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.ai-popup-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--tw-bd,#e2e8f0);background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(236,72,153,.03));flex-shrink:0}
+.ai-popup-msgs{flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px;min-height:80px;max-height:220px;scrollbar-width:thin}
+.ai-msg{display:flex;align-items:flex-start;gap:8px}
+.ai-msg-bot{flex-direction:row}
+.ai-msg-user{flex-direction:row-reverse}
+.ai-msg-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:#fff;font-weight:700}
+.ai-msg-bub{max-width:83%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.55;color:var(--tw-tx,#0f172a)}
+.ai-msg-bot .ai-msg-bub{background:var(--tw-surf2,#f1f5f9);border-bottom-left-radius:4px}
+.ai-msg-user .ai-msg-bub{background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border-bottom-right-radius:4px}
+.ai-typing-dots{display:flex;gap:4px;align-items:center;padding:10px 14px}
+.ai-typing-dots span{width:7px;height:7px;border-radius:50%;background:var(--tw-sub,#94a3b8);animation:aitype 1.2s ease-in-out infinite}
+.ai-typing-dots span:nth-child(2){animation-delay:.2s}
+.ai-typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes aitype{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+.ai-chips{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--tw-bd,#e2e8f0);flex-shrink:0}
+.ai-chip{padding:5px 11px;border-radius:999px;border:1.5px solid var(--tw-bd,#e2e8f0);background:var(--tw-surf2,#f1f5f9);color:var(--tw-sub,#64748b);font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:'Inter',sans-serif}
+.ai-chip:hover{background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;border-color:transparent;transform:translateY(-1px)}
+.ai-input-row{display:flex;align-items:flex-end;gap:8px;padding:10px 12px;border-top:1px solid var(--tw-bd,#e2e8f0);flex-shrink:0;background:var(--tw-surf,#fff)}
+.ai-textarea{flex:1;resize:none;border:1.5px solid var(--tw-bd,#e2e8f0);border-radius:12px;padding:9px 12px;font-size:13px;font-family:'Inter',sans-serif;background:var(--tw-surf2,#f8fafc);color:var(--tw-tx,#0f172a);outline:none;transition:border .2s;max-height:100px;line-height:1.5}
+.ai-textarea:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.ai-textarea::placeholder{color:var(--tw-sub,#94a3b8)}
+.ai-send{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#7c3aed);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.ai-send:hover{transform:scale(1.08);box-shadow:0 4px 14px rgba(99,102,241,.4)}
+.ai-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+</style>
+
+<script>
+(function(){
+  const tk=localStorage.getItem('access_token');
+  let uname='there';
+  if(tk){try{const p=JSON.parse(atob(tk.split('.')[1]));uname=p.firstName||p.name||'there';}catch(e){}}
+  const g=document.getElementById('ai-greet');
+  if(g) g.textContent=uname;
+
+  let open=false;
+  window.toggleAIPopup=function(){
+    open=!open;
+    document.getElementById('ai-popup').classList.toggle('open',open);
+    document.getElementById('ai-fab-btn').classList.toggle('is-open',open);
+    document.getElementById('ai-icon-open').style.display=open?'none':'block';
+    document.getElementById('ai-icon-close').style.display=open?'block':'none';
+    if(open) setTimeout(()=>document.getElementById('ai-input')?.focus(),200);
+  };
+
+  function addMsg(html,role){
+    const msgs=document.getElementById('ai-msgs');
+    const d=document.createElement('div');
+    d.className='ai-msg ai-msg-'+role;
+    const av=document.createElement('div');
+    av.className='ai-msg-av';
+    if(role==='bot'){av.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>';}
+    else{av.style.background='#6366f1';av.textContent=(uname[0]||'U').toUpperCase();}
+    const bub=document.createElement('div');
+    bub.className='ai-msg-bub';
+    bub.innerHTML=html.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+    d.appendChild(av);d.appendChild(bub);
+    msgs.appendChild(d);
+    msgs.scrollTop=msgs.scrollHeight;
+  }
+
+  function showTyping(){
+    const msgs=document.getElementById('ai-msgs');
+    const el=document.createElement('div');
+    el.className='ai-msg ai-msg-bot';el.id='ai-typing';
+    el.innerHTML='<div class="ai-msg-av"><svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg></div><div class="ai-typing-dots"><span></span><span></span><span></span></div>';
+    msgs.appendChild(el);msgs.scrollTop=msgs.scrollHeight;
+  }
+  function hideTyping(){document.getElementById('ai-typing')?.remove();}
+
+  async function callAI(q){
+    const TK=localStorage.getItem('access_token');
+    const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+
+    /* ── 1. Try real Gemini chat endpoint ── */
+    try{
+      const r=await fetch('/api/ai/chat',{method:'POST',headers:H,body:JSON.stringify({message:q})});
+      const d=await r.json();
+      if(r.ok && d.reply) return d.reply;
+      if(r.status===429||d.fallback){
+        /* Rate limited — go to local fallback below */
+      } else if(d.error) {
+        console.warn('AI chat error:',d.error);
+      }
+    }catch(e){}
+
+    /* ── 2. Try generate-ideas as fallback (extract first idea) ── */
+    try{
+      const domain = q.length < 80 ? q : 'General';
+      const r2=await fetch('/api/ai/generate-ideas',{method:'POST',headers:H,
+        body:JSON.stringify({domain, skills:['JavaScript'], teamSize:2, timelineWeeks:4})});
+      if(r2.ok){
+        const d=await r2.json();
+        if(d.ideas?.length){
+          const i=d.ideas[0];
+          return `**${i.name||i.title||'Project Idea'}**\n\n${i.description||''}\n\n${i.techStack?.length?'🛠️ Tech: '+i.techStack.join(', '):''}`.trim();
+        }
+      }
+    }catch(e){}
+
+    /* ── 3. Smart local keyword fallback ── */
+    const ql=q.toLowerCase();
+    if(ql.includes('idea')||ql.includes('project')||ql.includes('build'))
+      return '💡 **Cool Project Ideas:**\n\n• **StudyBuddy** — AI-powered study group finder\n• **GreenRoute** — Eco-friendly commute tracker\n• **SkillSwap** — Peer-to-peer skill exchange platform\n\nVisit the **AI Generator** page for 5 full ideas with tech stacks!';
+    if(ql.includes('tech')||ql.includes('learn')||ql.includes('stack'))
+      return '🛠️ **Top Skills for 2025:**\n\n• **Frontend:** React, Next.js, TypeScript\n• **Backend:** Node.js, Python, Go\n• **AI/ML:** PyTorch, LangChain, HuggingFace\n• **Mobile:** Flutter, React Native';
+    if(ql.includes('team')||ql.includes('teammate')||ql.includes('partner'))
+      return '👥 **Finding Teammates:**\n\n• Use the **Find Teams** page to discover open teams\n• Complete your profile with skills & interests\n• Join teams matching your domain\n• Attend hackathons to meet collaborators!';
+    if(ql.includes('trending')||ql.includes('popular')||ql.includes('2025'))
+      return '🔥 **Trending in 2025:**\n\n• LLM-powered web apps\n• Web3 & DeFi tools\n• Health & wellness trackers\n• Sustainability tech\n• Real-time collaboration tools';
+    if(ql.includes('mobile')||ql.includes('app'))
+      return '📱 **Mobile App Ideas:**\n\n• Campus food ordering app\n• Study timer with Pomodoro + analytics\n• Local event discovery\n• Student expense tracker\n• AR campus navigation';
+    if(ql.includes('ai')||ql.includes('ml')||ql.includes('machine'))
+      return '🤖 **AI/ML Beginner Projects:**\n\n• Sentiment analysis tool\n• Plant disease detector (CNN)\n• Chatbot with RAG pipeline\n• Resume parser & scorer\n• Movie recommendation engine';
+    return "I'm your ProjectHive AI assistant! 🌟\n\nAsk me about:\n• 💡 Project ideas\n• 🛠️ Tech stacks\n• 👥 Finding teammates\n• 🚀 Trending topics\n\nOr visit **AI Generator** for detailed project ideas!";
+  }
+
+  window.askAI=async function(q){
+    document.getElementById('ai-chips').style.display='none';
+    addMsg(q,'user');
+    const inp=document.getElementById('ai-input');
+    const btn=document.getElementById('ai-send');
+    inp.value='';inp.style.height='auto';
+    btn.disabled=true;showTyping();
+    const ans=await callAI(q);
+    hideTyping();addMsg(ans,'bot');
+    btn.disabled=false;inp.focus();
+  };
+  window.sendAI=function(){
+    const q=document.getElementById('ai-input').value.trim();
+    if(q) window.askAI(q);
+  };
+})();
+</script>
+
+<script>
+(function () {
+  /* Auth guard */
+  const TK = localStorage.getItem('access_token');
+  if (!TK) { window.location.href = '../auth/login.html'; return; }
+  try {
+    const p = JSON.parse(atob(TK.split('.')[1]));
+    if (p.exp && Date.now() >= p.exp * 1000) {
+      localStorage.removeItem('access_token');
+      window.location.href = '../auth/login.html'; return;
+    }
+  } catch(e) { window.location.href = '../auth/login.html'; return; }
+
+  const H = { Authorization: 'Bearer ' + TK };
+
+  /* Sidebar */
+  PHSidebar.init('dashboard', '../../');
+
+  /* Sync topbar sun/moon on load */
+  (function syncTopbarTheme(){
+    const isDark = document.documentElement.classList.contains('dark');
+    const sun  = document.getElementById('dash-sun');
+    const moon = document.getElementById('dash-moon');
+    if(sun)  sun.style.display  = isDark ? 'none'  : 'block';
+    if(moon) moon.style.display = isDark ? 'block' : 'none';
+  })();
+
+  /* Time greeting */
+  const hr = new Date().getHours();
+  const greet = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  const h1 = document.querySelector('h1');
+  if (h1 && h1.childNodes[0]) h1.childNodes[0].textContent = greet + ', ';
+
+  /* Micro-interactions */
+  document.querySelectorAll('.stats-card-shadow').forEach(c => {
+    c.addEventListener('mouseenter', () => c.style.transform = 'translateY(-4px)');
+    c.addEventListener('mouseleave', () => c.style.transform = 'translateY(0)');
+  });
+  const si = document.getElementById('dash-search');
+  if (si) {
+    si.addEventListener('focus', () => si.parentElement.classList.add('scale-105'));
+    si.addEventListener('blur',  () => si.parentElement.classList.remove('scale-105'));
+  }
+
+  /* Animate number count-up */
+  function countUp(id, target) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let cur = 0;
+    const step = Math.max(1, Math.ceil(target / 20));
+    const t = setInterval(() => { cur = Math.min(cur + step, target); el.textContent = cur; if (cur >= target) clearInterval(t); }, 40);
+  }
+
+  /* Load all dashboard data */
+  async function load() {
+    /* User info */
+    try {
+      const r = await fetch('/api/users/me', { headers: H });
+      if (r.ok) {
+        const u = await r.json();
+        const fn = u.firstName || '', ln = u.lastName || '';
+        const name = (fn + (ln ? ' ' + ln : '')).trim() || 'Student';
+        const ini  = ((fn[0]||'')+(ln[0]||'')).toUpperCase() || '?';
+        const cols = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+        let h = 0; for (const c of name) h = c.charCodeAt(0) + ((h<<5)-h);
+
+        document.getElementById('dash-greeting-name').textContent = fn || 'there';
+        document.getElementById('dash-welcome-name').textContent  = fn || 'Student';
+        document.getElementById('dash-username').textContent      = name;
+        document.getElementById('dash-role').textContent          = (u.role || 'student').charAt(0).toUpperCase() + (u.role || 'student').slice(1);
+
+        const av = document.getElementById('dash-avatar');
+        if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
+
+        if (u.profileCompletion) {
+          const pct = Math.round(u.profileCompletion);
+          document.getElementById('dash-profile-pct').textContent = pct + '%';
+          document.getElementById('dash-profile-bar').style.width = pct + '%';
+          document.getElementById('dash-profile-step').textContent = `Step ${Math.ceil(pct/20)} of 5`;
+        }
+      }
+    } catch(e) {}
+
+    /* Stats */
+    try {
+      const [tr,fr,pr,mr] = await Promise.allSettled([
+        fetch('/api/teams/my-teams',         {headers:H}).then(r=>r.json()),
+        fetch('/api/friends',                {headers:H}).then(r=>r.json()),
+        fetch('/api/projects',               {headers:H}).then(r=>r.json()),
+        fetch('/api/messages/conversations', {headers:H}).then(r=>r.json()),
+      ]);
+      countUp('stat-teams',    tr.value?.teams?.length    ?? tr.value?.length ?? 0);
+      countUp('stat-friends',  fr.value?.friends?.length  ?? fr.value?.length ?? 0);
+      countUp('stat-projects', pr.value?.projects?.length ?? pr.value?.length ?? 0);
+      countUp('stat-messages', mr.value?.conversations?.length ?? mr.value?.length ?? 0);
+    } catch(e) {}
+
+    /* Notifications panel */
+    try {
+      const nr = await fetch('/api/notifications?limit=6', {headers:H});
+      const el = document.getElementById('notif-list');
+      if (nr.ok) {
+        const nd = await nr.json();
+        const list = nd.notifications || nd;
+        const unread = list.filter(n=>!n.read).length;
+        if (unread > 0) {
+          const badge = document.getElementById('notif-badge');
+          if(badge){badge.textContent = unread; badge.classList.remove('hidden');}
+        }
+        el.innerHTML = list.length
+          ? list.map(n=>`<div class="flex items-start gap-2.5 px-3 py-2.5 hover:bg-surface-container cursor-pointer transition-colors${n.read?'':' bg-primary/3'}">
+              <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${n.read?'bg-surface-variant':'bg-secondary'}"></div>
+              <div class="flex-1 min-w-0">
+                <p class="text-[12px] text-on-surface leading-snug line-clamp-2">${n.message||n.title||'New notification'}</p>
+                <span class="text-[10px] text-on-surface-variant">${n.createdAt?new Date(n.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''}</span>
+              </div>
+            </div>`).join('')
+          : '<div class="text-center text-on-surface-variant text-[12px] py-6">No notifications yet 🎉</div>';
+      } else {
+        el.innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">No notifications yet.</div>';
+      }
+    } catch(e) {
+      document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">Could not load.</div>';
+    }
+
+    /* Online Friends */
+    try {
+      const fr = await fetch('/api/users?limit=20', {headers:H});
+      const el = document.getElementById('online-list');
+      const cnt = document.getElementById('online-count');
+      if(fr.ok){
+        const fd = await fr.json();
+        const users = (fd.users||fd||[]).slice(0,6);
+        cnt.textContent = users.length + ' online';
+        const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+        function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+        el.innerHTML = users.length
+          ? users.map(u=>{
+              const name=`${u.firstName||''} ${u.lastName||''}`.trim()||'User';
+              const ini=((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase()||'?';
+              return `<div class="flex items-center gap-2.5 px-1 py-1 rounded-xl hover:bg-surface-container cursor-pointer transition-colors">
+                <div class="relative flex-shrink-0">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold" style="background:${avC(name)}">${ini}</div>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-surface-container-lowest"></span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-[12px] font-semibold text-on-surface truncate">${name}</p>
+                  <p class="text-[10px] text-on-surface-variant truncate">${u.university||u.major||'Student'}</p>
+                </div>
+                <a href="messages.html" title="Message" class="text-on-surface-variant hover:text-primary transition-colors">
+                  <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+                </a>
+              </div>`;
+            }).join('')
+          : '<div class="text-center text-on-surface-variant text-[12px] py-4">No users found</div>';
+      }
+    } catch(e) {
+      document.getElementById('online-list').innerHTML='<div class="text-center text-on-surface-variant text-[12px] py-4">Could not load</div>';
+    }
+  }
+
+  document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', load) : load();
+
+  /* Live clock for right sidebar */
+  function updateClock(){
+    const now = new Date();
+    const cl = document.getElementById('right-clock');
+    const dt = document.getElementById('right-date');
+    if(cl) cl.textContent = now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    if(dt) dt.textContent = now.toLocaleDateString([],{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  /* Mark all read */
+  document.getElementById('notif-mark-all')?.addEventListener('click', async () => {
+    try {
+      await fetch('/api/notifications/mark-all-read', {method:'PATCH', headers:H});
+      document.querySelectorAll('#notif-list .border-l-secondary').forEach(el => el.classList.remove('border-l-2','border-l-secondary'));
+      PHToast?.success('All notifications marked as read');
+    } catch(e) {}
+  });
+})();
+</script>
+</body></html>
