@@ -246,9 +246,7 @@ async function handleRegister(e){
   if(!document.getElementById('terms').checked){showAlert('Please accept the Terms of Service.');return;}
   const recaptchaToken = grecaptcha.getResponse();
   if(!recaptchaToken){
-    showAlert('Please complete the security check (click "I\'m not a robot").','warn');
-    return;
-  }
+    showAlert('Please tick the "I am not a robot" checkbox first.','warn');
     return;
   }
 

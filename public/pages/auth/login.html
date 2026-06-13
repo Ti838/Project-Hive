@@ -212,7 +212,7 @@ async function handleLogin(e){
   // reCAPTCHA check
   const recaptchaToken = grecaptcha.getResponse();
   if(!recaptchaToken){
-    showAlert('Please complete the security check (click "I'm not a robot").','warn');
+    showAlert('Please tick the "I am not a robot" checkbox first.','warn');
     return;
   }
 
