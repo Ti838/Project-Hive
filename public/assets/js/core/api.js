@@ -1,7 +1,11 @@
 // ProjectHive API Module
 const API = (() => {
-    // Use relative /api so we work on any host/port without hardcoding
-    const BASE_URL = '/api';
+    // In production (Vercel), point to the Render backend
+    // In development (localhost), use relative path
+    const RENDER_URL = 'https://projecthive-backend.onrender.com';
+    const BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? '/api'
+        : `${RENDER_URL}/api`;
 
     let access = localStorage.getItem('access_token');
     let refresh = localStorage.getItem('refresh_token');
