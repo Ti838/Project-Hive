@@ -24,6 +24,10 @@ import { adminDevRouter } from './routes/admin.routes.js';
 
 const app = express();
 
+// Trust proxy — required on Render/Vercel/Heroku/any reverse proxy
+// Allows express-rate-limit to read real client IP from X-Forwarded-For
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false, // Disabled to allow CDN scripts (Tailwind, fonts)
