@@ -137,7 +137,7 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
       <div class="captcha-wrap">
         <div class="cf-turnstile"
              id="turnstile-widget"
-             data-sitekey="0x4AAAAAAADkFwQm-CWJvjWZI"
+             data-sitekey="0x4AAAAAADkFwQm-CWJvjWZI"
              data-theme="auto"
              data-callback="onTurnstileSuccess"
              data-error-callback="onTurnstileError">
@@ -164,8 +164,13 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 <script>
 if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){window.location.href='../user/dashboard.html';}
 
+// Turnstile state
+let turnstileToken = null;
+function onTurnstileSuccess(token){ turnstileToken = token; }
+function onTurnstileError(){ turnstileToken = null; }
 
 let lastEmail = '';
+
 
 function toggleTheme(){
   const dark=document.documentElement.classList.toggle('dark');
@@ -213,6 +218,7 @@ async function handleLogin(e){
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('password').value;
   if(!email||!password){showAlert('Please fill in all fields.');return;}
+  if(!turnstileToken){showAlert('Please complete the security check.');return;}
 
   lastEmail=email;
   const btn=document.getElementById('submit-btn');
@@ -221,7 +227,7 @@ async function handleLogin(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
-    const body={email,password};
+    const body={email,password,'cf-turnstile-response':turnstileToken};
 
     const res=await fetch('/api/auth/login',{
       method:'POST',
@@ -249,6 +255,8 @@ async function handleLogin(e){
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Sign In';
+    if(window.turnstile)turnstile.reset('#turnstile-widget');
+    turnstileToken=null;
   }
 }
 </script>
