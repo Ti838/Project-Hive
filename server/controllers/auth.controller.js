@@ -38,20 +38,11 @@ export async function register(req, res, next) {
     const salt = await bcryptjs.genSalt(12);
     const passwordHash = await bcryptjs.hash(password, salt);
 
-    // Check if custom domain is verified in Resend
-    // Without a domain, Resend can only send to the account owner email
-    // So we auto-verify users until a domain is configured
-    const domainVerified = process.env.RESEND_DOMAIN_VERIFIED === 'true';
+    // Always send real verification email via Brevo
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
-    let verificationToken = null;
-    let verificationExpires = null;
-
-    if (domainVerified) {
-      verificationToken = crypto.randomBytes(32).toString('hex');
-      verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
-    }
-
-    // Create user in Supabase
+    // Create user — NOT verified until they click the link
     const { data: user, error: createError } = await supabaseAdmin
       .from('users')
       .insert({
@@ -63,9 +54,8 @@ export async function register(req, res, next) {
         major: major || '',
         year_of_study: yearOfStudy || null,
         email_verification_token: verificationToken,
-        email_verification_expires: verificationExpires?.toISOString() || null,
-        // Auto-verify if no domain configured, require verification if domain exists
-        is_verified: !domainVerified,
+        email_verification_expires: verificationExpires.toISOString(),
+        is_verified: false,  // must click email link
       })
       .select()
       .single();
@@ -75,18 +65,13 @@ export async function register(req, res, next) {
       return res.status(500).json({ error: 'Failed to create account. Please try again.' });
     }
 
-    // Send email (non-blocking)
+    // Send verification email via Brevo
     try {
-      if (domainVerified && verificationToken) {
-        // Domain verified → send real verification email to user
-        await sendVerificationEmail(user.email, user.first_name, verificationToken);
-      } else {
-        // No domain → send welcome email directly (user is auto-verified)
-        await sendWelcomeEmail(user.email, user.first_name);
-      }
+      await sendVerificationEmail(user.email, user.first_name, verificationToken);
+      console.log('[ProjectHive] ✉️  Verification email sent to:', user.email);
     } catch (emailErr) {
-      // Non-fatal — user is already created
-      console.warn('[ProjectHive] Email send failed (non-fatal):', emailErr.message);
+      console.error('[ProjectHive] Verification email failed:', emailErr.message);
+      // Still return success — user can resend later
     }
 
     // Generate JWT tokens
@@ -101,20 +86,18 @@ export async function register(req, res, next) {
     console.log('[ProjectHive] ✅ User registered:', user.email);
 
     res.status(201).json({
-      message: domainVerified
-        ? 'Account created! Please check your email to verify your account.'
-        : 'Account created successfully! Welcome to ProjectHive 🐝',
+      message: 'Account created! Please check your email and click the verification link to activate your account.',
       emailSent: true,
+      requiresVerification: true,
       user: {
         id: user.id,
         firstName: user.first_name,
         lastName: user.last_name,
         email: user.email,
         university: user.university,
-        isVerified: !domainVerified,  // auto-verified when no domain
+        isVerified: false,
       },
-      accessToken,
-      refreshToken,
+      // No tokens yet — user must verify email first
     });
   } catch (error) {
     console.error('[ProjectHive] Register error:', error);
@@ -233,6 +216,15 @@ export async function login(req, res, next) {
 
     if (user.is_banned) {
       return res.status(403).json({ error: 'Your account has been suspended.' });
+    }
+
+    // Block login if email not verified
+    if (!user.is_verified) {
+      return res.status(403).json({
+        error: 'Please verify your email before logging in. Check your inbox for the verification link.',
+        requiresVerification: true,
+        email: user.email,
+      });
     }
 
     // Verify password

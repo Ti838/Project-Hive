@@ -9,9 +9,10 @@
 
 import nodemailer from 'nodemailer';
 
-const APP_URL = process.env.NODE_ENV === 'production'
-  ? (process.env.APP_URL_PROD || 'https://projecthive-backend.onrender.com')
-  : (process.env.APP_URL || 'http://localhost:5000');
+// Frontend URL — where verification links point (must be the Vercel frontend)
+const FRONTEND_URL = process.env.NODE_ENV === 'production'
+  ? (process.env.FRONTEND_URL_PROD || 'https://project-hive.vercel.app')
+  : 'http://localhost:5000';
 
 // ─── Transporter Setup ────────────────────────────────────────────────────────
 function createTransporter() {
@@ -78,7 +79,7 @@ const baseStyle = `
 
 // ─── Verification Email ───────────────────────────────────────────────────────
 export async function sendVerificationEmail(email, firstName, token) {
-  const verifyUrl = `${APP_URL}/pages/auth/verify-email.html?token=${token}`;
+  const verifyUrl = `${FRONTEND_URL}/pages/auth/verify-email.html?token=${token}`;
 
   return sendEmail({
     to: email,
@@ -103,7 +104,7 @@ export async function sendVerificationEmail(email, firstName, token) {
 
 // ─── Welcome Email ────────────────────────────────────────────────────────────
 export async function sendWelcomeEmail(email, firstName) {
-  const dashUrl = `${APP_URL}/pages/user/dashboard.html`;
+  const dashUrl = `${FRONTEND_URL}/pages/user/dashboard.html`;
 
   return sendEmail({
     to: email,
@@ -131,7 +132,7 @@ export async function sendWelcomeEmail(email, firstName) {
 
 // ─── Password Reset Email ─────────────────────────────────────────────────────
 export async function sendPasswordResetEmail(email, firstName, token) {
-  const resetUrl = `${APP_URL}/pages/auth/reset-password.html?token=${token}`;
+  const resetUrl = `${FRONTEND_URL}/pages/auth/reset-password.html?token=${token}`;
 
   return sendEmail({
     to: email,

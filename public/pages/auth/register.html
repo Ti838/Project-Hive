@@ -280,12 +280,30 @@ async function handleRegister(e){
     });
     const data=await res.json();
 
-    if(res.ok&&(data.accessToken||data.token)){
+    if(res.ok&&data.requiresVerification){
+      // Show email verification prompt
+      document.querySelector('.card-container').innerHTML=`
+        <div style="text-align:center;padding:48px 32px">
+          <div style="font-size:72px;margin-bottom:16px">📧</div>
+          <h2 style="color:var(--text-primary);font-size:24px;font-weight:700;margin:0 0 12px">Check your email!</h2>
+          <p style="color:var(--text-secondary);font-size:15px;line-height:1.6;margin:0 0 24px">
+            We sent a verification link to<br>
+            <strong style="color:#6366f1">${data.user?.email||''}</strong>
+          </p>
+          <p style="color:var(--text-secondary);font-size:14px;margin:0 0 32px">
+            Click the link in your email to activate your account.<br>
+            <small style="opacity:.6">Check spam/junk if you don't see it.</small>
+          </p>
+          <a href="login.html" style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700">
+            Go to Login
+          </a>
+        </div>`;
+    }else if(res.ok&&(data.accessToken||data.token)){
       localStorage.setItem('access_token',data.accessToken||data.token);
       if(data.refreshToken)localStorage.setItem('refresh_token',data.refreshToken);
       if(data.user)localStorage.setItem('user_data',JSON.stringify(data.user));
-      showAlert('✅ Account created! Check your email to verify your account.','ok');
-      setTimeout(()=>{window.location.href='../user/dashboard.html';},2500);
+      showAlert('Account created! Redirecting...','ok');
+      setTimeout(()=>{window.location.href='../user/dashboard.html';},2000);
     }else{
       showAlert(data.message||data.error||'Registration failed. Please try again.');
       btn.disabled=false;txt.textContent='Create Account';
@@ -299,6 +317,7 @@ async function handleRegister(e){
     turnstileToken=null;
   }
 }
+
 </script>
 </body>
 </html>
