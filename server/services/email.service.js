@@ -11,7 +11,7 @@ import nodemailer from 'nodemailer';
 
 // Frontend URL — where verification links point (must be the Vercel frontend)
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
-  ? (process.env.FRONTEND_URL_PROD || 'https://project-hive.vercel.app')
+  ? (process.env.FRONTEND_URL_PROD || 'https://projecthive-bd.vercel.app')
   : 'http://localhost:5000';
 
 // ─── Transporter Setup ────────────────────────────────────────────────────────
