@@ -76,6 +76,34 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'projecthive-backend', timestamp: new Date() });
 });
 
+// Public stats — for homepage (no auth required)
+app.get('/api/stats', async (req, res) => {
+  try {
+    const { supabaseAdmin } = await import('./config/supabase.js');
+    const [
+      { count: users },
+      { count: teams },
+      { count: projects },
+    ] = await Promise.all([
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+      supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
+    ]);
+
+    // Count distinct universities
+    const { data: uniData } = await supabaseAdmin
+      .from('users')
+      .select('university')
+      .neq('university', null)
+      .neq('university', '');
+    const universities = new Set((uniData || []).map(u => u.university?.trim().toLowerCase())).size;
+
+    res.json({ users: users || 0, teams: teams || 0, projects: projects || 0, universities });
+  } catch (err) {
+    res.json({ users: 0, teams: 0, projects: 0, universities: 0 });
+  }
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);

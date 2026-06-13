@@ -102,10 +102,10 @@ footer{border-top:1px solid var(--border);padding:24px;text-align:center;color:v
       <a href="./pages/auth/login.html" class="btn btn-ghost" style="font-size:15px;padding:12px 28px">Sign In</a>
     </div>
     <div class="hero-stats">
-      <div class="hero-stat"><div class="num">2.4K+</div><div class="lbl">Students</div></div>
-      <div class="hero-stat"><div class="num">850+</div><div class="lbl">Projects</div></div>
-      <div class="hero-stat"><div class="num">320+</div><div class="lbl">Teams</div></div>
-      <div class="hero-stat"><div class="num">48+</div><div class="lbl">Universities</div></div>
+      <div class="hero-stat"><div class="num" id="stat-students">—</div><div class="lbl">Students</div></div>
+      <div class="hero-stat"><div class="num" id="stat-projects">—</div><div class="lbl">Projects</div></div>
+      <div class="hero-stat"><div class="num" id="stat-teams">—</div><div class="lbl">Teams</div></div>
+      <div class="hero-stat"><div class="num" id="stat-universities">—</div><div class="lbl">Universities</div></div>
     </div>
   </div>
 </div>
@@ -188,6 +188,42 @@ function toggleTheme(){
         document.querySelectorAll('a[href="./pages/auth/register.html"]').forEach(a=>{a.href='./pages/user/dashboard.html';a.textContent='Go to Dashboard';});
       }
     }catch(e){}
+  }
+}());
+
+// Live stats from backend
+(async function(){
+  const API = 'https://projecthive-backend.onrender.com';
+  function fmt(n){
+    if(n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'K+';
+    return n > 0 ? n + '+' : '0';
+  }
+  function animCount(el, target){
+    const duration = 1200;
+    const start = performance.now();
+    const startVal = 0;
+    function step(now){
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(startVal + (target - startVal) * ease);
+      el.textContent = fmt(current);
+      if(progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  try{
+    const res = await fetch(`${API}/api/stats`);
+    const data = await res.json();
+    animCount(document.getElementById('stat-students'), data.users || 0);
+    animCount(document.getElementById('stat-projects'), data.projects || 0);
+    animCount(document.getElementById('stat-teams'), data.teams || 0);
+    animCount(document.getElementById('stat-universities'), data.universities || 0);
+  }catch(e){
+    // fallback to dashes if API unreachable
+    ['stat-students','stat-projects','stat-teams','stat-universities'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.textContent='—';
+    });
   }
 }());
 </script>
