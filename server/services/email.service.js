@@ -15,19 +15,23 @@ const APP_URL = process.env.NODE_ENV === 'production'
 
 // ─── Transporter Setup ────────────────────────────────────────────────────────
 function createTransporter() {
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
+  const host = process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com';
+  const port = parseInt(process.env.BREVO_SMTP_PORT || '587');
+  const user = process.env.BREVO_SMTP_LOGIN;
+  const pass = process.env.BREVO_SMTP_KEY;
 
   if (user && pass) {
-    console.log('[ProjectHive] 📧 Email: Gmail SMTP (' + user + ')');
+    console.log('[ProjectHive] 📧 Email: Brevo SMTP (' + user + ')');
     return nodemailer.createTransport({
-      service: 'gmail',
+      host,
+      port,
+      secure: false,
       auth: { user, pass },
     });
   }
 
-  // Fallback: log emails to console (no sending)
-  console.warn('[ProjectHive] ⚠️  No email provider configured (GMAIL_USER/GMAIL_APP_PASSWORD missing)');
+  // Fallback: log emails to console only
+  console.warn('[ProjectHive] ⚠️  No email provider configured (BREVO_SMTP_LOGIN/BREVO_SMTP_KEY missing)');
   console.warn('[ProjectHive]    Emails will be logged to console only');
   return null;
 }
@@ -35,8 +39,8 @@ function createTransporter() {
 const transporter = createTransporter();
 
 const FROM_NAME = 'ProjectHive';
-const FROM_EMAIL = process.env.GMAIL_USER || 'noreply@projecthive.app';
-const FROM = `${FROM_NAME} <${FROM_EMAIL}>`;
+const FROM_EMAIL = process.env.BREVO_FROM_EMAIL || 'timonbiswas33@gmail.com';
+const FROM = `ProjectHive <${FROM_EMAIL}>`;
 
 // ─── Internal send helper ─────────────────────────────────────────────────────
 async function sendEmail({ to, subject, html }) {
