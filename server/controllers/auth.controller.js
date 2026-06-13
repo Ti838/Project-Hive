@@ -38,9 +38,18 @@ export async function register(req, res, next) {
     const salt = await bcryptjs.genSalt(12);
     const passwordHash = await bcryptjs.hash(password, salt);
 
-    // Generate email verification token
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    // Check if custom domain is verified in Resend
+    // Without a domain, Resend can only send to the account owner email
+    // So we auto-verify users until a domain is configured
+    const domainVerified = process.env.RESEND_DOMAIN_VERIFIED === 'true';
+
+    let verificationToken = null;
+    let verificationExpires = null;
+
+    if (domainVerified) {
+      verificationToken = crypto.randomBytes(32).toString('hex');
+      verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    }
 
     // Create user in Supabase
     const { data: user, error: createError } = await supabaseAdmin
@@ -54,8 +63,9 @@ export async function register(req, res, next) {
         major: major || '',
         year_of_study: yearOfStudy || null,
         email_verification_token: verificationToken,
-        email_verification_expires: verificationExpires.toISOString(),
-        is_verified: false,
+        email_verification_expires: verificationExpires?.toISOString() || null,
+        // Auto-verify if no domain configured, require verification if domain exists
+        is_verified: !domainVerified,
       })
       .select()
       .single();
@@ -65,11 +75,18 @@ export async function register(req, res, next) {
       return res.status(500).json({ error: 'Failed to create account. Please try again.' });
     }
 
-    // Send verification email (non-blocking)
+    // Send email (non-blocking)
     try {
-      await sendVerificationEmail(user.email, user.first_name, verificationToken);
+      if (domainVerified && verificationToken) {
+        // Domain verified → send real verification email to user
+        await sendVerificationEmail(user.email, user.first_name, verificationToken);
+      } else {
+        // No domain → send welcome email directly (user is auto-verified)
+        await sendWelcomeEmail(user.email, user.first_name);
+      }
     } catch (emailErr) {
-      console.warn('[ProjectHive] Verification email failed (non-fatal):', emailErr.message);
+      // Non-fatal — user is already created
+      console.warn('[ProjectHive] Email send failed (non-fatal):', emailErr.message);
     }
 
     // Generate JWT tokens
@@ -84,7 +101,9 @@ export async function register(req, res, next) {
     console.log('[ProjectHive] ✅ User registered:', user.email);
 
     res.status(201).json({
-      message: 'Account created! Please check your email to verify your account.',
+      message: domainVerified
+        ? 'Account created! Please check your email to verify your account.'
+        : 'Account created successfully! Welcome to ProjectHive 🐝',
       emailSent: true,
       user: {
         id: user.id,
@@ -92,7 +111,7 @@ export async function register(req, res, next) {
         lastName: user.last_name,
         email: user.email,
         university: user.university,
-        isVerified: false,
+        isVerified: !domainVerified,  // auto-verified when no domain
       },
       accessToken,
       refreshToken,
