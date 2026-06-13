@@ -175,7 +175,8 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
              data-sitekey="0x4AAAAAADkFwQm-CWJvjWZI"
              data-theme="auto"
              data-callback="onTurnstileSuccess"
-             data-error-callback="onTurnstileError">
+             data-error-callback="onTurnstileError"
+             data-expired-callback="onTurnstileExpired">
         </div>
       </div>
 
@@ -234,8 +235,10 @@ function showAlert(msg,type='err'){
 
 // Turnstile state
 let turnstileToken = null;
-function onTurnstileSuccess(token){ turnstileToken = token; }
-function onTurnstileError(){ turnstileToken = null; showAlert('Security check failed. Please try again.'); }
+let turnstileFailed = false;
+function onTurnstileSuccess(token){ turnstileToken = token; turnstileFailed = false; }
+function onTurnstileError(){ turnstileToken = null; turnstileFailed = true; }
+function onTurnstileExpired(){ turnstileToken = null; }
 
 async function handleRegister(e){
   e.preventDefault();
@@ -249,7 +252,8 @@ async function handleRegister(e){
   if(pw!==cpw){showAlert('Passwords do not match.');return;}
   if(pw.length<8){showAlert('Password must be at least 8 characters.');return;}
   if(!document.getElementById('terms').checked){showAlert('Please accept the Terms of Service.');return;}
-  if(!turnstileToken){showAlert('Please complete the security check.');return;}
+  // Only hard-block if widget explicitly failed (not just missing)
+  if(turnstileFailed){showAlert('Security check failed. Please refresh and try again.','warn');return;}
 
   const btn=document.getElementById('submit-btn');
   const txt=document.getElementById('btn-text');
