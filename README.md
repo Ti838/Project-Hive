@@ -1,10 +1,27 @@
 # 🐝 ProjectHive
 
-> A premium full-stack social platform for university students to discover teammates, showcase projects, and collaborate.
+> A premium full-stack social platform for university students to discover teammates, showcase projects, and collaborate in real-time.
 
-![Stack](https://img.shields.io/badge/Stack-Node.js%20%7C%20Express%20%7C%20MongoDB-green)
-![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.0%20Flash-blue)
-![Realtime](https://img.shields.io/badge/Realtime-Socket.IO-orange)
+![Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel)
+![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)
+![Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ECF8E?logo=supabase)
+![Realtime](https://img.shields.io/badge/Realtime-Socket.IO-010101?logo=socketdotio)
+![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.0-4285F4?logo=google)
+![Email](https://img.shields.io/badge/Email-Brevo%20SMTP-0092FF)
+
+---
+
+## 🌐 Live URLs
+
+| Service | URL |
+|---------|-----|
+| 🌐 **Frontend** | https://projecthive-bd.vercel.app |
+| ⚙️ **Backend API** | https://projecthive-backend.onrender.com/api |
+| 🔌 **Socket.IO** | wss://projecthive-backend.onrender.com |
+| 🗄️ **Supabase** | https://supabase.com/dashboard/project/iekfvgjxkmgduxdvkuxf |
+| 📧 **Brevo Dashboard** | https://app.brevo.com |
+| 🚀 **Render Dashboard** | https://dashboard.render.com/web/srv-d8mhi8rtqb8s73c3n5qg |
+| 🟣 **Vercel Dashboard** | https://vercel.com/aloneboy0022ti-gmailcoms-projects/projecthive |
 
 ---
 
@@ -12,16 +29,17 @@
 
 | Module | Description |
 |--------|-------------|
-| 🔐 **Authentication** | JWT access + refresh tokens, bcrypt password hashing |
-| 👤 **Profile** | Photo upload (base64), banner upload, skills, social links, completion % |
-| ⚙️ **Settings** | Account, password change, notifications, theme, accent color, privacy |
-| 👥 **Find People** | Discover students, send/accept friend requests, filter by skill/availability |
-| 🔔 **Notifications** | Real-time updates for team invites, messages, friend requests |
+| 🔐 **Auth + Email Verification** | JWT tokens, bcrypt, Brevo email verification |
+| 👤 **Profile** | Photo, banner, skills, social links, completion % |
+| ⚙️ **Settings** | Account, password, notifications, theme, privacy |
+| 👥 **Find People** | Discover students, friend requests, filter by skill |
+| 🔔 **Notifications** | Real-time Socket.IO updates |
 | 🏷️ **Teams** | Create/join teams, join request workflow, team chat |
-| 💬 **Messages** | Real-time Socket.IO messaging (DMs + team channels) |
+| 💬 **Messages** | Real-time DMs + team channels via Socket.IO |
 | 🚀 **Showcase** | Submit and browse student projects |
-| 🤖 **AI Generator** | Google Gemini 2.0 Flash — generate project ideas by skill/category |
-| 🛡️ **Admin Panel** | User management, ban/unban, role change, team deletion |
+| 🤖 **AI Generator** | Google Gemini 2.0 Flash — generate project ideas |
+| 🛡️ **Admin Panel** | User management, ban/unban, role change |
+| 🛡️ **CAPTCHA** | Cloudflare Turnstile bot protection on auth pages |
 
 ---
 
@@ -29,13 +47,15 @@
 
 ```
 Project-Hive/
-├── public/                         # Frontend (served as static files)
+├── public/                         # Frontend (static — served by Vercel)
 │   ├── index.html                  # Landing page
 │   ├── assets/
 │   │   ├── css/
 │   │   │   ├── ph-design.css       # CSS variable design tokens (light/dark)
 │   │   │   └── ph-system.css       # Sidebar, topbar, layout system
 │   │   ├── js/core/
+│   │   │   ├── api.js              # Global API client (auto-detects prod/dev)
+│   │   │   ├── layout.js           # Sidebar + theme initialization
 │   │   │   ├── ph-sidebar.js       # Centralized navigation sidebar
 │   │   │   └── ph-toast.js         # Toast notification system
 │   │   └── svg/logo.png            # Brand logo
@@ -43,57 +63,69 @@ Project-Hive/
 │       ├── auth/
 │       │   ├── login.html
 │       │   ├── register.html
+│       │   ├── verify-email.html   # Email verification landing page
 │       │   └── forgot-password.html
 │       ├── user/
-│       │   ├── dashboard.html      # Main user dashboard
-│       │   ├── profile/edit.html   # Profile editor (photo, banner, skills)
-│       │   ├── settings.html       # Account/security/appearance settings
-│       │   ├── people.html         # Find People + friend requests
-│       │   ├── notifications.html  # Notification center
-│       │   ├── messages.html       # Real-time messaging
-│       │   ├── teams.html          # Browse & join teams
-│       │   ├── teams-create.html   # Create a new team
+│       │   ├── dashboard.html
+│       │   ├── profile/edit.html
+│       │   ├── settings.html
+│       │   ├── people.html
+│       │   ├── notifications.html
+│       │   ├── messages.html       # Real-time Socket.IO chat
+│       │   ├── teams.html
+│       │   ├── teams-create.html
 │       │   └── projects/
-│       │       ├── showcase.html   # Project showcase gallery
-│       │       └── generator.html  # AI project idea generator
+│       │       ├── showcase.html
+│       │       └── generator.html  # Gemini AI idea generator
 │       └── admin/
-│           └── dashboard.html      # Admin control panel
+│           └── dashboard.html
 │
-└── server/                         # Backend (Node.js + Express)
-    ├── server.js                   # Entry point + Socket.IO setup
-    ├── app.js                      # Express app + route registration
-    ├── models/
-    │   ├── User.js                 # User schema (avatar, banner, skills, isBanned)
-    │   ├── Team.js                 # Team schema
-    │   ├── Project.js              # Project schema
-    │   ├── Message.js              # Chat message schema
-    │   ├── Notification.js         # Notification schema
-    │   ├── FriendRequest.js        # Friend request schema
-    │   └── JoinRequest.js          # Team join request schema
-    ├── routes/
-    │   ├── auth.routes.js          # /api/auth/*
-    │   ├── users.routes.js         # /api/users/*
-    │   ├── teams.routes.js         # /api/teams/*
-    │   ├── projects.routes.js      # /api/projects/*
-    │   ├── messages.routes.js      # /api/messages/*
-    │   ├── notifications.routes.js # /api/notifications/*
-    │   ├── friends.routes.js       # /api/friends/*
-    │   ├── ai.routes.js            # /api/ai/*
-    │   └── admin.routes.js         # /api/admin/* (auth guard)
-    ├── controllers/                # Business logic
-    ├── middleware/
-    │   ├── auth.js                 # JWT verify middleware
-    │   └── errorHandler.js
-    ├── config/
-    │   ├── db.js                   # MongoDB connection (in-memory fallback)
-    │   └── gemini.js               # Google Gemini AI setup
-    └── services/
-        └── socket.service.js       # Socket.IO event handlers
+├── server/                         # Backend (Node.js + Express — hosted on Render)
+│   ├── server.js                   # Entry point + Socket.IO setup
+│   ├── app.js                      # Express app + route registration + CORS
+│   ├── config/
+│   │   ├── supabase.js             # Supabase client (anon + admin)
+│   │   └── gemini.js               # Google Gemini AI setup
+│   ├── controllers/
+│   │   ├── auth.controller.js      # Register, login, verify email, refresh token
+│   │   ├── users.controller.js     # Profile CRUD
+│   │   ├── teams.controller.js     # Team management
+│   │   ├── projects.controller.js  # Project showcase
+│   │   ├── messages.controller.js  # Message history
+│   │   ├── notifications.controller.js
+│   │   ├── friends.controller.js   # Friend requests
+│   │   └── admin.controller.js     # Admin operations
+│   ├── routes/
+│   │   ├── auth.routes.js          # /api/auth/*
+│   │   ├── users.routes.js         # /api/users/*
+│   │   ├── teams.routes.js         # /api/teams/*
+│   │   ├── projects.routes.js      # /api/projects/*
+│   │   ├── messages.routes.js      # /api/messages/*
+│   │   ├── notifications.routes.js # /api/notifications/*
+│   │   ├── friends.routes.js       # /api/friends/*
+│   │   ├── ai.routes.js            # /api/ai/*
+│   │   └── admin.routes.js         # /api/admin/* (admin guard)
+│   ├── middleware/
+│   │   ├── auth.js                 # JWT verify middleware
+│   │   ├── socketAuth.js           # Socket.IO JWT auth
+│   │   ├── turnstile.js            # Cloudflare Turnstile CAPTCHA
+│   │   └── errorHandler.js
+│   ├── services/
+│   │   ├── email.service.js        # Brevo SMTP email (verify, welcome, reset)
+│   │   └── socket.service.js       # Socket.IO real-time event handlers
+│   ├── database/
+│   │   └── schema.sql              # PostgreSQL schema (run in Supabase SQL editor)
+│   └── utils/
+│       └── jwt.utils.js
+│
+├── vercel.json                     # Vercel deployment config
+├── render.yaml                     # Render Blueprint config
+└── .gitignore
 ```
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Dev)
 
 ### 1. Install dependencies
 ```bash
@@ -102,25 +134,24 @@ npm install
 ```
 
 ### 2. Set up environment variables
-Create `server/.env`:
+Create `server/.env` (see full list below):
 ```env
-# Required for AI features
-GEMINI_API_KEY=your_key_here   # Free at https://aistudio.google.com/apikey
-
-# Optional — uses in-memory MongoDB if not set
-MONGODB_URI=mongodb://localhost:27017/projecthive
-
-# Optional
-JWT_SECRET=your_secret_here
-JWT_REFRESH_SECRET=your_refresh_secret
-PORT=5000
 NODE_ENV=development
+PORT=5000
+SUPABASE_URL=https://iekfvgjxkmgduxdvkuxf.supabase.co
+SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+JWT_SECRET=your-secret-here
+BREVO_SMTP_LOGIN=...
+BREVO_SMTP_KEY=...
+BREVO_FROM_EMAIL=timonbiswas33@gmail.com
+GEMINI_API_KEY=...
 ```
 
 ### 3. Start the server
 ```bash
 cd server
-npm start
+npm run dev
 ```
 
 ### 4. Open in browser
@@ -133,72 +164,78 @@ http://localhost:5000
 ## 🔌 API Reference
 
 ### Auth  `/api/auth`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/register` | Register new user |
-| POST | `/login` | Login → access + refresh tokens |
-| POST | `/refresh` | Refresh access token |
-| POST | `/logout` | Invalidate refresh token |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/register` | ❌ | Register — sends verification email |
+| POST | `/login` | ❌ | Login (must be email-verified) |
+| POST | `/refresh` | ❌ | Refresh access token |
+| POST | `/logout` | ✅ | Invalidate refresh token |
+| GET | `/verify-email?token=` | ❌ | Verify email address |
+| POST | `/resend-verification` | ❌ | Resend verification email |
+| POST | `/forgot-password` | ❌ | Send password reset email |
+| POST | `/reset-password` | ❌ | Reset password with token |
 
 ### Users  `/api/users`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/me` | Get current user profile |
-| PATCH | `/me` | Update profile (name, bio, avatar, banner, skills…) |
-| PATCH | `/me/password` | Change password |
-| PATCH | `/me/skills` | Update skills array |
-| POST | `/me/skills` | Add single skill |
-| DELETE | `/me/skills` | Remove skill |
-| GET | `/search?q=&limit=` | Search users |
-| GET | `/:id` | Get user by ID |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/me` | ✅ | Get current user profile |
+| PUT | `/me` | ✅ | Update profile |
+| PATCH | `/me/password` | ✅ | Change password |
+| GET | `/search?q=` | ✅ | Search users |
+| GET | `/:id` | ✅ | Get user by ID |
 
 ### Friends  `/api/friends`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/request/:userId` | Send friend request |
-| POST | `/accept/:requestId` | Accept request |
-| POST | `/reject/:requestId` | Reject request |
-| GET | `/` | Get my friends list |
-| GET | `/requests` | Get pending requests |
-| GET | `/dm/:friendId` | Get DM history |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/request/:userId` | ✅ | Send friend request |
+| POST | `/accept/:requestId` | ✅ | Accept request |
+| POST | `/reject/:requestId` | ✅ | Reject request |
+| GET | `/` | ✅ | My friends list |
+| GET | `/requests` | ✅ | Pending requests |
+| GET | `/dm/:friendId` | ✅ | DM history |
 
 ### Teams  `/api/teams`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/` | Create team |
-| GET | `/` | Browse teams |
-| GET | `/:id` | Team details |
-| PUT | `/:id` | Update team |
-| POST | `/:teamId/join` | Send join request |
-| GET | `/:teamId/requests` | List join requests |
-| POST | `/:teamId/requests/:id/accept` | Accept join request |
-| POST | `/:teamId/requests/:id/reject` | Reject join request |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/` | ✅ | Create team |
+| GET | `/` | ✅ | Browse teams |
+| GET | `/my-teams` | ✅ | My teams |
+| GET | `/:id` | ✅ | Team details |
+| PUT | `/:id` | ✅ | Update team |
+| POST | `/:teamId/join` | ✅ | Send join request |
+| POST | `/:teamId/requests/:userId/accept` | ✅ | Accept join request |
+| POST | `/:teamId/requests/:userId/reject` | ✅ | Reject join request |
+| POST | `/:teamId/leave` | ✅ | Leave team |
 
 ### Projects  `/api/projects`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/` | Submit project |
-| GET | `/` | Browse projects |
-| GET | `/:id` | Project details |
-| PUT | `/:id` | Update project |
-| DELETE | `/:id` | Delete project |
-| POST | `/:id/like` | Like project |
-| POST | `/:id/save` | Save project |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/` | ✅ | Submit project |
+| GET | `/` | ❌ | Browse projects |
+| GET | `/:id` | ❌ | Project details |
+| PUT | `/:id` | ✅ | Update project |
+| DELETE | `/:id` | ✅ | Delete project |
+| POST | `/:id/like` | ✅ | Like project |
+
+### Messages  `/api/messages`
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/teams/:teamId` | ✅ | Get team messages |
+| POST | `/` | ✅ | Send message (REST fallback) |
 
 ### Notifications  `/api/notifications`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/` | Get notifications |
-| PUT | `/:id/read` | Mark single as read |
-| PUT | `/read-all` | Mark all as read |
-| DELETE | `/:id` | Delete notification |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/` | ✅ | Get notifications |
+| PUT | `/:id/read` | ✅ | Mark single as read |
+| PUT | `/read-all` | ✅ | Mark all as read |
+| DELETE | `/:id` | ✅ | Delete notification |
 
 ### AI  `/api/ai`
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/chat` | Chat with Gemini AI |
-| POST | `/generate-ideas` | Generate project ideas (auth) |
-| POST | `/generate-ideas-public` | Generate ideas (no auth) |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | `/generate-ideas` | ✅ | Generate project ideas (Gemini) |
+| POST | `/generate-ideas-public` | ❌ | Demo (no auth) |
 
 ### Admin  `/api/admin` *(admin role required)*
 | Method | Endpoint | Description |
@@ -214,64 +251,76 @@ http://localhost:5000
 
 ---
 
-## 🎨 Design System
+## 🔌 Real-time Messaging (Socket.IO)
 
-### CSS Variables (`ph-design.css`)
-```css
-/* Light mode */
---bg, --sf, --sf2    /* Backgrounds */
---bd, --bd2          /* Borders */
---tx, --sub          /* Text */
---ac, --ac-light     /* Accent (purple #6366f1) */
---shadow             /* Card shadow */
-
-/* Dark mode auto-applies when html.dark class is present */
+### Connection
+```javascript
+const socket = io('https://projecthive-backend.onrender.com', {
+  auth: { token: localStorage.getItem('access_token') }
+});
 ```
 
-### Components
-- **ph-sidebar.js** — Centralized nav (all pages share one sidebar definition)
-- **ph-toast.js** — `PHToast.success()` / `.error()` / `.info()`
-- **`.ph-page`** — Main content area (auto margin-left for sidebar)
-- **`.ph-topbar`** — Sticky page header bar
+### Events (Client → Server)
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `join_room` | `{ roomId }` | Join a chat room (DM or team) |
+| `leave_room` | `{ roomId }` | Leave a chat room |
+| `send_message` | `{ roomId, content }` | Send a message |
+| `typing` | `{ roomId, isTyping }` | Typing indicator |
+
+### Events (Server → Client)
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `new_message` | `{ id, content, sender, roomId, createdAt }` | Incoming message |
+| `user_typing` | `{ userId, roomId, isTyping }` | Typing indicator |
+| `user_online` | `{ userId }` | User came online |
+| `user_offline` | `{ userId }` | User went offline |
+| `notification` | `{ type, message, data }` | Real-time notification |
 
 ---
 
 ## 🧑‍💻 Make Yourself Admin (Dev)
 
-While logged in, open browser console and run:
+While logged in, open browser console:
 ```javascript
 fetch('/api/admin/promote-me', {
   method: 'POST',
   headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-}).then(r => r.json()).then(d => { alert(d.message); })
+}).then(r => r.json()).then(d => alert(d.message));
 ```
-Then **logout and log back in** to get the new admin token.
+Then **logout and log back in**.
 
 ---
 
-## 🔒 Security Notes
+## 🎨 Design System
+
+### CSS Variables (`ph-design.css`)
+```css
+--bg, --sf, --sf2    /* Backgrounds */
+--bd, --bd2          /* Borders */
+--tx, --sub          /* Text */
+--ac, --ac-light     /* Accent (indigo #6366f1) */
+--shadow             /* Card shadow */
+/* Dark mode auto-applies via html.dark class */
+```
+
+### JS Components
+- **`api.js`** — Global API client with auto token refresh
+- **`ph-sidebar.js`** — Centralized nav sidebar
+- **`ph-toast.js`** — `PHToast.success()` / `.error()` / `.info()`
+
+---
+
+## 🔒 Security
 
 - Passwords hashed with **bcrypt** (12 rounds)
-- JWT access tokens expire in **15 minutes**, refresh tokens in **7 days**  
+- JWT access tokens expire in **24h**, refresh in **7 days**
+- Email must be verified before login
 - All sensitive routes protected by `authMiddleware`
-- Admin routes additionally protected by `requireAdmin` role check
-- `promote-me` endpoint disabled in `NODE_ENV=production`
+- Admin routes protected by `requireAdmin` role check
+- **Cloudflare Turnstile** CAPTCHA on register/login
+- `promote-me` endpoint disabled in production
 
 ---
 
-## 📦 Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Vanilla HTML, CSS (CSS Variables), JavaScript |
-| Backend | Node.js, Express.js |
-| Database | MongoDB (Mongoose) + in-memory fallback for dev |
-| Auth | JWT (jsonwebtoken) + bcryptjs |
-| Realtime | Socket.IO |
-| AI | Google Gemini 2.0 Flash |
-| Icons | Google Material Symbols |
-| Fonts | Inter (Google Fonts) |
-
----
-
-*Built with ❤️ — ProjectHive © 2026*
+*Built with ❤️ for university students — ProjectHive © 2026 🐝*

@@ -59,3 +59,6 @@ coverage/
 stitch.ps1
 stitch_login.json
 .kombai/
+
+# Sensitive Docs (contains credentials)
+STACK.md
