@@ -5,9 +5,6 @@
 <title>Sign In — ProjectHive</title>
 <meta name="description" content="Sign in to your ProjectHive account and continue building.">
 <link rel="icon" href="../../assets/svg/logo.png">
-<!-- Cloudflare Turnstile -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -51,8 +48,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:6px;transition:color .15s;z-index:2;line-height:0;display:flex;align-items:center}
 .eye-btn:hover{color:var(--primary)}
 .eye-btn svg{position:static!important;transform:none!important;opacity:1!important}
-.captcha-wrap{display:flex;justify-content:center;margin:8px 0 16px}
-
 .btn-submit{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em}
 .btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 .btn-submit:active{transform:translateY(0)}
@@ -133,29 +128,6 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
         </div>
       </div>
 
-      <!-- Cloudflare Turnstile CAPTCHA -->
-      <div class="captcha-wrap">
-        <div class="cf-turnstile"
-             id="turnstile-widget"
-             data-sitekey="0x4AAAAAADkFwQm-CWJvjWZI"
-             data-theme="auto"
-             data-callback="onTurnstileSuccess"
-             data-error-callback="onTurnstileError"
-             data-expired-callback="onTurnstileExpired">
-        </div>
-      </div>
-
-      <button type="submit" class="btn-submit" id="submit-btn" style="margin-top:4px">
-        <span id="btn-text">Sign In</span>
-      </button>
-    </form>
-
-    <div class="signup-row">
-      Don't have an account? <a href="register.html">Sign up free</a>
-    </div>
-  </div>
-</div>
-
 <footer>&copy; 2026 ProjectHive &mdash; Built for students, by students <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="13" rx="5" ry="6"/><path d="M7.5 11c-2 0-3.5.9-3.5 2.5s1.5 2.5 3.5 2.5m9-5c2 0 3.5.9 3.5 2.5s-1.5 2.5-3.5 2.5"/><path d="M12 7V4m-2 3 1-2 1 2"/><circle cx="10" cy="12" r="1"/><circle cx="14" cy="12" r="1"/></svg></span></footer>
 
 <script src="../../assets/js/core/ph-toast.js"></script>
@@ -164,12 +136,7 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 <script>
 if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){window.location.href='../user/dashboard.html';}
 
-// Turnstile state
-let turnstileToken = null;
-let turnstileFailed = false;
-function onTurnstileSuccess(token){ turnstileToken = token; turnstileFailed = false; }
-function onTurnstileError(){ turnstileToken = null; turnstileFailed = true; }
-function onTurnstileExpired(){ turnstileToken = null; }
+// CAPTCHA removed
 
 let lastEmail = '';
 
@@ -220,13 +187,6 @@ async function handleLogin(e){
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('password').value;
   if(!email||!password){showAlert('Please fill in all fields.');return;}
-  // Require valid Turnstile token
-  if(!turnstileToken){
-    if(turnstileFailed){
-      showAlert('Security check failed. Please refresh the page and try again.','warn');
-    } else {
-      showAlert('Please complete the security check (click the checkbox).','warn');
-    }
     return;
   }
 
@@ -237,7 +197,7 @@ async function handleLogin(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
-    const body={email,password,'cf-turnstile-response':turnstileToken};
+    const body={email,password,};
 
     const res=await fetch('/api/auth/login',{
       method:'POST',
@@ -265,8 +225,7 @@ async function handleLogin(e){
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Sign In';
-    if(window.turnstile)turnstile.reset('#turnstile-widget');
-    turnstileToken=null;
+    
   }
 }
 </script>
