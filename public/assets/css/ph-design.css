@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════
+/* ═══════════════════════════════════
    ProjectHive Design System v2
    Dark / Light Mode via CSS Variables
 ═══════════════════════════════════ */
@@ -268,3 +268,92 @@ header, aside, main, section, div, a, button, input, textarea, select,
 }
 /* Exception: don't transition transform-based animations */
 .ph-btn:hover, .ph-card:hover, .ph-topbar-theme:hover { transition-duration: .15s; }
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE — Inner App Pages
+   ══════════════════════════════════════ */
+
+/* ── ph-page sidebar offset ── */
+@media (max-width: 768px) {
+  .ph-page { margin-left: 0 !important; }
+  .ph-topbar { padding: 0 14px !important; height: 56px !important; gap: 8px; }
+
+  /* Dashboard hero sections */
+  [style*="padding:36px 32px"],[style*="padding: 36px 32px"] { padding: 24px 16px !important; }
+  [style*="padding:40px 32px"],[style*="padding: 40px 32px"] { padding: 28px 16px !important; }
+
+  /* Grids → single column */
+  .features-grid,
+  [style*="grid-template-columns:repeat(auto-fit"] { grid-template-columns: 1fr !important; }
+
+  /* Stat row wrapping */
+  [style*="display:flex;gap"] { gap: 10px !important; flex-wrap: wrap; }
+
+  /* Card padding */
+  .ph-card, .ph-card-static { padding: 16px !important; border-radius: 14px !important; }
+
+  /* Buttons full-width on mobile when in forms */
+  .w-full .ph-btn, form .ph-btn { min-height: 44px; }
+
+  /* Input sizes — ensure 16px to prevent iOS zoom */
+  .fi, .ph-input, input[class~="fi"], textarea[class~="fi"], select[class~="fi"] {
+    font-size: 16px !important;
+  }
+
+  /* Summary cards in notifications, people, etc. */
+  .sum-card { flex-direction: column !important; gap: 14px !important; }
+
+  /* Wrap rows */
+  .top-row { flex-direction: column !important; align-items: stretch !important; }
+  .tabs { width: 100% !important; overflow-x: auto; }
+
+  /* People/find page grid */
+  .grid { grid-template-columns: 1fr !important; }
+
+  /* Settings layout stack */
+  .st-layout { flex-direction: column !important; }
+  .st-nav { width: 100% !important; position: static !important; }
+
+  /* Hero wraps in user pages */
+  .hero, .st-hero, .fp-wrap, .nt-wrap { padding-left: 16px !important; padding-right: 16px !important; }
+  .fp-wrap, .nt-wrap { margin-top: -36px !important; }
+
+  /* Messages full-height fix */
+  .ml-\[260px\] { margin-left: 0 !important; }
+}
+
+@media (max-width: 520px) {
+  /* Auth pages */
+  .ph-auth-card, .card { padding: 24px 16px !important; border-radius: 18px !important; max-width: 100% !important; }
+
+  /* Chips and filter buttons wrap */
+  .chip { font-size: 11px !important; padding: 6px 11px !important; }
+  .tabs .tab { font-size: 11px !important; padding: 6px 12px !important; }
+
+  /* People cards */
+  .ucard { border-radius: 14px !important; }
+
+  /* Topbar title */
+  .ph-topbar h1 { font-size: 15px !important; }
+
+  /* Notifications card */
+  .n-card { padding: 14px !important; border-radius: 14px !important; }
+
+  /* Generator page */
+  .gen-card, .gen-result { padding: 20px 16px !important; }
+}
+
+/* ── Safe area for notched phones (iPhone X+) ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  footer, .ph-sb-footer {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+  nav, #ph-sidebar { padding-top: env(safe-area-inset-top); }
+}
+
+/* ── Prevent text zoom on input focus (iOS) ── */
+input, select, textarea { font-size: 16px; }
+@media (min-width: 769px) {
+  input, select, textarea { font-size: inherit; }
+}
+

@@ -497,26 +497,70 @@ body {
 
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
+  /* Sidebar slides off-screen */
   #ph-sidebar {
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+    width: 280px;
   }
   #ph-sidebar.open { transform: translateX(0); }
   .ph-sb-close-btn { display: flex !important; }
   .ph-hamburger { display: flex !important; }
+
+  /* Page layout */
   .ph-main { margin-left: 0 !important; }
-  .ph-content { padding: 16px; }
-  /* Fix all inner-page main content offsets on mobile */
+  .ph-page { margin-left: 0 !important; }
+  .ph-content { padding: 14px; }
+
+  /* Topbar */
+  .ph-topbar { padding: 0 16px; height: 56px; }
+
+  /* Fix Tailwind-based page offsets */
   main[class*="ml-"],
   main[class*="ml-64"],
-  main[style*="margin-left"] {
-    margin-left: 0 !important;
+  div[class*="ml-[260px]"],
+  main[style*="margin-left"] { margin-left: 0 !important; }
+  header[class*="left-"] { left: 0 !important; width: 100% !important; }
+
+  /* Stat cards */
+  .ph-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+  .ph-stat-card { padding: 16px 14px; }
+  .ph-stat-num { font-size: 22px; }
+  .ph-stat-icon { width: 38px; height: 38px; font-size: 16px; }
+
+  /* Buttons — larger touch targets */
+  .ph-btn { min-height: 44px; }
+  .ph-btn-sm { min-height: 38px; }
+
+  /* Cards */
+  .ph-card, .ph-card-static {
+    border-radius: 14px;
   }
-  header[class*="left-"] {
-    left: 0 !important;
-    width: 100% !important;
+
+  /* Auth cards */
+  .ph-auth-card {
+    padding: 28px 20px;
+    border-radius: 20px;
+    max-width: 100%;
   }
+
+  /* Page header */
+  .ph-page-header { flex-direction: column; align-items: flex-start; }
+
+  /* Tables — make scrollable */
+  .ph-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ph-table { min-width: 500px; }
 }
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .ph-topbar { padding: 0 12px; }
+  .ph-content { padding: 12px; }
+  .ph-stats { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+  .ph-stat-num { font-size: 20px; }
+  .ph-auth-card { padding: 24px 16px; }
+}
+
 
 /* ---- Scrollbar ---- */
 ::-webkit-scrollbar { width: 5px; }
