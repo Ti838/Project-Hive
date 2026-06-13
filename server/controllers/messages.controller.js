@@ -1,5 +1,4 @@
-import Message from '../models/Message.js';
-import Team from '../models/Team.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 export async function getTeamMessages(req, res, next) {
   try {
@@ -7,38 +6,30 @@ export async function getTeamMessages(req, res, next) {
     const { skip = 0, limit = 50 } = req.query;
     const userId = req.user.id;
 
-    // Verify user is team member
-    const team = await Team.findById(teamId);
-    if (!team) {
-      return res.status(404).json({ error: 'Team not found' });
-    }
-    if (!team.isMember(userId)) {
-      return res.status(403).json({ error: 'Not a member of this team' });
-    }
+    // Verify membership
+    const { data: mem } = await supabaseAdmin.from('team_members').select('id').eq('team_id', teamId).eq('user_id', userId).single();
+    if (!mem) return res.status(403).json({ error: 'Not a member of this team' });
 
-    const messages = await Message.find({ roomId: teamId })
-      .populate('sender', 'firstName lastName avatar')
-      .sort({ createdAt: -1 })
-      .skip(parseInt(skip))
-      .limit(parseInt(limit))
-      .lean();
+    const { data: messages, error, count } = await supabaseAdmin
+      .from('messages')
+      .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`, { count: 'exact' })
+      .eq('room_id', teamId)
+      .range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1)
+      .order('created_at', { ascending: false });
 
-    const total = await Message.countDocuments({ roomId: teamId });
+    if (error) throw error;
 
     res.json({
-      messages: messages.reverse(), // Return in chronological order
+      messages: (messages || []).reverse(),
       pagination: {
-        total,
+        total: count || 0,
         skip: parseInt(skip),
         limit: parseInt(limit),
-        hasMore: parseInt(skip) + parseInt(limit) < total,
+        hasMore: parseInt(skip) + parseInt(limit) < (count || 0),
       },
       ok: true,
     });
-  } catch (error) {
-    console.error('[v0] Get team messages error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function saveMessage(req, res, next) {
@@ -46,19 +37,13 @@ export async function saveMessage(req, res, next) {
     const { roomId, content } = req.body;
     const userId = req.user.id;
 
-    const message = new Message({
-      content,
-      sender: userId,
-      roomId,
-      readBy: [userId],
-    });
+    const { data: message, error } = await supabaseAdmin
+      .from('messages')
+      .insert({ room_id: roomId, sender_id: userId, content, read_by: [userId] })
+      .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
+      .single();
 
-    await message.save();
-    await message.populate('sender', 'firstName lastName avatar');
-
+    if (error) throw error;
     res.status(201).json(message);
-  } catch (error) {
-    console.error('[v0] Save message error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }

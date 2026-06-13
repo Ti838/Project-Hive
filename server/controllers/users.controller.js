@@ -1,204 +1,209 @@
-import User from '../models/User.js';
 import bcryptjs from 'bcryptjs';
+import { supabaseAdmin } from '../config/supabase.js';
 
-export async function getCurrentUser(req, res, next) {
-  try {
-    const user = await User.findById(req.user.id).select('-passwordHash -refreshTokens');
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json(user);
-  } catch (error) {
-    console.error('[v0] Get current user error:', error);
-    next(error);
-  }
+// ─── Helper: sanitize user output ────────────────────────────────────────────
+function sanitize(user) {
+  if (!user) return null;
+  const { password_hash, refresh_tokens, email_verification_token,
+    email_verification_expires, password_reset_token, password_reset_expires, ...safe } = user;
+  return safe;
 }
 
+// ─── GET CURRENT USER ────────────────────────────────────────────────────────
+export async function getCurrentUser(req, res, next) {
+  try {
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*, skills(*)')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    res.json(sanitize(user));
+  } catch (err) { next(err); }
+}
+
+// ─── GET USER PROFILE (by id) ────────────────────────────────────────────────
 export async function getUserProfile(req, res, next) {
   try {
     const { id } = req.params;
-    const user = await User.findById(id).select('-passwordHash -refreshTokens');
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*, skills(*)')
+      .eq('id', id)
+      .single();
 
-    res.json(user);
-  } catch (error) {
-    console.error('[v0] Get user profile error:', error);
-    next(error);
-  }
+    if (error || !user) return res.status(404).json({ error: 'User not found' });
+    if (!user.is_public && req.user?.id !== id) {
+      return res.status(403).json({ error: 'This profile is private' });
+    }
+    res.json(sanitize(user));
+  } catch (err) { next(err); }
 }
 
+// ─── UPDATE PROFILE ──────────────────────────────────────────────────────────
 export async function updateProfile(req, res, next) {
   try {
     const userId = req.user.id;
-    const updates = req.body;
+    const {
+      firstName, lastName, bio, university, major, yearOfStudy,
+      avatar, bannerImage, avatarColor, status, hoursPerWeek,
+      github, linkedin, portfolio, isPublic,
+    } = req.body;
 
-    // Prevent updating sensitive fields
-    delete updates.passwordHash;
-    delete updates.email;
-    delete updates.refreshTokens;
-    delete updates.role;
+    // Build update object (snake_case for Supabase)
+    const updates = {};
+    if (firstName !== undefined)    updates.first_name = firstName;
+    if (lastName !== undefined)     updates.last_name = lastName;
+    if (bio !== undefined)          updates.bio = bio;
+    if (university !== undefined)   updates.university = university;
+    if (major !== undefined)        updates.major = major;
+    if (yearOfStudy !== undefined)  updates.year_of_study = yearOfStudy;
+    if (avatar !== undefined)       updates.avatar = avatar;
+    if (bannerImage !== undefined)  updates.banner_image = bannerImage;
+    if (avatarColor !== undefined)  updates.avatar_color = avatarColor;
+    if (status !== undefined)       updates.status = status;
+    if (hoursPerWeek !== undefined) updates.hours_per_week = hoursPerWeek;
+    if (github !== undefined)       updates.github = github;
+    if (linkedin !== undefined)     updates.linkedin = linkedin;
+    if (portfolio !== undefined)    updates.portfolio = portfolio;
+    if (isPublic !== undefined)     updates.is_public = isPublic;
 
-    const user = await User.findByIdAndUpdate(userId, updates, {
-      new: true,
-      runValidators: true,
-    }).select('-passwordHash -refreshTokens');
+    // Calculate completion %
+    const { data: existing } = await supabaseAdmin
+      .from('users')
+      .select('*, skills(*)')
+      .eq('id', userId)
+      .single();
 
-    // Recalculate completion percentage
-    user.calculateCompletionPercentage();
-    await user.save();
+    const merged = { ...existing, ...updates };
+    const fields = [
+      merged.first_name && merged.last_name,
+      merged.avatar || merged.avatar_color,
+      merged.bio && merged.bio.length > 10,
+      merged.university,
+      merged.major,
+      merged.year_of_study,
+      existing?.skills?.length > 0,
+      merged.github || merged.linkedin || merged.portfolio,
+    ];
+    updates.completion_percentage = Math.round((fields.filter(Boolean).length / fields.length) * 100);
 
-    console.log('[v0] User profile updated:', user.email);
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .update(updates)
+      .eq('id', userId)
+      .select('*, skills(*)')
+      .single();
 
-    res.json({
-      message: 'Profile updated successfully',
-      user,
-    });
-  } catch (error) {
-    console.error('[v0] Update profile error:', error);
-    next(error);
+    if (error) throw error;
+    res.json({ message: 'Profile updated successfully', user: sanitize(user) });
+  } catch (err) {
+    console.error('[ProjectHive] Update profile error:', err);
+    next(err);
   }
 }
 
+// ─── SEARCH USERS ────────────────────────────────────────────────────────────
 export async function searchUsers(req, res, next) {
   try {
-    const { query, skip = 0, limit = 20, university, skills, yearOfStudy } = req.query;
+    const { query, skip = 0, limit = 20, university, yearOfStudy } = req.query;
 
-    let searchQuery = { isPublic: true };
+    let q = supabaseAdmin
+      .from('users')
+      .select('id, first_name, last_name, email, avatar, avatar_color, bio, university, major, year_of_study, status, hours_per_week, github, linkedin, portfolio, online_status, completion_percentage, skills(*)', { count: 'exact' })
+      .eq('is_public', true)
+      .eq('is_banned', false);
 
     if (query) {
-      searchQuery.$text = { $search: query };
+      q = q.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,university.ilike.%${query}%,major.ilike.%${query}%`);
     }
+    if (university) q = q.ilike('university', `%${university}%`);
+    if (yearOfStudy) q = q.eq('year_of_study', parseInt(yearOfStudy));
 
-    if (university) {
-      searchQuery.university = university;
-    }
+    q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1).order('created_at', { ascending: false });
 
-    if (yearOfStudy) {
-      searchQuery.yearOfStudy = parseInt(yearOfStudy);
-    }
-
-    if (skills) {
-      const skillArray = Array.isArray(skills) ? skills : [skills];
-      searchQuery['skills.name'] = { $in: skillArray };
-    }
-
-    const users = await User.find(searchQuery)
-      .select('-passwordHash -refreshTokens -lastSeen')
-      .skip(parseInt(skip))
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-
-    const total = await User.countDocuments(searchQuery);
+    const { data: users, error, count } = await q;
+    if (error) throw error;
 
     res.json({
-      users,
+      users: users || [],
       pagination: {
-        total,
+        total: count || 0,
         skip: parseInt(skip),
         limit: parseInt(limit),
-        hasMore: parseInt(skip) + parseInt(limit) < total,
+        hasMore: parseInt(skip) + parseInt(limit) < (count || 0),
       },
     });
-  } catch (error) {
-    console.error('[v0] Search users error:', error);
-    next(error);
+  } catch (err) {
+    console.error('[ProjectHive] Search users error:', err);
+    next(err);
   }
 }
 
+// ─── UPDATE SKILLS ────────────────────────────────────────────────────────────
 export async function updateSkills(req, res, next) {
   try {
     const userId = req.user.id;
     const { skills } = req.body;
 
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { skills },
-      { new: true, runValidators: true }
-    ).select('-passwordHash -refreshTokens');
+    // Delete old skills then insert new ones
+    await supabaseAdmin.from('skills').delete().eq('user_id', userId);
 
-    user.calculateCompletionPercentage();
-    await user.save();
+    if (skills && skills.length > 0) {
+      const skillRows = skills.map(s => ({ user_id: userId, name: s.name, level: s.level || 'intermediate' }));
+      await supabaseAdmin.from('skills').insert(skillRows);
+    }
 
-    console.log('[v0] Skills updated for user:', user.email);
-
-    res.json({
-      message: 'Skills updated',
-      user,
-    });
-  } catch (error) {
-    console.error('[v0] Update skills error:', error);
-    next(error);
-  }
+    const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
+    res.json({ message: 'Skills updated', user: sanitize(user) });
+  } catch (err) { next(err); }
 }
 
+// ─── ADD SKILL ────────────────────────────────────────────────────────────────
 export async function addSkill(req, res, next) {
   try {
     const userId = req.user.id;
     const { name, level = 'intermediate' } = req.body;
 
-    const user = await User.findById(userId);
-    
-    // Check if skill already exists
-    const existingSkill = user.skills.find(s => s.name.toLowerCase() === name.toLowerCase());
-    if (existingSkill) {
-      return res.status(400).json({ error: 'Skill already added' });
-    }
+    const { data: existing } = await supabaseAdmin
+      .from('skills').select('id').eq('user_id', userId).ilike('name', name).single();
 
-    user.skills.push({ name, level });
-    user.calculateCompletionPercentage();
-    await user.save();
+    if (existing) return res.status(400).json({ error: 'Skill already added' });
 
-    res.json({
-      message: 'Skill added',
-      user: user.toObject({ versionKey: false }),
-    });
-  } catch (error) {
-    console.error('[v0] Add skill error:', error);
-    next(error);
-  }
+    await supabaseAdmin.from('skills').insert({ user_id: userId, name, level });
+    const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
+    res.json({ message: 'Skill added', user: sanitize(user) });
+  } catch (err) { next(err); }
 }
 
+// ─── REMOVE SKILL ─────────────────────────────────────────────────────────────
 export async function removeSkill(req, res, next) {
   try {
     const userId = req.user.id;
     const { skillName } = req.body;
 
-    const user = await User.findById(userId);
-    user.skills = user.skills.filter(s => s.name !== skillName);
-    user.calculateCompletionPercentage();
-    await user.save();
-
-    res.json({
-      message: 'Skill removed',
-      user,
-    });
-  } catch (error) {
-    console.error('[v0] Remove skill error:', error);
-    next(error);
-  }
+    await supabaseAdmin.from('skills').delete().eq('user_id', userId).eq('name', skillName);
+    const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
+    res.json({ message: 'Skill removed', user: sanitize(user) });
+  } catch (err) { next(err); }
 }
 
+// ─── CHANGE PASSWORD ──────────────────────────────────────────────────────────
 export async function changePassword(req, res, next) {
   try {
     const { currentPassword, newPassword } = req.body;
     if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Both passwords required' });
     if (newPassword.length < 8) return res.status(400).json({ error: 'New password must be at least 8 characters' });
 
-    const user = await User.findById(req.user.id);
-    const valid = await bcryptjs.compare(currentPassword, user.passwordHash);
+    const { data: user } = await supabaseAdmin.from('users').select('password_hash').eq('id', req.user.id).single();
+    const valid = await bcryptjs.compare(currentPassword, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Current password is incorrect' });
 
     const salt = await bcryptjs.genSalt(12);
-    user.passwordHash = await bcryptjs.hash(newPassword, salt);
-    await user.save();
+    const passwordHash = await bcryptjs.hash(newPassword, salt);
+    await supabaseAdmin.from('users').update({ password_hash: passwordHash, refresh_tokens: [] }).eq('id', req.user.id);
 
-    res.json({ message: 'Password updated successfully' });
-  } catch (error) {
-    console.error('[v0] Change password error:', error);
-    next(error);
-  }
+    res.json({ message: 'Password updated successfully. Please sign in again.' });
+  } catch (err) { next(err); }
 }

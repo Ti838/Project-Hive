@@ -56,3 +56,6 @@ coverage/
 *.pem
 *.key
 *.cert
+stitch.ps1
+stitch_login.json
+.kombai/

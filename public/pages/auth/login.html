@@ -7,13 +7,13 @@
 <link rel="icon" href="../../assets/svg/logo.png">
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 :root{--bg:#f8fafc;--card:#fff;--txt:#0f172a;--sub:#475569;--muted:#94a3b8;--border:#e2e8f0;--primary:#6366f1;--primary2:#7c3aed;--primary3:#a855f7;--input-bg:#f8fafc;--shadow:0 4px 24px rgba(99,102,241,.08)}
 .dark{--bg:#0f172a;--card:#1e293b;--txt:#f1f5f9;--sub:#94a3b8;--muted:#64748b;--border:#334155;--input-bg:#0f172a;--shadow:0 4px 24px rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif}
 body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;transition:background .3s,color .3s;overflow-x:hidden}
-
-/* ── Nav ── */
 nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;transition:background .3s}
 .dark nav{background:rgba(15,23,42,.9)}
 .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
@@ -26,25 +26,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 .nav-link:hover{background:var(--border);color:var(--txt)}
 .nav-link.primary{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;border:none;box-shadow:0 4px 14px rgba(99,102,241,.3)}
 .nav-link.primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.4)}
-
-/* ── Layout ── */
 .page{flex:1;display:flex;align-items:center;justify-content:center;padding:80px 24px 40px;position:relative;overflow:hidden;min-height:100vh}
 .bg-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
 .orb1{width:500px;height:500px;background:rgba(99,102,241,.12);top:-150px;left:-100px}
 .orb2{width:400px;height:400px;background:rgba(168,85,247,.1);bottom:-100px;right:-80px}
-
-/* ── Card ── */
 .card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:40px;width:100%;max-width:440px;box-shadow:var(--shadow)}
 .dark .card{border-color:rgba(255,255,255,.06)}
-
 .logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px;text-decoration:none}
 .logo-row img{width:44px;height:44px;border-radius:12px;object-fit:contain}
 .logo-row .brand{font-size:22px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--primary3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-
 .card-title{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px}
 .card-sub{font-size:14px;color:var(--sub);text-align:center;margin-bottom:28px}
-
-/* ── Form ── */
 .field{margin-bottom:16px}
 .field label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-bottom:6px}
 .field-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -58,33 +50,27 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:6px;transition:color .15s;z-index:2;line-height:0;display:flex;align-items:center}
 .eye-btn:hover{color:var(--primary)}
 .eye-btn svg{position:static!important;transform:none!important;opacity:1!important}
-
-/* Divider */
-.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:13px}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* Submit btn */
+.captcha-wrap{display:flex;justify-content:center;margin:8px 0 16px}
+.cf-turnstile{min-height:65px}
 .btn-submit{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em}
 .btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 .btn-submit:active{transform:translateY(0)}
 .btn-submit:disabled{opacity:.6;cursor:not-allowed;transform:none}
-
-/* Alert */
 .alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;display:none}
 .alert.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#dc2626}
 .alert.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#059669}
+.alert.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#d97706}
 .dark .alert.err{color:#f87171}
 .dark .alert.ok{color:#34d399}
-
-/* Footer text */
+.dark .alert.warn{color:#fbbf24}
 .signup-row{text-align:center;margin-top:20px;font-size:14px;color:var(--sub)}
 .signup-row a{color:var(--primary);font-weight:600;text-decoration:none}
 .signup-row a:hover{text-decoration:underline}
-
-/* Spinner */
+.verify-banner{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:12px 16px;font-size:13px;color:#d97706;margin-bottom:16px;display:none;text-align:center;line-height:1.5}
+.dark .verify-banner{color:#fbbf24}
+.verify-banner a{color:var(--primary);font-weight:600;cursor:pointer;text-decoration:underline}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
-
 footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 </style>
 </head>
@@ -93,7 +79,6 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 <div class="bg-orb orb1"></div>
 <div class="bg-orb orb2"></div>
 
-<!-- Nav -->
 <nav>
   <a href="../../index.html" class="nav-logo">
     <img src="../../assets/svg/logo.png" alt="ProjectHive" onerror="this.style.display='none'">
@@ -107,10 +92,8 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
   </div>
 </nav>
 
-<!-- Main -->
 <div class="page">
   <div class="card">
-
     <a href="../../index.html" class="logo-row">
       <img src="../../assets/svg/logo.png" alt="ProjectHive" onerror="this.style.display='none'">
       <span class="brand">ProjectHive</span>
@@ -118,6 +101,11 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 
     <h1 class="card-title">Welcome back</h1>
     <p class="card-sub">Sign in to your account to continue</p>
+
+    <!-- Email not verified banner -->
+    <div class="verify-banner" id="verify-banner">
+      ⚠️ Your email is not verified. <a onclick="resendVerification()">Resend verification email</a>
+    </div>
 
     <div class="alert" id="alert"></div>
 
@@ -144,7 +132,18 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
         </div>
       </div>
 
-      <button type="submit" class="btn-submit" id="submit-btn" style="margin-top:8px">
+      <!-- Cloudflare Turnstile CAPTCHA -->
+      <div class="captcha-wrap">
+        <div class="cf-turnstile"
+             id="turnstile-widget"
+             data-sitekey="1x00000000000000000000AA"
+             data-theme="auto"
+             data-callback="onTurnstileSuccess"
+             data-error-callback="onTurnstileError">
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="submit-btn" style="margin-top:4px">
         <span id="btn-text">Sign In</span>
       </button>
     </form>
@@ -161,9 +160,17 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 <script src="../../assets/js/core/api.js"></script>
 <script src="../../assets/js/core/auth.js"></script>
 <script>
-// Redirect if already logged in
-if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){
-  window.location.href='../user/dashboard.html';
+if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){window.location.href='../user/dashboard.html';}
+
+let turnstileToken = null;
+let lastEmail = '';
+
+function onTurnstileSuccess(token){
+  turnstileToken=token;
+}
+function onTurnstileError(){
+  turnstileToken=null;
+  showAlert('Security check failed. Please try again.');
 }
 
 function toggleTheme(){
@@ -182,15 +189,29 @@ function togglePw(){
   const inp=document.getElementById('password');
   const open=inp.type==='password';
   inp.type=open?'text':'password';
-  const ei=document.getElementById('eye-icon');
-  ei.innerHTML=open
+  document.getElementById('eye-icon').innerHTML=open
     ?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
     :'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 }
 
 function showAlert(msg,type='err'){
   const el=document.getElementById('alert');
-  el.textContent=msg; el.className='alert '+type; el.style.display='block';
+  el.textContent=msg;el.className='alert '+type;el.style.display='block';
+}
+
+async function resendVerification(){
+  if(!lastEmail)return;
+  try{
+    const res=await fetch('/api/auth/resend-verification',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:lastEmail})
+    });
+    const data=await res.json();
+    showAlert(data.message||'Verification email sent!','ok');
+  }catch(e){
+    showAlert('Failed to resend. Please try again.');
+  }
 }
 
 async function handleLogin(e){
@@ -199,35 +220,48 @@ async function handleLogin(e){
   const password=document.getElementById('password').value;
   if(!email||!password){showAlert('Please fill in all fields.');return;}
 
+  lastEmail=email;
   const btn=document.getElementById('submit-btn');
   const txt=document.getElementById('btn-text');
   btn.disabled=true;
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
+    const body={email,password};
+    if(turnstileToken) body['cf-turnstile-response']=turnstileToken;
+
     const res=await fetch('/api/auth/login',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email,password})
+      body:JSON.stringify(body)
     });
     const data=await res.json();
+
     if(res.ok&&data.accessToken){
       localStorage.setItem('access_token',data.accessToken);
       if(data.refreshToken)localStorage.setItem('refresh_token',data.refreshToken);
       if(data.user)localStorage.setItem('user_data',JSON.stringify(data.user));
-      showAlert('Login successful! Redirecting…','ok');
-      setTimeout(()=>{window.location.href='../user/dashboard.html';},800);
+
+      if(!data.emailVerified){
+        document.getElementById('verify-banner').style.display='block';
+        showAlert('Login successful! Please verify your email when you get a chance.','ok');
+      }else{
+        showAlert('Login successful! Redirecting…','ok');
+      }
+      setTimeout(()=>{window.location.href='../user/dashboard.html';},900);
     }else{
       showAlert(data.message||data.error||'Invalid email or password.');
-      btn.disabled=false; txt.textContent='Sign In';
+      btn.disabled=false;txt.textContent='Sign In';
+      if(window.turnstile)turnstile.reset('#turnstile-widget');
+      turnstileToken=null;
     }
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
-    btn.disabled=false; txt.textContent='Sign In';
+    btn.disabled=false;txt.textContent='Sign In';
+    if(window.turnstile)turnstile.reset('#turnstile-widget');
+    turnstileToken=null;
   }
 }
 </script>
 </body>
 </html>
-
-

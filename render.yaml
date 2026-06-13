@@ -1,0 +1,48 @@
+# render.yaml — ProjectHive Deployment on Render.com
+# Deploy at: https://dashboard.render.com/select-repo
+
+services:
+  # ─── Backend (Node.js + Socket.IO) ──────────────────────────────────────────
+  - type: web
+    name: projecthive-backend
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && node server.js
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: REFRESH_TOKEN_EXPIRES_IN
+        value: 7d
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: "ProjectHive <onboarding@resend.dev>"
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        value: https://project-hive.vercel.app
+      - key: FRONTEND_URL_PROD
+        value: https://project-hive.vercel.app
+      - key: APP_URL_PROD
+        value: https://projecthive-backend.onrender.com
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100

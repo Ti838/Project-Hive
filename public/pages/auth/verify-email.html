@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verify Email — ProjectHive</title>
+<meta name="description" content="Verify your ProjectHive email address.">
+<link rel="icon" href="../../assets/svg/logo.png">
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f8fafc;--card:#fff;--txt:#0f172a;--sub:#475569;--muted:#94a3b8;--border:#e2e8f0;--primary:#6366f1;--primary2:#7c3aed;--primary3:#a855f7;--shadow:0 4px 24px rgba(99,102,241,.08)}
+.dark{--bg:#0f172a;--card:#1e293b;--txt:#f1f5f9;--sub:#94a3b8;--muted:#64748b;--border:#334155;--shadow:0 4px 24px rgba(0,0,0,.4)}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif}
+body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+.bg-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.orb1{width:500px;height:500px;background:rgba(99,102,241,.12);top:-150px;left:-100px}
+.orb2{width:400px;height:400px;background:rgba(168,85,247,.1);bottom:-100px;right:-80px}
+.card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px 40px;width:100%;max-width:440px;box-shadow:var(--shadow);text-align:center}
+.dark .card{border-color:rgba(255,255,255,.06)}
+.icon{width:72px;height:72px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
+.icon.loading{background:rgba(99,102,241,.1)}
+.icon.success{background:rgba(16,185,129,.1)}
+.icon.error{background:rgba(239,68,68,.1)}
+.card-title{font-size:22px;font-weight:700;margin-bottom:8px}
+.card-sub{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:28px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--txt);margin-left:10px}
+.btn-outline:hover{background:var(--border)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.card{animation:fadeIn .4s ease}
+</style>
+</head>
+<body>
+
+<div class="bg-orb orb1"></div>
+<div class="bg-orb orb2"></div>
+
+<div class="card" id="card">
+  <!-- Loading state -->
+  <div id="loading-state">
+    <div class="icon loading">
+      <span class="spin">⟳</span>
+    </div>
+    <h1 class="card-title">Verifying your email…</h1>
+    <p class="card-sub">Please wait while we confirm your email address.</p>
+  </div>
+
+  <!-- Success state -->
+  <div id="success-state" style="display:none">
+    <div class="icon success">✅</div>
+    <h1 class="card-title">Email Verified!</h1>
+    <p class="card-sub">Your email has been verified successfully. Welcome to ProjectHive! 🐝</p>
+    <a href="login.html" class="btn">Go to Sign In →</a>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" style="display:none">
+    <div class="icon error">❌</div>
+    <h1 class="card-title" id="err-title">Verification Failed</h1>
+    <p class="card-sub" id="err-msg">This verification link is invalid or has expired.</p>
+    <a href="login.html" class="btn">Sign In</a>
+    <a href="#" onclick="resendFlow()" class="btn btn-outline">Resend Email</a>
+  </div>
+</div>
+
+<script>
+(async function(){
+  const params=new URLSearchParams(location.search);
+  const token=params.get('token');
+
+  function show(state){
+    ['loading','success','error'].forEach(s=>{
+      document.getElementById(s+'-state').style.display=s===state?'block':'none';
+    });
+  }
+
+  if(!token){
+    show('error');
+    document.getElementById('err-title').textContent='Missing Token';
+    document.getElementById('err-msg').textContent='No verification token found. Please use the link from your email.';
+    return;
+  }
+
+  try{
+    const res=await fetch('/api/auth/verify-email?token='+encodeURIComponent(token));
+    const data=await res.json();
+    if(res.ok){
+      show('success');
+      // Update local storage if user is logged in
+      const userData=localStorage.getItem('user_data');
+      if(userData){
+        const user=JSON.parse(userData);
+        user.isVerified=true;
+        localStorage.setItem('user_data',JSON.stringify(user));
+      }
+      // Auto-redirect to dashboard after 3s
+      setTimeout(()=>{window.location.href='../user/dashboard.html';},3000);
+    }else{
+      show('error');
+      document.getElementById('err-msg').textContent=data.error||'Verification failed. Please request a new link.';
+    }
+  }catch(err){
+    show('error');
+    document.getElementById('err-msg').textContent='Could not connect to server. Please try again.';
+  }
+})();
+
+async function resendFlow(){
+  const email=prompt('Enter your email address to resend the verification link:');
+  if(!email)return;
+  try{
+    const res=await fetch('/api/auth/resend-verification',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email})
+    });
+    const data=await res.json();
+    alert(data.message||'Verification email sent!');
+  }catch(e){
+    alert('Failed to resend. Please try again.');
+  }
+}
+</script>
+</body>
+</html>

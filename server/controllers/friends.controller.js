@@ -1,163 +1,124 @@
-import FriendRequest from '../models/FriendRequest.js';
-import User from '../models/User.js';
+import { supabaseAdmin } from '../config/supabase.js';
 import { broadcastNotification } from '../services/socket.service.js';
 
-// POST /api/friends/request/:userId  — Send a friend request
 export async function sendFriendRequest(req, res, next) {
   try {
     const senderId   = req.user.id;
     const receiverId = req.params.userId;
-
-    if (senderId === receiverId) {
-      return res.status(400).json({ error: 'Cannot send request to yourself' });
-    }
+    if (senderId === receiverId) return res.status(400).json({ error: 'Cannot send request to yourself' });
 
     // Check receiver exists
-    const receiver = await User.findById(receiverId);
+    const { data: receiver } = await supabaseAdmin.from('users').select('id, first_name, last_name').eq('id', receiverId).single();
     if (!receiver) return res.status(404).json({ error: 'User not found' });
 
     // Already friends?
-    const sender = await User.findById(senderId);
-    if (sender.friends.includes(receiverId)) {
-      return res.status(400).json({ error: 'Already friends' });
-    }
+    const { data: fr } = await supabaseAdmin.from('friends').select('id').eq('user_id', senderId).eq('friend_id', receiverId).single();
+    if (fr) return res.status(400).json({ error: 'Already friends' });
 
     // Already pending?
-    const existing = await FriendRequest.findOne({
-      $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId },
-      ],
-      status: 'pending',
-    });
-    if (existing) return res.status(400).json({ error: 'Request already pending' });
+    const { data: ex } = await supabaseAdmin.from('friend_requests')
+      .select('id')
+      .or(`and(from_user_id.eq.${senderId},to_user_id.eq.${receiverId}),and(from_user_id.eq.${receiverId},to_user_id.eq.${senderId})`)
+      .eq('status', 'pending')
+      .single();
+    if (ex) return res.status(400).json({ error: 'Request already pending' });
 
-    const request = await FriendRequest.create({ sender: senderId, receiver: receiverId });
-    await request.populate('sender', 'firstName lastName avatar');
+    const { data: request, error } = await supabaseAdmin.from('friend_requests')
+      .insert({ from_user_id: senderId, to_user_id: receiverId })
+      .select()
+      .single();
+    if (error) throw error;
 
-    // Real-time notification to receiver
+    const { data: sender } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', senderId).single();
     broadcastNotification(null, receiverId, {
       type: 'friend_request',
-      message: `${request.sender.firstName} ${request.sender.lastName} sent you a friend request`,
-      requestId: request._id,
-      sender: request.sender,
+      message: `${sender?.first_name} ${sender?.last_name} sent you a friend request`,
+      requestId: request.id,
     });
 
     res.status(201).json({ message: 'Friend request sent', request });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ error: 'Request already sent' });
-    }
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
-// POST /api/friends/accept/:requestId  — Accept a friend request
 export async function acceptFriendRequest(req, res, next) {
   try {
     const userId    = req.user.id;
     const requestId = req.params.requestId;
 
-    const request = await FriendRequest.findById(requestId).populate('sender receiver', 'firstName lastName avatar');
+    const { data: request } = await supabaseAdmin.from('friend_requests').select('*').eq('id', requestId).single();
     if (!request) return res.status(404).json({ error: 'Request not found' });
-    if (request.receiver._id.toString() !== userId) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-    if (request.status !== 'pending') {
-      return res.status(400).json({ error: 'Request already handled' });
-    }
+    if (request.to_user_id !== userId) return res.status(403).json({ error: 'Not authorized' });
+    if (request.status !== 'pending') return res.status(400).json({ error: 'Request already handled' });
 
-    request.status    = 'accepted';
-    request.updatedAt = new Date();
-    await request.save();
+    await supabaseAdmin.from('friend_requests').update({ status: 'accepted' }).eq('id', requestId);
 
-    // Add each other as friends
-    await User.findByIdAndUpdate(request.sender._id,   { $addToSet: { friends: request.receiver._id } });
-    await User.findByIdAndUpdate(request.receiver._id, { $addToSet: { friends: request.sender._id } });
+    // Add mutual friendship
+    await supabaseAdmin.from('friends').insert([
+      { user_id: request.from_user_id, friend_id: request.to_user_id },
+      { user_id: request.to_user_id, friend_id: request.from_user_id },
+    ]);
 
-    // Notify sender
-    broadcastNotification(null, request.sender._id.toString(), {
+    const { data: accepter } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
+    broadcastNotification(null, request.from_user_id, {
       type: 'friend_accepted',
-      message: `${request.receiver.firstName} ${request.receiver.lastName} accepted your friend request`,
-      friend: request.receiver,
+      message: `${accepter?.first_name} ${accepter?.last_name} accepted your friend request`,
     });
 
-    res.json({ message: 'Friend request accepted', request });
-  } catch (error) {
-    next(error);
-  }
+    res.json({ message: 'Friend request accepted' });
+  } catch (err) { next(err); }
 }
 
-// POST /api/friends/reject/:requestId  — Reject a request
 export async function rejectFriendRequest(req, res, next) {
   try {
-    const userId    = req.user.id;
-    const requestId = req.params.requestId;
-
-    const request = await FriendRequest.findById(requestId);
-    if (!request) return res.status(404).json({ error: 'Request not found' });
-    if (request.receiver.toString() !== userId) {
-      return res.status(403).json({ error: 'Not authorized' });
-    }
-
-    request.status    = 'rejected';
-    request.updatedAt = new Date();
-    await request.save();
-
+    const { requestId } = req.params;
+    await supabaseAdmin.from('friend_requests').update({ status: 'rejected' }).eq('id', requestId).eq('to_user_id', req.user.id);
     res.json({ message: 'Friend request rejected' });
-  } catch (error) {
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
-// GET /api/friends  — Get my friends list (with online status)
 export async function getFriends(req, res, next) {
   try {
-    const user = await User.findById(req.user.id)
-      .populate('friends', 'firstName lastName avatar onlineStatus lastSeen university major');
-    res.json({ friends: user.friends });
-  } catch (error) {
-    next(error);
-  }
+    const { data: rows, error } = await supabaseAdmin
+      .from('friends')
+      .select('friend:friend_id(id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major)')
+      .eq('user_id', req.user.id);
+    if (error) throw error;
+    res.json({ friends: (rows || []).map(r => r.friend) });
+  } catch (err) { next(err); }
 }
 
-// GET /api/friends/requests  — Get pending incoming requests
 export async function getPendingRequests(req, res, next) {
   try {
-    const requests = await FriendRequest.find({ receiver: req.user.id, status: 'pending' })
-      .populate('sender', 'firstName lastName avatar university major')
-      .sort({ createdAt: -1 });
-    res.json({ requests });
-  } catch (error) {
-    next(error);
-  }
+    const { data: requests, error } = await supabaseAdmin
+      .from('friend_requests')
+      .select('*, sender:from_user_id(id, first_name, last_name, avatar, avatar_color, university, major)')
+      .eq('to_user_id', req.user.id)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ requests: requests || [] });
+  } catch (err) { next(err); }
 }
 
-// GET /api/friends/dm-history/:friendId  — Get DM messages with a friend
 export async function getDMHistory(req, res, next) {
   try {
-    const { Message } = await import('../models/Message.js');
-    const myId       = req.user.id;
-    const friendId   = req.params.friendId;
+    const myId     = req.user.id;
+    const friendId = req.params.friendId;
     const { skip = 0, limit = 50 } = req.query;
 
-    // Verify friendship
-    const me = await User.findById(myId);
-    if (!me.friends.includes(friendId)) {
-      return res.status(403).json({ error: 'Not friends' });
-    }
+    const { data: fr } = await supabaseAdmin.from('friends').select('id').eq('user_id', myId).eq('friend_id', friendId).single();
+    if (!fr) return res.status(403).json({ error: 'Not friends' });
 
-    const roomId   = [myId, friendId].sort().join('_');
-    const messages = await (await import('../models/Message.js')).default
-      .find({ roomId })
-      .populate('sender', 'firstName lastName avatar')
-      .sort({ createdAt: -1 })
-      .skip(parseInt(skip))
-      .limit(parseInt(limit))
-      .lean();
+    const roomId = [myId, friendId].sort().join('_');
 
-    res.json({ messages: messages.reverse(), roomId });
-  } catch (error) {
-    next(error);
-  }
+    const { data: messages, error } = await supabaseAdmin
+      .from('messages')
+      .select('*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)')
+      .eq('room_id', roomId)
+      .range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ messages: (messages || []).reverse(), roomId });
+  } catch (err) { next(err); }
 }

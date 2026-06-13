@@ -1,43 +1,40 @@
-import Notification from '../models/Notification.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 export async function getNotifications(req, res, next) {
   try {
     const userId = req.user.id;
     const { skip = 0, limit = 20, unreadOnly = false } = req.query;
 
-    let query = { recipient: userId };
+    let q = supabaseAdmin
+      .from('notifications')
+      .select('*', { count: 'exact' })
+      .eq('user_id', userId);
 
-    if (unreadOnly === 'true') {
-      query.read = false;
-    }
+    if (unreadOnly === 'true') q = q.eq('is_read', false);
 
-    const notifications = await Notification.find(query)
-      .populate('relatedUserId', 'firstName lastName avatar')
-      .populate('relatedTeamId', 'name')
-      .sort({ createdAt: -1 })
-      .skip(parseInt(skip))
-      .limit(parseInt(limit));
+    q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1).order('created_at', { ascending: false });
 
-    const total = await Notification.countDocuments(query);
-    const unreadCount = await Notification.countDocuments({
-      recipient: userId,
-      read: false,
-    });
+    const { data: notifications, error, count } = await q;
+    if (error) throw error;
+
+    // Unread count
+    const { count: unreadCount } = await supabaseAdmin
+      .from('notifications')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
 
     res.json({
-      notifications,
-      unreadCount,
+      notifications: notifications || [],
+      unreadCount: unreadCount || 0,
       pagination: {
-        total,
+        total: count || 0,
         skip: parseInt(skip),
         limit: parseInt(limit),
-        hasMore: parseInt(skip) + parseInt(limit) < total,
+        hasMore: parseInt(skip) + parseInt(limit) < (count || 0),
       },
     });
-  } catch (error) {
-    console.error('[v0] Get notifications error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function markAsRead(req, res, next) {
@@ -45,66 +42,30 @@ export async function markAsRead(req, res, next) {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const notification = await Notification.findByIdAndUpdate(
-      id,
-      {
-        read: true,
-        readAt: new Date(),
-      },
-      { new: true }
-    );
+    const { data, error } = await supabaseAdmin
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
 
-    if (!notification || notification.recipient.toString() !== userId) {
-      return res.status(404).json({ error: 'Notification not found' });
-    }
-
-    res.json({
-      message: 'Notification marked as read',
-      notification,
-    });
-  } catch (error) {
-    console.error('[v0] Mark notification as read error:', error);
-    next(error);
-  }
+    if (error || !data) return res.status(404).json({ error: 'Notification not found' });
+    res.json({ message: 'Marked as read', notification: data });
+  } catch (err) { next(err); }
 }
 
 export async function markAllAsRead(req, res, next) {
   try {
-    const userId = req.user.id;
-
-    await Notification.updateMany(
-      {
-        recipient: userId,
-        read: false,
-      },
-      {
-        read: true,
-        readAt: new Date(),
-      }
-    );
-
+    await supabaseAdmin.from('notifications').update({ is_read: true }).eq('user_id', req.user.id).eq('is_read', false);
     res.json({ message: 'All notifications marked as read' });
-  } catch (error) {
-    console.error('[v0] Mark all as read error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
 export async function deleteNotification(req, res, next) {
   try {
     const { id } = req.params;
-    const userId = req.user.id;
-
-    const notification = await Notification.findById(id);
-    if (!notification || notification.recipient.toString() !== userId) {
-      return res.status(404).json({ error: 'Notification not found' });
-    }
-
-    await Notification.findByIdAndDelete(id);
-
+    await supabaseAdmin.from('notifications').delete().eq('id', id).eq('user_id', req.user.id);
     res.json({ message: 'Notification deleted' });
-  } catch (error) {
-    console.error('[v0] Delete notification error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }

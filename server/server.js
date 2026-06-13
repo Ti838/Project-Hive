@@ -20,38 +20,27 @@ const PORT = process.env.PORT || 5000;
 
 async function startServer() {
   try {
-    console.log('[ProjectHive] Starting ProjectHive Backend Server...');
+    console.log('[ProjectHive] 🐝 Starting ProjectHive Backend...');
+    console.log(`[ProjectHive] Environment: ${process.env.NODE_ENV || 'development'}`);
 
-    // Connect to MongoDB
+    // Connect to Supabase
     await connectDB();
 
-    // Redis is optional — skip if REDIS_URL not set
-    let redisClient = null;
-    if (process.env.REDIS_URL) {
-      try {
-        const { initializeRedis } = await import('./config/redis.js');
-        redisClient = initializeRedis();
-      } catch (error) {
-        console.warn('[v0] Redis initialization optional, continuing without it');
-      }
-    }
-
-    // Initialize Google Gemini AI (free — https://aistudio.google.com/apikey)
+    // Initialize Gemini AI (optional)
     try {
       if (process.env.GEMINI_API_KEY) {
         initializeGemini();
       } else {
-        console.warn('[ProjectHive] ⚠️  GEMINI_API_KEY not set — AI idea generator disabled.');
-        console.warn('[ProjectHive]    Get free key at: https://aistudio.google.com/apikey');
+        console.warn('[ProjectHive] ⚠️  GEMINI_API_KEY not set — AI generator disabled');
       }
-    } catch (error) {
-      console.warn('[ProjectHive] Gemini init failed:', error.message);
+    } catch (err) {
+      console.warn('[ProjectHive] Gemini init failed (non-fatal):', err.message);
     }
 
-    // Create HTTP server
+    // HTTP server
     const server = http.createServer(app);
 
-    // Initialize Socket.IO with permissive CORS for development
+    // Allowed CORS origins
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:5000',
@@ -63,102 +52,54 @@ async function startServer() {
       process.env.FRONTEND_URL_PROD,
     ].filter(Boolean);
 
+    // Socket.IO
     const io = new Server(server, {
-      cors: {
-        origin: allowedOrigins,
-        credentials: true,
-      },
+      cors: { origin: allowedOrigins, credentials: true },
       transports: ['websocket', 'polling'],
       pingTimeout: 60000,
       pingInterval: 25000,
     });
 
-    // Store io reference in socket service (for global online status broadcasts)
     setIo(io);
-
-    // Apply Socket.IO middleware
     io.use(socketAuthMiddleware);
 
-    // Redis adapter for scaling (optional)
-    if (redisClient) {
-      try {
-        const { createAdapter } = await import('@socket.io/redis-adapter');
-        const pubClient = redisClient.duplicate();
-        await pubClient.connect();
-        io.adapter(createAdapter(redisClient, pubClient));
-        console.log('[v0] Socket.IO Redis adapter configured');
-      } catch (error) {
-        console.warn('[v0] Redis adapter setup failed, using in-memory adapter');
-      }
-    }
-
-    // Socket.IO event handlers
     io.on('connection', (socket) => {
-      console.log('[v0] User connected:', socket.userId, '| Socket:', socket.id);
+      console.log('[ProjectHive] 🔌 User connected:', socket.userId, '| Socket:', socket.id);
       registerUserSocket(socket);
 
-      // Room management
-      socket.on('join:room', (data) => {
-        handleJoinRoom(socket, data);
-      });
+      socket.on('join:room',   (data) => handleJoinRoom(socket, data));
+      socket.on('leave:room',  ()     => handleLeaveRoom(socket));
+      socket.on('message:send',(data) => handleSendMessage(socket, io, data));
+      socket.on('typing:start',(data) => handleTyping(socket, io, { ...data, isTyping: true }));
+      socket.on('typing:stop', (data) => handleTyping(socket, io, { ...data, isTyping: false }));
 
-      socket.on('leave:room', () => {
-        handleLeaveRoom(socket);
-      });
-
-      // Messaging
-      socket.on('message:send', (data) => {
-        handleSendMessage(socket, io, data);
-      });
-
-      // Typing indicators
-      socket.on('typing:start', (data) => {
-        handleTyping(socket, io, { ...data, isTyping: true });
-      });
-
-      socket.on('typing:stop', (data) => {
-        handleTyping(socket, io, { ...data, isTyping: false });
-      });
-
-      // Disconnect
       socket.on('disconnect', (reason) => {
         handleLeaveRoom(socket);
         unregisterUserSocket(socket.userId);
-        console.log('[v0] User disconnected:', socket.userId, '| Reason:', reason);
+        console.log('[ProjectHive] 🔌 User disconnected:', socket.userId, '| Reason:', reason);
       });
-
-      // Error handling
-      socket.on('error', (error) => {
-        console.error('[v0] Socket error:', error);
-      });
+      socket.on('error', (err) => console.error('[ProjectHive] Socket error:', err));
     });
 
-    // Start server
     server.listen(PORT, () => {
-      console.log(`[v0] ✅ ProjectHive Backend running on port ${PORT}`);
-      console.log(`[v0] Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`[v0] API: http://localhost:${PORT}/api`);
-      console.log(`[v0] Socket.IO: ws://localhost:${PORT}`);
+      console.log(`\n[ProjectHive] ✅ Server running on port ${PORT}`);
+      console.log(`[ProjectHive] 🌐 API:       http://localhost:${PORT}/api`);
+      console.log(`[ProjectHive] 🔌 Socket.IO: ws://localhost:${PORT}`);
+      console.log(`[ProjectHive] 🗄️  Database:  Supabase PostgreSQL`);
+      console.log(`[ProjectHive] 📧 Email:     Resend.com`);
+      console.log(`[ProjectHive] 🛡️  CAPTCHA:   Cloudflare Turnstile\n`);
     });
 
     // Graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('[v0] Shutting down gracefully...');
-      server.close(() => {
-        console.log('[v0] Server closed');
-        process.exit(0);
-      });
-    });
+    const shutdown = () => {
+      console.log('\n[ProjectHive] Shutting down gracefully...');
+      server.close(() => process.exit(0));
+    };
+    process.on('SIGINT',  shutdown);
+    process.on('SIGTERM', shutdown);
 
-    process.on('SIGTERM', async () => {
-      console.log('[v0] SIGTERM received, shutting down...');
-      server.close(() => {
-        console.log('[v0] Server closed');
-        process.exit(0);
-      });
-    });
   } catch (error) {
-    console.error('[v0] Failed to start server:', error);
+    console.error('[ProjectHive] ❌ Failed to start:', error);
     process.exit(1);
   }
 }

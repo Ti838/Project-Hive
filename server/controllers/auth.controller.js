@@ -1,172 +1,429 @@
-import User from '../models/User.js';
+import bcryptjs from 'bcryptjs';
+import crypto from 'crypto';
+import { supabaseAdmin } from '../config/supabase.js';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.utils.js';
+import { sendVerificationEmail, sendWelcomeEmail } from '../services/email.service.js';
 
+// ─── Helper: strip sensitive fields ──────────────────────────────────────────
+function sanitizeUser(user) {
+  const { password_hash, refresh_tokens, email_verification_token,
+    email_verification_expires, password_reset_token, password_reset_expires, ...safe } = user;
+  return safe;
+}
+
+// ─── REGISTER ────────────────────────────────────────────────────────────────
 export async function register(req, res, next) {
   try {
     const { firstName, lastName, email, password, university, major, yearOfStudy } = req.body;
 
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ error: 'All required fields must be filled.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
     }
 
-    // Create new user
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      passwordHash: password, // Will be hashed by pre-save hook
-      university,
-      major,
-      yearOfStudy,
-    });
+    // Check existing user
+    const { data: existing } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('email', email.toLowerCase())
+      .single();
 
-    await user.save();
+    if (existing) {
+      return res.status(400).json({ error: 'Email already registered. Please sign in.' });
+    }
 
-    // Generate tokens
-    const { accessToken, refreshToken } = generateTokenPair(user._id.toString(), user.email);
+    // Hash password
+    const salt = await bcryptjs.genSalt(12);
+    const passwordHash = await bcryptjs.hash(password, salt);
+
+    // Generate email verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+
+    // Create user in Supabase
+    const { data: user, error: createError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        email: email.toLowerCase().trim(),
+        password_hash: passwordHash,
+        university: university || '',
+        major: major || '',
+        year_of_study: yearOfStudy || null,
+        email_verification_token: verificationToken,
+        email_verification_expires: verificationExpires.toISOString(),
+        is_verified: false,
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      console.error('[ProjectHive] Register error:', createError);
+      return res.status(500).json({ error: 'Failed to create account. Please try again.' });
+    }
+
+    // Send verification email (non-blocking)
+    try {
+      await sendVerificationEmail(user.email, user.first_name, verificationToken);
+    } catch (emailErr) {
+      console.warn('[ProjectHive] Verification email failed (non-fatal):', emailErr.message);
+    }
+
+    // Generate JWT tokens
+    const { accessToken, refreshToken } = generateTokenPair(user.id, user.email);
 
     // Store refresh token
-    user.refreshTokens.push(refreshToken);
-    await user.save();
+    await supabaseAdmin
+      .from('users')
+      .update({ refresh_tokens: [refreshToken] })
+      .eq('id', user.id);
 
-    console.log('[v0] User registered:', user.email);
+    console.log('[ProjectHive] ✅ User registered:', user.email);
 
     res.status(201).json({
-      message: 'User registered successfully',
+      message: 'Account created! Please check your email to verify your account.',
+      emailSent: true,
       user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
         email: user.email,
         university: user.university,
+        isVerified: false,
       },
       accessToken,
       refreshToken,
     });
   } catch (error) {
-    console.error('[v0] Register error:', error);
+    console.error('[ProjectHive] Register error:', error);
     next(error);
   }
 }
 
+// ─── VERIFY EMAIL ─────────────────────────────────────────────────────────────
+export async function verifyEmail(req, res, next) {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({ error: 'Verification token is required.' });
+    }
+
+    // Find user with this token
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('id, email, first_name, email_verification_expires, is_verified')
+      .eq('email_verification_token', token)
+      .single();
+
+    if (error || !user) {
+      return res.status(400).json({ error: 'Invalid or expired verification link.' });
+    }
+
+    if (user.is_verified) {
+      return res.json({ message: 'Email already verified. You can sign in now.' });
+    }
+
+    // Check expiry
+    if (new Date(user.email_verification_expires) < new Date()) {
+      return res.status(400).json({ error: 'Verification link has expired. Please request a new one.' });
+    }
+
+    // Mark as verified
+    await supabaseAdmin
+      .from('users')
+      .update({
+        is_verified: true,
+        email_verification_token: null,
+        email_verification_expires: null,
+      })
+      .eq('id', user.id);
+
+    // Send welcome email
+    try {
+      await sendWelcomeEmail(user.email, user.first_name);
+    } catch (_) { /* non-fatal */ }
+
+    console.log('[ProjectHive] ✅ Email verified:', user.email);
+
+    res.json({ message: 'Email verified successfully! Welcome to ProjectHive 🐝' });
+  } catch (error) {
+    console.error('[ProjectHive] Email verify error:', error);
+    next(error);
+  }
+}
+
+// ─── RESEND VERIFICATION ──────────────────────────────────────────────────────
+export async function resendVerification(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    const { data: user } = await supabaseAdmin
+      .from('users')
+      .select('id, first_name, is_verified')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    // Always respond success to prevent email enumeration
+    if (!user || user.is_verified) {
+      return res.json({ message: 'If that email exists and is unverified, we sent a new link.' });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    await supabaseAdmin
+      .from('users')
+      .update({
+        email_verification_token: verificationToken,
+        email_verification_expires: verificationExpires.toISOString(),
+      })
+      .eq('id', user.id);
+
+    await sendVerificationEmail(email, user.first_name, verificationToken);
+
+    res.json({ message: 'Verification email resent. Please check your inbox.' });
+  } catch (error) {
+    console.error('[ProjectHive] Resend verify error:', error);
+    next(error);
+  }
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
 export async function login(req, res, next) {
   try {
     const { email, password } = req.body;
 
-    // Find user
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required.' });
     }
 
-    // Compare passwords
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    // Find user
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+
+    if (user.is_banned) {
+      return res.status(403).json({ error: 'Your account has been suspended.' });
+    }
+
+    // Verify password
+    const isValid = await bcryptjs.compare(password, user.password_hash);
+    if (!isValid) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokenPair(user._id.toString(), user.email);
+    const { accessToken, refreshToken } = generateTokenPair(user.id, user.email);
 
-    // Store refresh token (keep last 5 tokens for multiple device support)
-    user.refreshTokens.push(refreshToken);
-    if (user.refreshTokens.length > 5) {
-      user.refreshTokens.shift();
-    }
+    // Keep last 5 refresh tokens (multi-device support)
+    const tokens = [...(user.refresh_tokens || []), refreshToken].slice(-5);
+    await supabaseAdmin
+      .from('users')
+      .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
+      .eq('id', user.id);
 
-    // Update last seen
-    user.lastSeen = new Date();
-    await user.save();
-
-    console.log('[v0] User logged in:', user.email);
+    console.log('[ProjectHive] ✅ User logged in:', user.email);
 
     res.json({
       message: 'Login successful',
       user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
         email: user.email,
         university: user.university,
         avatar: user.avatar,
+        avatarColor: user.avatar_color,
+        role: user.role,
+        isVerified: user.is_verified,
       },
       accessToken,
       refreshToken,
+      emailVerified: user.is_verified,
     });
   } catch (error) {
-    console.error('[v0] Login error:', error);
+    console.error('[ProjectHive] Login error:', error);
     next(error);
   }
 }
 
+// ─── REFRESH TOKEN ────────────────────────────────────────────────────────────
 export async function refresh(req, res, next) {
   try {
     const { refreshToken } = req.body;
-
     if (!refreshToken) {
-      return res.status(401).json({ error: 'Missing refresh token' });
+      return res.status(401).json({ error: 'Missing refresh token.' });
     }
 
-    // Verify refresh token
     const decoded = verifyRefreshToken(refreshToken);
 
-    // Find user
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
+    const { data: user } = await supabaseAdmin
+      .from('users')
+      .select('id, email, refresh_tokens')
+      .eq('id', decoded.id)
+      .single();
+
+    if (!user || !(user.refresh_tokens || []).includes(refreshToken)) {
+      return res.status(401).json({ error: 'Invalid refresh token.' });
     }
 
-    // Check if refresh token is in user's token list
-    if (!user.refreshTokens.includes(refreshToken)) {
-      return res.status(401).json({ error: 'Invalid refresh token' });
-    }
+    const tokens = generateTokenPair(user.id, user.email);
 
-    // Generate new token pair
-    const tokens = generateTokenPair(user._id.toString(), user.email);
+    // Rotate token
+    const updatedTokens = (user.refresh_tokens || [])
+      .filter(t => t !== refreshToken)
+      .concat(tokens.refreshToken)
+      .slice(-5);
 
-    // Update refresh token (rotate it)
-    user.refreshTokens = user.refreshTokens.filter(t => t !== refreshToken);
-    user.refreshTokens.push(tokens.refreshToken);
+    await supabaseAdmin
+      .from('users')
+      .update({ refresh_tokens: updatedTokens })
+      .eq('id', user.id);
 
-    await user.save();
-
-    console.log('[v0] Token refreshed for user:', user.email);
-
-    res.json({
-      message: 'Token refreshed',
-      accessToken: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
-    });
+    res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
   } catch (error) {
-    console.error('[v0] Refresh token error:', error);
-    
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Refresh token expired' });
+      return res.status(401).json({ error: 'Refresh token expired. Please sign in again.' });
     }
-
     next(error);
   }
 }
 
+// ─── LOGOUT ──────────────────────────────────────────────────────────────────
 export async function logout(req, res, next) {
   try {
     const { refreshToken } = req.body;
     const userId = req.user.id;
 
     if (refreshToken) {
-      // Remove the specific refresh token
-      await User.findByIdAndUpdate(userId, {
-        $pull: { refreshTokens: refreshToken },
-      });
+      const { data: user } = await supabaseAdmin
+        .from('users')
+        .select('refresh_tokens')
+        .eq('id', userId)
+        .single();
+
+      if (user) {
+        const updatedTokens = (user.refresh_tokens || []).filter(t => t !== refreshToken);
+        await supabaseAdmin
+          .from('users')
+          .update({ refresh_tokens: updatedTokens, online_status: 'offline' })
+          .eq('id', userId);
+      }
     }
 
-    console.log('[v0] User logged out:', req.user.email);
-
-    res.json({ message: 'Logged out successfully' });
+    console.log('[ProjectHive] User logged out:', req.user.email);
+    res.json({ message: 'Logged out successfully.' });
   } catch (error) {
-    console.error('[v0] Logout error:', error);
+    next(error);
+  }
+}
+
+// ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
+export async function forgotPassword(req, res, next) {
+  try {
+    const { email } = req.body;
+
+    const { data: user } = await supabaseAdmin
+      .from('users')
+      .select('id, first_name')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    // Always respond success (prevent email enumeration)
+    if (!user) {
+      return res.json({ message: 'If that email is registered, you will receive a reset link.' });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await supabaseAdmin
+      .from('users')
+      .update({
+        password_reset_token: resetToken,
+        password_reset_expires: resetExpires.toISOString(),
+      })
+      .eq('id', user.id);
+
+    const { sendPasswordResetEmail } = await import('../services/email.service.js');
+    await sendPasswordResetEmail(email, user.first_name, resetToken);
+
+    res.json({ message: 'Password reset link sent to your email.' });
+  } catch (error) {
+    console.error('[ProjectHive] Forgot password error:', error);
+    next(error);
+  }
+}
+
+// ─── RESET PASSWORD ───────────────────────────────────────────────────────────
+export async function resetPassword(req, res, next) {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: 'Token and new password are required.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+
+    const { data: user } = await supabaseAdmin
+      .from('users')
+      .select('id, password_reset_expires')
+      .eq('password_reset_token', token)
+      .single();
+
+    if (!user) {
+      return res.status(400).json({ error: 'Invalid or expired reset link.' });
+    }
+    if (new Date(user.password_reset_expires) < new Date()) {
+      return res.status(400).json({ error: 'Reset link has expired. Please request a new one.' });
+    }
+
+    const salt = await bcryptjs.genSalt(12);
+    const passwordHash = await bcryptjs.hash(password, salt);
+
+    await supabaseAdmin
+      .from('users')
+      .update({
+        password_hash: passwordHash,
+        password_reset_token: null,
+        password_reset_expires: null,
+        refresh_tokens: [], // invalidate all sessions
+      })
+      .eq('id', user.id);
+
+    res.json({ message: 'Password reset successfully. Please sign in with your new password.' });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// ─── GET CURRENT USER ─────────────────────────────────────────────────────────
+export async function getMe(req, res, next) {
+  try {
+    const { data: user, error } = await supabaseAdmin
+      .from('users')
+      .select('*, skills(*)')
+      .eq('id', req.user.id)
+      .single();
+
+    if (error || !user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.json({ user: sanitizeUser(user) });
+  } catch (error) {
     next(error);
   }
 }

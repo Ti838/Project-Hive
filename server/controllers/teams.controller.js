@@ -1,307 +1,219 @@
-import Team from '../models/Team.js';
-import JoinRequest from '../models/JoinRequest.js';
-import User from '../models/User.js';
-import Notification from '../models/Notification.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
+// ─── CREATE TEAM ──────────────────────────────────────────────────────────────
 export async function createTeam(req, res, next) {
   try {
     const userId = req.user.id;
-    const { name, description, requiredSkills, maxMembers, projectType, university, tags } = req.body;
+    const { name, description, maxMembers, category, tags } = req.body;
 
-    const team = new Team({
-      name,
-      description,
-      requiredSkills: requiredSkills || [],
-      maxMembers: maxMembers || 5,
-      projectType: projectType || '',
-      university,
-      tags: tags || [],
-      creator: userId,
-      members: [{ user: userId, role: 'lead' }],
-    });
+    const { data: team, error } = await supabaseAdmin
+      .from('teams')
+      .insert({
+        name,
+        description: description || '',
+        max_size: maxMembers || 5,
+        category: category || '',
+        tags: tags || [],
+        leader_id: userId,
+        is_open: true,
+      })
+      .select()
+      .single();
 
-    await team.save();
-    await team.populate('members.user', '-passwordHash -refreshTokens');
+    if (error) throw error;
 
-    // Update user stats
-    await User.findByIdAndUpdate(userId, { $inc: { teamsCreated: 1 } });
+    // Add creator as leader member
+    await supabaseAdmin.from('team_members').insert({ team_id: team.id, user_id: userId, role: 'leader' });
 
-    console.log('[v0] Team created:', team.name);
+    // Update user stat
+    await supabaseAdmin.from('users')
+      .update({ teams_created: supabaseAdmin.rpc ? undefined : undefined })
+      .eq('id', userId);
 
-    res.status(201).json({
-      message: 'Team created successfully',
-      team,
-    });
-  } catch (error) {
-    console.error('[v0] Create team error:', error);
-    next(error);
+    // Simpler increment
+    const { data: u } = await supabaseAdmin.from('users').select('teams_created').eq('id', userId).single();
+    await supabaseAdmin.from('users').update({ teams_created: (u?.teams_created || 0) + 1 }).eq('id', userId);
+
+    console.log('[ProjectHive] Team created:', team.name);
+    res.status(201).json({ message: 'Team created successfully', team });
+  } catch (err) {
+    console.error('[ProjectHive] Create team error:', err);
+    next(err);
   }
 }
 
+// ─── GET TEAMS ────────────────────────────────────────────────────────────────
 export async function getTeams(req, res, next) {
   try {
-    const { university, status, skip = 0, limit = 20, search } = req.query;
+    const { skip = 0, limit = 20, search, category } = req.query;
 
-    let query = {};
+    let q = supabaseAdmin
+      .from('teams')
+      .select(`
+        *,
+        leader:leader_id(id, first_name, last_name, avatar, avatar_color),
+        team_members(user_id, role, users(id, first_name, last_name, avatar, avatar_color))
+      `, { count: 'exact' })
+      .eq('is_open', true);
 
-    if (university) {
-      query.university = university;
-    }
+    if (search) q = q.ilike('name', `%${search}%`);
+    if (category) q = q.eq('category', category);
 
-    if (status) {
-      query.status = status;
-    }
+    q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1).order('created_at', { ascending: false });
 
-    if (search) {
-      query.$text = { $search: search };
-    }
-
-    const teams = await Team.find(query)
-      .populate('creator', 'firstName lastName avatar')
-      .populate('members.user', 'firstName lastName avatar')
-      .skip(parseInt(skip))
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-
-    const total = await Team.countDocuments(query);
+    const { data: teams, error, count } = await q;
+    if (error) throw error;
 
     res.json({
-      teams,
-      pagination: {
-        total,
-        skip: parseInt(skip),
-        limit: parseInt(limit),
-        hasMore: parseInt(skip) + parseInt(limit) < total,
-      },
+      teams: teams || [],
+      pagination: { total: count || 0, skip: parseInt(skip), limit: parseInt(limit), hasMore: parseInt(skip) + parseInt(limit) < (count || 0) },
     });
-  } catch (error) {
-    console.error('[v0] Get teams error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
+// ─── GET TEAM DETAIL ──────────────────────────────────────────────────────────
 export async function getTeamDetail(req, res, next) {
   try {
     const { id } = req.params;
+    const { data: team, error } = await supabaseAdmin
+      .from('teams')
+      .select(`
+        *,
+        leader:leader_id(id, first_name, last_name, avatar, avatar_color, university),
+        team_members(user_id, role, joined_at, users(id, first_name, last_name, avatar, avatar_color, skills(*)))
+      `)
+      .eq('id', id)
+      .single();
 
-    const team = await Team.findByIdAndUpdate(
-      id,
-      { $inc: { viewCount: 1 } },
-      { new: true }
-    ).populate('creator', 'firstName lastName avatar university')
-     .populate('members.user', 'firstName lastName avatar skills');
-
-    if (!team) {
-      return res.status(404).json({ error: 'Team not found' });
-    }
-
+    if (error || !team) return res.status(404).json({ error: 'Team not found' });
     res.json(team);
-  } catch (error) {
-    console.error('[v0] Get team detail error:', error);
-    next(error);
-  }
+  } catch (err) { next(err); }
 }
 
+// ─── UPDATE TEAM ──────────────────────────────────────────────────────────────
 export async function updateTeam(req, res, next) {
   try {
     const { id } = req.params;
     const userId = req.user.id;
 
-    // Check if user is team lead
-    const team = await Team.findById(id);
-    if (!team.isLead(userId)) {
-      return res.status(403).json({ error: 'Only team lead can update team' });
-    }
+    // Check leadership
+    const { data: mem } = await supabaseAdmin.from('team_members').select('role').eq('team_id', id).eq('user_id', userId).single();
+    if (!mem || mem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can update' });
 
-    const updates = req.body;
-    delete updates.members;
-    delete updates.creator;
-    delete updates.chatRoomId;
+    const { name, description, maxMembers, category, tags, isOpen } = req.body;
+    const updates = {};
+    if (name !== undefined)       updates.name = name;
+    if (description !== undefined) updates.description = description;
+    if (maxMembers !== undefined)  updates.max_size = maxMembers;
+    if (category !== undefined)    updates.category = category;
+    if (tags !== undefined)        updates.tags = tags;
+    if (isOpen !== undefined)      updates.is_open = isOpen;
 
-    const updatedTeam = await Team.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-    }).populate('members.user', 'firstName lastName avatar')
-     .populate('creator', 'firstName lastName avatar');
-
-    console.log('[v0] Team updated:', updatedTeam.name);
-
-    res.json({
-      message: 'Team updated successfully',
-      team: updatedTeam,
-    });
-  } catch (error) {
-    console.error('[v0] Update team error:', error);
-    next(error);
-  }
+    const { data: team, error } = await supabaseAdmin.from('teams').update(updates).eq('id', id).select().single();
+    if (error) throw error;
+    res.json({ message: 'Team updated successfully', team });
+  } catch (err) { next(err); }
 }
 
+// ─── POST JOIN REQUEST ────────────────────────────────────────────────────────
 export async function postJoinRequest(req, res, next) {
   try {
     const userId = req.user.id;
     const { teamId } = req.params;
     const { message = '' } = req.body;
 
-    const team = await Team.findById(teamId);
-    if (!team) {
-      return res.status(404).json({ error: 'Team not found' });
-    }
+    const { data: team } = await supabaseAdmin.from('teams').select('id, name, leader_id').eq('id', teamId).single();
+    if (!team) return res.status(404).json({ error: 'Team not found' });
 
-    // Check if already member
-    if (team.isMember(userId)) {
-      return res.status(400).json({ error: 'Already a member of this team' });
-    }
+    // Check already member
+    const { data: mem } = await supabaseAdmin.from('team_members').select('id').eq('team_id', teamId).eq('user_id', userId).single();
+    if (mem) return res.status(400).json({ error: 'Already a member of this team' });
 
-    // Check if pending request exists
-    const existingRequest = await JoinRequest.findOne({
-      user: userId,
-      team: teamId,
-      status: 'pending',
-    });
+    // Check pending request
+    const { data: existing } = await supabaseAdmin.from('join_requests').select('id').eq('team_id', teamId).eq('user_id', userId).eq('status', 'pending').single();
+    if (existing) return res.status(400).json({ error: 'Join request already pending' });
 
-    if (existingRequest) {
-      return res.status(400).json({ error: 'Join request already pending' });
-    }
+    const { data: jr, error } = await supabaseAdmin.from('join_requests').insert({ team_id: teamId, user_id: userId, message }).select().single();
+    if (error) throw error;
 
-    const joinRequest = new JoinRequest({
-      user: userId,
-      team: teamId,
-      message,
-    });
-
-    await joinRequest.save();
-    await team.updateOne({ $inc: { requestCount: 1 } });
-
-    // Create notification for team lead
-    const teamLead = team.members.find(m => m.role === 'lead');
-    const user = await User.findById(userId);
-
-    await Notification.create({
+    // Notify team leader
+    const { data: applicant } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
+    await supabaseAdmin.from('notifications').insert({
+      user_id: team.leader_id,
       type: 'join_request',
-      title: `New join request from ${user.firstName} ${user.lastName}`,
-      message: `${user.firstName} ${user.lastName} requested to join ${team.name}`,
-      recipient: teamLead.user,
-      relatedUserId: userId,
-      relatedTeamId: teamId,
+      title: `New join request`,
+      message: `${applicant?.first_name} ${applicant?.last_name} requested to join ${team.name}`,
+      data: { teamId, userId },
     });
 
-    console.log('[v0] Join request created:', teamId);
-
-    res.status(201).json({
-      message: 'Join request submitted',
-      joinRequest,
-    });
-  } catch (error) {
-    console.error('[v0] Post join request error:', error);
-    next(error);
-  }
+    res.status(201).json({ message: 'Join request submitted', joinRequest: jr });
+  } catch (err) { next(err); }
 }
 
+// ─── ACCEPT JOIN REQUEST ──────────────────────────────────────────────────────
 export async function acceptJoinRequest(req, res, next) {
   try {
     const { teamId, requestId } = req.params;
     const userId = req.user.id;
 
-    const team = await Team.findById(teamId);
-    if (!team) {
-      return res.status(404).json({ error: 'Team not found' });
-    }
+    const { data: mem } = await supabaseAdmin.from('team_members').select('role').eq('team_id', teamId).eq('user_id', userId).single();
+    if (!mem || mem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can accept' });
 
-    // Check if user is team lead
-    if (!team.isLead(userId)) {
-      return res.status(403).json({ error: 'Only team lead can accept requests' });
-    }
+    const { data: jr } = await supabaseAdmin.from('join_requests').select('*').eq('id', requestId).single();
+    if (!jr) return res.status(404).json({ error: 'Join request not found' });
 
-    const joinRequest = await JoinRequest.findById(requestId);
-    if (!joinRequest) {
-      return res.status(404).json({ error: 'Join request not found' });
-    }
+    // Add to team
+    await supabaseAdmin.from('team_members').insert({ team_id: teamId, user_id: jr.user_id, role: 'member' });
+    await supabaseAdmin.from('join_requests').update({ status: 'accepted' }).eq('id', requestId);
 
-    // Add user to team
-    team.members.push({ user: joinRequest.user, role: 'member' });
-    await team.save();
-
-    // Update join request
-    joinRequest.status = 'accepted';
-    joinRequest.respondedAt = new Date();
-    await joinRequest.save();
-
-    // Create notification for applicant
-    await Notification.create({
+    // Notify applicant
+    const { data: team } = await supabaseAdmin.from('teams').select('name').eq('id', teamId).single();
+    await supabaseAdmin.from('notifications').insert({
+      user_id: jr.user_id,
       type: 'team_update',
-      title: `Accepted to ${team.name}`,
-      message: `You were accepted to join ${team.name}!`,
-      recipient: joinRequest.user,
-      relatedTeamId: teamId,
+      title: 'Join Request Accepted!',
+      message: `You were accepted to join ${team?.name}`,
+      data: { teamId },
     });
 
-    // Update user stats
-    await User.findByIdAndUpdate(joinRequest.user, { $inc: { teamsJoined: 1 } });
+    // Update stats
+    const { data: u } = await supabaseAdmin.from('users').select('teams_joined').eq('id', jr.user_id).single();
+    await supabaseAdmin.from('users').update({ teams_joined: (u?.teams_joined || 0) + 1 }).eq('id', jr.user_id);
 
-    console.log('[v0] Join request accepted:', requestId);
-
-    res.json({
-      message: 'Join request accepted',
-      joinRequest,
-    });
-  } catch (error) {
-    console.error('[v0] Accept join request error:', error);
-    next(error);
-  }
+    res.json({ message: 'Join request accepted' });
+  } catch (err) { next(err); }
 }
 
+// ─── REJECT JOIN REQUEST ──────────────────────────────────────────────────────
 export async function rejectJoinRequest(req, res, next) {
   try {
     const { teamId, requestId } = req.params;
     const userId = req.user.id;
 
-    const team = await Team.findById(teamId);
-    if (!team || !team.isLead(userId)) {
-      return res.status(403).json({ error: 'Only team lead can reject requests' });
-    }
+    const { data: mem } = await supabaseAdmin.from('team_members').select('role').eq('team_id', teamId).eq('user_id', userId).single();
+    if (!mem || mem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can reject' });
 
-    const joinRequest = await JoinRequest.findByIdAndUpdate(
-      requestId,
-      {
-        status: 'rejected',
-        respondedAt: new Date(),
-      },
-      { new: true }
-    );
-
-    if (!joinRequest) {
-      return res.status(404).json({ error: 'Join request not found' });
-    }
-
-    console.log('[v0] Join request rejected:', requestId);
-
-    res.json({
-      message: 'Join request rejected',
-      joinRequest,
-    });
-  } catch (error) {
-    console.error('[v0] Reject join request error:', error);
-    next(error);
-  }
+    await supabaseAdmin.from('join_requests').update({ status: 'rejected' }).eq('id', requestId);
+    res.json({ message: 'Join request rejected' });
+  } catch (err) { next(err); }
 }
 
+// ─── GET TEAM REQUESTS ────────────────────────────────────────────────────────
 export async function getTeamRequests(req, res, next) {
   try {
     const { teamId } = req.params;
     const userId = req.user.id;
 
-    const team = await Team.findById(teamId);
-    if (!team || !team.isLead(userId)) {
-      return res.status(403).json({ error: 'Only team lead can view requests' });
-    }
+    const { data: mem } = await supabaseAdmin.from('team_members').select('role').eq('team_id', teamId).eq('user_id', userId).single();
+    if (!mem || mem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can view requests' });
 
-    const requests = await JoinRequest.find({ team: teamId })
-      .populate('user', 'firstName lastName avatar skills university')
-      .sort({ createdAt: -1 });
+    const { data: requests, error } = await supabaseAdmin
+      .from('join_requests')
+      .select('*, users(id, first_name, last_name, avatar, avatar_color, university, skills(*))')
+      .eq('team_id', teamId)
+      .order('created_at', { ascending: false });
 
-    res.json(requests);
-  } catch (error) {
-    console.error('[v0] Get team requests error:', error);
-    next(error);
-  }
+    if (error) throw error;
+    res.json(requests || []);
+  } catch (err) { next(err); }
 }
