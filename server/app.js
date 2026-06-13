@@ -68,9 +68,12 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Health check
+// Health check (both paths for keep-alive compatibility)
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date() });
+});
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', service: 'projecthive-backend', timestamp: new Date() });
 });
 
 // API Routes

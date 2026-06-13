@@ -86,8 +86,21 @@ async function startServer() {
       console.log(`[ProjectHive] 🌐 API:       http://localhost:${PORT}/api`);
       console.log(`[ProjectHive] 🔌 Socket.IO: ws://localhost:${PORT}`);
       console.log(`[ProjectHive] 🗄️  Database:  Supabase PostgreSQL`);
-      console.log(`[ProjectHive] 📧 Email:     Resend.com`);
-      console.log(`[ProjectHive] 🛡️  CAPTCHA:   Cloudflare Turnstile\n`);
+      console.log(`[ProjectHive] 📧 Email:     Brevo SMTP\n`);
+
+      // ─── Keep-alive: self-ping every 14 min to prevent Render cold starts ──
+      if (process.env.NODE_ENV === 'production') {
+        const BACKEND_URL = process.env.APP_URL_PROD || 'https://projecthive-backend.onrender.com';
+        setInterval(async () => {
+          try {
+            await fetch(`${BACKEND_URL}/api/health`);
+            console.log('[ProjectHive] 💓 Keep-alive ping sent');
+          } catch (e) {
+            // non-fatal
+          }
+        }, 14 * 60 * 1000); // every 14 minutes
+        console.log('[ProjectHive] 💓 Keep-alive enabled (ping every 14 min)');
+      }
     });
 
     // Graceful shutdown

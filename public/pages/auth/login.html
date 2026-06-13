@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,8 +7,6 @@
 <link rel="icon" href="../../assets/svg/logo.png">
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-<!-- Cloudflare Turnstile -->
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 :root{--bg:#f8fafc;--card:#fff;--txt:#0f172a;--sub:#475569;--muted:#94a3b8;--border:#e2e8f0;--primary:#6366f1;--primary2:#7c3aed;--primary3:#a855f7;--input-bg:#f8fafc;--shadow:0 4px 24px rgba(99,102,241,.08)}
 .dark{--bg:#0f172a;--card:#1e293b;--txt:#f1f5f9;--sub:#94a3b8;--muted:#64748b;--border:#334155;--input-bg:#0f172a;--shadow:0 4px 24px rgba(0,0,0,.4)}
@@ -51,7 +49,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 .eye-btn:hover{color:var(--primary)}
 .eye-btn svg{position:static!important;transform:none!important;opacity:1!important}
 .captcha-wrap{display:flex;justify-content:center;margin:8px 0 16px}
-.cf-turnstile{min-height:65px}
+
 .btn-submit{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em}
 .btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 .btn-submit:active{transform:translateY(0)}
@@ -162,16 +160,8 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 <script>
 if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){window.location.href='../user/dashboard.html';}
 
-let turnstileToken = null;
-let lastEmail = '';
 
-function onTurnstileSuccess(token){
-  turnstileToken=token;
-}
-function onTurnstileError(){
-  turnstileToken=null;
-  showAlert('Security check failed. Please try again.');
-}
+let lastEmail = '';
 
 function toggleTheme(){
   const dark=document.documentElement.classList.toggle('dark');
@@ -228,7 +218,6 @@ async function handleLogin(e){
 
   try{
     const body={email,password};
-    if(turnstileToken) body['cf-turnstile-response']=turnstileToken;
 
     const res=await fetch('/api/auth/login',{
       method:'POST',
@@ -252,14 +241,10 @@ async function handleLogin(e){
     }else{
       showAlert(data.message||data.error||'Invalid email or password.');
       btn.disabled=false;txt.textContent='Sign In';
-      if(window.turnstile)turnstile.reset('#turnstile-widget');
-      turnstileToken=null;
     }
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Sign In';
-    if(window.turnstile)turnstile.reset('#turnstile-widget');
-    turnstileToken=null;
   }
 }
 </script>

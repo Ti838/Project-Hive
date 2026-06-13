@@ -1,4 +1,4 @@
-# 🐝 ProjectHive
+# ProjectHive
 
 > A premium full-stack social platform for university students to discover teammates, showcase projects, and collaborate in real-time.
 
@@ -15,13 +15,13 @@
 
 | Service | URL |
 |---------|-----|
-| 🌐 **Frontend** | https://projecthive-bd.vercel.app |
-| ⚙️ **Backend API** | https://projecthive-backend.onrender.com/api |
+| 🌐 **Frontend** | <https://projecthive-bd.vercel.app> |
+| ⚙️ **Backend API** | <https://projecthive-backend.onrender.com/api> |
 | 🔌 **Socket.IO** | wss://projecthive-backend.onrender.com |
-| 🗄️ **Supabase** | https://supabase.com/dashboard/project/iekfvgjxkmgduxdvkuxf |
-| 📧 **Brevo Dashboard** | https://app.brevo.com |
-| 🚀 **Render Dashboard** | https://dashboard.render.com/web/srv-d8mhi8rtqb8s73c3n5qg |
-| 🟣 **Vercel Dashboard** | https://vercel.com/aloneboy0022ti-gmailcoms-projects/projecthive |
+| 🗄️ **Supabase** | <https://supabase.com/dashboard/project/iekfvgjxkmgduxdvkuxf> |
+| 📧 **Brevo Dashboard** | <https://app.brevo.com> |
+| 🚀 **Render Dashboard** | <https://dashboard.render.com/web/srv-d8mhi8rtqb8s73c3n5qg> |
+| 🟣 **Vercel Dashboard** | <https://vercel.com/aloneboy0022ti-gmailcoms-projects/projecthive> |
 
 ---
 
@@ -128,13 +128,16 @@ Project-Hive/
 ## 🚀 Quick Start (Local Dev)
 
 ### 1. Install dependencies
+
 ```bash
 cd server
 npm install
 ```
 
 ### 2. Set up environment variables
+
 Create `server/.env` (see full list below):
+
 ```env
 NODE_ENV=development
 PORT=5000
@@ -149,12 +152,14 @@ GEMINI_API_KEY=...
 ```
 
 ### 3. Start the server
+
 ```bash
 cd server
 npm run dev
 ```
 
 ### 4. Open in browser
+
 ```
 http://localhost:5000
 ```
@@ -164,6 +169,7 @@ http://localhost:5000
 ## 🔌 API Reference
 
 ### Auth  `/api/auth`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/register` | ❌ | Register — sends verification email |
@@ -176,6 +182,7 @@ http://localhost:5000
 | POST | `/reset-password` | ❌ | Reset password with token |
 
 ### Users  `/api/users`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/me` | ✅ | Get current user profile |
@@ -185,6 +192,7 @@ http://localhost:5000
 | GET | `/:id` | ✅ | Get user by ID |
 
 ### Friends  `/api/friends`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/request/:userId` | ✅ | Send friend request |
@@ -195,6 +203,7 @@ http://localhost:5000
 | GET | `/dm/:friendId` | ✅ | DM history |
 
 ### Teams  `/api/teams`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/` | ✅ | Create team |
@@ -208,6 +217,7 @@ http://localhost:5000
 | POST | `/:teamId/leave` | ✅ | Leave team |
 
 ### Projects  `/api/projects`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/` | ✅ | Submit project |
@@ -218,12 +228,14 @@ http://localhost:5000
 | POST | `/:id/like` | ✅ | Like project |
 
 ### Messages  `/api/messages`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/teams/:teamId` | ✅ | Get team messages |
 | POST | `/` | ✅ | Send message (REST fallback) |
 
 ### Notifications  `/api/notifications`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/` | ✅ | Get notifications |
@@ -232,12 +244,14 @@ http://localhost:5000
 | DELETE | `/:id` | ✅ | Delete notification |
 
 ### AI  `/api/ai`
+
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | POST | `/generate-ideas` | ✅ | Generate project ideas (Gemini) |
 | POST | `/generate-ideas-public` | ❌ | Demo (no auth) |
 
 ### Admin  `/api/admin` *(admin role required)*
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | GET | `/stats` | Platform statistics |
@@ -254,6 +268,7 @@ http://localhost:5000
 ## 🔌 Real-time Messaging (Socket.IO)
 
 ### Connection
+
 ```javascript
 const socket = io('https://projecthive-backend.onrender.com', {
   auth: { token: localStorage.getItem('access_token') }
@@ -261,6 +276,7 @@ const socket = io('https://projecthive-backend.onrender.com', {
 ```
 
 ### Events (Client → Server)
+
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `join_room` | `{ roomId }` | Join a chat room (DM or team) |
@@ -269,6 +285,7 @@ const socket = io('https://projecthive-backend.onrender.com', {
 | `typing` | `{ roomId, isTyping }` | Typing indicator |
 
 ### Events (Server → Client)
+
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `new_message` | `{ id, content, sender, roomId, createdAt }` | Incoming message |
@@ -282,12 +299,14 @@ const socket = io('https://projecthive-backend.onrender.com', {
 ## 🧑‍💻 Make Yourself Admin (Dev)
 
 While logged in, open browser console:
+
 ```javascript
 fetch('/api/admin/promote-me', {
   method: 'POST',
   headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
 }).then(r => r.json()).then(d => alert(d.message));
 ```
+
 Then **logout and log back in**.
 
 ---
@@ -295,6 +314,7 @@ Then **logout and log back in**.
 ## 🎨 Design System
 
 ### CSS Variables (`ph-design.css`)
+
 ```css
 --bg, --sf, --sf2    /* Backgrounds */
 --bd, --bd2          /* Borders */
@@ -305,6 +325,7 @@ Then **logout and log back in**.
 ```
 
 ### JS Components
+
 - **`api.js`** — Global API client with auto token refresh
 - **`ph-sidebar.js`** — Centralized nav sidebar
 - **`ph-toast.js`** — `PHToast.success()` / `.error()` / `.info()`
