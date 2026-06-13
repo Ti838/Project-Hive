@@ -40,16 +40,30 @@ app.use(express.static(publicDir));
 
 // CORS
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'http://localhost:5000',
-    'http://localhost:5500',
-    'http://127.0.0.1:3000',
-    'http://127.0.0.1:5000',
-    'http://127.0.0.1:5500',
-    process.env.FRONTEND_URL,
-    process.env.FRONTEND_URL_PROD,
-  ].filter(Boolean),
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+
+    const allowed = [
+      // Vercel — all subdomains (covers projecthive-bd.vercel.app, project-hive.vercel.app, etc.)
+      /\.vercel\.app$/,
+      // Explicit production URL
+      process.env.FRONTEND_URL_PROD,
+      // Local development — any port
+      /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
+    ].filter(Boolean);
+
+    const isAllowed = allowed.some(rule =>
+      rule instanceof RegExp ? rule.test(origin) : rule === origin
+    );
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn('[CORS] Blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
 };
