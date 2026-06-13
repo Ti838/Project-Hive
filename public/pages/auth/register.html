@@ -185,7 +185,7 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
   </div>
 </div>
 
-<footer>&copy; 2026 ProjectHive &mdash; Built for students, by students 🐝</footer>
+<footer>&copy; 2026 ProjectHive &mdash; Built for students, by students <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="13" rx="5" ry="6"/><path d="M7.5 11c-2 0-3.5.9-3.5 2.5s1.5 2.5 3.5 2.5m9-5c2 0 3.5.9 3.5 2.5s-1.5 2.5-3.5 2.5"/><path d="M12 7V4m-2 3 1-2 1 2"/><circle cx="10" cy="12" r="1"/><circle cx="14" cy="12" r="1"/></svg></span></footer>
 
 <script src="../../assets/js/core/ph-toast.js"></script>
 <script src="../../assets/js/core/api.js"></script>
@@ -269,7 +269,7 @@ async function handleRegister(e){
       // Show email verification prompt
       document.querySelector('.card-container').innerHTML=`
         <div style="text-align:center;padding:48px 32px">
-          <div style="font-size:72px;margin-bottom:16px">📧</div>
+          <div style="font-size:72px;margin-bottom:16px"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span></div>
           <h2 style="color:var(--text-primary);font-size:24px;font-weight:700;margin:0 0 12px">Check your email!</h2>
           <p style="color:var(--text-secondary);font-size:15px;line-height:1.6;margin:0 0 24px">
             We sent a verification link to<br>
