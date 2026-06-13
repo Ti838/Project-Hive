@@ -1,61 +1,55 @@
 /**
  * ProjectHive Email Service
- * 
- * Priority order:
- * 1. Gmail SMTP (nodemailer) — no domain needed, just Gmail App Password
- * 2. Resend — needs verified domain
- * 3. Console log (fallback)
+ * Uses Brevo HTTP API (not SMTP) — works on Render free tier
+ * SMTP is blocked on many cloud platforms, HTTP API is always available
  */
 
-import nodemailer from 'nodemailer';
-
-// Frontend URL — where verification links point (must be the Vercel frontend)
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
   ? (process.env.FRONTEND_URL_PROD || 'https://projecthive-bd.vercel.app')
   : 'http://localhost:5000';
 
-// ─── Transporter Setup ────────────────────────────────────────────────────────
-function createTransporter() {
-  const host = process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com';
-  const port = parseInt(process.env.BREVO_SMTP_PORT || '587');
-  const user = process.env.BREVO_SMTP_LOGIN;
-  const pass = process.env.BREVO_SMTP_KEY;
-
-  if (user && pass) {
-    console.log('[ProjectHive] 📧 Email: Brevo SMTP (' + user + ')');
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure: false,
-      auth: { user, pass },
-    });
-  }
-
-  // Fallback: log emails to console only
-  console.warn('[ProjectHive] ⚠️  No email provider configured (BREVO_SMTP_LOGIN/BREVO_SMTP_KEY missing)');
-  console.warn('[ProjectHive]    Emails will be logged to console only');
-  return null;
-}
-
-const transporter = createTransporter();
-
-const FROM_NAME = 'ProjectHive';
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const FROM_EMAIL = process.env.BREVO_FROM_EMAIL || 'timonbiswas33@gmail.com';
-const FROM = `ProjectHive <${FROM_EMAIL}>`;
+const FROM_NAME  = 'ProjectHive';
 
-// ─── Internal send helper ─────────────────────────────────────────────────────
-async function sendEmail({ to, subject, html }) {
-  if (!transporter) {
-    console.log(`\n[ProjectHive] 📧 EMAIL (console-only mode):\n  To: ${to}\n  Subject: ${subject}\n`);
+// ─── HTTP API send helper ──────────────────────────────────────────────────────
+async function sendEmail({ to, toName = '', subject, html }) {
+  // If no API key, just log to console
+  if (!BREVO_API_KEY) {
+    console.warn('[Email] No BREVO_API_KEY set — logging email to console');
+    console.log(`[Email] TO: ${to}\n[Email] SUBJECT: ${subject}`);
     return { id: 'console-only' };
   }
 
-  const info = await transporter.sendMail({ from: FROM, to, subject, html });
-  console.log('[ProjectHive] ✉️  Email sent to:', to, '| ID:', info.messageId);
-  return info;
+  const body = {
+    sender:     { name: FROM_NAME, email: FROM_EMAIL },
+    to:         [{ email: to, name: toName || to }],
+    subject,
+    htmlContent: html,
+  };
+
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method:  'POST',
+    headers: {
+      'accept':       'application/json',
+      'content-type': 'application/json',
+      'api-key':      BREVO_API_KEY,
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10000), // 10s timeout
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Brevo API error ${res.status}: ${err}`);
+  }
+
+  const data = await res.json();
+  console.log('[Email] ✉️  Sent to:', to, '| messageId:', data.messageId);
+  return data;
 }
 
-// ─── Email Templates ──────────────────────────────────────────────────────────
+// ─── Base email style ──────────────────────────────────────────────────────────
 const baseStyle = `
   <style>
     body { margin:0; padding:0; background:#0f172a; font-family:'Inter',system-ui,sans-serif; }
@@ -77,12 +71,13 @@ const baseStyle = `
   </style>
 `;
 
-// ─── Verification Email ───────────────────────────────────────────────────────
+// ─── Verification Email ────────────────────────────────────────────────────────
 export async function sendVerificationEmail(email, firstName, token) {
   const verifyUrl = `${FRONTEND_URL}/pages/auth/verify-email.html?token=${token}`;
 
   return sendEmail({
     to: email,
+    toName: firstName,
     subject: '✅ Verify your ProjectHive email',
     html: `<!DOCTYPE html><html><head><meta charset="UTF-8">${baseStyle}</head>
 <body><div class="wrap">
@@ -102,12 +97,13 @@ export async function sendVerificationEmail(email, firstName, token) {
   });
 }
 
-// ─── Welcome Email ────────────────────────────────────────────────────────────
+// ─── Welcome Email ─────────────────────────────────────────────────────────────
 export async function sendWelcomeEmail(email, firstName) {
   const dashUrl = `${FRONTEND_URL}/pages/user/dashboard.html`;
 
   return sendEmail({
     to: email,
+    toName: firstName,
     subject: '🎉 Welcome to ProjectHive!',
     html: `<!DOCTYPE html><html><head><meta charset="UTF-8">${baseStyle}</head>
 <body><div class="wrap">
@@ -130,12 +126,13 @@ export async function sendWelcomeEmail(email, firstName) {
   });
 }
 
-// ─── Password Reset Email ─────────────────────────────────────────────────────
+// ─── Password Reset Email ──────────────────────────────────────────────────────
 export async function sendPasswordResetEmail(email, firstName, token) {
   const resetUrl = `${FRONTEND_URL}/pages/auth/reset-password.html?token=${token}`;
 
   return sendEmail({
     to: email,
+    toName: firstName,
     subject: '🔐 Reset your ProjectHive password',
     html: `<!DOCTYPE html><html><head><meta charset="UTF-8">${baseStyle}</head>
 <body><div class="wrap">
