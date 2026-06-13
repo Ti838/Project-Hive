@@ -1,10 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Sign In — ProjectHive</title>
 <meta name="description" content="Sign in to your ProjectHive account and continue building.">
 <link rel="icon" href="../../assets/svg/logo.png">
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -134,10 +137,11 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
       <div class="captcha-wrap">
         <div class="cf-turnstile"
              id="turnstile-widget"
-             data-sitekey="1x00000000000000000000AA"
+             data-sitekey="0x4AAAAAAADkFwQm-CWJvjWZI"
              data-theme="auto"
              data-callback="onTurnstileSuccess"
              data-error-callback="onTurnstileError">
+
         </div>
       </div>
 

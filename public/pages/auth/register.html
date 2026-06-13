@@ -1,10 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Create Account — ProjectHive</title>
 <meta name="description" content="Join ProjectHive and start collaborating with students worldwide.">
 <link rel="icon" href="../../assets/svg/logo.png">
+<!-- Cloudflare Turnstile -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -164,6 +167,17 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
         <input type="checkbox" id="terms" required>
         <label for="terms">I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a></label>
       </div>
+
+      <!-- Cloudflare Turnstile CAPTCHA -->
+      <div style="margin:12px 0">
+        <div class="cf-turnstile"
+             id="turnstile-widget"
+             data-sitekey="0x4AAAAAAADkFwQm-CWJvjWZI"
+             data-theme="auto"
+             data-callback="onTurnstileSuccess"
+             data-error-callback="onTurnstileError">
+        </div>
+      </div>
   </div>
 </div>
 
@@ -214,6 +228,11 @@ function showAlert(msg,type='err'){
   el.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
+// Turnstile state
+let turnstileToken = null;
+function onTurnstileSuccess(token){ turnstileToken = token; }
+function onTurnstileError(){ turnstileToken = null; showAlert('Security check failed. Please try again.'); }
+
 async function handleRegister(e){
   e.preventDefault();
   const fn=document.getElementById('fname').value.trim();
@@ -226,6 +245,7 @@ async function handleRegister(e){
   if(pw!==cpw){showAlert('Passwords do not match.');return;}
   if(pw.length<8){showAlert('Password must be at least 8 characters.');return;}
   if(!document.getElementById('terms').checked){showAlert('Please accept the Terms of Service.');return;}
+  if(!turnstileToken){showAlert('Please complete the security check.');return;}
 
   const btn=document.getElementById('submit-btn');
   const txt=document.getElementById('btn-text');
@@ -233,7 +253,7 @@ async function handleRegister(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
-    const body={firstName:fn,lastName:ln,email,university:uni,password:pw};
+    const body={firstName:fn,lastName:ln,email,university:uni,password:pw,'cf-turnstile-response':turnstileToken};
     const res=await fetch('/api/auth/register',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -268,10 +288,14 @@ async function handleRegister(e){
     }else{
       showAlert(data.message||data.error||'Registration failed. Please try again.');
       btn.disabled=false;txt.textContent='Create Account';
+      if(window.turnstile)turnstile.reset('#turnstile-widget');
+      turnstileToken=null;
     }
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Create Account';
+    if(window.turnstile)turnstile.reset('#turnstile-widget');
+    turnstileToken=null;
   }
 }
 
