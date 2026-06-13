@@ -5,6 +5,8 @@
 <title>Create Account — ProjectHive</title>
 <meta name="description" content="Join ProjectHive and start collaborating with students worldwide.">
 <link rel="icon" href="../../assets/svg/logo.png">
+<!-- Google reCAPTCHA v2 -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -38,7 +40,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 .field label{display:block;font-size:13px;font-weight:600;color:var(--sub);margin-bottom:5px}
 .input-wrap{position:relative}
 .input-wrap>svg:first-of-type{position:absolute;left:13px;top:50%;transform:translateY(-50%);opacity:.4;pointer-events:none;z-index:1}
-.input-wrap input,.input-wrap select{width:100%;padding:11px 44px 11px 40px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--txt);font-size:14px;font-family:'Inter',sans-serif;transition:all .2s;outline:none;-webkit-appearance:none;position:relative;z-index:0}
+.input-wrap input,.input-wrap select{width:100%;padding:11px 44px 11px 40px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--txt);font-size:16px;font-family:'Inter',sans-serif;transition:all .2s;outline:none;-webkit-appearance:none;position:relative;z-index:0}
 .input-wrap input.no-icon{padding-left:14px}
 .input-wrap input:focus,.input-wrap select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
 .input-wrap input::placeholder{color:var(--muted)}
@@ -70,6 +72,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
+.recaptcha-wrap{display:flex;justify-content:center;margin:12px 0 16px}
+@media(max-width:480px){.recaptcha-wrap{transform:scale(0.88);transform-origin:center}}
 @media(max-width:480px){.two-col{grid-template-columns:1fr}.card{padding:28px 20px}}
 </style>
 </head>
@@ -165,6 +169,15 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
         <label for="terms">I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a></label>
       </div>
 
+      <!-- Google reCAPTCHA v2 -->
+      <div class="recaptcha-wrap">
+        <div class="g-recaptcha"
+             data-sitekey="6Lftkh0tAAAAAEV5kY24MIINjloEyls_udcIRi-8"
+             data-theme="light"
+             id="recaptcha-widget">
+        </div>
+      </div>
+
       <button type="submit" class="btn-submit" id="submit-btn">
         <span id="btn-text">Create Account</span>
       </button>
@@ -218,7 +231,6 @@ function showAlert(msg,type='err'){
   el.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
-// CAPTCHA removed
 
 async function handleRegister(e){
   e.preventDefault();
@@ -232,6 +244,11 @@ async function handleRegister(e){
   if(pw!==cpw){showAlert('Passwords do not match.');return;}
   if(pw.length<8){showAlert('Password must be at least 8 characters.');return;}
   if(!document.getElementById('terms').checked){showAlert('Please accept the Terms of Service.');return;}
+  const recaptchaToken = grecaptcha.getResponse();
+  if(!recaptchaToken){
+    showAlert('Please complete the security check (click "I\'m not a robot").','warn');
+    return;
+  }
     return;
   }
 
@@ -241,7 +258,7 @@ async function handleRegister(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
-    const body={firstName:fn,lastName:ln,email,university:uni,password:pw,};
+    const body={firstName:fn,lastName:ln,email,university:uni,password:pw,'g-recaptcha-response':recaptchaToken,};
     const res=await fetch('/api/auth/register',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
