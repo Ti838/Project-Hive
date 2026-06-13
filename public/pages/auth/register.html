@@ -5,8 +5,7 @@
 <title>Create Account — ProjectHive</title>
 <meta name="description" content="Join ProjectHive and start collaborating with students worldwide.">
 <link rel="icon" href="../../assets/svg/logo.png">
-<!-- Google reCAPTCHA v2 -->
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -244,11 +243,7 @@ async function handleRegister(e){
   if(pw!==cpw){showAlert('Passwords do not match.');return;}
   if(pw.length<8){showAlert('Password must be at least 8 characters.');return;}
   if(!document.getElementById('terms').checked){showAlert('Please accept the Terms of Service.');return;}
-  const recaptchaToken = grecaptcha.getResponse();
-  if(!recaptchaToken){
-    showAlert('Please tick the "I am not a robot" checkbox first.','warn');
-    return;
-  }
+
 
   const btn=document.getElementById('submit-btn');
   const txt=document.getElementById('btn-text');
@@ -258,7 +253,7 @@ async function handleRegister(e){
   try{
     const BACKEND = (window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
       ? '/api' : 'https://projecthive-backend.onrender.com/api';
-    const body={firstName:fn,lastName:ln,email,university:uni,password:pw,'g-recaptcha-response':recaptchaToken};
+    const body={firstName:fn,lastName:ln,email,university:uni,password:pw};
     const res=await fetch(`${BACKEND}/auth/register`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},

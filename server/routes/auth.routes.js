@@ -5,8 +5,8 @@ import { turnstileMiddleware } from '../middleware/turnstile.js';
 
 const router = express.Router();
 
-// Public routes (with CAPTCHA on sensitive endpoints)
-router.post('/register', turnstileMiddleware, authController.register);
+// Public routes (CAPTCHA on login only — email verification protects register)
+router.post('/register', authController.register);
 router.post('/login',    turnstileMiddleware, authController.login);
 router.post('/refresh',  authController.refresh);
 router.post('/forgot-password', authController.forgotPassword);
