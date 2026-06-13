@@ -252,8 +252,15 @@ async function handleRegister(e){
   if(pw!==cpw){showAlert('Passwords do not match.');return;}
   if(pw.length<8){showAlert('Password must be at least 8 characters.');return;}
   if(!document.getElementById('terms').checked){showAlert('Please accept the Terms of Service.');return;}
-  // Only hard-block if widget explicitly failed (not just missing)
-  if(turnstileFailed){showAlert('Security check failed. Please refresh and try again.','warn');return;}
+  // Require valid Turnstile token
+  if(!turnstileToken){
+    if(turnstileFailed){
+      showAlert('Security check failed. Please refresh the page and try again.','warn');
+    } else {
+      showAlert('Please complete the security check (click the checkbox).','warn');
+    }
+    return;
+  }
 
   const btn=document.getElementById('submit-btn');
   const txt=document.getElementById('btn-text');

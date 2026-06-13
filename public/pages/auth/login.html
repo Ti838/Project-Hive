@@ -220,8 +220,15 @@ async function handleLogin(e){
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('password').value;
   if(!email||!password){showAlert('Please fill in all fields.');return;}
-  // If Turnstile widget loaded but user hasn't completed it yet
-  if(turnstileFailed){showAlert('Security check failed. Please refresh and try again.','warn');return;}
+  // Require valid Turnstile token
+  if(!turnstileToken){
+    if(turnstileFailed){
+      showAlert('Security check failed. Please refresh the page and try again.','warn');
+    } else {
+      showAlert('Please complete the security check (click the checkbox).','warn');
+    }
+    return;
+  }
 
   lastEmail=email;
   const btn=document.getElementById('submit-btn');
