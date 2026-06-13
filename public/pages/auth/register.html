@@ -256,8 +256,10 @@ async function handleRegister(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
-    const body={firstName:fn,lastName:ln,email,university:uni,password:pw,'g-recaptcha-response':recaptchaToken,};
-    const res=await fetch('/api/auth/register',{
+    const BACKEND = (window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
+      ? '/api' : 'https://projecthive-backend.onrender.com/api';
+    const body={firstName:fn,lastName:ln,email,university:uni,password:pw,'g-recaptcha-response':recaptchaToken};
+    const res=await fetch(`${BACKEND}/auth/register`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body)
@@ -265,10 +267,9 @@ async function handleRegister(e){
     const data=await res.json();
 
     if(res.ok&&data.requiresVerification){
-      // Show email verification prompt
       document.querySelector('.card-container').innerHTML=`
         <div style="text-align:center;padding:48px 32px">
-          <div style="font-size:72px;margin-bottom:16px"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></span></div>
+          <div style="font-size:72px;margin-bottom:16px">📧</div>
           <h2 style="color:var(--text-primary);font-size:24px;font-weight:700;margin:0 0 12px">Check your email!</h2>
           <p style="color:var(--text-secondary);font-size:15px;line-height:1.6;margin:0 0 24px">
             We sent a verification link to<br>
@@ -291,12 +292,12 @@ async function handleRegister(e){
     }else{
       showAlert(data.message||data.error||'Registration failed. Please try again.');
       btn.disabled=false;txt.textContent='Create Account';
-      
+      if(typeof grecaptcha!=='undefined')grecaptcha.reset();
     }
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Create Account';
-    
+    if(typeof grecaptcha!=='undefined')grecaptcha.reset();
   }
 }
 

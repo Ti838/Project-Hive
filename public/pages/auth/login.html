@@ -223,8 +223,11 @@ async function handleLogin(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
+    // Use API module's BASE_URL so it works on Vercel (points to Render backend)
+    const BACKEND = (window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
+      ? '/api' : 'https://projecthive-backend.onrender.com/api';
     const body={email,password,'g-recaptcha-response':recaptchaToken};
-    const res=await fetch('/api/auth/login',{
+    const res=await fetch(`${BACKEND}/auth/login`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body)
