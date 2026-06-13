@@ -7,7 +7,7 @@
  * To enforce strict mode, set TURNSTILE_STRICT=true in env.
  */
 
-const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA';
+const TURNSTILE_SECRET = process.env.TURNSTILE_SECRET_KEY;
 const VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 const STRICT = process.env.TURNSTILE_STRICT === 'true';
 
