@@ -1,29 +1,24 @@
 {
-  "buildCommand": "echo 'Static site - no build needed'",
+  "buildCommand": "echo 'Static site'",
   "outputDirectory": "public",
-  "installCommand": "echo 'No dependencies to install for static site'",
+  "installCommand": "echo 'No install needed'",
   "framework": null,
   "regions": ["sin1"],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=3600" },
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
         { "key": "X-XSS-Protection", "value": "1; mode=block" }
       ]
     },
     {
-      "source": "/assets/.*",
+      "source": "/assets/:path*",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
       ]
     }
-  ],
-  "rewrites": [
-    { "source": "/pages/:path*", "destination": "/pages/:path*.html" },
-    { "source": "/:path((?!api|assets|pages).*)", "destination": "/:path.html" }
   ],
   "redirects": [
     { "source": "/login", "destination": "/pages/auth/login.html", "permanent": false },
