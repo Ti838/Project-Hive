@@ -26,23 +26,49 @@ export async function register(req, res, next) {
     // Check existing user
     const { data: existing } = await supabaseAdmin
       .from('users')
-      .select('id')
+      .select('id, first_name, email, is_verified')
       .eq('email', email.toLowerCase())
       .single();
 
     if (existing) {
-      return res.status(400).json({ error: 'Email already registered. Please sign in.' });
+      if (existing.is_verified) {
+        // Already verified — just tell them to sign in
+        return res.status(400).json({ error: 'Email already registered. Please sign in.' });
+      }
+
+      // Exists but NOT verified — resend verification email automatically
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+      await supabaseAdmin
+        .from('users')
+        .update({
+          email_verification_token: verificationToken,
+          email_verification_expires: verificationExpires.toISOString(),
+        })
+        .eq('id', existing.id);
+
+      try {
+        await sendVerificationEmail(existing.email, existing.first_name, verificationToken);
+        console.log('[ProjectHive] ✉️  Re-sent verification to:', existing.email);
+      } catch (emailErr) {
+        console.error('[ProjectHive] Resend failed:', emailErr.message);
+      }
+
+      return res.status(201).json({
+        message: 'We sent a new verification link to your email. Please check your inbox.',
+        emailSent: true,
+        requiresVerification: true,
+        user: { email: existing.email },
+      });
     }
 
-    // Hash password
+    // New user — create account
     const salt = await bcryptjs.genSalt(12);
     const passwordHash = await bcryptjs.hash(password, salt);
-
-    // Always send real verification email via Brevo
     const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // Create user — NOT verified until they click the link
     const { data: user, error: createError } = await supabaseAdmin
       .from('users')
       .insert({
@@ -55,7 +81,7 @@ export async function register(req, res, next) {
         year_of_study: yearOfStudy || null,
         email_verification_token: verificationToken,
         email_verification_expires: verificationExpires.toISOString(),
-        is_verified: false,  // must click email link
+        is_verified: false,
       })
       .select()
       .single();
@@ -65,28 +91,18 @@ export async function register(req, res, next) {
       return res.status(500).json({ error: 'Failed to create account. Please try again.' });
     }
 
-    // Send verification email via Brevo
+    // Send verification email
     try {
       await sendVerificationEmail(user.email, user.first_name, verificationToken);
       console.log('[ProjectHive] ✉️  Verification email sent to:', user.email);
     } catch (emailErr) {
       console.error('[ProjectHive] Verification email failed:', emailErr.message);
-      // Still return success — user can resend later
     }
-
-    // Generate JWT tokens
-    const { accessToken, refreshToken } = generateTokenPair(user.id, user.email);
-
-    // Store refresh token
-    await supabaseAdmin
-      .from('users')
-      .update({ refresh_tokens: [refreshToken] })
-      .eq('id', user.id);
 
     console.log('[ProjectHive] ✅ User registered:', user.email);
 
     res.status(201).json({
-      message: 'Account created! Please check your email and click the verification link to activate your account.',
+      message: 'Account created! Please check your email and click the verification link.',
       emailSent: true,
       requiresVerification: true,
       user: {
@@ -97,7 +113,6 @@ export async function register(req, res, next) {
         university: user.university,
         isVerified: false,
       },
-      // No tokens yet — user must verify email first
     });
   } catch (error) {
     console.error('[ProjectHive] Register error:', error);
