@@ -21,8 +21,14 @@
     }
   ],
   "redirects": [
-    { "source": "/login", "destination": "/pages/auth/login.html", "permanent": false },
-    { "source": "/register", "destination": "/pages/auth/register.html", "permanent": false },
-    { "source": "/dashboard", "destination": "/pages/user/dashboard.html", "permanent": false }
+    { "source": "/login",              "destination": "/pages/auth/login.html",        "permanent": false },
+    { "source": "/register",           "destination": "/pages/auth/register.html",     "permanent": false },
+    { "source": "/dashboard",          "destination": "/pages/user/dashboard.html",    "permanent": false },
+    { "source": "/profile",            "destination": "/pages/user/profile/edit.html", "permanent": false },
+    { "source": "/teams",              "destination": "/pages/user/teams.html",         "permanent": false },
+    { "source": "/projects",           "destination": "/pages/user/projects/showcase.html", "permanent": false },
+    { "source": "/admin",              "destination": "/pages/admin/login.html",        "permanent": false },
+    { "source": "/admin/dashboard",    "destination": "/pages/admin/dashboard.html",    "permanent": false }
   ]
 }
+
