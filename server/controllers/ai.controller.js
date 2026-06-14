@@ -196,7 +196,7 @@ export async function generateProjectIdeasPublic(req, res, next) {
   }
 }
 
-// ── Chat endpoint (free-form Q&A) ───────────────────────────────────────────
+// ── Chat endpoint (text + optional image via Gemini Vision) ─────────────────
 export async function chatWithAI(req, res, next) {
   try {
     if (!isGeminiReady()) {
@@ -211,21 +211,34 @@ export async function chatWithAI(req, res, next) {
       return res.status(429).json({ error: 'Rate limit: 20 AI chats per hour.' });
     }
 
-    const { message } = req.body;
-    if (!message?.trim()) return res.status(400).json({ error: 'Message is required.' });
+    const { message, imageBase64, mimeType } = req.body;
+    if (!message?.trim() && !imageBase64) {
+      return res.status(400).json({ error: 'Message or image is required.' });
+    }
 
     const apiKey = getGeminiKey();
-    const prompt = `You are ProjectHive AI — a helpful assistant for university students working on software projects.
+    const systemPrompt = `You are ProjectHive AI — a helpful assistant for university students working on software projects.
 Answer questions about project ideas, tech stacks, team building, and academic project planning.
-Be concise (max 4-5 lines), friendly, and practical. Use emojis sparingly.
-User message: ${message}`;
+${imageBase64 ? 'The user has attached an image. Analyze it and provide relevant project ideas or insights.' : ''}
+Be concise (max 5-6 lines), friendly, and practical. Use emojis sparingly.`;
+
+    const textPart = { text: systemPrompt + (message ? `\n\nUser: ${message}` : '\n\nPlease analyze this image.') };
+
+    // Build contents — include image if provided
+    const parts = [];
+    if (imageBase64) {
+      parts.push({ inlineData: { mimeType: mimeType || 'image/jpeg', data: imageBase64 } });
+    }
+    parts.push(textPart);
+
+    const contents = [{ parts }];
 
     const url = `${GEMINI_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
+        contents,
         generationConfig: { temperature: 0.7, maxOutputTokens: 512 },
       }),
     });
@@ -254,3 +267,5 @@ User message: ${message}`;
     next(error);
   }
 }
+
+
