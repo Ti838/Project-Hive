@@ -132,11 +132,13 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
+// ── Dedicated Admin Auth — MUST be before adminRoutes (no auth guard here) ──
+app.post('/api/admin/auth/login', adminLogin);
+
+// Admin routes (require auth + admin role)
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminDevRouter); // dev only: /api/admin/promote-me
 
-// ── Dedicated Admin Auth (no DB, env-vars only) ───────────────────────────
-app.post('/api/admin/auth/login', adminLogin);
 
 // 404 handler for API routes only — HTML pages are served by express.static above
 app.use((req, res) => {
