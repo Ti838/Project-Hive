@@ -209,7 +209,7 @@
     <!-- Hero -->
     <div class="hero">
       <div style="position:relative;z-index:1">
-        <div style="font-size:13px;font-weight:700;opacity:.8;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7zM19 9l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5zM5 17l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z"/></svg></span> Powered by Groq LLaMA 3.3 70B</div>
+        <div style="font-size:13px;font-weight:700;opacity:.8;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7zM19 9l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5zM5 17l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z"/></svg></span> Powered by Google Gemini AI</div>
         <h2 style="font-size:26px;font-weight:900;margin:0 0 10px;line-height:1.2">Generate Unique Project Ideas</h2>
         <p style="font-size:14px;opacity:.85;margin:0;line-height:1.6;max-width:480px">Select your domain and skill level — let AI craft project ideas tailored just for you. Each idea includes tech stack, difficulty, and a full description.</p>
       </div>
@@ -424,17 +424,17 @@
             <span class="ms" style="font-size:26px">key_off</span>
           </div>
           <div>
-            <div style="font-size:16px;font-weight:800;color:var(--tx)">API Key Not Configured</div>
-            <div style="font-size:13px;color:var(--sub);margin-top:2px">Add a free Groq API key to enable AI generation</div>
+            <div style="font-size:16px;font-weight:800;color:var(--tx)">AI Not Configured</div>
+            <div style="font-size:13px;color:var(--sub);margin-top:2px">Add a free Gemini API key to enable AI generation</div>
           </div>
         </div>
         <div style="background:var(--sf2);border-radius:14px;padding:18px;font-family:'Courier New',monospace;font-size:13px;color:var(--sub);border:1.5px solid var(--bd);margin-bottom:16px">
-          <div style="margin-bottom:6px;font-weight:700;color:var(--tx);font-family:'Inter',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Add to your .env file:</div>
-          <div style="color:var(--green)">GROQ_API_KEY=<span style="color:var(--ac)">your_key_here</span></div>
+          <div style="margin-bottom:6px;font-weight:700;color:var(--tx);font-family:'Inter',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:.05em">Add to server/.env file:</div>
+          <div style="color:var(--green)">GEMINI_API_KEY=<span style="color:var(--ac)">your_key_here</span></div>
         </div>
         <div style="display:flex;gap:10px">
-          <a href="https://console.groq.com" target="_blank" class="ph-btn" style="text-decoration:none;flex:1;justify-content:center">
-            <span class="ms" style="font-size:18px">open_in_new</span> Get Free API Key at Groq
+          <a href="https://aistudio.google.com/apikey" target="_blank" class="ph-btn" style="text-decoration:none;flex:1;justify-content:center">
+            <span class="ms" style="font-size:18px">open_in_new</span> Get Free Gemini API Key
           </a>
           <button onclick="generate()" class="ph-btn-outline" style="flex:1;justify-content:center">
             <span class="ms" style="font-size:18px">refresh</span> Try Again
