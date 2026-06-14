@@ -5,8 +5,6 @@
 <title>Sign In — ProjectHive</title>
 <meta name="description" content="Sign in to your ProjectHive account and continue building.">
 <link rel="icon" href="../../assets/svg/logo.png">
-<!-- Google reCAPTCHA v2 -->
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');};})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
@@ -50,7 +48,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 .eye-btn{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:6px;transition:color .15s;z-index:2;line-height:0;display:flex;align-items:center}
 .eye-btn:hover{color:var(--primary)}
 .eye-btn svg{position:static!important;transform:none!important;opacity:1!important}
-.recaptcha-wrap{display:flex;justify-content:center;margin:10px 0 16px}
 .btn-submit{width:100%;padding:13px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.01em}
 .btn-submit:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 .btn-submit:active{transform:translateY(0)}
@@ -71,7 +68,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
-@media(max-width:480px){.card{padding:28px 18px;border-radius:18px}.recaptcha-wrap{transform:scale(0.88);transform-origin:center}}
+@media(max-width:480px){.card{padding:28px 18px;border-radius:18px}}
 </style>
 </head>
 <body>
@@ -132,16 +129,7 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
         </div>
       </div>
 
-      <!-- Google reCAPTCHA v2 -->
-      <div class="recaptcha-wrap">
-        <div class="g-recaptcha"
-             data-sitekey="6Lftkh0tAAAAAEV5kY24MIINjloEyls_udcIRi-8"
-             data-theme="light"
-             id="recaptcha-widget">
-        </div>
-      </div>
-
-      <button type="submit" class="btn-submit" id="submit-btn" style="margin-top:4px">
+      <button type="submit" class="btn-submit" id="submit-btn" style="margin-top:8px">
         <span id="btn-text">Sign In</span>
       </button>
     </form>
@@ -191,7 +179,9 @@ function showAlert(msg,type='err'){
 async function resendVerification(){
   if(!lastEmail)return;
   try{
-    const res=await fetch('/api/auth/resend-verification',{
+    const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
+      ?'/api':'https://projecthive-backend.onrender.com/api';
+    const res=await fetch(`${BACKEND}/auth/resend-verification`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:lastEmail})
@@ -209,13 +199,6 @@ async function handleLogin(e){
   const password=document.getElementById('password').value;
   if(!email||!password){showAlert('Please fill in all fields.');return;}
 
-  // reCAPTCHA check
-  const recaptchaToken = grecaptcha.getResponse();
-  if(!recaptchaToken){
-    showAlert('Please tick the "I am not a robot" checkbox first.','warn');
-    return;
-  }
-
   lastEmail=email;
   const btn=document.getElementById('submit-btn');
   const txt=document.getElementById('btn-text');
@@ -223,14 +206,12 @@ async function handleLogin(e){
   txt.innerHTML='<span class="spinner"></span>';
 
   try{
-    // Use API module's BASE_URL so it works on Vercel (points to Render backend)
-    const BACKEND = (window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
-      ? '/api' : 'https://projecthive-backend.onrender.com/api';
-    const body={email,password,'g-recaptcha-response':recaptchaToken};
+    const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
+      ?'/api':'https://projecthive-backend.onrender.com/api';
     const res=await fetch(`${BACKEND}/auth/login`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body)
+      body:JSON.stringify({email,password})
     });
     const data=await res.json();
 
@@ -238,22 +219,20 @@ async function handleLogin(e){
       localStorage.setItem('access_token',data.accessToken);
       if(data.refreshToken)localStorage.setItem('refresh_token',data.refreshToken);
       if(data.user)localStorage.setItem('user_data',JSON.stringify(data.user));
-      if(!data.emailVerified){
-        document.getElementById('verify-banner').style.display='block';
-        showAlert('Login successful! Please verify your email.','ok');
-      }else{
-        showAlert('Login successful! Redirecting…','ok');
-      }
+      showAlert('Login successful! Redirecting…','ok');
       setTimeout(()=>{window.location.href='../user/dashboard.html';},900);
+    }else if(data.requiresVerification){
+      lastEmail=email;
+      document.getElementById('verify-banner').style.display='block';
+      showAlert(data.error||'Please verify your email first.','warn');
+      btn.disabled=false;txt.textContent='Sign In';
     }else{
       showAlert(data.message||data.error||'Invalid email or password.');
       btn.disabled=false;txt.textContent='Sign In';
-      grecaptcha.reset();
     }
   }catch(err){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Sign In';
-    grecaptcha.reset();
   }
 }
 </script>
