@@ -3,34 +3,62 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Verify Email — ProjectHive</title>
-<meta name="description" content="Verify your ProjectHive email address.">
+<meta name="description" content="Verify your ProjectHive email address to activate your account.">
 <link rel="icon" href="../../assets/svg/logo.png">
-<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');};})()</script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f8fafc;--card:#fff;--txt:#0f172a;--sub:#475569;--muted:#94a3b8;--border:#e2e8f0;--primary:#6366f1;--primary2:#7c3aed;--primary3:#a855f7;--shadow:0 4px 24px rgba(99,102,241,.08)}
-.dark{--bg:#0f172a;--card:#1e293b;--txt:#f1f5f9;--sub:#94a3b8;--muted:#64748b;--border:#334155;--shadow:0 4px 24px rgba(0,0,0,.4)}
+:root{--bg:#f8fafc;--card:#fff;--txt:#0f172a;--sub:#475569;--muted:#94a3b8;--border:#e2e8f0;--primary:#6366f1;--primary2:#7c3aed;--primary3:#a855f7;--input-bg:#f8fafc;--shadow:0 4px 24px rgba(99,102,241,.08)}
+.dark{--bg:#0f172a;--card:#1e293b;--txt:#f1f5f9;--sub:#94a3b8;--muted:#64748b;--border:#334155;--input-bg:#0f172a;--shadow:0 4px 24px rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif}
-body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s}
+body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:background .3s,color .3s;overflow-x:hidden}
 .bg-orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
 .orb1{width:500px;height:500px;background:rgba(99,102,241,.12);top:-150px;left:-100px}
 .orb2{width:400px;height:400px;background:rgba(168,85,247,.1);bottom:-100px;right:-80px}
-.card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px 40px;width:100%;max-width:440px;box-shadow:var(--shadow);text-align:center}
+.card{position:relative;z-index:1;background:var(--card);border:1px solid var(--border);border-radius:24px;padding:48px 40px;width:100%;max-width:460px;box-shadow:var(--shadow);text-align:center}
 .dark .card{border-color:rgba(255,255,255,.06)}
-.icon{width:72px;height:72px;border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 24px}
-.icon.loading{background:rgba(99,102,241,.1)}
-.icon.success{background:rgba(16,185,129,.1)}
-.icon.error{background:rgba(239,68,68,.1)}
+/* Logo */
+.logo-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px;text-decoration:none}
+.logo-row img{width:40px;height:40px;border-radius:10px;object-fit:contain}
+.logo-row .brand{font-size:20px;font-weight:800;background:linear-gradient(135deg,var(--primary),var(--primary3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+/* State icons */
+.state-icon{width:80px;height:80px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 24px}
+.state-icon.loading{background:rgba(99,102,241,.1)}
+.state-icon.success{background:rgba(16,185,129,.1)}
+.state-icon.error{background:rgba(239,68,68,.1)}
+.state-icon.warning{background:rgba(245,158,11,.1)}
 .card-title{font-size:22px;font-weight:700;margin-bottom:8px}
-.card-sub{font-size:14px;color:var(--sub);line-height:1.6;margin-bottom:28px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 28px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s}
-.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--txt);margin-left:10px}
-.btn-outline:hover{background:var(--border)}
+.card-sub{font-size:14px;color:var(--sub);line-height:1.7;margin-bottom:28px}
+/* Spinner */
 @keyframes spin{to{transform:rotate(360deg)}}
-.spin{animation:spin 1s linear infinite;display:inline-block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.spinner-ring{width:44px;height:44px;border:4px solid rgba(99,102,241,.2);border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 28px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;width:100%}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
+.btn:active{transform:translateY(0)}
+.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--txt);margin-top:10px}
+.btn-outline:hover{background:var(--border);box-shadow:none;transform:none}
+/* Resend form */
+.resend-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.resend-label{font-size:13px;color:var(--sub);margin-bottom:10px}
+.input-wrap{position:relative;margin-bottom:10px}
+.input-wrap input{width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--txt);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:all .2s}
+.input-wrap input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.input-wrap input::placeholder{color:var(--muted)}
+/* Alert */
+.alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none;text-align:left}
+.alert.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#dc2626}
+.alert.ok{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:#059669}
+.dark .alert.err{color:#f87171}
+.dark .alert.ok{color:#34d399}
+/* Progress bar for redirect */
+.redirect-bar{height:3px;background:var(--border);border-radius:4px;margin-top:20px;overflow:hidden}
+.redirect-fill{height:100%;background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:4px;width:0;transition:width 3s linear}
+.redirect-note{font-size:12px;color:var(--muted);margin-top:8px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 .card{animation:fadeIn .4s ease}
+footer{position:fixed;bottom:16px;font-size:12px;color:var(--muted);z-index:1}
+@media(max-width:480px){.card{padding:32px 20px}}
 </style>
 </head>
 <body>
@@ -39,10 +67,15 @@ body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;align-i
 <div class="bg-orb orb2"></div>
 
 <div class="card" id="card">
+  <a href="../../index.html" class="logo-row">
+    <img src="../../assets/svg/logo.png" alt="ProjectHive" onerror="this.style.display='none'">
+    <span class="brand">ProjectHive</span>
+  </a>
+
   <!-- Loading state -->
   <div id="loading-state">
-    <div class="icon loading">
-      <span class="spin"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:ph-spin 1s linear infinite"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span></span>
+    <div class="state-icon loading">
+      <div class="spinner-ring"></div>
     </div>
     <h1 class="card-title">Verifying your email…</h1>
     <p class="card-sub">Please wait while we confirm your email address.</p>
@@ -50,79 +83,164 @@ body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;align-i
 
   <!-- Success state -->
   <div id="success-state" style="display:none">
-    <div class="icon success"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span></div>
+    <div class="state-icon success">✅</div>
     <h1 class="card-title">Email Verified!</h1>
-    <p class="card-sub">Your email has been verified successfully. Welcome to ProjectHive! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><ellipse cx="12" cy="13" rx="5" ry="6"/><path d="M7.5 11c-2 0-3.5.9-3.5 2.5s1.5 2.5 3.5 2.5m9-5c2 0 3.5.9 3.5 2.5s-1.5 2.5-3.5 2.5"/><path d="M12 7V4m-2 3 1-2 1 2"/><circle cx="10" cy="12" r="1"/><circle cx="14" cy="12" r="1"/></svg></span></p>
-    <a href="login.html" class="btn">Go to Sign In <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></span></a>
+    <p class="card-sub">Your email has been verified successfully.<br>Welcome to ProjectHive 🐝</p>
+    <a href="login.html" class="btn">Sign In to Your Account →</a>
+    <div class="redirect-bar"><div class="redirect-fill" id="redirect-fill"></div></div>
+    <p class="redirect-note">Redirecting to Sign In in 3 seconds…</p>
   </div>
 
   <!-- Error state -->
   <div id="error-state" style="display:none">
-    <div class="icon error"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span></div>
+    <div class="state-icon error">❌</div>
     <h1 class="card-title" id="err-title">Verification Failed</h1>
     <p class="card-sub" id="err-msg">This verification link is invalid or has expired.</p>
-    <a href="login.html" class="btn">Sign In</a>
-    <a href="#" onclick="resendFlow()" class="btn btn-outline">Resend Email</a>
+    <a href="login.html" class="btn">Go to Sign In</a>
+
+    <!-- Resend email section -->
+    <div class="resend-section">
+      <p class="resend-label">Need a new verification link?</p>
+      <div class="alert" id="resend-alert"></div>
+      <div class="input-wrap">
+        <input type="email" id="resend-email" placeholder="Enter your email address">
+      </div>
+      <button class="btn btn-outline" id="resend-btn" onclick="resendVerification()">
+        📧 Resend Verification Email
+      </button>
+    </div>
+  </div>
+
+  <!-- No token state -->
+  <div id="notoken-state" style="display:none">
+    <div class="state-icon warning">⚠️</div>
+    <h1 class="card-title">Missing Verification Token</h1>
+    <p class="card-sub">No verification token found. Please use the link from your email, or request a new one below.</p>
+    <div class="alert" id="notoken-alert"></div>
+    <div class="input-wrap">
+      <input type="email" id="notoken-email" placeholder="Enter your email address">
+    </div>
+    <button class="btn" onclick="resendFromNoToken()">📧 Send New Verification Link</button>
+    <a href="login.html" class="btn btn-outline" style="margin-top:10px">Back to Sign In</a>
   </div>
 </div>
 
+<footer>&copy; 2026 ProjectHive</footer>
+
 <script>
-(async function(){
-  const params=new URLSearchParams(location.search);
-  const token=params.get('token');
+// Environment-aware API base — works on both localhost and Vercel
+const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? '/api'
+  : 'https://projecthive-backend.onrender.com/api';
 
-  function show(state){
-    ['loading','success','error'].forEach(s=>{
-      document.getElementById(s+'-state').style.display=s===state?'block':'none';
-    });
-  }
+function showState(state) {
+  ['loading','success','error','notoken'].forEach(s => {
+    document.getElementById(s+'-state').style.display = s === state ? 'block' : 'none';
+  });
+}
 
-  if(!token){
-    show('error');
-    document.getElementById('err-title').textContent='Missing Token';
-    document.getElementById('err-msg').textContent='No verification token found. Please use the link from your email.';
+(async function init() {
+  const params = new URLSearchParams(location.search);
+  const token  = params.get('token');
+
+  if (!token) {
+    showState('notoken');
     return;
   }
 
-  // Use Render backend in production, relative path in dev
-  const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-    ? '/api'
-    : 'https://projecthive-backend.onrender.com/api';
+  try {
+    const res  = await fetch(`${API_BASE}/auth/verify-email?token=${encodeURIComponent(token)}`);
+    const data = await res.json();
 
-  try{
-    const res=await fetch(API_BASE+'/auth/verify-email?token='+encodeURIComponent(token));
-    const data=await res.json();
-    if(res.ok){
-      show('success');
-      // Clear any stale user data — they need to login fresh
+    if (res.ok) {
+      showState('success');
+      // Clear stale session — user must log in fresh
       localStorage.removeItem('user_data');
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
-      // Auto-redirect to login after 3s
-      setTimeout(()=>{window.location.href='login.html';},3000);
-    }else{
-      show('error');
-      document.getElementById('err-msg').textContent=data.error||'Verification failed. Please request a new link.';
+      // Animate redirect bar then redirect
+      setTimeout(() => {
+        document.getElementById('redirect-fill').style.width = '100%';
+      }, 50);
+      setTimeout(() => { window.location.href = 'login.html'; }, 3000);
+    } else {
+      showState('error');
+      document.getElementById('err-msg').textContent =
+        data.error || 'Verification failed. Please request a new link.';
     }
-  }catch(err){
-    show('error');
-    document.getElementById('err-msg').textContent='Could not connect to server. Please try again.';
+  } catch (err) {
+    showState('error');
+    document.getElementById('err-msg').textContent =
+      'Could not connect to server. Please check your internet and try again.';
   }
 })();
 
-async function resendFlow(){
-  const email=prompt('Enter your email address to resend the verification link:');
-  if(!email)return;
-  try{
-    const res=await fetch(API_BASE+'/auth/resend-verification',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email})
+async function resendVerification() {
+  const emailInput = document.getElementById('resend-email');
+  const alertEl    = document.getElementById('resend-alert');
+  const btn        = document.getElementById('resend-btn');
+  const email      = emailInput.value.trim();
+
+  if (!email) {
+    alertEl.textContent = 'Please enter your email address.';
+    alertEl.className = 'alert err';
+    alertEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  alertEl.style.display = 'none';
+
+  try {
+    const res  = await fetch(`${API_BASE}/auth/resend-verification`, {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({ email }),
     });
-    const data=await res.json();
-    alert(data.message||'Verification email sent!');
-  }catch(e){
-    alert('Failed to resend. Please try again.');
+    const data = await res.json();
+    alertEl.textContent = data.message || 'Verification email sent! Please check your inbox.';
+    alertEl.className = 'alert ok';
+    alertEl.style.display = 'block';
+    emailInput.value = '';
+  } catch (e) {
+    alertEl.textContent = 'Failed to resend. Please try again.';
+    alertEl.className = 'alert err';
+    alertEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '📧 Resend Verification Email';
+  }
+}
+
+async function resendFromNoToken() {
+  const emailInput = document.getElementById('notoken-email');
+  const alertEl    = document.getElementById('notoken-alert');
+  const email      = emailInput.value.trim();
+
+  if (!email) {
+    alertEl.textContent = 'Please enter your email address.';
+    alertEl.className = 'alert err';
+    alertEl.style.display = 'block';
+    return;
+  }
+  alertEl.style.display = 'none';
+
+  try {
+    const res  = await fetch(`${API_BASE}/auth/resend-verification`, {
+      method:  'POST',
+      headers: {'Content-Type': 'application/json'},
+      body:    JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    alertEl.textContent = data.message || 'If that email is registered and unverified, a new link has been sent!';
+    alertEl.className = 'alert ok';
+    alertEl.style.display = 'block';
+    emailInput.value = '';
+  } catch (e) {
+    alertEl.textContent = 'Failed to send. Please try again.';
+    alertEl.className = 'alert err';
+    alertEl.style.display = 'block';
   }
 }
 </script>

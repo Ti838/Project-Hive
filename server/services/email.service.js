@@ -1,7 +1,6 @@
 /**
  * ProjectHive Email Service
  * Uses Brevo HTTP API (not SMTP) — works on Render free tier
- * SMTP is blocked on many cloud platforms, HTTP API is always available
  */
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
@@ -14,7 +13,6 @@ const FROM_NAME  = 'ProjectHive';
 
 // ─── HTTP API send helper ──────────────────────────────────────────────────────
 async function sendEmail({ to, toName = '', subject, html }) {
-  // If no API key, just log to console
   if (!BREVO_API_KEY) {
     console.warn('[Email] No BREVO_API_KEY set — logging email to console');
     console.log(`[Email] TO: ${to}\n[Email] SUBJECT: ${subject}`);
@@ -22,8 +20,8 @@ async function sendEmail({ to, toName = '', subject, html }) {
   }
 
   const body = {
-    sender:     { name: FROM_NAME, email: FROM_EMAIL },
-    to:         [{ email: to, name: toName || to }],
+    sender:      { name: FROM_NAME, email: FROM_EMAIL },
+    to:          [{ email: to, name: toName || to }],
     subject,
     htmlContent: html,
   };
@@ -36,7 +34,7 @@ async function sendEmail({ to, toName = '', subject, html }) {
       'api-key':      BREVO_API_KEY,
     },
     body: JSON.stringify(body),
-    signal: AbortSignal.timeout(10000), // 10s timeout
+    signal: AbortSignal.timeout(10000),
   });
 
   if (!res.ok) {
@@ -49,51 +47,94 @@ async function sendEmail({ to, toName = '', subject, html }) {
   return data;
 }
 
-// ─── Base email style ──────────────────────────────────────────────────────────
-const baseStyle = `
-  <style>
-    body { margin:0; padding:0; background:#0f172a; font-family:'Inter',system-ui,sans-serif; }
-    .wrap { padding:40px 20px; }
-    .card { background:#1e293b; border-radius:20px; overflow:hidden; border:1px solid rgba(255,255,255,.08); max-width:500px; margin:0 auto; }
-    .header { background:linear-gradient(135deg,#6366f1,#7c3aed); padding:36px 40px; text-align:center; }
-    .logo { font-size:36px; margin-bottom:8px; }
-    .brand { color:#fff; font-size:24px; font-weight:800; }
-    .tagline { color:rgba(255,255,255,.7); font-size:14px; margin-top:4px; }
-    .body { padding:40px; }
-    h1 { color:#f1f5f9; font-size:22px; font-weight:700; margin:0 0 12px; }
-    p { color:#94a3b8; font-size:15px; line-height:1.6; margin:0 0 20px; }
-    .btn { display:inline-block; padding:14px 36px; background:linear-gradient(135deg,#6366f1,#7c3aed); color:#fff; text-decoration:none; border-radius:12px; font-size:15px; font-weight:700; }
-    .center { text-align:center; }
-    .note { color:#64748b; font-size:13px; text-align:center; margin-top:20px; }
-    .divider { border:none; border-top:1px solid rgba(255,255,255,.08); margin:28px 0; }
-    .footer { background:#0f172a; padding:20px 40px; text-align:center; }
-    .footer p { color:#475569; font-size:12px; margin:0; }
-  </style>
-`;
+// ─── Shared email wrapper ──────────────────────────────────────────────────────
+function emailWrapper(content) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ProjectHive</title>
+</head>
+<body style="margin:0;padding:0;background:#0f172a;font-family:'Inter',system-ui,-apple-system,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0f172a;min-height:100vh;">
+  <tr><td align="center" style="padding:40px 16px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+
+      <!-- HEADER -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#6366f1 0%,#7c3aed 100%);border-radius:20px 20px 0 0;padding:36px 40px;text-align:center;">
+          <!-- Bee SVG Logo -->
+          <div style="margin-bottom:12px;">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="52" height="52" rx="14" fill="rgba(255,255,255,0.15)"/>
+              <ellipse cx="26" cy="28" rx="9" ry="10" fill="#FCD34D"/>
+              <rect x="19" y="24" width="14" height="4" rx="2" fill="#1e1b4b"/>
+              <rect x="19" y="30" width="14" height="4" rx="2" fill="#1e1b4b"/>
+              <path d="M17 26c-3 0-5 1.5-5 4s2 4 5 4" stroke="#FCD34D" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M35 26c3 0 5 1.5 5 4s-2 4-5 4" stroke="#FCD34D" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M26 18v-5M24 18l1-4 1 4" stroke="#FCD34D" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="22" cy="20" rx="5" ry="3" fill="rgba(255,255,255,0.3)" transform="rotate(-20 22 20)"/>
+              <ellipse cx="30" cy="20" rx="5" ry="3" fill="rgba(255,255,255,0.3)" transform="rotate(20 30 20)"/>
+            </svg>
+          </div>
+          <div style="color:#fff;font-size:26px;font-weight:800;letter-spacing:-0.5px;">ProjectHive</div>
+          <div style="color:rgba(255,255,255,0.75);font-size:13px;margin-top:4px;">Built for students, by students</div>
+        </td>
+      </tr>
+
+      <!-- BODY -->
+      <tr>
+        <td style="background:#1e293b;padding:40px;border-left:1px solid rgba(255,255,255,0.06);border-right:1px solid rgba(255,255,255,0.06);">
+          ${content}
+        </td>
+      </tr>
+
+      <!-- FOOTER -->
+      <tr>
+        <td style="background:#0f172a;border-radius:0 0 20px 20px;padding:24px 40px;text-align:center;border:1px solid rgba(255,255,255,0.06);border-top:none;">
+          <p style="color:#475569;font-size:12px;margin:0 0 6px;">© 2026 ProjectHive — All rights reserved</p>
+          <p style="color:#334155;font-size:11px;margin:0;">This email was sent to you because you have an account on ProjectHive.</p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>`;
+}
 
 // ─── Verification Email ────────────────────────────────────────────────────────
 export async function sendVerificationEmail(email, firstName, token) {
   const verifyUrl = `${FRONTEND_URL}/pages/auth/verify-email.html?token=${token}`;
 
+  const content = `
+    <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0 0 8px;">Hey ${firstName}! 👋</h1>
+    <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 28px;">
+      Welcome to ProjectHive! You're one step away from joining thousands of students collaborating on amazing projects.
+      Click the button below to verify your email address.
+    </p>
+    <div style="text-align:center;margin:0 0 28px;">
+      <a href="${verifyUrl}"
+         style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:14px;font-size:15px;font-weight:700;letter-spacing:0.01em;">
+        ✅ Verify Email Address
+      </a>
+    </div>
+    <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);border-radius:12px;padding:16px;margin-bottom:20px;">
+      <p style="color:#64748b;font-size:13px;margin:0 0 6px;font-weight:600;">⏱ Link expires in 24 hours</p>
+      <p style="color:#475569;font-size:12px;margin:0;">If the button doesn't work, copy and paste this link into your browser:</p>
+      <p style="color:#6366f1;font-size:11px;margin:8px 0 0;word-break:break-all;">${verifyUrl}</p>
+    </div>
+    <p style="color:#475569;font-size:12px;margin:0;text-align:center;">
+      If you didn't create a ProjectHive account, you can safely ignore this email.
+    </p>`;
+
   return sendEmail({
     to: email,
     toName: firstName,
     subject: '✅ Verify your ProjectHive email',
-    html: `<!DOCTYPE html><html><head><meta charset="UTF-8">${baseStyle}</head>
-<body><div class="wrap">
-  <div class="card">
-    <div class="header"><div class="logo">🐝</div><div class="brand">ProjectHive</div><div class="tagline">Built for students, by students</div></div>
-    <div class="body">
-      <h1>Hey ${firstName}! Verify your email 👋</h1>
-      <p>You're one step away from joining thousands of students collaborating on amazing projects. Click below to verify your email.</p>
-      <div class="center"><a href="${verifyUrl}" class="btn">✅ Verify Email Address</a></div>
-      <p class="note">This link expires in <strong style="color:#94a3b8">24 hours</strong></p>
-      <hr class="divider">
-      <p style="font-size:12px;color:#64748b">If you didn't create a ProjectHive account, ignore this email.<br>Link: ${verifyUrl}</p>
-    </div>
-    <div class="footer"><p>© 2026 ProjectHive 🐝</p></div>
-  </div>
-</div></body></html>`,
+    html: emailWrapper(content),
   });
 }
 
@@ -101,28 +142,41 @@ export async function sendVerificationEmail(email, firstName, token) {
 export async function sendWelcomeEmail(email, firstName) {
   const dashUrl = `${FRONTEND_URL}/pages/user/dashboard.html`;
 
+  const content = `
+    <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0 0 8px;">Welcome aboard, ${firstName}! 🎉</h1>
+    <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 24px;">
+      Your email has been verified and your account is ready. Here's what you can do on ProjectHive:
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <span style="font-size:20px;">🔍</span>
+        <span style="color:#cbd5e1;font-size:14px;margin-left:10px;">Browse and discover student projects</span>
+      </td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <span style="font-size:20px;">👥</span>
+        <span style="color:#cbd5e1;font-size:14px;margin-left:10px;">Create or join teams with fellow students</span>
+      </td></tr>
+      <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+        <span style="font-size:20px;">💬</span>
+        <span style="color:#cbd5e1;font-size:14px;margin-left:10px;">Connect and message teammates in real-time</span>
+      </td></tr>
+      <tr><td style="padding:10px 0;">
+        <span style="font-size:20px;">🤖</span>
+        <span style="color:#cbd5e1;font-size:14px;margin-left:10px;">Use AI to generate brilliant project ideas</span>
+      </td></tr>
+    </table>
+    <div style="text-align:center;">
+      <a href="${dashUrl}"
+         style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:14px;font-size:15px;font-weight:700;">
+        🚀 Go to Dashboard
+      </a>
+    </div>`;
+
   return sendEmail({
     to: email,
     toName: firstName,
     subject: '🎉 Welcome to ProjectHive!',
-    html: `<!DOCTYPE html><html><head><meta charset="UTF-8">${baseStyle}</head>
-<body><div class="wrap">
-  <div class="card">
-    <div class="header"><div class="logo">🎉</div><div class="brand">Welcome aboard!</div></div>
-    <div class="body">
-      <h1>Welcome to ProjectHive, ${firstName}!</h1>
-      <p>Your account is ready. Here's what you can do:</p>
-      <ul style="color:#94a3b8;font-size:14px;line-height:2;padding-left:20px;margin:0 0 28px">
-        <li>🔍 Browse and discover student projects</li>
-        <li>👥 Create or join teams</li>
-        <li>💬 Connect and message teammates</li>
-        <li>🤖 Use AI to generate project ideas</li>
-      </ul>
-      <div class="center"><a href="${dashUrl}" class="btn">🚀 Go to Dashboard</a></div>
-    </div>
-    <div class="footer"><p>© 2026 ProjectHive 🐝</p></div>
-  </div>
-</div></body></html>`,
+    html: emailWrapper(content),
   });
 }
 
@@ -130,24 +184,31 @@ export async function sendWelcomeEmail(email, firstName) {
 export async function sendPasswordResetEmail(email, firstName, token) {
   const resetUrl = `${FRONTEND_URL}/pages/auth/reset-password.html?token=${token}`;
 
+  const content = `
+    <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0 0 8px;">Password Reset Request 🔐</h1>
+    <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 28px;">
+      Hi <strong style="color:#e2e8f0;">${firstName}</strong>, we received a request to reset your ProjectHive password.
+      Click the button below to create a new password.
+    </p>
+    <div style="text-align:center;margin:0 0 28px;">
+      <a href="${resetUrl}"
+         style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:14px;font-size:15px;font-weight:700;">
+        🔐 Reset My Password
+      </a>
+    </div>
+    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px;margin-bottom:20px;">
+      <p style="color:#92400e;font-size:13px;margin:0 0 4px;font-weight:600;">⏱ This link expires in 1 hour</p>
+      <p style="color:#78350f;font-size:12px;margin:0;">If the button doesn't work, copy and paste this link:</p>
+      <p style="color:#d97706;font-size:11px;margin:8px 0 0;word-break:break-all;">${resetUrl}</p>
+    </div>
+    <p style="color:#475569;font-size:12px;margin:0;text-align:center;">
+      If you didn't request a password reset, you can safely ignore this email. Your password won't change.
+    </p>`;
+
   return sendEmail({
     to: email,
     toName: firstName,
     subject: '🔐 Reset your ProjectHive password',
-    html: `<!DOCTYPE html><html><head><meta charset="UTF-8">${baseStyle}</head>
-<body><div class="wrap">
-  <div class="card">
-    <div class="header"><div class="logo">🔐</div><div class="brand">Password Reset</div></div>
-    <div class="body">
-      <h1>Password Reset Request</h1>
-      <p>Hi ${firstName}, we received a request to reset your password. Click below to create a new one.</p>
-      <div class="center"><a href="${resetUrl}" class="btn">🔐 Reset Password</a></div>
-      <p class="note">Link expires in <strong style="color:#94a3b8">1 hour</strong></p>
-      <hr class="divider">
-      <p style="font-size:12px;color:#64748b">If you didn't request this, ignore this email. Your password won't change.</p>
-    </div>
-    <div class="footer"><p>© 2026 ProjectHive 🐝</p></div>
-  </div>
-</div></body></html>`,
+    html: emailWrapper(content),
   });
 }
