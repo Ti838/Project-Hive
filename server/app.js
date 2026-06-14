@@ -21,6 +21,7 @@ import aiRoutes from './routes/ai.routes.js';
 import friendsRoutes from './routes/friends.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { adminDevRouter } from './routes/admin.routes.js';
+import { adminLogin } from './controllers/admin.auth.controller.js';
 
 const app = express();
 
@@ -133,6 +134,9 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', adminDevRouter); // dev only: /api/admin/promote-me
+
+// ── Dedicated Admin Auth (no DB, env-vars only) ───────────────────────────
+app.post('/api/admin/auth/login', adminLogin);
 
 // 404 handler for API routes only — HTML pages are served by express.static above
 app.use((req, res) => {

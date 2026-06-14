@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Login — ProjectHive</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" href="../../assets/svg/logo.png">
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');};})()</script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',system-ui,sans-serif}
+:root{--bg:#0b0c14;--card:#12131d;--bd:#1e2030;--tx:#e2deee;--sub:#8a86a2;--muted:#4a4760;--ac:#6366f1;--ac2:#7c3aed;--ac3:#a855f7}
+html:not(.dark){--bg:#f0f2ff;--card:#fff;--bd:#dde1f5;--tx:#0f172a;--sub:#475569;--muted:#94a3b8;--ac:#6366f1;--ac2:#7c3aed}
+body{min-height:100vh;background:var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+
+/* Grid background */
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(99,102,241,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+.bg-orb1{position:fixed;width:600px;height:600px;background:radial-gradient(circle,rgba(99,102,241,.15),transparent 70%);top:-200px;left:-100px;pointer-events:none}
+.bg-orb2{position:fixed;width:500px;height:500px;background:radial-gradient(circle,rgba(124,58,237,.1),transparent 70%);bottom:-150px;right:-100px;pointer-events:none}
+
+/* Theme toggle */
+.theme-btn{position:fixed;top:20px;right:20px;z-index:100;width:38px;height:38px;border-radius:10px;border:1px solid var(--bd);background:var(--card);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub);transition:all .2s}
+.theme-btn:hover{border-color:var(--ac);color:var(--ac)}
+
+/* Main card */
+.card{position:relative;z-index:10;width:100%;max-width:420px;padding:0 20px}
+
+/* Brand header */
+.brand-top{text-align:center;margin-bottom:32px}
+.brand-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:16px}
+.brand-badge span{width:6px;height:6px;border-radius:50%;background:#ef4444;animation:pulse 2s ease-in-out infinite}
+.brand-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:6px}
+.brand-logo img{width:44px;height:44px;border-radius:12px}
+.brand-name{font-size:26px;font-weight:900;background:linear-gradient(135deg,var(--ac),var(--ac3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.brand-sub{font-size:13px;color:var(--sub)}
+
+/* Login box */
+.login-box{background:var(--card);border:1.5px solid var(--bd);border-radius:24px;padding:36px 32px;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.dark .login-box{box-shadow:0 24px 60px rgba(0,0,0,.6),0 0 0 1px rgba(99,102,241,.08)}
+.box-title{font-size:18px;font-weight:800;color:var(--tx);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.box-sub{font-size:13px;color:var(--sub);margin-bottom:24px}
+
+/* Fields */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.inp-wrap{position:relative}
+.inp-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none}
+.inp-wrap input{width:100%;padding:12px 44px 12px 42px;border:1.5px solid var(--bd);border-radius:13px;background:var(--bg);color:var(--tx);font-size:15px;font-family:'Inter',sans-serif;outline:none;transition:all .2s}
+.inp-wrap input:focus{border-color:var(--ac);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.inp-wrap input::placeholder{color:var(--muted)}
+.eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex}
+.eye-btn:hover{color:var(--sub)}
+
+/* Alert */
+.alert{padding:11px 14px;border-radius:11px;font-size:13px;margin-bottom:14px;display:none;align-items:center;gap:8px}
+.alert.err{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#ef4444}
+.dark .alert.err{color:#f87171}
+
+/* Submit */
+.btn-login{width:100%;padding:14px;border:none;border-radius:13px;background:linear-gradient(135deg,var(--ac),var(--ac2));color:#fff;font-size:15px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .22s;margin-top:4px;letter-spacing:.01em}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(99,102,241,.5)}
+.btn-login:disabled{opacity:.6;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* Spinner */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+
+/* Security note */
+.sec-note{display:flex;align-items:center;gap:6px;margin-top:18px;font-size:11px;color:var(--muted);justify-content:center}
+
+@keyframes pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.card{animation:fadeUp .4s ease}
+
+/* Footer */
+footer{position:fixed;bottom:16px;font-size:11px;color:var(--muted);text-align:center;width:100%;z-index:1}
+
+@media(max-width:480px){.login-box{padding:28px 20px}}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+
+<button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">
+  <svg id="ti" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+</button>
+
+<div class="card">
+  <!-- Brand -->
+  <div class="brand-top">
+    <div class="brand-badge"><span></span>RESTRICTED ACCESS</div>
+    <div class="brand-logo">
+      <img src="../../assets/svg/logo.png" alt="ProjectHive" onerror="this.style.display='none'">
+      <span class="brand-name">ProjectHive</span>
+    </div>
+    <div class="brand-sub">Admin Control Center</div>
+  </div>
+
+  <!-- Login Box -->
+  <div class="login-box">
+    <div class="box-title">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Admin Sign In
+    </div>
+    <div class="box-sub">Use your dedicated admin credentials to continue.</div>
+
+    <div class="alert err" id="alert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="alert-msg"></span>
+    </div>
+
+    <form onsubmit="handleLogin(event)" id="form">
+      <div class="field">
+        <label>Admin Email</label>
+        <div class="inp-wrap">
+          <svg class="inp-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <input id="email" type="email" placeholder="admin@projecthive.com" required autocomplete="username">
+        </div>
+      </div>
+      <div class="field">
+        <label>Admin Password</label>
+        <div class="inp-wrap">
+          <svg class="inp-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <input id="password" type="password" placeholder="••••••••••••" required autocomplete="current-password">
+          <button type="button" class="eye-btn" onclick="togglePw()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <button type="submit" class="btn-login" id="btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <span id="btn-txt">Access Admin Panel</span>
+      </button>
+    </form>
+
+    <div class="sec-note">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      Secure admin session · 8 hours validity
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 ProjectHive &nbsp;·&nbsp; Admin Portal &nbsp;·&nbsp; Restricted</footer>
+
+<script>
+const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+  ? '' : 'https://projecthive-backend.onrender.com';
+
+// Redirect if already admin
+(function() {
+  const tk = localStorage.getItem('admin_token') || localStorage.getItem('access_token');
+  if (tk) {
+    try {
+      const p = JSON.parse(atob(tk.split('.')[1]));
+      if (p.role === 'admin' && p.exp && Date.now() < p.exp * 1000) {
+        location.href = 'dashboard.html';
+      }
+    } catch(e) {}
+  }
+})();
+
+function toggleTheme() {
+  const dark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+  document.getElementById('ti').innerHTML = dark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+}
+// Sync icon on load
+if(document.documentElement.classList.contains('dark')){
+  document.getElementById('ti').innerHTML='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+}
+
+function togglePw() {
+  const i = document.getElementById('password');
+  const open = i.type === 'password';
+  i.type = open ? 'text' : 'password';
+  document.getElementById('eye').innerHTML = open
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
+    : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+}
+
+function showErr(msg) {
+  const a = document.getElementById('alert');
+  document.getElementById('alert-msg').textContent = msg;
+  a.style.display = 'flex';
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  document.getElementById('alert').style.display = 'none';
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('btn');
+  const txt = document.getElementById('btn-txt');
+  btn.disabled = true;
+  txt.innerHTML = '<span class="spinner"></span>&nbsp;Authenticating…';
+
+  try {
+    const res = await fetch(API + '/api/admin/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      // Store as both admin_token AND access_token so dashboard works
+      localStorage.setItem('admin_token', data.token);
+      localStorage.setItem('access_token', data.token);
+      // Short delay then redirect
+      txt.textContent = '✅ Redirecting…';
+      setTimeout(() => { location.href = 'dashboard.html'; }, 500);
+    } else {
+      showErr(data.error || 'Login failed. Check your credentials.');
+      btn.disabled = false;
+      txt.textContent = 'Access Admin Panel';
+    }
+  } catch (err) {
+    showErr('Cannot connect to server. Please try again.');
+    btn.disabled = false;
+    txt.textContent = 'Access Admin Panel';
+  }
+}
+</script>
+</body>
+</html>
