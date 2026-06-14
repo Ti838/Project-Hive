@@ -1,6 +1,24 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
-// GET /api/admin/stats — Platform overview
+// ── System Flags (in-memory; survives per-process, reset on redeploy) ────────
+const FLAGS = {
+  maintenanceMode: false,
+  registrationEnabled: true,
+};
+export function getFlags() { return FLAGS; }
+
+// ── Helper: normalize Supabase snake_case → camelCase for frontend ────────────
+function normUser(u) {
+  return {
+    _id: u.id, id: u.id,
+    firstName: u.first_name, lastName: u.last_name,
+    email: u.email, university: u.university, role: u.role,
+    isVerified: u.is_verified, isBanned: u.is_banned,
+    createdAt: u.created_at,
+  };
+}
+
+// GET /api/admin/stats
 export async function getStats(req, res, next) {
   try {
     const [
@@ -8,47 +26,34 @@ export async function getStats(req, res, next) {
       { count: teams },
       { count: projects },
       { count: messages },
-      { count: friends },
       { count: onlineUsers },
     ] = await Promise.all([
       supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('messages').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('friends').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('online_status', 'online'),
     ]);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
     const { count: newUsersToday } = await supabaseAdmin
-      .from('users')
-      .select('*', { count: 'exact', head: true })
+      .from('users').select('*', { count: 'exact', head: true })
       .gte('created_at', today.toISOString());
 
-    res.json({ users, teams, projects, messages, friends, onlineUsers, newUsersToday });
+    res.json({ users, teams, projects, totalProjects: projects, messages, onlineUsers, newUsersToday, flags: FLAGS });
   } catch (err) { next(err); }
 }
 
 // GET /api/admin/users
 export async function getUsers(req, res, next) {
   try {
-    const { skip = 0, limit = 20, search = '' } = req.query;
-
-    let q = supabaseAdmin
-      .from('users')
-      .select('id, first_name, last_name, email, university, role, is_verified, is_banned, is_public, online_status, created_at, completion_percentage', { count: 'exact' });
-
-    if (search) {
-      q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
-    }
-
-    const { data: users, error, count } = await q
-      .range(+skip, +skip + +limit - 1)
-      .order('created_at', { ascending: false });
-
+    const { skip = 0, limit = 200, search = '' } = req.query;
+    let q = supabaseAdmin.from('users')
+      .select('id,first_name,last_name,email,university,role,is_verified,is_banned,created_at', { count: 'exact' });
+    if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
+    const { data: users, error, count } = await q.range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     if (error) throw error;
-    res.json({ users: users || [], total: count || 0, skip: +skip, limit: +limit });
+    res.json({ users: (users || []).map(normUser), total: count || 0 });
   } catch (err) { next(err); }
 }
 
@@ -57,14 +62,10 @@ export async function banUser(req, res, next) {
   try {
     const { id } = req.params;
     if (id === req.user.id) return res.status(400).json({ error: 'Cannot ban yourself' });
-
     const { data: user } = await supabaseAdmin.from('users').select('is_banned').eq('id', id).single();
     if (!user) return res.status(404).json({ error: 'User not found' });
-
-    const { ban } = req.body;
-    const newBan = ban !== undefined ? ban : !user.is_banned;
+    const newBan = req.body.ban !== undefined ? req.body.ban : !user.is_banned;
     await supabaseAdmin.from('users').update({ is_banned: newBan, is_public: !newBan }).eq('id', id);
-
     res.json({ message: newBan ? 'User banned' : 'User unbanned', isBanned: newBan });
   } catch (err) { next(err); }
 }
@@ -74,12 +75,10 @@ export async function changeRole(req, res, next) {
   try {
     const { role } = req.body;
     if (!['user', 'student', 'admin'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
-
     const { data: user, error } = await supabaseAdmin
       .from('users').update({ role }).eq('id', req.params.id)
-      .select('id, first_name, last_name, email, role').single();
+      .select('id,first_name,last_name,email,role').single();
     if (error || !user) return res.status(404).json({ error: 'User not found' });
-
     res.json({ message: `Role changed to ${role}`, user });
   } catch (err) { next(err); }
 }
@@ -96,12 +95,11 @@ export async function deleteUser(req, res, next) {
 // GET /api/admin/teams
 export async function getTeams(req, res, next) {
   try {
-    const { skip = 0, limit = 20 } = req.query;
+    const { skip = 0, limit = 200 } = req.query;
     const { data: teams, error, count } = await supabaseAdmin
       .from('teams')
-      .select('*, leader:leader_id(id, first_name, last_name, email)', { count: 'exact' })
-      .range(+skip, +skip + +limit - 1)
-      .order('created_at', { ascending: false });
+      .select('id,name,description,category,status,is_closed,max_members,members,created_at', { count: 'exact' })
+      .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     if (error) throw error;
     res.json({ teams: teams || [], total: count || 0 });
   } catch (err) { next(err); }
@@ -113,4 +111,56 @@ export async function deleteTeam(req, res, next) {
     await supabaseAdmin.from('teams').delete().eq('id', req.params.id);
     res.json({ message: 'Team deleted' });
   } catch (err) { next(err); }
+}
+
+// ── Projects ──────────────────────────────────────────────────────────────────
+
+// GET /api/admin/projects
+export async function getProjects(req, res, next) {
+  try {
+    const { skip = 0, limit = 200 } = req.query;
+    const { data: projects, error, count } = await supabaseAdmin
+      .from('projects')
+      .select('id,title,description,category,status,is_featured,created_at,owner_id', { count: 'exact' })
+      .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
+    if (error) throw error;
+    res.json({ projects: projects || [], total: count || 0 });
+  } catch (err) { next(err); }
+}
+
+// DELETE /api/admin/projects/:id
+export async function deleteProject(req, res, next) {
+  try {
+    await supabaseAdmin.from('projects').delete().eq('id', req.params.id);
+    res.json({ message: 'Project deleted' });
+  } catch (err) { next(err); }
+}
+
+// PATCH /api/admin/projects/:id/feature
+export async function featureProject(req, res, next) {
+  try {
+    const { featured } = req.body;
+    const { data, error } = await supabaseAdmin
+      .from('projects').update({ is_featured: Boolean(featured) }).eq('id', req.params.id)
+      .select('id,is_featured').single();
+    if (error) throw error;
+    res.json({ message: featured ? 'Project featured' : 'Project unfeatured', project: data });
+  } catch (err) { next(err); }
+}
+
+// ── System Flags ──────────────────────────────────────────────────────────────
+
+// GET /api/admin/flags
+export async function getSystemFlags(req, res) {
+  res.json(FLAGS);
+}
+
+// PATCH /api/admin/flags
+export async function updateFlags(req, res) {
+  const allowed = ['maintenanceMode', 'registrationEnabled'];
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) FLAGS[key] = Boolean(req.body[key]);
+  }
+  console.log('[Admin] System flags updated:', FLAGS);
+  res.json({ message: 'System flags updated', flags: FLAGS });
 }

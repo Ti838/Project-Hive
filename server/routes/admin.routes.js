@@ -3,6 +3,8 @@ import { authMiddleware } from '../middleware/auth.js';
 import {
   getStats, getUsers, banUser, changeRole, deleteUser,
   getTeams, deleteTeam,
+  getProjects, deleteProject, featureProject,
+  getSystemFlags, updateFlags,
 } from '../controllers/admin.controller.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
@@ -18,18 +20,31 @@ function requireAdmin(req, res, next) {
 
 router.use(authMiddleware, requireAdmin);
 
-router.get('/stats',              getStats);
-router.get('/users',              getUsers);
-router.patch('/users/:id/ban',    banUser);
-router.patch('/users/:id/role',   changeRole);
-router.delete('/users/:id',       deleteUser);
-router.get('/teams',              getTeams);
-router.delete('/teams/:id',       deleteTeam);
+// ── Stats ─────────────────────────────────────────────
+router.get('/stats',                    getStats);
+
+// ── Users ─────────────────────────────────────────────
+router.get('/users',                    getUsers);
+router.patch('/users/:id/ban',          banUser);
+router.patch('/users/:id/role',         changeRole);
+router.delete('/users/:id',             deleteUser);
+
+// ── Teams ─────────────────────────────────────────────
+router.get('/teams',                    getTeams);
+router.delete('/teams/:id',             deleteTeam);
+
+// ── Projects ──────────────────────────────────────────
+router.get('/projects',                 getProjects);
+router.delete('/projects/:id',          deleteProject);
+router.patch('/projects/:id/feature',   featureProject);
+
+// ── System Flags ──────────────────────────────────────
+router.get('/flags',                    getSystemFlags);
+router.patch('/flags',                  updateFlags);
 
 export default router;
 
 // DEV HELPER — POST /api/admin/promote-me (no admin guard, just auth)
-// Lets a logged-in user promote themselves to admin for testing
 const devRouter = express.Router();
 devRouter.use(authMiddleware);
 devRouter.post('/promote-me', async (req, res) => {
