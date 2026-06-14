@@ -24,11 +24,12 @@ function getVerifyConfig() {
   return { secret, algorithms: ['HS256'] };
 }
 
-export function generateAccessToken(userId, email) {
+export function generateAccessToken(userId, email, role = 'student') {
   const { secret, algorithm } = getSignConfig();
   const payload = {
     id: userId,
     email: email,
+    role: role,
     type: 'access',
   };
 
@@ -52,9 +53,9 @@ export function generateRefreshToken(userId, email) {
   });
 }
 
-export function generateTokenPair(userId, email) {
+export function generateTokenPair(userId, email, role = 'student') {
   return {
-    accessToken: generateAccessToken(userId, email),
+    accessToken: generateAccessToken(userId, email, role),
     refreshToken: generateRefreshToken(userId, email),
   };
 }

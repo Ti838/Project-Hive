@@ -248,8 +248,19 @@ export async function login(req, res, next) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
+    // ── Auto-promote ADMIN_EMAIL to admin role ────────────────────────────────
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.toLowerCase();
+    if (ADMIN_EMAIL && user.email.toLowerCase() === ADMIN_EMAIL && user.role !== 'admin') {
+      await supabaseAdmin
+        .from('users')
+        .update({ role: 'admin' })
+        .eq('id', user.id);
+      user.role = 'admin';
+      console.log('[ProjectHive] 👑 Auto-promoted to admin:', user.email);
+    }
+
     // Generate tokens
-    const { accessToken, refreshToken } = generateTokenPair(user.id, user.email);
+    const { accessToken, refreshToken } = generateTokenPair(user.id, user.email, user.role);
 
     // Keep last 5 refresh tokens (multi-device support)
     const tokens = [...(user.refresh_tokens || []), refreshToken].slice(-5);
@@ -258,7 +269,7 @@ export async function login(req, res, next) {
       .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
       .eq('id', user.id);
 
-    console.log('[ProjectHive] ✅ User logged in:', user.email);
+    console.log('[ProjectHive] ✅ User logged in:', user.email, '| role:', user.role);
 
     res.json({
       message: 'Login successful',
