@@ -1,147 +1,83 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Panel — ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="../../assets/svg/logo.png"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"><link rel="stylesheet" href="../../assets/css/ph-design.css"><link rel="stylesheet" href="../../assets/css/ph-system.css"><script src="../../assets/js/core/ph-toast.js"></script><script src="../../assets/js/core/ph-sidebar.js"></script><style>body{background:var(--bg);color:var(--tx);margin:0}.ad-hero{background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 45%,#312e81 100%);padding:32px 32px 74px;position:relative;overflow:hidden}.ad-hero::before{content:"";position:absolute;width:400px;height:400px;border-radius:50%;background:rgba(99,102,241,.08);top:-100px;right:-80px}.ad-hero::after{content:"";position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(168,85,247,.06);bottom:-40px;left:60px}.ad-layout{max-width:1100px;margin:-44px auto 0;padding:0 22px 60px;position:relative;z-index:1}.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}.sc{background:var(--sf);border:1.5px solid var(--bd);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.sc-hdr{padding:16px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px}.sc-hdr h2{font-size:14px;font-weight:800;margin:0;color:var(--tx);display:flex;align-items:center;gap:8px}.sc-hdr h2 .hi{font-family:"Material Symbols Outlined";font-size:18px}.sc-body{padding:0}.stat-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px;transition:all .2s;box-shadow:var(--shadow)}.stat-card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(0,0,0,.1)}.st-ic{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:"Material Symbols Outlined";font-size:22px}.st-num{font-size:28px;font-weight:900;color:var(--tx);line-height:1}.st-lbl{font-size:12px;color:var(--sub);font-weight:600}.st-chg{font-size:11px;font-weight:700;display:flex;align-items:center;gap:3px}.up{color:#10b981}.dn{color:#ef4444}.tabs{display:flex;gap:4px;background:var(--sf2);border-radius:10px;padding:3px}.tab{padding:7px 15px;border-radius:8px;border:none;background:transparent;color:var(--sub);font-size:12px;font-weight:700;cursor:pointer;font-family:"Inter",sans-serif;transition:all .15s}.tab.on{background:var(--sf);color:var(--tx);box-shadow:0 2px 8px rgba(0,0,0,.07)}.s-inp{background:var(--sf2);border:1.5px solid var(--bd);border-radius:10px;padding:8px 14px 8px 36px;font-size:13px;color:var(--tx);font-family:"Inter",sans-serif;outline:none;transition:border .2s;width:220px}.s-inp:focus{border-color:var(--ac)}.s-wrap{position:relative}.s-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:"Material Symbols Outlined";font-size:16px;color:var(--sub)}.tbl{width:100%;border-collapse:collapse}.tbl th{padding:11px 16px;font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;text-align:left;background:var(--sf2);border-bottom:1px solid var(--bd)}.tbl td{padding:13px 16px;font-size:13px;border-bottom:1px solid var(--bd);color:var(--tx);vertical-align:middle}.tbl tr:last-child td{border-bottom:none}.tbl tr:hover td{background:var(--sf2)}.av-sm{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}.av-sm img{width:100%;height:100%;object-fit:cover}.badge{display:inline-flex;padding:3px 9px;border-radius:999px;font-size:10px;font-weight:700}.badge.admin{background:rgba(99,102,241,.12);color:#6366f1}.badge.student{background:rgba(16,185,129,.1);color:#10b981}.badge.user{background:rgba(100,116,139,.1);color:#64748b}.badge.banned{background:rgba(239,68,68,.1);color:#ef4444}.badge.active{background:rgba(16,185,129,.1);color:#10b981}.badge.open{background:rgba(59,130,246,.1);color:#3b82f6}.badge.closed{background:rgba(100,116,139,.1);color:#64748b}.act-btn{background:none;border:none;cursor:pointer;padding:5px 7px;border-radius:7px;color:var(--sub);font-family:"Material Symbols Outlined";font-size:17px;transition:all .15s;line-height:1}.act-btn:hover{background:var(--sf2);color:var(--tx)}.act-btn.danger:hover{background:rgba(239,68,68,.1);color:#ef4444}.empty{text-align:center;padding:48px 20px}.empty-ic{font-family:"Material Symbols Outlined";font-size:52px;color:var(--bd2);display:block;margin-bottom:10px}.chart-bar{display:flex;gap:6px;align-items:flex-end;height:80px;padding:0 4px}.cb-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}.cb-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px;transition:height .8s ease}.cb-lbl{font-size:9px;color:var(--sub);font-weight:600}.top-badge{position:absolute;top:10px;right:12px;background:rgba(239,68,68,.9);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px}@keyframes spin{to{transform:rotate(360deg)}}</style></head>
-<body data-no-float-theme="1"><div id="ph-sidebar"></div><div class="ph-page"><div class="ph-topbar"><span style="font-family:'Material Symbols Outlined';color:var(--ac)">admin_panel_settings</span><h1 style="font-size:16px;font-weight:800;margin:0;flex:1;color:var(--tx)">Admin Panel</h1><div style="display:flex;align-items:center;gap:8px"><div style="padding:5px 12px;border-radius:999px;background:rgba(239,68,68,.1);border:1.5px solid rgba(239,68,68,.25);color:#ef4444;font-size:11px;font-weight:800;display:flex;align-items:center;gap:4px"><span style="font-family:'Material Symbols Outlined';font-size:14px">verified_user</span>ADMIN</div><button id="ad-refresh" style="padding:6px 12px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sf);color:var(--sub);cursor:pointer;font-family:'Material Symbols Outlined';font-size:18px;transition:all .15s" onclick="loadAll()" title="Refresh data">refresh</button></div></div><div class="ad-hero"><div style="position:relative;z-index:1"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:22px;color:#fff">shield</div><div><div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.08em;text-transform:uppercase">ProjectHive</div><div style="font-size:22px;font-weight:900;color:#fff;line-height:1.1">Admin Control Center</div></div></div><div style="font-size:13px;color:rgba(255,255,255,.65);margin-bottom:18px">Manage users, teams, and monitor platform health</div><div style="display:flex;gap:10px;flex-wrap:wrap" id="hero-stats"><div style="background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:10px 16px"><div style="font-size:18px;font-weight:900;color:#fff" id="hs-users">—</div><div style="font-size:11px;color:rgba(255,255,255,.65)">Total Users</div></div><div style="background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:10px 16px"><div style="font-size:18px;font-weight:900;color:#fff" id="hs-teams">—</div><div style="font-size:11px;color:rgba(255,255,255,.65)">Teams</div></div><div style="background:rgba(255,255,255,.08);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:10px 16px"><div style="font-size:18px;font-weight:900;color:#fff" id="hs-online">—</div><div style="font-size:11px;color:rgba(255,255,255,.65)">Online Now</div></div></div></div></div><div class="ad-layout"><div class="stat-grid" id="stat-grid"><div class="stat-card"><div class="st-ic" style="background:rgba(99,102,241,.12);color:#6366f1">people</div><div class="st-num" id="st-users">—</div><div class="st-lbl">Total Users</div><div class="st-chg up"><span style="font-family:'Material Symbols Outlined';font-size:13px">trending_up</span><span id="st-users-new">— new today</span></div></div><div class="stat-card"><div class="st-ic" style="background:rgba(59,130,246,.12);color:#3b82f6">group</div><div class="st-num" id="st-teams">—</div><div class="st-lbl">Active Teams</div><div class="st-chg up"><span style="font-family:'Material Symbols Outlined';font-size:13px">trending_up</span><span id="st-teams-open">— open</span></div></div><div class="stat-card"><div class="st-ic" style="background:rgba(16,185,129,.12);color:#10b981">folder_special</div><div class="st-num" id="st-projects">—</div><div class="st-lbl">Projects</div><div class="st-chg"><span style="font-family:'Material Symbols Outlined';font-size:13px;color:var(--sub)">info</span><span style="color:var(--sub)">Total showcased</span></div></div><div class="stat-card" style="position:relative"><div class="st-ic" style="background:rgba(239,68,68,.12);color:#ef4444">gpp_bad</div><div class="st-num" id="st-banned">—</div><div class="st-lbl">Banned Users</div><div class="st-chg dn"><span style="font-family:'Material Symbols Outlined';font-size:13px">block</span><span>Restricted accounts</span></div></div></div>
-<div style="display:grid;grid-template-columns:1fr;gap:16px"><div class="sc"><div class="sc-hdr"><h2><span class="hi">people</span>User Management</h2><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab on" onclick="filterUsers('all',this)">All</button><button class="tab" onclick="filterUsers('student',this)">Students</button><button class="tab" onclick="filterUsers('admin',this)">Admins</button><button class="tab" onclick="filterUsers('banned',this)">Banned</button></div><div class="s-wrap"><span class="s-ico">search</span><input class="s-inp" id="user-search" placeholder="Search users…" oninput="searchUsers()"></div></div></div><div class="sc-body"><div id="user-table-wrap"><table class="tbl"><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="user-tbody"><tr><td colspan="7" class="empty"><span class="empty-ic">progress_activity</span>Loading users…</td></tr></tbody></table></div></div></div><div class="sc"><div class="sc-hdr"><h2><span class="hi">group</span>Team Management</h2><div style="display:flex;gap:8px"><div class="tabs"><button class="tab on" onclick="filterTeams('all',this)">All</button><button class="tab" onclick="filterTeams('open',this)">Open</button><button class="tab" onclick="filterTeams('closed',this)">Closed</button></div><div class="s-wrap"><span class="s-ico">search</span><input class="s-inp" id="team-search" placeholder="Search teams…" oninput="searchTeams()"></div></div></div><div class="sc-body"><table class="tbl"><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="team-tbody"><tr><td colspan="6" class="empty"><span class="empty-ic">progress_activity</span>Loading teams…</td></tr></tbody></table></div></div></div></div></div></div>
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Panel — ProjectHive</title><script>(function(){if(localStorage.getItem("theme")==="dark"||(!localStorage.getItem("theme")&&matchMedia("(prefers-color-scheme:dark)").matches))document.documentElement.classList.add("dark")})()</script><link rel="icon" href="../../assets/svg/logo.png"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}:root{--bg:#080910;--sb:#0c0d18;--bd:#1a1d2e;--tx:#e2deee;--sub:#64748b;--ac:#6366f1;--sf:#0f1019}body{min-height:100vh;background:var(--bg);color:var(--tx);display:flex}.sb{width:240px;min-height:100vh;background:var(--sb);border-right:1px solid var(--bd);padding:20px 14px;display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}.sbl{display:flex;align-items:center;gap:9px;padding:10px 12px;margin-bottom:4px}.sbl img{width:30px;height:30px;border-radius:8px}.sbl-name{font-size:15px;font-weight:900;background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}.admbadge{padding:1px 7px;border-radius:999px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#ef4444;font-size:9px;font-weight:800;letter-spacing:.06em}.sb-sec{font-size:9px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.1em;padding:14px 12px 5px}.sbn{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:9px;color:var(--sub);text-decoration:none;font-size:13px;font-weight:600;transition:all .15s;cursor:pointer;border:none;background:none;width:100%;text-align:left}.sbn:hover{background:rgba(99,102,241,.08);color:var(--tx)}.sbn.on{background:rgba(99,102,241,.12);color:#818cf8}.sbf{margin-top:auto;padding-top:14px;border-top:1px solid var(--bd)}.main{flex:1;min-width:0;display:flex;flex-direction:column}.topbar{padding:14px 24px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg);z-index:10}.topbar h1{font-size:14px;font-weight:800}.content{padding:22px 24px;flex:1}.sgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}.sc{background:var(--sf);border:1.5px solid var(--bd);border-radius:14px;padding:18px;transition:all .2s}.sc:hover{border-color:#6366f1;transform:translateY(-2px)}.sn{font-size:28px;font-weight:900;margin:6px 0 3px}.sl{font-size:10px;color:var(--sub);font-weight:700;text-transform:uppercase;letter-spacing:.05em}.si{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:2px}.card{background:var(--sf);border:1.5px solid var(--bd);border-radius:14px;overflow:hidden;margin-bottom:14px}.ch{padding:14px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.ch h2{font-size:13px;font-weight:800}.tabs{display:flex;gap:2px;background:rgba(255,255,255,.04);border-radius:7px;padding:2px}.tab{padding:4px 10px;border-radius:5px;border:none;background:transparent;color:var(--sub);font-size:11px;font-weight:700;cursor:pointer;font-family:Inter,sans-serif;transition:all .12s}.tab.on{background:var(--bd);color:var(--tx)}.srch{background:var(--bg);border:1.5px solid var(--bd);border-radius:8px;padding:6px 11px;color:var(--tx);font-size:12px;font-family:Inter,sans-serif;outline:none;width:180px;transition:border .2s}.srch:focus{border-color:#6366f1}table{width:100%;border-collapse:collapse}th{padding:9px 14px;font-size:9px;font-weight:800;color:var(--sub);text-align:left;text-transform:uppercase;letter-spacing:.06em;background:rgba(0,0,0,.2)}td{padding:11px 14px;font-size:12px;border-bottom:1px solid var(--bd);vertical-align:middle}tr:last-child td{border:none}tr:hover td{background:rgba(255,255,255,.015)}.av{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}.av img{width:100%;height:100%;object-fit:cover}.badge{padding:2px 7px;border-radius:999px;font-size:9px;font-weight:800;display:inline-flex}.badge.admin{background:rgba(99,102,241,.15);color:#818cf8}.badge.student{background:rgba(16,185,129,.1);color:#10b981}.badge.banned{background:rgba(239,68,68,.12);color:#ef4444}.badge.active{background:rgba(16,185,129,.08);color:#10b981}.badge.open{background:rgba(59,130,246,.1);color:#60a5fa}.badge.closed{background:rgba(100,116,139,.1);color:#94a3b8}.act{background:none;border:1px solid var(--bd);cursor:pointer;padding:3px 8px;border-radius:6px;color:var(--sub);font-size:10px;font-weight:700;transition:all .12s;font-family:Inter,sans-serif}.act:hover{border-color:#6366f1;color:#818cf8}.act.red:hover{border-color:#ef4444;color:#ef4444}.empty{text-align:center;padding:36px;color:var(--sub);font-size:12px}@keyframes spin{to{transform:rotate(360deg)}}.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(99,102,241,.2);border-top-color:#6366f1;border-radius:50%;animation:spin .6s linear infinite}</style></head>
+<body><div class="sb"><div class="sbl"><img src="../../assets/svg/logo.png" onerror="this.style.display='none'"><span class="sbl-name">ProjectHive</span><span class="admbadge">ADMIN</span></div><div class="sb-sec">Overview</div><button class="sbn on" onclick="show('ov',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Control Center</button><div class="sb-sec">Manage</div><button class="sbn" onclick="show('us',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Users <span id="ub" style="margin-left:auto;background:rgba(99,102,241,.2);color:#818cf8;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:800">—</span></button><button class="sbn" onclick="show('tm',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>Teams <span id="tb2" style="margin-left:auto;background:rgba(16,185,129,.15);color:#10b981;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:800">—</span></button><div class="sbf"><button class="sbn" onclick="location.href='../../index.html'" style="color:var(--sub)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Back to Site</button><button class="sbn" onclick="doOut()" style="color:#ef4444"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out</button></div></div><div class="main"><div class="topbar"><h1 id="st">⚡ Control Center</h1><button onclick="loadAll()" style="background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:#818cf8;padding:5px 13px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:Inter,sans-serif;transition:all .15s" onmouseover="this.style.background='rgba(99,102,241,.2)'" onmouseout="this.style.background='rgba(99,102,241,.1)'">↻ Refresh</button></div><div class="content"><div id="ov"><div class="sgrid"><div class="sc"><div class="si" style="background:rgba(99,102,241,.15);color:#818cf8">👥</div><div class="sn" id="nu">—</div><div class="sl">Total Users</div></div><div class="sc"><div class="si" style="background:rgba(16,185,129,.12);color:#10b981">🏆</div><div class="sn" id="nt">—</div><div class="sl">Teams</div></div><div class="sc"><div class="si" style="background:rgba(245,158,11,.12);color:#f59e0b">📁</div><div class="sn" id="np">—</div><div class="sl">Projects</div></div><div class="sc"><div class="si" style="background:rgba(239,68,68,.12);color:#ef4444">🚫</div><div class="sn" id="nb">—</div><div class="sl">Banned</div></div></div><div class="card"><div class="ch"><h2>👥 Recent Users</h2></div><div id="ru"><div class="empty"><span class="spin"></span> Loading…</div></div></div></div><div id="us" style="display:none"><div class="card"><div class="ch"><h2>User Management</h2><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab on" onclick="uf('all',this)">All</button><button class="tab" onclick="uf('student',this)">Students</button><button class="tab" onclick="uf('admin',this)">Admins</button><button class="tab" onclick="uf('banned',this)">Banned</button></div><input class="srch" id="us2" placeholder="Search…" oninput="ru2()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="6" class="empty"><span class="spin"></span></td></tr></tbody></table></div></div></div><div id="tm" style="display:none"><div class="card"><div class="ch"><h2>Team Management</h2><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab on" onclick="tf('all',this)">All</button><button class="tab" onclick="tf('open',this)">Open</button><button class="tab" onclick="tf('closed',this)">Closed</button></div><input class="srch" id="ts2" placeholder="Search…" oninput="rt2()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6" class="empty"><span class="spin"></span></td></tr></tbody></table></div></div></div></div></div></body>
 <script>
-(function(){
-  // Use admin_token first, fall back to access_token
-  const TK = localStorage.getItem('admin_token') || localStorage.getItem('access_token');
-  if(!TK){ location.href='login.html'; return; }
+const TK=localStorage.getItem("admin_token")||localStorage.getItem("access_token");
+if(!TK){location.href="login.html"}
+try{const p=JSON.parse(atob(TK.split(".")[1]));if(p.exp&&Date.now()>=p.exp*1000){location.href="login.html"}if(p.role!=="admin"){location.href="login.html"}}catch(e){location.href="login.html"}
+const API=["localhost","127.0.0.1"].includes(location.hostname)?"":"https://projecthive-backend.onrender.com";
+const H={"Authorization":"Bearer "+TK,"Content-Type":"application/json"};
+const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6"];
+function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
+function ago(d){if(!d)return"—";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
+let AU=[],AT=[],uf_="all",tf_="all";
+function show(id,btn){
+  ["ov","us","tm"].forEach(s=>document.getElementById(s).style.display=s===id?"":"none");
+  document.querySelectorAll(".sbn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  const T={"ov":"⚡ Control Center","us":"👥 User Management","tm":"🏆 Team Management"};
+  document.getElementById("st").textContent=T[id];
+}
+async function loadAll(){
   try{
-    const p=JSON.parse(atob(TK.split('.')[1]));
-    if(p.exp && Date.now()>=p.exp*1000){ localStorage.removeItem('admin_token'); localStorage.removeItem('access_token'); location.href='login.html'; return; }
-    if(p.role!=='admin'){ location.href='login.html'; return; }
-  }catch(e){ location.href='login.html'; return; }
-  PHSidebar.init('admin','../../');
-  // Environment-aware API base — works on localhost AND Render/Vercel
-  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
-  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
-
-  const COLS=["#6366F1","#7C3AED","#EC4899","#10B981","#F59E0B","#3B82F6","#EF4444","#14B8A6"];
-  function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
-  function ago(d){if(!d)return "—";const s=Math.floor((Date.now()-new Date(d))/1000);if(s<60)return "Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString();}
-
-  let allUsers=[],allTeams=[];
-
-  window.loadAll=async function(){
-    document.getElementById("ad-refresh").style.transform="rotate(360deg)";
-    document.getElementById("ad-refresh").style.transition="transform .6s";
-    setTimeout(()=>{document.getElementById("ad-refresh").style.transform="";document.getElementById("ad-refresh").style.transition="";},700);
-    const [stats,users,teams]=await Promise.all([
-      fetch(API_BASE+"/api/admin/stats",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({})),
-      fetch(API_BASE+"/api/admin/users?limit=200",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(API_BASE+"/api/admin/teams?limit=200",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+    const[st,us,tm]=await Promise.all([
+      fetch(API+"/api/admin/stats",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({})),
+      fetch(API+"/api/admin/users?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API+"/api/admin/teams?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[])
     ]);
-    // Stats
-    const u=Array.isArray(users)?users:(users.users||[]);
-    const t=Array.isArray(teams)?teams:(teams.teams||[]);
-    allUsers=u;allTeams=t;
-    const banned=u.filter(x=>x.isBanned||x.status==="banned").length;
-    const admins=u.filter(x=>x.role==="admin").length;
-    const newToday=u.filter(x=>x.createdAt&&new Date(x.createdAt).toDateString()===new Date().toDateString()).length;
-    const openTeams=t.filter(x=>!x.isClosed&&x.status!=="closed").length;
-    document.getElementById("st-users").textContent=u.length;
-    document.getElementById("st-teams").textContent=t.length;
-    document.getElementById("st-projects").textContent=stats.totalProjects||"—";
-    document.getElementById("st-banned").textContent=banned;
-    document.getElementById("st-users-new").textContent=newToday+" new today";
-    document.getElementById("st-teams-open").textContent=openTeams+" open";
-    document.getElementById("hs-users").textContent=u.length;
-    document.getElementById("hs-teams").textContent=t.length;
-    document.getElementById("hs-online").textContent=u.filter(x=>x.onlineStatus==="online").length;
-    renderUsers(u);renderTeams(t);
-  };
-
-  // USERS
-  function renderUsers(list){
-    const tb=document.getElementById("user-tbody");
-    if(!list.length){tb.innerHTML=`<tr><td colspan="7"><div class="empty"><span class="empty-ic">person_off</span><div style="font-size:14px;font-weight:700;color:var(--tx)">No users found</div></div></td></tr>`;return;}
-    tb.innerHTML=list.map(u=>{
-      const nm=`${u.firstName||""} ${u.lastName||""}`.trim()||"No Name";
-      const c=u.avatarColor||avC(nm);
-      const ini=((u.firstName?.[0]||"")+(u.lastName?.[0]||"")).toUpperCase()||"?";
-      const av=u.avatar&&u.avatar.startsWith("data:")?`<img src="${u.avatar}">`:`${ini}`;
-      const banned=u.isBanned||u.status==="banned";
-      return `<tr id="ur-${u._id}">
-        <td><div style="display:flex;align-items:center;gap:10px"><div class="av-sm" style="background:${c}">${av}</div><div><div style="font-weight:700;color:var(--tx)">${nm}</div><div style="font-size:11px;color:var(--sub)">${u.university||"—"}</div></div></div></td>
-        <td style="color:var(--sub);font-size:12px">${u.email||"—"}</td>
-        <td style="font-size:12px">${u.university||"—"}</td>
-        <td><span class="badge ${u.role||"student"}">${u.role||"student"}</span></td>
-        <td><span class="badge ${banned?"banned":"active"}">${banned?"Banned":"Active"}</span></td>
-        <td style="font-size:11px;color:var(--sub)">${ago(u.createdAt)}</td>
-        <td><div style="display:flex;gap:2px">
-          <button class="act-btn" onclick="changeRole('${u._id}','${u.role==="admin"?"student":"admin"}')" title="${u.role==="admin"?"Demote to Student":"Promote to Admin"}">${u.role==="admin"?"person":"verified_user"}</button>
-          <button class="act-btn ${banned?"":"danger"}" onclick="banUser('${u._id}',${!banned})" title="${banned?"Unban":"Ban"} user">${banned?"lock_open":"block"}</button>
-          <button class="act-btn danger" onclick="deleteUser('${u._id}','${nm}')" title="Delete user">delete</button>
-        </div></td>
-      </tr>`;
-    }).join("");
-  }
-
-  let uFilter="all";
-  window.filterUsers=function(f,btn){uFilter=f;document.querySelectorAll(".tabs .tab").forEach(b=>b.classList.remove("on"));btn.classList.add("on");applyUserFilter();};
-  window.searchUsers=function(){applyUserFilter();};
-  function applyUserFilter(){
-    const q=document.getElementById("user-search").value.trim().toLowerCase();
-    let list=allUsers;
-    if(uFilter==="banned")list=list.filter(u=>u.isBanned||u.status==="banned");
-    else if(uFilter!=="all")list=list.filter(u=>u.role===uFilter);
-    if(q)list=list.filter(u=>`${u.firstName} ${u.lastName} ${u.email} ${u.university||""}`.toLowerCase().includes(q));
-    renderUsers(list);
-  }
-
-  window.banUser=async function(id,ban){
-    try{const r=await fetch(API_BASE+`/api/admin/users/${id}/ban`,{method:"PATCH",headers:H,body:JSON.stringify({ban})});
-    if(r.ok){PHToast?.success(ban?"User banned":"User unbanned");loadAll();}else PHToast?.error("Failed");}
-    catch(e){PHToast?.error("Server offline");}
-  };
-  window.changeRole=async function(id,role){
-    try{const r=await fetch(API_BASE+`/api/admin/users/${id}/role`,{method:"PATCH",headers:H,body:JSON.stringify({role})});
-    if(r.ok){PHToast?.success(`Role changed to ${role}`);loadAll();}else PHToast?.error("Failed");}
-    catch(e){PHToast?.error("Server offline");}
-  };
-  window.deleteUser=async function(id,nm){
-    if(!confirm(`Delete ${nm}? This cannot be undone.`))return;
-    try{const r=await fetch(API_BASE+`/api/admin/users/${id}`,{method:"DELETE",headers:H});
-    if(r.ok){PHToast?.success("User deleted");loadAll();}else PHToast?.error("Failed");}
-    catch(e){PHToast?.error("Server offline");}
-  };
-
-  // TEAMS
-  function renderTeams(list){
-    const tb=document.getElementById("team-tbody");
-    if(!list.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty"><span class="empty-ic">group_off</span><div style="font-size:14px;font-weight:700;color:var(--tx)">No teams found</div></div></td></tr>`;return;}
-    tb.innerHTML=list.map(t=>{
-      const closed=t.isClosed||t.status==="closed";
-      return `<tr id="tr-${t._id}">
-        <td><div style="font-weight:700;color:var(--tx)">${t.name||"Unnamed"}</div><div style="font-size:11px;color:var(--sub)">${t.description?.slice(0,40)||""}…</div></td>
-        <td><div style="display:flex;align-items:center;gap:4px"><span style="font-family:''Material Symbols Outlined'';font-size:14px;color:var(--sub)">people</span>${(t.members?.length||0)}/${t.maxMembers||4}</div></td>
-        <td><span class="badge ${closed?"closed":"open"}">${closed?"Closed":"Open"}</span></td>
-        <td style="font-size:12px;color:var(--sub)">${t.category||t.projectType||"General"}</td>
-        <td style="font-size:11px;color:var(--sub)">${ago(t.createdAt)}</td>
-        <td><button class="act-btn danger" onclick="deleteTeam('${t._id}','${(t.name||"").replace(/'/g,"")}')" title="Delete team">delete</button></td>
-      </tr>`;
-    }).join("");
-  }
-
-  let tmFilter="all";
-  window.filterTeams=function(f,btn){tmFilter=f;const row=btn.closest(".tabs").parentElement;row.querySelectorAll(".tab").forEach(b=>b.classList.remove("on"));btn.classList.add("on");applyTeamFilter();};
-  window.searchTeams=function(){applyTeamFilter();};
-  function applyTeamFilter(){
-    const q=document.getElementById("team-search").value.trim().toLowerCase();
-    let list=allTeams;
-    if(tmFilter==="open")list=list.filter(t=>!t.isClosed&&t.status!=="closed");
-    else if(tmFilter==="closed")list=list.filter(t=>t.isClosed||t.status==="closed");
-    if(q)list=list.filter(t=>(t.name||"").toLowerCase().includes(q));
-    renderTeams(list);
-  }
-
-  window.deleteTeam=async function(id,nm){
-    if(!confirm(`Delete team "${nm}"? This cannot be undone.`))return;
-    try{const r=await fetch(API_BASE+`/api/admin/teams/${id}`,{method:"DELETE",headers:H});
-    if(r.ok){PHToast?.success("Team deleted");loadAll();}else PHToast?.error("Failed");}
-    catch(e){PHToast?.error("Server offline");}
-  };
-
-  loadAll();
-})();
-</script></body></html>
+    AU=Array.isArray(us)?us:(us.users||[]);
+    AT=Array.isArray(tm)?tm:(tm.teams||[]);
+    document.getElementById("nu").textContent=AU.length;
+    document.getElementById("nt").textContent=AT.length;
+    document.getElementById("np").textContent=st.totalProjects||"—";
+    document.getElementById("nb").textContent=AU.filter(u=>u.isBanned).length;
+    document.getElementById("ub").textContent=AU.length;
+    document.getElementById("tb2").textContent=AT.length;
+    rRec();ru2();rt2();
+  }catch(e){console.error(e)}
+}
+function rRec(){
+  const el=document.getElementById("ru");
+  const list=AU.slice(0,8);
+  if(!list.length){el.innerHTML="<div class='empty'>No users yet</div>";return}
+  el.innerHTML="<table><thead><tr><th>User</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead><tbody>"+list.map(u=>{
+    const nm=(u.firstName||"")+" "+(u.lastName||"");const c=u.avatarColor||avC(nm);const i=((u.firstName?.[0]||"")+(u.lastName?.[0]||"")).toUpperCase()||"?";
+    return"<tr><td><div style='display:flex;align-items:center;gap:8px'><div class='av' style='background:"+c+"'>"+i+"</div><b>"+nm.trim()+"</b></div></td><td style='color:var(--sub)'>"+u.email+"</td><td><span class='badge "+u.role+"'>"+u.role+"</span></td><td style='color:var(--sub)'>"+ago(u.createdAt)+"</td></tr>"
+  }).join("")+"</tbody></table>";
+}
+function uf(f,btn){uf_=f;btn.closest(".tabs").querySelectorAll(".tab").forEach(b=>b.classList.remove("on"));btn.classList.add("on");ru2()}
+function ru2(){
+  const q=document.getElementById("us2")?.value.toLowerCase()||"";
+  let list=AU;
+  if(uf_==="banned")list=list.filter(u=>u.isBanned);
+  else if(uf_!=="all")list=list.filter(u=>u.role===uf_);
+  if(q)list=list.filter(u=>((u.firstName||"")+" "+(u.lastName||"")+" "+(u.email||"")).toLowerCase().includes(q));
+  const tb=document.getElementById("utb");if(!tb)return;
+  if(!list.length){tb.innerHTML="<tr><td colspan='6' class='empty'>No users found</td></tr>";return}
+  tb.innerHTML=list.map(u=>{
+    const nm=(u.firstName||"")+" "+(u.lastName||"");const c=u.avatarColor||avC(nm);const i=((u.firstName?.[0]||"")+(u.lastName?.[0]||"")).toUpperCase()||"?";
+    const av=u.avatar&&u.avatar.startsWith("data:")?'<img src="'+u.avatar+'">':i;
+    const bn=u.isBanned;
+    return"<tr><td><div style='display:flex;align-items:center;gap:8px'><div class='av' style='background:"+c+"'>"+av+"</div><div><b>"+nm.trim()+"</b><div style='font-size:10px;color:var(--sub)'>"+u.university+"</div></div></div></td><td style='color:var(--sub);font-size:11px'>"+u.email+"</td><td style='font-size:11px'>"+u.university+"</td><td><span class='badge "+u.role+"'>"+u.role+"</span></td><td><span class='badge "+(bn?"banned":"active")+"'>"+(bn?"Banned":"Active")+"</span></td><td><div style='display:flex;gap:4px'><button class='act' onclick='cRole(\""+u._id+"\",\""+(u.role==="admin"?"student":"admin")+"\")'>"+(u.role==="admin"?"👤":"👑")+"</button><button class='act "+(bn?"":"red")+"' onclick='banU(\""+u._id+"\","+(!bn)+")'>"+(bn?"🔓":"🚫")+"</button><button class='act red' onclick='delU(\""+u._id+"\",\""+nm.trim()+"\")'">🗑</button></div></td></tr>"
+  }).join("");
+}
+function tf(f,btn){tf_=f;btn.closest(".tabs").querySelectorAll(".tab").forEach(b=>b.classList.remove("on"));btn.classList.add("on");rt2()}
+function rt2(){
+  const q=document.getElementById("ts2")?.value.toLowerCase()||"";
+  let list=AT;
+  if(tf_==="open")list=list.filter(t=>!t.isClosed&&t.status!=="closed");
+  else if(tf_==="closed")list=list.filter(t=>t.isClosed||t.status==="closed");
+  if(q)list=list.filter(t=>(t.name||"").toLowerCase().includes(q));
+  const tb=document.getElementById("ttb");if(!tb)return;
+  if(!list.length){tb.innerHTML="<tr><td colspan='6' class='empty'>No teams found</td></tr>";return}
+  tb.innerHTML=list.map(t=>{
+    const cl=t.isClosed||t.status==="closed";
+    return"<tr><td><b>"+t.name+"</b><div style='font-size:10px;color:var(--sub)'>"+(t.description||"").slice(0,40)+"</div></td><td>"+((t.members?.length||0))+"/"+t.maxMembers+"</td><td><span class='badge "+(cl?"closed":"open")+"'>"+(cl?"Closed":"Open")+"</span></td><td style='font-size:11px;color:var(--sub)'>"+t.category+"</td><td style='font-size:11px;color:var(--sub)'>"+ago(t.createdAt)+"</td><td><button class='act red' onclick='delT(\""+t._id+"\",\""+t.name+"\")'>🗑</button></td></tr>"
+  }).join("");
+}
+async function banU(id,ban){if(!confirm(ban?"Ban this user?":"Unban this user?"))return;const r=await fetch(API+"/api/admin/users/"+id+"/ban",{method:"PATCH",headers:H,body:JSON.stringify({ban})});if(r.ok)loadAll();else alert("Failed")}
+async function cRole(id,role){if(!confirm("Change role to "+role+"?"))return;const r=await fetch(API+"/api/admin/users/"+id+"/role",{method:"PATCH",headers:H,body:JSON.stringify({role})});if(r.ok)loadAll();else alert("Failed")}
+async function delU(id,nm){if(!confirm("Delete "+nm+"? This cannot be undone."))return;const r=await fetch(API+"/api/admin/users/"+id,{method:"DELETE",headers:H});if(r.ok)loadAll();else alert("Failed")}
+async function delT(id,nm){if(!confirm("Delete team "+nm+"?"))return;const r=await fetch(API+"/api/admin/teams/"+id,{method:"DELETE",headers:H});if(r.ok)loadAll();else alert("Failed")}
+function doOut(){localStorage.removeItem("admin_token");localStorage.removeItem("access_token");location.href="login.html"}
+loadAll();
+</script></html>
