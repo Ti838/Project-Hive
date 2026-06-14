@@ -307,46 +307,97 @@ function renderAnalytics(){
 }
 // ── Projects ──
 function rProjects(){
-  const q=document.getElementById("psrch")?.value.toLowerCase()||"";
+  const q=(document.getElementById('psrch')?.value||'').toLowerCase();
   let list=AP;
-  if(q)list=list.filter(p=>(p.title||p.name||p.id).toLowerCase().includes(q));
-  const tb=document.getElementById("ptb");if(!tb)return;
+  if(q)list=list.filter(p=>(p.title||p.name||'').toLowerCase().includes(q));
+  const tb=document.getElementById('ptb');if(!tb)return;
   if(!list.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">No projects found</div></td></tr>';return}
   const delI='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
   const starI='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
   tb.innerHTML=list.map(p=>{
-    const feat=p.is_featured;
-    return'<tr><td><div style="font-weight:700">'+(p.title||p.name||"Untitled")+'</div><div style="font-size:10px;color:var(--sub)">'+(p.description||"").slice(0,50)+'</div></td><td style="font-size:11px;color:var(--sub)">'+(p.category||"—")+'</td><td><span class="badge '+(p.status||"active")+'">"'+(p.status||"active")+'"></span></td><td><span class="badge '+(feat?"admin":"closed")+'">"'+(feat?"Yes":"No")+'"></span></td><td style="font-size:11px;color:var(--sub)">'+ago(p.created_at||p.createdAt)+'</td><td><div class="act-row"><button class="act" title="'+(feat?"Unfeature":"Feature")+" onclick=\"featureP('"+p.id+"',"+(!feat)+")\">"+starI+'</button><button class="act r" title="Delete" onclick="delP(\''+p.id+'\',\'"+(p.title||"?")+'\')">'+ delI+'</button></div></td></tr>'
-  }).join("");
+    const id=p.id||p._id;
+    const nm=p.title||p.name||'Untitled';
+    const feat=!!p.is_featured;
+    const st=p.status||'active';
+    return `<tr>
+      <td><div style="font-weight:700">${nm}</div><div style="font-size:10px;color:var(--sub)">${(p.description||'').slice(0,50)}</div></td>
+      <td style="font-size:11px;color:var(--sub)">${p.category||'—'}</td>
+      <td><span class="badge ${st}">${st}</span></td>
+      <td><span class="badge ${feat?'admin':'closed'}">${feat?'Yes':'No'}</span></td>
+      <td style="font-size:11px;color:var(--sub)">${ago(p.created_at||p.createdAt)}</td>
+      <td><div class="act-row">
+        <button class="act" title="${feat?'Unfeature':'Feature'}" onclick="featureP('${id}',${!feat})">${starI}</button>
+        <button class="act r" title="Delete" onclick="delP('${id}','${nm.replace(/'/g,"\\'")}')">${delI}</button>
+      </div></td>
+    </tr>`;
+  }).join('');
 }
-async function delP(id,nm){if(!confirm("Delete project \""+nm+"\"?"))return;const r=await fetch(API+"/api/admin/projects/"+id,{method:"DELETE",headers:H});if(r.ok)loadAll();else alert("Failed")}
-async function featureP(id,feat){const r=await fetch(API+"/api/admin/projects/"+id+"/feature",{method:"PATCH",headers:H,body:JSON.stringify({featured:feat})});if(r.ok)loadAll();else alert("Failed")}
+async function delP(id,nm){
+  if(!confirm('Delete project "'+nm+'"? This cannot be undone.'))return;
+  const r=await fetch(API+'/api/admin/projects/'+id,{method:'DELETE',headers:H});
+  if(r.ok)loadAll();else alert('Failed to delete project');
+}
+async function featureP(id,feat){
+  const r=await fetch(API+'/api/admin/projects/'+id+'/feature',{method:'PATCH',headers:H,body:JSON.stringify({featured:feat})});
+  if(r.ok)loadAll();else alert('Failed');
+}
 // ── System flags sync ──
 function syncFlags(f){
-  const mt=document.getElementById("maint-tog");const rt=document.getElementById("reg-tog");
-  if(mt)mt.classList.toggle("on",f.maintenanceMode);
-  if(rt)rt.classList.toggle("on",f.registrationEnabled);
-  const banner=document.getElementById("maint-banner");
-  if(banner)banner.classList.toggle("show",f.maintenanceMode);
-  const rd=document.getElementById("reg-desc");
-  if(rd)rd.textContent=f.registrationEnabled?"New users can register":"Registration disabled";
+  const mt=document.getElementById('maint-tog'),rt=document.getElementById('reg-tog');
+  if(mt)mt.classList.toggle('on',f.maintenanceMode);
+  if(rt)rt.classList.toggle('on',f.registrationEnabled);
+  const banner=document.getElementById('maint-banner');
+  if(banner)banner.classList.toggle('show',f.maintenanceMode);
+  const rd=document.getElementById('reg-desc');
+  if(rd)rd.textContent=f.registrationEnabled?'New users can register':'Registration disabled';
+  // Update topbar maintenance button appearance
+  const mb=document.getElementById('maint-btn');
+  if(mb){mb.className='btn '+(f.maintenanceMode?'danger':'');mb.innerHTML=mb.innerHTML;}
 }
 async function toggleMaint(){
-  const mt=document.getElementById("maint-tog");const current=mt?.classList.contains("on");
-  const r=await fetch(API+"/api/admin/flags",{method:"PATCH",headers:H,body:JSON.stringify({maintenanceMode:!current})});
-  if(r.ok){const d=await r.json();syncFlags(d.flags);}else alert("Failed to update maintenance mode");
+  const mt=document.getElementById('maint-tog');const on=mt?.classList.contains('on');
+  const r=await fetch(API+'/api/admin/flags',{method:'PATCH',headers:H,body:JSON.stringify({maintenanceMode:!on})});
+  if(r.ok){const d=await r.json();syncFlags(d.flags);}
+  else alert('Failed to update maintenance mode');
 }
 async function toggleReg(){
-  const rt=document.getElementById("reg-tog");const current=rt?.classList.contains("on");
-  const r=await fetch(API+"/api/admin/flags",{method:"PATCH",headers:H,body:JSON.stringify({registrationEnabled:!current})});
-  if(r.ok){const d=await r.json();syncFlags(d.flags);}else alert("Failed");
+  const rt=document.getElementById('reg-tog');const on=rt?.classList.contains('on');
+  const r=await fetch(API+'/api/admin/flags',{method:'PATCH',headers:H,body:JSON.stringify({registrationEnabled:!on})});
+  if(r.ok){const d=await r.json();syncFlags(d.flags);}
+  else alert('Failed');
 }
-// ── Actions ──
-async function banU(id,ban){if(!confirm(ban?"Ban this user?":"Unban?"))return;const r=await fetch(API+"/api/admin/users/"+id+"/ban",{method:"PATCH",headers:H,body:JSON.stringify({ban})});if(r.ok)loadAll();else alert("Failed")}
-async function cRole(id,role){if(!confirm("Change role to "+role+"?"))return;const r=await fetch(API+"/api/admin/users/"+id+"/role",{method:"PATCH",headers:H,body:JSON.stringify({role})});if(r.ok)loadAll();else alert("Failed")}
-async function delU(id,nm){if(!confirm("Delete "+nm+"?"))return;const r=await fetch(API+"/api/admin/users/"+id,{method:"DELETE",headers:H});if(r.ok)loadAll();else alert("Failed")}
-async function delT(id,nm){if(!confirm("Delete team \""+nm+"\"?"))return;const r=await fetch(API+"/api/admin/teams/"+id,{method:"DELETE",headers:H});if(r.ok)loadAll();else alert("Failed")}
-function doOut(){localStorage.removeItem("admin_token");localStorage.removeItem("access_token");location.href="login.html"}
+// ── User actions ──
+async function banU(id,ban){
+  if(!confirm(ban?'Ban this user? They will not be able to log in.':'Unban this user?'))return;
+  const r=await fetch(API+'/api/admin/users/'+id+'/ban',{method:'PATCH',headers:H,body:JSON.stringify({ban})});
+  if(r.ok)loadAll();else alert('Failed');
+}
+async function cRole(id,role){
+  if(!confirm('Change role to '+role+'?'))return;
+  const r=await fetch(API+'/api/admin/users/'+id+'/role',{method:'PATCH',headers:H,body:JSON.stringify({role})});
+  if(r.ok)loadAll();else alert('Failed');
+}
+async function delU(id,nm){
+  if(!confirm('Delete user "'+nm+'"? This cannot be undone.'))return;
+  const r=await fetch(API+'/api/admin/users/'+id,{method:'DELETE',headers:H});
+  if(r.ok)loadAll();else alert('Failed');
+}
+// ── Team actions ──
+async function delT(id,nm){
+  if(!confirm('Delete team "'+nm+'"? This cannot be undone.'))return;
+  const r=await fetch(API+'/api/admin/teams/'+id,{method:'DELETE',headers:H});
+  if(r.ok)loadAll();else alert('Failed');
+}
+function doOut(){
+  localStorage.removeItem('admin_token');
+  localStorage.removeItem('access_token');
+  location.href='login.html';
+}
 // ── Init ──
-initTheme();loadAll();checkHealth();
+initTheme();
+// Load flags from backend on start
+fetch(API+'/api/admin/flags',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{if(d)syncFlags(d);}).catch(()=>{});
+loadAll();
+checkHealth();
 </script></html>
+
