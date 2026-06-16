@@ -664,3 +664,34 @@ html.dark .ph-card-static {
   background: var(--ph-card, #12131D);
   border-color: #242538;
 }
+
+/* ════════════════════════════════════════════
+   Page Transition System
+   ════════════════════════════════════════════ */
+
+/* Fade-in on page load */
+@keyframes ph-page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ph-page-ready {
+  animation: ph-page-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Full-screen exit overlay */
+#ph-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  background: var(--ph-bg, #f8fafc);
+  transition: opacity 0.22s ease;
+}
+html.dark #ph-transition-overlay {
+  background: var(--ph-bg, #0f172a);
+}
+#ph-transition-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}

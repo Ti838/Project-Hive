@@ -67,9 +67,9 @@ const PHSidebar = (() => {
     try {
       const tk = localStorage.getItem('access_token');
       if (!tk) return;
-
-      // Use a relative API URL derived from base path — no hardcoded localhost
-      const apiBase = base.startsWith('http') ? base : window.location.origin;
+      // Use Render URL in production
+      const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? '' : 'https://projecthive-backend.onrender.com';
       const r = await fetch(apiBase + '/api/users/me', {
         headers: { Authorization: 'Bearer ' + tk }
       });
@@ -172,6 +172,7 @@ const PHSidebar = (() => {
       buildOverlay();
       injectHamburger(base);
       wireThemeButtons();
+      initTransitions();   // ← NEW
     };
 
     if (document.readyState === 'loading') {
@@ -270,11 +271,57 @@ const PHSidebar = (() => {
     topbar.appendChild(btn);
   }
 
+  // ══ Page Transition System ══════════════════════════════════════════════════
+  function initTransitions() {
+    // 1) Create overlay div once
+    if (!document.getElementById('ph-transition-overlay')) {
+      const ov = document.createElement('div');
+      ov.id = 'ph-transition-overlay';
+      document.body.appendChild(ov);
+    }
+
+    // 2) Fade-in the main content on load
+    const main = document.querySelector('.ph-page, main, .ph-main, body > div:not(#ph-sidebar):not(#ph-transition-overlay):not(#ph-mob-overlay)');
+    if (main) {
+      main.classList.add('ph-page-ready');
+    } else {
+      document.body.classList.add('ph-page-ready');
+    }
+
+    // 3) Intercept all internal <a> clicks — fade out before navigation
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      // Skip: external, hash-only, javascript:, or target=_blank
+      if (!href || href.startsWith('http') || href.startsWith('#') ||
+          href.startsWith('javascript') || a.target === '_blank') return;
+      // Skip active page links
+      if (a.classList.contains('active')) return;
+
+      e.preventDefault();
+      const overlay = document.getElementById('ph-transition-overlay');
+      if (overlay) {
+        overlay.classList.add('active');
+        setTimeout(() => { window.location.href = href; }, 220);
+      } else {
+        window.location.href = href;
+      }
+    }, true);
+  }
+
   function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
-    window.location.href = '/pages/auth/login.html';
+    // Transition out before logout redirect
+    const overlay = document.getElementById('ph-transition-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+      setTimeout(() => { window.location.href = '/pages/auth/login.html'; }, 220);
+    } else {
+      window.location.href = '/pages/auth/login.html';
+    }
   }
 
   function toggleTheme() {
