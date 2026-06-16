@@ -72,12 +72,20 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
           oninput="filterConvs(this.value)"
           class="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
       </div>
+      <!-- Tabs: Chats | Requests -->
+      <div class="flex border-b border-gray-200 dark:border-gray-800 px-2 gap-1 shrink-0">
+        <button id="tab-chats" onclick="switchTab('chats')" class="flex-1 py-2 text-xs font-semibold text-indigo-500 border-b-2 border-indigo-500 transition-colors">Chats</button>
+        <button id="tab-requests" onclick="switchTab('requests')" class="flex-1 py-2 text-xs font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors flex items-center justify-center gap-1">
+          Requests <span id="req-badge" class="hidden bg-red-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-bold">0</span>
+        </button>
+      </div>
       <div id="conv-list" class="flex-1 overflow-y-auto px-2 pb-2">
         <div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
           <span class="material-symbols-outlined text-3xl">chat_bubble_outline</span>Loading…
         </div>
       </div>
     </aside>
+
 
     <!-- Chat area -->
     <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
@@ -253,10 +261,14 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
         </div>
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <button id="video-call-btn" onclick="startCall()" class="w-9 h-9 text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors">
+        <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Voice Call">
+          <span class="material-symbols-outlined">call</span>
+        </button>
+        <button id="video-call-btn" onclick="startCall()" class="w-9 h-9 text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Video Call">
           <span class="material-symbols-outlined">video_call</span>
         </button>
       </div>`;
+
     
     const tipEl = document.getElementById('typing-indicator');
     if (tipEl) tipEl.classList.add('hidden');
@@ -450,7 +462,105 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     }
   }
 
+  let currentTab = 'chats';
+  let pendingRequests = [];
+
+  // Switch between Chats and Requests tabs
+  window.switchTab = function(tab) {
+    currentTab = tab;
+    const chatsBtn  = document.getElementById('tab-chats');
+    const reqBtn    = document.getElementById('tab-requests');
+    const active    = 'text-indigo-500 border-b-2 border-indigo-500';
+    const inactive  = 'text-gray-400 border-b-2 border-transparent';
+
+    if (tab === 'chats') {
+      chatsBtn.className = `flex-1 py-2 text-xs font-semibold ${active} transition-colors`;
+      reqBtn.className   = `flex-1 py-2 text-xs font-semibold ${inactive} hover:text-gray-600 transition-colors flex items-center justify-center gap-1`;
+      renderConvs(convs);
+    } else {
+      chatsBtn.className = `flex-1 py-2 text-xs font-semibold ${inactive} hover:text-gray-600 transition-colors`;
+      reqBtn.className   = `flex-1 py-2 text-xs font-semibold ${active} transition-colors flex items-center justify-center gap-1`;
+      renderRequests(pendingRequests);
+    }
+  };
+
+  // Load Message Requests
+  async function loadRequests() {
+    try {
+      const r = await fetch(API_BASE + '/api/messages/requests', { headers: H });
+      if (r.ok) {
+        const d = await r.json();
+        pendingRequests = d.requests || [];
+        const badge = document.getElementById('req-badge');
+        if (badge) {
+          if (pendingRequests.length > 0) {
+            badge.textContent = pendingRequests.length;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+        if (currentTab === 'requests') renderRequests(pendingRequests);
+      }
+    } catch(e) {}
+  }
+
+  // Render requests list
+  function renderRequests(list) {
+    const el = document.getElementById('conv-list');
+    if (!list.length) {
+      el.innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
+        <span class="material-symbols-outlined text-3xl">mark_email_read</span>
+        <p>No pending requests</p>
+      </div>`;
+      return;
+    }
+    el.innerHTML = list.map(req => {
+      const f = req.sender || {};
+      const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'User';
+      const color = avC(name);
+      return `<div class="conv-item p-3 rounded-xl mb-0.5">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-semibold text-sm truncate">${esc(name)}</div>
+            <div class="text-xs text-gray-400 truncate">${esc(f.university||'')}</div>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 mb-3 line-clamp-2">"${esc((req.preview||'').substring(0,80))}"</p>
+        <div class="flex gap-2">
+          <button onclick="acceptReq('${req.id}','${f.id||''}','${f.firstName||''}','${f.lastName||''}')" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-1.5 rounded-full transition-colors">Accept</button>
+          <button onclick="declineReq('${req.id}')" class="flex-1 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 text-red-500 text-xs font-semibold py-1.5 rounded-full transition-colors">Decline</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.acceptReq = async function(reqId, senderId, fn, ln) {
+    try {
+      const r = await fetch(API_BASE + `/api/messages/requests/${reqId}/accept`, { method: 'POST', headers: H });
+      if (r.ok) {
+        showToast('Request accepted!', 'success');
+        loadRequests();
+        loadConvs();
+        // Open the conversation
+        const roomId = [ME.id, senderId].sort().join('_');
+        openConv({ _id: roomId, friendId: senderId, friend: { _id: senderId, id: senderId, firstName: fn, lastName: ln }, unreadCount: 0 });
+        switchTab('chats');
+      }
+    } catch(e) {}
+  };
+
+  window.declineReq = async function(reqId) {
+    try {
+      const r = await fetch(API_BASE + `/api/messages/requests/${reqId}/decline`, { method: 'POST', headers: H });
+      if (r.ok) { showToast('Request declined', 'info'); loadRequests(); }
+    } catch(e) {}
+  };
+
   loadConvs();
+  loadRequests();
+
 
   /* Socket.IO real-time */
   try{
@@ -594,10 +704,25 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     }
     
     activeCallRoom = roomId;
-    openJitsiFrame(roomId);
+    openJitsiFrame(roomId, false);
   };
 
-  function openJitsiFrame(roomId) {
+  // ── Voice Call (audio-only) ──
+  window.startVoiceCall = function() {
+    if (!activeConv) return;
+    const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+    const roomId = `ProjectHive-voice-${[ME.id, friendId].sort().join('-')}`;
+    
+    if (socket) {
+      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate', isVoiceOnly: true });
+    }
+    
+    activeCallRoom = roomId;
+    openJitsiFrame(roomId, true); // true = voice only
+  };
+
+
+  function openJitsiFrame(roomId, voiceOnly = false) {
     document.getElementById('call-modal').classList.replace('hidden', 'flex');
     const container = document.getElementById('jitsi-container');
     container.innerHTML = ''; // Clear previous Jitsi instances
@@ -614,10 +739,13 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       },
       configOverwrite: {
         prejoinPageEnabled: false,
+        startWithVideoMuted: voiceOnly,   // audio-only if voice call
+        startWithAudioMuted: false,
       }
     };
     jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
   }
+
 
   window.endCall = function() {
     if (jitsiApiInstance) {

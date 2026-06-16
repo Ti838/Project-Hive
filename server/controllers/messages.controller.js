@@ -48,6 +48,27 @@ export async function saveMessage(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// ── GET DM history between current user and friendId ─────────────────────────
+export async function getDmHistory(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const { friendId } = req.params;
+    const { skip = 0, limit = 50 } = req.query;
+    const roomId = [myId, friendId].sort().join('_');
+
+    const { data: messages, error } = await supabaseAdmin
+      .from('messages')
+      .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
+      .eq('room_id', roomId)
+      .order('created_at', { ascending: false })
+      .range(+skip, +skip + +limit - 1);
+
+    if (error) throw error;
+    res.json({ messages: (messages || []).reverse(), roomId });
+  } catch (err) { next(err); }
+}
+
+
 export async function getConversations(req, res, next) {
   try {
     const myId = req.user.id;
@@ -180,3 +201,137 @@ export async function markAsRead(req, res, next) {
     res.json({ ok: true });
   } catch (err) { next(err); }
 }
+
+// ── Send Direct Message (Facebook-style request if not friends) ───────────────
+export async function sendDirectMessage(req, res, next) {
+  try {
+    const senderId = req.user.id;
+    const { receiverId, content, roomId: givenRoomId } = req.body;
+    if (!receiverId || !content?.trim()) return res.status(400).json({ error: 'Missing receiverId or content' });
+
+    const roomId = givenRoomId || [senderId, receiverId].sort().join('_');
+
+    // Check if friends
+    const { data: friendship } = await supabaseAdmin
+      .from('friends')
+      .select('id')
+      .or(`and(requester_id.eq.${senderId},recipient_id.eq.${receiverId}),and(requester_id.eq.${receiverId},recipient_id.eq.${senderId})`)
+      .eq('status', 'accepted')
+      .maybeSingle();
+
+    const areFriends = !!friendship;
+
+    if (!areFriends) {
+      // Check if existing accepted request
+      const { data: existingReq } = await supabaseAdmin
+        .from('dm_requests')
+        .select('id, status')
+        .eq('room_id', roomId)
+        .maybeSingle();
+
+      if (!existingReq) {
+        // Create a new pending request
+        await supabaseAdmin.from('dm_requests').insert({
+          from_user_id: senderId,
+          to_user_id: receiverId,
+          room_id: roomId,
+          status: 'pending'
+        });
+      } else if (existingReq.status === 'declined') {
+        return res.status(403).json({ error: 'Message request was declined' });
+      }
+      // If 'pending' → allow more messages (they queue up)
+    }
+
+    // Save the message
+    const { data: message, error } = await supabaseAdmin
+      .from('messages')
+      .insert({ room_id: roomId, sender_id: senderId, content: content.trim(), read_by: [senderId] })
+      .select('*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)')
+      .single();
+
+    if (error) throw error;
+    res.status(201).json({ message, roomId, isRequest: !areFriends });
+  } catch (err) { next(err); }
+}
+
+// ── Get pending message requests (I am the recipient) ─────────────────────────
+export async function getMessageRequests(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const { data: requests, error } = await supabaseAdmin
+      .from('dm_requests')
+      .select(`
+        id, room_id, status, created_at,
+        sender:from_user_id(id, first_name, last_name, avatar, avatar_color, university, online_status)
+      `)
+      .eq('to_user_id', myId)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Attach preview of first message per request
+    const result = await Promise.all((requests || []).map(async r => {
+      const { data: preview } = await supabaseAdmin
+        .from('messages')
+        .select('content, created_at')
+        .eq('room_id', r.room_id)
+        .order('created_at', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+
+      return {
+        id: r.id,
+        roomId: r.room_id,
+        status: r.status,
+        createdAt: r.created_at,
+        sender: r.sender ? {
+          id: r.sender.id,
+          firstName: r.sender.first_name,
+          lastName: r.sender.last_name,
+          avatar: r.sender.avatar,
+          avatarColor: r.sender.avatar_color,
+          university: r.sender.university,
+          onlineStatus: r.sender.online_status,
+        } : null,
+        preview: preview?.content || '',
+      };
+    }));
+
+    res.json({ requests: result, total: result.length });
+  } catch (err) { next(err); }
+}
+
+// ── Accept a message request ──────────────────────────────────────────────────
+export async function acceptMessageRequest(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const { id } = req.params;
+
+    const { data: req_ } = await supabaseAdmin.from('dm_requests').select('*').eq('id', id).single();
+    if (!req_) return res.status(404).json({ error: 'Request not found' });
+    if (req_.to_user_id !== myId) return res.status(403).json({ error: 'Not authorized' });
+
+    await supabaseAdmin.from('dm_requests').update({ status: 'accepted' }).eq('id', id);
+    res.json({ ok: true, roomId: req_.room_id, senderId: req_.from_user_id });
+  } catch (err) { next(err); }
+}
+
+// ── Decline a message request ─────────────────────────────────────────────────
+export async function declineMessageRequest(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const { id } = req.params;
+
+    const { data: req_ } = await supabaseAdmin.from('dm_requests').select('*').eq('id', id).single();
+    if (!req_) return res.status(404).json({ error: 'Request not found' });
+    if (req_.to_user_id !== myId) return res.status(403).json({ error: 'Not authorized' });
+
+    await supabaseAdmin.from('dm_requests').update({ status: 'declined' }).eq('id', id);
+    // Delete all messages from this room
+    await supabaseAdmin.from('messages').delete().eq('room_id', req_.room_id);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+}
+

@@ -1,22 +1,27 @@
 import express from 'express';
-import * as messagesController from '../controllers/messages.controller.js';
+import * as mc from '../controllers/messages.controller.js';
 import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// GET /api/messages/conversations — Load active conversations
-router.get('/conversations', authMiddleware, messagesController.getConversations);
+// Conversations & DMs
+router.get('/conversations',        authMiddleware, mc.getConversations);
+router.post('/read',                authMiddleware, mc.markAsRead);
+router.post('/dm',                  authMiddleware, mc.sendDirectMessage);  // friend-check + request
 
-// POST /api/messages/read — Mark conversation as read
-router.post('/read', authMiddleware, messagesController.markAsRead);
+// Message Requests (Facebook-style)
+router.get('/requests',             authMiddleware, mc.getMessageRequests);
+router.post('/requests/:id/accept', authMiddleware, mc.acceptMessageRequest);
+router.post('/requests/:id/decline',authMiddleware, mc.declineMessageRequest);
 
-// GET /api/messages/teams/:teamId  — Load message history
-router.get('/teams/:teamId', authMiddleware, messagesController.getTeamMessages);
+// Team messages
+router.get('/teams/:teamId',        authMiddleware, mc.getTeamMessages);
+router.get('/team/:teamId',         authMiddleware, mc.getTeamMessages);
 
-// Also support /api/messages/team/:teamId (frontend compat)
-router.get('/team/:teamId', authMiddleware, messagesController.getTeamMessages);
+// DM history by friendId  (must come BEFORE POST /)
+router.get('/:friendId',            authMiddleware, mc.getDmHistory);
 
-// POST /api/messages  — Save a message via REST (fallback when socket is down)
-router.post('/', authMiddleware, messagesController.saveMessage);
+// Save message via REST (socket fallback)
+router.post('/',                    authMiddleware, mc.saveMessage);
 
 export default router;
