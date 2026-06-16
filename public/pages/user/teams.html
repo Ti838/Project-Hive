@@ -30,7 +30,7 @@
     <span class="ms" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:18px">search</span>
     <input id="search" type="text" placeholder="Search teams…" oninput="search(this.value)" class="ph-input" style="padding-left:40px;width:220px;height:40px;border-radius:999px">
   </div>
-  <a href="teams-create.html" class="ph-btn" style="height:40px;border-radius:999px;text-decoration:none">
+  <a href="/teams" class="ph-btn" style="height:40px;border-radius:999px;text-decoration:none">
     <span class="ms" style="font-size:18px">add</span> Create Team
   </a>
 </div>
@@ -81,7 +81,7 @@
 
   function render(list){
     const g=document.getElementById('grid');
-    if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block;margin-bottom:12px">group_off</span>No teams found.<br><a href="teams-create.html" style="color:var(--ac);text-decoration:underline;font-weight:600">Create the first one!</a></div>`;return;}
+    if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block;margin-bottom:12px">group_off</span>No teams found.<br><a href="/teams" style="color:var(--ac);text-decoration:underline;font-weight:600">Create the first one!</a></div>`;return;}
     g.innerHTML=list.map(t=>{
       const name=t.name||'Team';const c=col(name);const isMine=myIds.has(t._id);
       const members=t.members?.length||t.memberCount||0;
