@@ -9,6 +9,34 @@ function sanitize(user) {
   return safe;
 }
 
+// ─── Helper: convert snake_case DB fields → camelCase for client ──────────────
+function camelizeUser(user) {
+  if (!user) return null;
+  const keyMap = {
+    first_name: 'firstName',
+    last_name: 'lastName',
+    avatar_color: 'avatarColor',
+    banner_image: 'bannerImage',
+    year_of_study: 'yearOfStudy',
+    completion_percentage: 'profileCompletion',
+    online_status: 'onlineStatus',
+    is_public: 'isPublic',
+    is_verified: 'isVerified',
+    is_banned: 'isBanned',
+    hours_per_week: 'hoursPerWeek',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+  };
+  const result = {};
+  for (const [k, v] of Object.entries(user)) {
+    result[keyMap[k] || k] = v;
+  }
+  return result;
+}
+
+// Combine sanitize + camelCase in one shot
+const toClient = (user) => camelizeUser(sanitize(user));
+
 // ─── GET CURRENT USER ────────────────────────────────────────────────────────
 export async function getCurrentUser(req, res, next) {
   try {
@@ -19,7 +47,7 @@ export async function getCurrentUser(req, res, next) {
       .single();
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });
-    res.json(sanitize(user));
+    res.json(toClient(user));
   } catch (err) { next(err); }
 }
 
@@ -37,7 +65,7 @@ export async function getUserProfile(req, res, next) {
     if (!user.is_public && req.user?.id !== id) {
       return res.status(403).json({ error: 'This profile is private' });
     }
-    res.json(sanitize(user));
+    res.json(toClient(user));
   } catch (err) { next(err); }
 }
 
@@ -97,7 +125,7 @@ export async function updateProfile(req, res, next) {
       .single();
 
     if (error) throw error;
-    res.json({ message: 'Profile updated successfully', user: sanitize(user) });
+    res.json({ message: 'Profile updated successfully', user: toClient(user) });
   } catch (err) {
     console.error('[ProjectHive] Update profile error:', err);
     next(err);
@@ -127,7 +155,7 @@ export async function searchUsers(req, res, next) {
     if (error) throw error;
 
     res.json({
-      users: users || [],
+      users: (users || []).map(toClient),
       pagination: {
         total: count || 0,
         skip: parseInt(skip),
@@ -156,7 +184,7 @@ export async function updateSkills(req, res, next) {
     }
 
     const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
-    res.json({ message: 'Skills updated', user: sanitize(user) });
+    res.json({ message: 'Skills updated', user: toClient(user) });
   } catch (err) { next(err); }
 }
 
@@ -173,7 +201,7 @@ export async function addSkill(req, res, next) {
 
     await supabaseAdmin.from('skills').insert({ user_id: userId, name, level });
     const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
-    res.json({ message: 'Skill added', user: sanitize(user) });
+    res.json({ message: 'Skill added', user: toClient(user) });
   } catch (err) { next(err); }
 }
 
@@ -185,7 +213,7 @@ export async function removeSkill(req, res, next) {
 
     await supabaseAdmin.from('skills').delete().eq('user_id', userId).eq('name', skillName);
     const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
-    res.json({ message: 'Skill removed', user: sanitize(user) });
+    res.json({ message: 'Skill removed', user: toClient(user) });
   } catch (err) { next(err); }
 }
 

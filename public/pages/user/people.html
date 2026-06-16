@@ -113,16 +113,17 @@ body{background:var(--bg);color:var(--tx);margin:0}
   if(!TK){location.href='../auth/login.html';return;}
   PHSidebar.init('people','../../');
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
   const COLS=['#6366F1','#7C3AED','#EC4899','#10B981','#F59E0B','#3B82F6','#EF4444','#14B8A6'];
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
   let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],tab='discover',filter='all',sTimer=null;
 
   async function init(){
-    try{const me=await fetch('/api/users/me',{headers:H}).then(r=>r.json());myId=me._id||me.id||'';}catch(e){}
+    try{const me=await fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.json());myId=me._id||me.id||'';}catch(e){}
     const [users,friends,pending]=await Promise.all([
-      fetch('/api/users/search?q=&limit=80',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch('/api/friends',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch('/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API_BASE+'/api/users/search?q=&limit=80',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API_BASE+'/api/friends',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API_BASE+'/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
     ]);
     allUsers=Array.isArray(users)?users:(users.users||[]);
     const fl=Array.isArray(friends)?friends:(friends.friends||[]);
@@ -142,7 +143,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     render();
   };
   window.setFilter=function(f,btn){filter=f;document.querySelectorAll('.chip').forEach(b=>b.classList.remove('on'));btn.classList.add('on');render();};
-  window.debSearch=function(){clearTimeout(sTimer);sTimer=setTimeout(async()=>{const q=document.getElementById('s-inp').value.trim();if(q){try{const r=await fetch(`/api/users/search?q=${encodeURIComponent(q)}&limit=60`,{headers:H});const d=await r.json();allUsers=Array.isArray(d)?d:(d.users||[]);}catch(e){}}render();},400);};
+  window.debSearch=function(){clearTimeout(sTimer);sTimer=setTimeout(async()=>{const q=document.getElementById('s-inp').value.trim();if(q){try{const r=await fetch(API_BASE+`/api/users/search?q=${encodeURIComponent(q)}&limit=60`,{headers:H});const d=await r.json();allUsers=Array.isArray(d)?d:(d.users||[]);}catch(e){}}render();},400);};
 
   function render(){
     const g=document.getElementById('fp-grid');
@@ -183,7 +184,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
   window.addFriend=async function(uid,btn){
     btn.disabled=true;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">progress_activity</span>';
     try{
-      const r=await fetch(`/api/friends/request/${uid}`,{method:'POST',headers:H});
+      const r=await fetch(API_BASE+`/api/friends/request/${uid}`,{method:'POST',headers:H});
       if(r.ok||r.status===201){sentReqs.add(uid);btn.className='btn-add sent';btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">schedule</span>Sent';btn.disabled=true;PHToast?.success('Friend request sent!');}
       else{btn.disabled=false;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">person_add</span>Add Friend';PHToast?.error('Could not send request');}
     }catch(e){btn.disabled=false;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">person_add</span>Add Friend';PHToast?.error('Server offline');}
@@ -192,7 +193,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
   window.respond=async function(reqId,action,btn){
     btn.disabled=true;
     try{
-      const r=await fetch(`/api/friends/${action}/${reqId}`,{method:'POST',headers:H});
+      const r=await fetch(API_BASE+`/api/friends/${action}/${reqId}`,{method:'POST',headers:H});
       if(r.ok){
         if(action==='accept'){PHToast?.success('Friend added! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2z"/></svg></span>');}else{PHToast?.success('Declined');}
         inReqs=inReqs.filter(req=>(req._id||req.id)!==reqId);

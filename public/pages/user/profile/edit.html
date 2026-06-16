@@ -8,6 +8,7 @@
   try{const p=JSON.parse(atob(TK.split(".")[1]));if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem("access_token");location.href="../../auth/login.html";return;}}catch(e){location.href="../../auth/login.html";return;}
   PHSidebar.init("profile","../../../");
   const H={Authorization:"Bearer "+TK,"Content-Type":"application/json"};
+  const API_BASE=(location.hostname==="localhost"||location.hostname==="127.0.0.1")?"":"https://projecthive-backend.onrender.com";
   const COLS=["#6366F1","#7C3AED","#EC4899","#10B981","#F59E0B","#3B82F6","#EF4444","#14B8A6","#6D28D9","#0EA5E9"];
   const SUGG=["React","Node.js","Python","TypeScript","JavaScript","Flutter","MongoDB","Firebase","Machine Learning","UI/UX","Figma","Java","C++","Django","SQL","Docker","Git","Next.js","Tailwind","PostgreSQL"];
   let skills=[],avColor="#6366F1",avatarB64="",bannerB64="";
@@ -100,7 +101,7 @@
   };
 
   // Load
-  fetch("/api/users/me",{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
+  fetch(API_BASE+"/api/users/me",{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
     if(!u)return;
     document.getElementById("p-fn").value=u.firstName||"";
     document.getElementById("p-ln").value=u.lastName||"";
@@ -134,7 +135,7 @@
       const payload={firstName:document.getElementById("p-fn").value.trim(),lastName:document.getElementById("p-ln").value.trim(),university:document.getElementById("p-uni").value.trim(),major:document.getElementById("p-major").value.trim(),bio:document.getElementById("p-bio").value.trim(),github:document.getElementById("p-gh").value.trim(),linkedin:document.getElementById("p-li").value.trim(),portfolio:document.getElementById("p-po").value.trim(),yearOfStudy:parseInt(document.getElementById("p-year").value)||null,status:document.getElementById("p-status").value,skills,avatarColor:avColor};
       if(avatarB64)payload.avatar=avatarB64;
       if(bannerB64)payload.bannerImage=bannerB64;
-      const r=await fetch("/api/users/me",{method:"PATCH",headers:H,body:JSON.stringify(payload)});
+      const r=await fetch(API_BASE+"/api/users/me",{method:"PATCH",headers:H,body:JSON.stringify(payload)});
       r.ok?PHToast?.success("Profile saved! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>"):(async()=>{const d=await r.json();PHToast?.error(d.message||"Save failed");})();
     }catch(e){PHToast?.error("Server offline");}
     btn.innerHTML=`<span style="font-family:'Material Symbols Outlined';font-size:20px">save</span> Save Profile`;btn.disabled=false;

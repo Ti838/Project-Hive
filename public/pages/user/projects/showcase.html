@@ -138,12 +138,13 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   PHSidebar.init('showcase','../../../');
 
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
   const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
 
   let allProjects=[], myId='', activeFilter='all';
 
-  fetch('/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{if(u)myId=u._id||u.id;}).catch(()=>{});
+  fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{if(u)myId=u._id||u.id;}).catch(()=>{});
 
   function render(list){
     const el=document.getElementById('projects-grid');
@@ -216,7 +217,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     const btn=document.getElementById('submit-btn');
     btn.innerHTML='<span class="material-symbols-outlined animate-spin">progress_activity</span> Submitting…';btn.disabled=true;
     try{
-      const r=await fetch('/api/projects',{method:'POST',headers:H,body:JSON.stringify({
+      const r=await fetch(API_BASE+'/api/projects',{method:'POST',headers:H,body:JSON.stringify({
         title:document.getElementById('f-title').value.trim(),
         description:document.getElementById('f-desc').value.trim(),
         category:document.getElementById('f-cat').value,
@@ -232,7 +233,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   async function load(){
     try{
-      const r=await fetch('/api/projects',{headers:H});
+      const r=await fetch(API_BASE+'/api/projects',{headers:H});
       if(r.ok){const d=await r.json();allProjects=d.projects||d||[];render(allProjects);}
       else throw new Error();
     }catch(e){
