@@ -273,37 +273,42 @@ const PHSidebar = (() => {
 
   // ══ Page Transition System ══════════════════════════════════════════════════
   function initTransitions() {
-    // 1) Create overlay div once
+    // 1) Always scroll to top on every page load
+    window.scrollTo({ top: 0, behavior: 'instant' });
+
+    // 2) Create overlay div once
     if (!document.getElementById('ph-transition-overlay')) {
       const ov = document.createElement('div');
       ov.id = 'ph-transition-overlay';
       document.body.appendChild(ov);
     }
 
-    // 2) Fade-in the main content on load
-    const main = document.querySelector('.ph-page, main, .ph-main, body > div:not(#ph-sidebar):not(#ph-transition-overlay):not(#ph-mob-overlay)');
-    if (main) {
-      main.classList.add('ph-page-ready');
-    } else {
-      document.body.classList.add('ph-page-ready');
-    }
+    // 3) Fade-in page content (opacity only — no translateY that shifts layout)
+    const main = document.querySelector('.ph-page, main, .ph-main,
+      body > div:not(#ph-sidebar):not(#ph-transition-overlay):not(#ph-mob-overlay)');
+    if (main) main.classList.add('ph-page-ready');
 
-    // 3) Intercept all internal <a> clicks — fade out before navigation
+    // 4) Intercept internal <a> clicks — fade out before navigating
     document.addEventListener('click', (e) => {
       const a = e.target.closest('a[href]');
       if (!a) return;
       const href = a.getAttribute('href');
-      // Skip: external, hash-only, javascript:, or target=_blank
+      // Skip: external, hash-only, javascript:, target=_blank
       if (!href || href.startsWith('http') || href.startsWith('#') ||
           href.startsWith('javascript') || a.target === '_blank') return;
-      // Skip active page links
+      // Skip if already on same page
       if (a.classList.contains('active')) return;
 
       e.preventDefault();
       const overlay = document.getElementById('ph-transition-overlay');
       if (overlay) {
         overlay.classList.add('active');
-        setTimeout(() => { window.location.href = href; }, 220);
+        // Safety: if navigation fails, remove overlay after 1s
+        const safety = setTimeout(() => overlay.classList.remove('active'), 1000);
+        setTimeout(() => {
+          clearTimeout(safety);
+          window.location.href = href;
+        }, 200);
       } else {
         window.location.href = href;
       }

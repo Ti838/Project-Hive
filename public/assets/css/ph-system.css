@@ -669,13 +669,13 @@ html.dark .ph-card-static {
    Page Transition System
    ════════════════════════════════════════════ */
 
-/* Fade-in on page load */
+/* Fade-in on page load — opacity only, no translateY (avoids scroll issues) */
 @keyframes ph-page-enter {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 .ph-page-ready {
-  animation: ph-page-enter 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: ph-page-enter 0.28s ease both;
 }
 
 /* Full-screen exit overlay */
