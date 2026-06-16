@@ -454,7 +454,9 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   /* Socket.IO real-time */
   try{
-    socket=io('/',{auth:{token:TK},transports:['websocket','polling']});
+    const SOCKET_URL = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+      ? '/' : 'https://projecthive-backend.onrender.com';
+    socket=io(SOCKET_URL,{auth:{token:TK},transports:['websocket','polling']});
     
     socket.on('connect', () => {
       if (activeConv) {

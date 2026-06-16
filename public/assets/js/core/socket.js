@@ -12,12 +12,14 @@ const SocketClient = (() => {
      * Get the Socket.IO server URL
      */
     const getSocketUrl = () => {
-        // If frontend is served from the same origin as the backend
-        if (window.location.port === '5000') {
-            return window.location.origin;
+        const LOCAL_HOSTS = ['localhost', '127.0.0.1'];
+        if (LOCAL_HOSTS.includes(window.location.hostname)) {
+            return window.location.port === '5000'
+                ? window.location.origin
+                : `http://${window.location.hostname}:5000`;
         }
-        // Otherwise default to port 5000
-        return `http://${window.location.hostname}:5000`;
+        // Production: always use Render backend
+        return 'https://projecthive-backend.onrender.com';
     };
 
     /**

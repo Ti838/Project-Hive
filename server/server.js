@@ -58,7 +58,15 @@ async function startServer() {
 
     // Socket.IO
     const io = new Server(server, {
-      cors: { origin: allowedOrigins, credentials: true },
+      cors: {
+        origin: (origin, callback) => {
+          if (!origin) return callback(null, true);
+          const ok = allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin);
+          if (ok) callback(null, true);
+          else callback(new Error('Socket CORS blocked: ' + origin));
+        },
+        credentials: true,
+      },
       transports: ['websocket', 'polling'],
       pingTimeout: 60000,
       pingInterval: 25000,

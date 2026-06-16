@@ -802,7 +802,9 @@
       // Socket.IO real-time activity status
       function initSocket() {
         try {
-          const socket = io('/', { auth: { token: TK }, transports: ['websocket', 'polling'] });
+          const SOCKET_URL = ['localhost','127.0.0.1'].includes(location.hostname)
+            ? '/' : 'https://projecthive-backend.onrender.com';
+          const socket = io(SOCKET_URL, { auth: { token: TK }, transports: ['websocket', 'polling'] });
           socket.on('status:update', data => {
             const { userId, status } = data;
             document.querySelectorAll(`.status-indicator-container[data-user-id="${userId}"]`).forEach(container => {
