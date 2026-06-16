@@ -22,6 +22,7 @@ import friendsRoutes from './routes/friends.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { adminDevRouter } from './routes/admin.routes.js';
 import { adminLogin } from './controllers/admin.auth.controller.js';
+import postsRoutes from './routes/posts.routes.js';
 
 const app = express();
 
@@ -132,6 +133,7 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
+app.use('/api', postsRoutes);   // feed, posts, reactions, comments
 // ── Dedicated Admin Auth — MUST be before adminRoutes (no auth guard here) ──
 app.post('/api/admin/auth/login', adminLogin);
 

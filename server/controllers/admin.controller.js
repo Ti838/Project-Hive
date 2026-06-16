@@ -164,3 +164,46 @@ export async function updateFlags(req, res) {
   console.log('[Admin] System flags updated:', FLAGS);
   res.json({ message: 'System flags updated', flags: FLAGS });
 }
+
+// ── Posts ──────────────────────────────────────────────────────────────────────
+
+// GET /api/admin/posts
+export async function getAdminPosts(req, res, next) {
+  try {
+    const { skip = 0, limit = 200, search = '' } = req.query;
+    let q = supabaseAdmin
+      .from('posts')
+      .select(`
+        id, content, post_type, created_at,
+        author:users!author_id(id, first_name, last_name, email, university)
+      `, { count: 'exact' });
+    if (search) q = q.ilike('content', `%${search}%`);
+    const { data: posts, error, count } = await q
+      .range(+skip, +skip + +limit - 1)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    const result = (posts || []).map(p => ({
+      id: p.id,
+      content: p.content,
+      postType: p.post_type,
+      createdAt: p.created_at,
+      author: p.author ? {
+        id: p.author.id,
+        firstName: p.author.first_name,
+        lastName: p.author.last_name,
+        email: p.author.email,
+        university: p.author.university,
+      } : null,
+    }));
+    res.json({ posts: result, total: count || 0 });
+  } catch (err) { next(err); }
+}
+
+// DELETE /api/admin/posts/:id
+export async function deleteAdminPost(req, res, next) {
+  try {
+    await supabaseAdmin.from('posts').delete().eq('id', req.params.id);
+    res.json({ message: 'Post deleted' });
+  } catch (err) { next(err); }
+}
+
