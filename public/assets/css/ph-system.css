@@ -495,8 +495,78 @@ body {
 }
 .ph-mob-overlay.open { display: block; opacity: 1; }
 
-/* ---- Responsive ---- */
+/* ════════════════════════════════════════════
+   Mobile — Premium Responsive Styles
+   ════════════════════════════════════════════ */
+
+/* ── Bottom Navigation Bar ── */
+#ph-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: rgba(14, 15, 28, 0.92);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  z-index: 60;
+  padding: 0 8px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  align-items: center;
+  justify-content: space-around;
+  gap: 4px;
+}
+html:not(.dark) #ph-bottom-nav {
+  background: rgba(255,255,255,0.94);
+  border-top: 1px solid rgba(0,0,0,0.08);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.08);
+}
+.ph-bn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  min-width: 44px;
+  min-height: 52px;
+  border-radius: 12px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.18s;
+  padding: 6px 4px;
+  color: rgba(255,255,255,0.45);
+  font-family: 'Inter', sans-serif;
+  position: relative;
+}
+html:not(.dark) .ph-bn-item { color: rgba(0,0,0,0.4); }
+.ph-bn-item svg { flex-shrink: 0; transition: transform 0.18s; }
+.ph-bn-item span { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; }
+.ph-bn-item.active {
+  color: #818cf8;
+}
+html:not(.dark) .ph-bn-item.active { color: #6366f1; }
+.ph-bn-item.active svg {
+  transform: translateY(-1px);
+  filter: drop-shadow(0 0 6px rgba(129,140,248,0.7));
+}
+.ph-bn-item.active::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 50%; transform: translateX(-50%);
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: rgba(99,102,241,0.15);
+}
+.ph-bn-item:active { transform: scale(0.92); }
+
 @media (max-width: 768px) {
+  /* Show bottom nav on mobile */
+  #ph-bottom-nav { display: flex; }
+
   /* Sidebar slides off-screen */
   #ph-sidebar {
     transform: translateX(-100%);
@@ -505,15 +575,20 @@ body {
   }
   #ph-sidebar.open { transform: translateX(0); }
   .ph-sb-close-btn { display: flex !important; }
-  .ph-hamburger { display: flex !important; }
+  .ph-hamburger { display: none !important; }  /* bottom nav replaces hamburger */
 
-  /* Page layout */
-  .ph-main { margin-left: 0 !important; }
-  .ph-page { margin-left: 0 !important; }
-  .ph-content { padding: 14px; }
+  /* Page layout — add bottom padding for the nav bar */
+  .ph-main { margin-left: 0 !important; padding-bottom: 72px; }
+  .ph-page { margin-left: 0 !important; padding-bottom: 72px; }
+  .ph-content { padding: 16px; }
 
-  /* Topbar */
-  .ph-topbar { padding: 0 16px; height: 56px; }
+  /* Topbar — cleaner on mobile */
+  .ph-topbar {
+    padding: 0 16px;
+    height: 56px;
+    background: var(--ph-bg) !important;
+    border-bottom: 1px solid var(--ph-border);
+  }
 
   /* Fix Tailwind-based page offsets */
   main[class*="ml-"],
@@ -522,34 +597,49 @@ body {
   main[style*="margin-left"] { margin-left: 0 !important; }
   header[class*="left-"] { left: 0 !important; width: 100% !important; }
 
-  /* Stat cards */
+  /* Make tailwind pages also get bottom padding */
+  div[class*="ml-[260px]"] { padding-bottom: 72px; }
+
+  /* Stat cards — 2 column grid */
   .ph-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
   .ph-stat-card { padding: 16px 14px; }
-  .ph-stat-num { font-size: 22px; }
-  .ph-stat-icon { width: 38px; height: 38px; font-size: 16px; }
+  .ph-stat-num { font-size: 24px; }
+  .ph-stat-icon { width: 40px; height: 40px; font-size: 18px; }
 
-  /* Buttons — larger touch targets */
-  .ph-btn { min-height: 44px; }
-  .ph-btn-sm { min-height: 38px; }
+  /* Buttons — large touch targets */
+  .ph-btn { min-height: 46px; border-radius: 12px; }
+  .ph-btn-sm { min-height: 40px; }
 
-  /* Cards */
+  /* Cards — full-width, proper padding */
   .ph-card, .ph-card-static {
-    border-radius: 14px;
+    border-radius: 16px;
+    margin-bottom: 12px;
   }
 
   /* Auth cards */
   .ph-auth-card {
     padding: 28px 20px;
-    border-radius: 20px;
+    border-radius: 24px;
     max-width: 100%;
   }
 
+  /* Inputs — larger on mobile */
+  .ph-input {
+    padding: 13px 14px;
+    font-size: 16px; /* prevents iOS zoom */
+    border-radius: 14px;
+  }
+
   /* Page header */
-  .ph-page-header { flex-direction: column; align-items: flex-start; }
+  .ph-page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .ph-page-title { font-size: 20px; }
 
   /* Tables — make scrollable */
   .ph-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .ph-table { min-width: 500px; }
+
+  /* Banner — compact on mobile */
+  .ph-banner { padding: 20px; border-radius: 18px; }
 }
 
 /* Very small phones */
@@ -559,7 +649,10 @@ body {
   .ph-stats { grid-template-columns: 1fr 1fr !important; gap: 10px; }
   .ph-stat-num { font-size: 20px; }
   .ph-auth-card { padding: 24px 16px; }
+  #ph-bottom-nav { height: 60px; }
+  .ph-bn-item span { font-size: 8px; }
 }
+
 
 
 /* ---- Scrollbar ---- */
