@@ -172,7 +172,7 @@ const PHSidebar = (() => {
       </button>
       <a href="${logoHref}" class="ph-sb-brand">
         <div class="ph-sb-logo">
-          <img src="${base}assets/svg/logo.png" alt="ProjectHive" onerror="this.parentElement.innerHTML='🐝'">
+          <img src="/assets/svg/logo.png" alt="ProjectHive" onerror="this.parentElement.innerHTML='🐝'">
         </div>
         <div class="ph-sb-brand-txt">
           <div class="ph-sb-brand-name">ProjectHive</div>
