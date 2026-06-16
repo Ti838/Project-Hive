@@ -52,69 +52,105 @@ export async function getConversations(req, res, next) {
   try {
     const myId = req.user.id;
 
-    // Fetch accepted friends
+    // 1. Fetch accepted friends
     const { data: friendsData, error: friendsError } = await supabaseAdmin
       .from('friends')
-      .select('friend:friend_id(id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major)')
+      .select('friend_id')
       .eq('user_id', myId);
 
     if (friendsError) throw friendsError;
 
-    const conversations = [];
+    // 2. Fetch all unique direct message room partners
+    const { data: msgRooms, error: msgRoomsError } = await supabaseAdmin
+      .from('messages')
+      .select('room_id')
+      .like('room_id', `%${myId}%`);
 
-    for (const row of (friendsData || [])) {
-      const friend = row.friend;
-      if (!friend) continue;
+    if (msgRoomsError) throw msgRoomsError;
 
-      const roomId = [myId, friend.id].sort().join('_');
+    const partnerIds = new Set();
 
-      // Fetch last message
-      const { data: lastMsg } = await supabaseAdmin
-        .from('messages')
-        .select('*')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      // Fetch unread count
-      const { data: msgs } = await supabaseAdmin
-        .from('messages')
-        .select('id, sender_id, read_by')
-        .eq('room_id', roomId)
-        .neq('sender_id', myId);
-
-      const unreadCount = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId)).length;
-
-      conversations.push({
-        _id: roomId,
-        friendId: friend.id,
-        friend: {
-          _id: friend.id,
-          id: friend.id,
-          firstName: friend.first_name,
-          lastName: friend.last_name,
-          avatar: friend.avatar,
-          avatarColor: friend.avatar_color,
-          onlineStatus: friend.online_status,
-          lastSeen: friend.last_seen,
-          university: friend.university,
-          major: friend.major
-        },
-        lastMessage: lastMsg ? {
-          content: lastMsg.content,
-          sender: lastMsg.sender_id,
-          createdAt: lastMsg.created_at
-        } : null,
-        unreadCount
+    if (friendsData) {
+      friendsData.forEach(row => {
+        if (row.friend_id) partnerIds.add(row.friend_id);
       });
     }
 
-    // Sort by last message time
+    if (msgRooms) {
+      msgRooms.forEach(m => {
+        if (m.room_id && m.room_id.includes('_')) {
+          const parts = m.room_id.split('_');
+          const other = parts.find(p => p !== myId);
+          if (other) partnerIds.add(other);
+        }
+      });
+    }
+
+    const conversations = [];
+
+    if (partnerIds.size > 0) {
+      // Fetch details of all conversation partners
+      const { data: partners, error: partnersError } = await supabaseAdmin
+        .from('users')
+        .select('id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major')
+        .in('id', Array.from(partnerIds));
+
+      if (partnersError) throw partnersError;
+
+      for (const friend of (partners || [])) {
+        const roomId = [myId, friend.id].sort().join('_');
+
+        // Fetch last message
+        const { data: lastMsg } = await supabaseAdmin
+          .from('messages')
+          .select('*')
+          .eq('room_id', roomId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        // Fetch unread count
+        const { data: msgs } = await supabaseAdmin
+          .from('messages')
+          .select('id, sender_id, read_by')
+          .eq('room_id', roomId)
+          .neq('sender_id', myId);
+
+        const unreadCount = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId)).length;
+
+        conversations.push({
+          _id: roomId,
+          friendId: friend.id,
+          friend: {
+            _id: friend.id,
+            id: friend.id,
+            firstName: friend.first_name,
+            lastName: friend.last_name,
+            avatar: friend.avatar,
+            avatarColor: friend.avatar_color,
+            onlineStatus: friend.online_status,
+            lastSeen: friend.last_seen,
+            university: friend.university,
+            major: friend.major
+          },
+          lastMessage: lastMsg ? {
+            content: lastMsg.content,
+            sender: lastMsg.sender_id,
+            createdAt: lastMsg.created_at
+          } : null,
+          unreadCount
+        });
+      }
+    }
+
+    // Sort by last message time (recent first), then by name
     conversations.sort((a, b) => {
       const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
       const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
-      return timeB - timeA;
+      if (timeA !== timeB) return timeB - timeA;
+      const nameA = `${a.friend?.firstName || ''} ${a.friend?.lastName || ''}`.toLowerCase();
+      const nameB = `${b.friend?.firstName || ''} ${b.friend?.lastName || ''}`.toLowerCase();
+      return nameA.localeCompare(nameB);
     });
 
     res.json({ conversations });
