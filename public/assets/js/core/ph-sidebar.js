@@ -238,6 +238,15 @@ const PHSidebar = (() => {
       document.documentElement.classList.add('dark');
     }
 
+    // ── Keep-alive: ping Render backend so it never sleeps ──
+    if (!IS_DEV) {
+      const BACKEND = 'https://projecthive-backend.onrender.com';
+      const ping = () => fetch(BACKEND + '/health', { signal: AbortSignal.timeout(8000) }).catch(() => {});
+      ping(); // immediate ping on page load
+      // Re-ping every 8 minutes (Render sleeps after 15min of inactivity)
+      setInterval(ping, 8 * 60 * 1000);
+    }
+
     const doRender = () => {
       render(active, base);
       buildOverlay();
