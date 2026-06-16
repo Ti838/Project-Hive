@@ -706,59 +706,17 @@ const PHSidebar = (() => {
 
   // ══ Page Transition System ══════════════════════════════════════════════════
   function initTransitions() {
-    // 1) Always scroll to top on every page load
+    // Scroll to top on every page load
     window.scrollTo({ top: 0, behavior: 'instant' });
-
-    // 2) Create overlay div once
-    if (!document.getElementById('ph-transition-overlay')) {
-      const ov = document.createElement('div');
-      ov.id = 'ph-transition-overlay';
-      document.body.appendChild(ov);
-    }
-
-    // 3) Fade-in page content (opacity only — no translateY that shifts layout)
-    const main = document.querySelector('.ph-page, main, .ph-main, body > div:not(#ph-sidebar):not(#ph-transition-overlay):not(#ph-mob-overlay)');
-    if (main) main.classList.add('ph-page-ready');
-
-    // 4) Intercept internal <a> clicks — fade out before navigating
-    document.addEventListener('click', (e) => {
-      const a = e.target.closest('a[href]');
-      if (!a) return;
-      const href = a.getAttribute('href');
-      // Skip: external, hash-only, javascript:, target=_blank
-      if (!href || href.startsWith('http') || href.startsWith('#') ||
-          href.startsWith('javascript') || a.target === '_blank') return;
-      // Skip if already on same page
-      if (a.classList.contains('active')) return;
-
-      e.preventDefault();
-      const overlay = document.getElementById('ph-transition-overlay');
-      if (overlay) {
-        overlay.classList.add('active');
-        // Safety: if navigation fails, remove overlay after 1s
-        const safety = setTimeout(() => overlay.classList.remove('active'), 1000);
-        setTimeout(() => {
-          clearTimeout(safety);
-          window.location.href = href;
-        }, 200);
-      } else {
-        window.location.href = href;
-      }
-    }, true);
+    // No overlay/white-flash transition — navigate directly
   }
 
   function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
-    // Transition out before logout redirect
-    const overlay = document.getElementById('ph-transition-overlay');
-    if (overlay) {
-      overlay.classList.add('active');
-      setTimeout(() => { window.location.href = '/pages/auth/login.html'; }, 220);
-    } else {
-      window.location.href = '/pages/auth/login.html';
-    }
+    localStorage.removeItem('ph-user-cache');
+    window.location.href = '/login';
   }
 
   function toggleTheme() {
