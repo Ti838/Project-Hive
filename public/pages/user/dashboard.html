@@ -764,10 +764,34 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   /* Load all dashboard data */
   async function load() {
     /* User info */
+    // Show cached data instantly to avoid blank/loading state
+    try {
+      const cached = localStorage.getItem('ph-user-cache');
+      if (cached) {
+        const u = JSON.parse(cached);
+        const fn = u.firstName || u.first_name || '', ln = u.lastName || u.last_name || '';
+        const name = (fn + (ln ? ' ' + ln : '')).trim() || 'Student';
+        const ini  = ((fn[0]||'')+(ln[0]||'')).toUpperCase() || '?';
+        const cols = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+        let h = 0; for (const c of name) h = c.charCodeAt(0) + ((h<<5)-h);
+        const el_fn  = document.getElementById('dash-greeting-name');
+        const el_wn  = document.getElementById('dash-welcome-name');
+        const el_un  = document.getElementById('dash-username');
+        const el_rol = document.getElementById('dash-role');
+        const av     = document.getElementById('dash-avatar');
+        if (el_fn)  el_fn.textContent  = fn || 'there';
+        if (el_wn)  el_wn.textContent  = fn || 'Student';
+        if (el_un)  el_un.textContent  = name;
+        if (el_rol) el_rol.textContent = (u.role || 'student').charAt(0).toUpperCase() + (u.role || 'student').slice(1);
+        if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
+      }
+    } catch(_) {}
+
     try {
       const r = await fetch(API_BASE + '/api/users/me', { headers: H });
       if (r.ok) {
         const u = await r.json();
+        localStorage.setItem('ph-user-cache', JSON.stringify(u)); // update cache
         const fn = u.firstName || '', ln = u.lastName || '';
         const name = (fn + (ln ? ' ' + ln : '')).trim() || 'Student';
         const ini  = ((fn[0]||'')+(ln[0]||'')).toUpperCase() || '?';
@@ -782,12 +806,12 @@ body, header, aside, main, section, .bg-surface-container-lowest,
         const av = document.getElementById('dash-avatar');
         if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
 
-        if (u.profileCompletion) {
-          const pct = Math.round(u.profileCompletion);
-          document.getElementById('dash-profile-pct').textContent = pct + '%';
-          document.getElementById('dash-profile-bar').style.width = pct + '%';
-          document.getElementById('dash-profile-step').textContent = `Step ${Math.ceil(pct/20)} of 5`;
-        }
+        // Profile completion — handle 0 correctly (was broken with `if (u.profileCompletion)`)
+        const pct = Math.round(u.profileCompletion ?? 0);
+        document.getElementById('dash-profile-pct').textContent  = pct + '%';
+        document.getElementById('dash-profile-bar').style.width  = pct + '%';
+        document.getElementById('dash-profile-step').textContent = pct === 0
+          ? 'Not started' : `Step ${Math.min(Math.ceil(pct / 20) || 1, 5)} of 5`;
       }
     } catch(e) {}
 

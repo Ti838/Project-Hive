@@ -64,11 +64,36 @@ const PHSidebar = (() => {
     return colors[Math.abs(h) % colors.length];
   }
 
+  // ── Set user UI elements ───────────────────────────────────────────────────
+  function setUserUI(u) {
+    const fn   = u.firstName || u.first_name || u.user?.firstName || 'Student';
+    const ln   = u.lastName  || u.last_name  || u.user?.lastName  || '';
+    const name = fn + (ln ? ' ' + ln : '');
+    const role = (u.role || 'student');
+    const nameEl = document.getElementById('ph-sb-name');
+    const avEl   = document.getElementById('ph-sb-av');
+    const roleEl = document.getElementById('ph-sb-role');
+    if (nameEl) nameEl.textContent = name;
+    if (roleEl) roleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+    if (avEl) {
+      avEl.textContent = getInitials(fn, ln);
+      avEl.style.background = getAvatarColor(name);
+    }
+    // Store name for call notifications
+    localStorage.setItem('ph-sb-name', name);
+  }
+
   async function loadUser(base) {
+    // 1. Show cached data INSTANTLY (no flash of "Loading...")
+    try {
+      const cached = localStorage.getItem('ph-user-cache');
+      if (cached) setUserUI(JSON.parse(cached));
+    } catch(_) {}
+
+    // 2. Fetch fresh data from API
     try {
       const tk = localStorage.getItem('access_token');
       if (!tk) return;
-      // Use Render URL in production
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
         ? '' : 'https://projecthive-backend.onrender.com';
       const r = await fetch(apiBase + '/api/users/me', {
@@ -76,20 +101,11 @@ const PHSidebar = (() => {
       });
       if (!r.ok) return;
       const u = await r.json();
-
-      const fn = u.firstName || u.user?.firstName || 'Student';
-      const ln = u.lastName  || u.user?.lastName  || '';
-      const name = fn + (ln ? ' ' + ln : '');
-
-      const nameEl = document.getElementById('ph-sb-name');
-      const avEl   = document.getElementById('ph-sb-av');
-      if (nameEl) nameEl.textContent = name;
-      if (avEl) {
-        avEl.textContent = getInitials(fn, ln);
-        avEl.style.background = getAvatarColor(name);
-      }
-    } catch(e) {}
+      localStorage.setItem('ph-user-cache', JSON.stringify(u)); // cache it
+      setUserUI(u);
+    } catch(_) {}
   }
+
 
   async function loadUnreadCount(base) {
     try {
@@ -126,13 +142,36 @@ const PHSidebar = (() => {
     const sidebar = document.getElementById('ph-sidebar');
     if (!sidebar) return;
 
+    // Logo goes to dashboard (not home)
+    const isAdminPage = window.location.pathname.includes('/admin/');
+    const logoHref = isAdminPage
+      ? base + 'pages/admin/dashboard.html'
+      : base + 'pages/user/dashboard.html';
+
+    // Show cached user instantly — no flash of '?' or 'Loading...'
+    let cachedName = 'Loading\u2026', cachedInitials = '?', cachedBg = '#6366f1', cachedRole = 'Student';
+    try {
+      const c = JSON.parse(localStorage.getItem('ph-user-cache') || 'null');
+      if (c) {
+        const fn = c.firstName || c.first_name || 'Student';
+        const ln = c.lastName  || c.last_name  || '';
+        cachedName = fn + (ln ? ' ' + ln : '');
+        cachedInitials = ((fn[0]||'') + (ln[0]||'')).toUpperCase() || '?';
+        cachedRole = (c.role || 'student');
+        cachedRole = cachedRole.charAt(0).toUpperCase() + cachedRole.slice(1);
+        const cols = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+        let h = 0; for (const ch of cachedName) h = ch.charCodeAt(0) + ((h << 5) - h);
+        cachedBg = cols[Math.abs(h) % cols.length];
+      }
+    } catch(_) {}
+
     sidebar.innerHTML = `
       <button class="ph-sb-close-btn" id="ph-sb-close" aria-label="Close menu" onclick="PHSidebar.closeDrawer()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
-      <a href="${base}index.html" class="ph-sb-brand">
+      <a href="${logoHref}" class="ph-sb-brand">
         <div class="ph-sb-logo">
           <img src="${base}assets/svg/logo.png" alt="ProjectHive" onerror="this.parentElement.innerHTML='🐝'">
         </div>
@@ -142,10 +181,10 @@ const PHSidebar = (() => {
         </div>
       </a>
       <div class="ph-sb-user">
-        <div class="ph-sb-av" id="ph-sb-av">${IS_DEV ? '🔧' : '?'}</div>
+        <div class="ph-sb-av" id="ph-sb-av" style="background:${cachedBg}">${IS_DEV ? '🔧' : cachedInitials}</div>
         <div style="min-width:0;">
-          <div class="ph-sb-user-name" id="ph-sb-name">${IS_DEV ? 'Dev Preview' : 'Loading…'}</div>
-          <div class="ph-sb-user-role" id="ph-sb-role">${IS_DEV ? '<span style="color:#f59e0b;font-size:10px;font-weight:700;letter-spacing:.05em">⚡ LIVE SERVER MODE</span>' : 'Student'}</div>
+          <div class="ph-sb-user-name" id="ph-sb-name">${IS_DEV ? 'Dev Preview' : cachedName}</div>
+          <div class="ph-sb-user-role" id="ph-sb-role">${IS_DEV ? '<span style="color:#f59e0b;font-size:10px;font-weight:700;letter-spacing:.05em">⚡ LIVE SERVER MODE</span>' : cachedRole}</div>
         </div>
       </div>
       <nav class="ph-sb-nav">${buildNav(navItems, active, base)}</nav>
