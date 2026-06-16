@@ -275,15 +275,18 @@ function tTab(f,btn){tf=f;btn.closest(".tabs").querySelectorAll(".tab").forEach(
 function rTeams(){
   const q=document.getElementById("tsrch")?.value.toLowerCase()||"";
   let list=AT;
-  if(tf==="open")list=list.filter(t=>!t.isClosed&&t.status!=="closed");
-  else if(tf==="closed")list=list.filter(t=>t.isClosed||t.status==="closed");
+  // Backend returns snake_case: is_closed (not isClosed)
+  if(tf==="open")list=list.filter(t=>!t.is_closed&&t.status!=="closed");
+  else if(tf==="closed")list=list.filter(t=>t.is_closed||t.status==="closed");
   if(q)list=list.filter(t=>(t.name||"").toLowerCase().includes(q));
   const tb=document.getElementById("ttb");if(!tb)return;
   if(!list.length){tb.innerHTML='<tr><td colspan="6"><div class="empty">No teams found</div></td></tr>';return}
   const delI='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
   tb.innerHTML=list.map(t=>{
-    const cl=t.isClosed||t.status==="closed";
-    return'<tr><td><div style="font-weight:700">'+t.name+'</div><div style="font-size:10px;color:var(--sub);margin-top:2px">'+(t.description||"").slice(0,50)+'</div></td><td style="font-size:11px">'+(t.members?.length||0)+'/'+t.maxMembers+'</td><td><span class="badge '+(cl?"closed":"open")+'">'+(cl?"Closed":"Open")+'</span></td><td style="font-size:11px;color:var(--sub)">'+t.category+'</td><td style="font-size:11px;color:var(--sub)">'+ago(t.createdAt)+'</td><td><button class="act r" title="Delete" onclick="delT(\''+t._id+'\',\''+t.name+'\')">'+delI+'</button></td></tr>'
+    const cl=t.is_closed||t.status==="closed";
+    const membCount=t.members?.length||t.member_count||0;
+    const maxMem=t.max_members||t.maxMembers||'∞';
+    return'<tr><td><div style="font-weight:700">'+t.name+'</div><div style="font-size:10px;color:var(--sub);margin-top:2px">'+(t.description||"").slice(0,50)+'</div></td><td style="font-size:11px">'+membCount+'/'+maxMem+'</td><td><span class="badge '+(cl?"closed":"open")+'">'+(cl?"Closed":"Open")+'</span></td><td style="font-size:11px;color:var(--sub)">'+t.category+'</td><td style="font-size:11px;color:var(--sub)">'+ago(t.created_at||t.createdAt)+'</td><td><button class="act r" title="Delete" onclick="delT(\''+t.id+'\'\,\''+t.name+'\')">'+delI+'</button></td></tr>'
   }).join("");
 }
 // ── Analytics Charts ──
