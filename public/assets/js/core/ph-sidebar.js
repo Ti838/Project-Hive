@@ -717,8 +717,7 @@ const PHSidebar = (() => {
     }
 
     // 3) Fade-in page content (opacity only — no translateY that shifts layout)
-    const main = document.querySelector('.ph-page, main, .ph-main,
-      body > div:not(#ph-sidebar):not(#ph-transition-overlay):not(#ph-mob-overlay)');
+    const main = document.querySelector('.ph-page, main, .ph-main, body > div:not(#ph-sidebar):not(#ph-transition-overlay):not(#ph-mob-overlay)');
     if (main) main.classList.add('ph-page-ready');
 
     // 4) Intercept internal <a> clicks — fade out before navigating
