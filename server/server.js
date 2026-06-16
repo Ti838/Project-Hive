@@ -14,6 +14,10 @@ import {
   handleLeaveRoom,
   handleSendMessage,
   handleTyping,
+  handleCallInitiate,
+  handleCallAccept,
+  handleCallDecline,
+  handleCallHangup,
 } from './services/socket.service.js';
 
 const PORT = process.env.PORT || 5000;
@@ -72,6 +76,12 @@ async function startServer() {
       socket.on('message:send',(data) => handleSendMessage(socket, io, data));
       socket.on('typing:start',(data) => handleTyping(socket, io, { ...data, isTyping: true }));
       socket.on('typing:stop', (data) => handleTyping(socket, io, { ...data, isTyping: false }));
+      
+      // Video Call Events
+      socket.on('call:initiate', (data) => handleCallInitiate(socket, data));
+      socket.on('call:accept',   (data) => handleCallAccept(socket, data));
+      socket.on('call:decline',  (data) => handleCallDecline(socket, data));
+      socket.on('call:hangup',   (data) => handleCallHangup(socket, data));
 
       socket.on('disconnect', (reason) => {
         handleLeaveRoom(socket);

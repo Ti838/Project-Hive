@@ -11,6 +11,7 @@
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="../../assets/js/core/ph-toast.js"></script>
 <script src="../../assets/js/core/ph-sidebar.js"></script>
+<script src="https://meet.jit.si/external_api.js"></script>
 <style>
 body{font-family:'Inter',sans-serif;overflow:hidden;}
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;vertical-align:middle;}
@@ -96,6 +97,9 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
         </div>
       </div>
 
+      <!-- Typing Indicator -->
+      <div id="typing-indicator" class="hidden text-[11px] text-indigo-500 dark:text-indigo-400 italic px-5 py-1 bg-gray-50 dark:bg-gray-950 shrink-0"></div>
+
       <!-- Input -->
       <div class="p-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex gap-2">
         <input id="msg-inp" type="text" placeholder="Type a message… (Enter to send)"
@@ -126,6 +130,40 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   </div>
 </div>
 
+<!-- Video Call Modal -->
+<div id="call-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex-col items-center justify-center">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl w-[90%] h-[90%] max-w-5xl flex flex-col shadow-2xl overflow-hidden relative">
+    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-950">
+      <h3 class="font-bold flex items-center gap-2 text-indigo-500">
+        <span class="material-symbols-outlined">video_call</span> Video Chat Room
+      </h3>
+      <button onclick="endCall()" class="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors">
+        <span class="material-symbols-outlined text-sm">call_end</span> End Call
+      </button>
+    </div>
+    <div id="jitsi-container" class="flex-1 w-full bg-black"></div>
+  </div>
+</div>
+
+<!-- Incoming Call Modal -->
+<div id="incoming-call-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center">
+  <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 w-[360px] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-gray-800 text-center">
+    <div class="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-500 animate-pulse mb-4">
+      <span class="material-symbols-outlined text-4xl">phone_in_talk</span>
+    </div>
+    <h3 class="font-bold text-lg mb-1" id="caller-name">Incoming Call...</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Your teammate is calling you</p>
+    <div class="flex gap-4 w-full">
+      <button onclick="declineCall()" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full transition-colors flex items-center justify-center gap-1.5">
+        <span class="material-symbols-outlined text-base">call_end</span> Decline
+      </button>
+      <button onclick="acceptCall()" class="flex-1 py-2.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full transition-colors flex items-center justify-center gap-1.5">
+        <span class="material-symbols-outlined text-base">call</span> Accept
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function(){
   /* Auth */
@@ -145,7 +183,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   function ini(f,l){return((f?.[0]||'')+(l?.[0]||'')).toUpperCase()||'?';}
   function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
-  let ME={},convs=[],allMsgs=[],activeConv=null,allUsers=[];
+  let ME={},convs=[],allMsgs=[],activeConv=null,allUsers=[],socket=null;
 
   /* Load self */
   fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
@@ -172,7 +210,10 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       const isActive=activeConv&&(activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
       return `<div class="conv-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-0.5${isActive?' active':''}"
         onclick='openConv(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
-        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+        <div class="relative shrink-0">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 status-dot ${f.onlineStatus === 'online' ? '' : 'hidden'}" data-user-dot="${f._id||f.id}"></span>
+        </div>
         <div class="flex-1 min-w-0">
           <div class="font-semibold text-sm truncate">${esc(name)}</div>
           <div class="text-xs text-gray-400 truncate">${esc(last.substring(0,40))}</div>
@@ -188,19 +229,53 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   /* Open conversation */
   window.openConv=function(conv){
-    activeConv=conv;renderConvs(convs);
+    if (activeConv && socket) {
+      socket.emit('leave:room');
+    }
+
+    activeConv=conv;
+    conv.unreadCount = 0;
+    renderConvs(convs);
+
     const f=conv.friend||{};
     const name=`${f.firstName||''} ${f.lastName||''}`.trim()||'User';
     const color=avC(name);
+    
     document.getElementById('chat-hdr').innerHTML=`
-      <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
-      <div>
-        <div class="font-bold text-sm">${esc(name)}</div>
-        <div class="text-xs text-green-500 flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Active now</div>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+        <div>
+          <div class="font-bold text-sm">${esc(name)}</div>
+          <div id="chat-hdr-status" class="text-xs ${f.onlineStatus==='online'?'text-green-500':'text-gray-400'} flex items-center gap-1">
+            <span class="w-1.5 h-1.5 ${f.onlineStatus==='online'?'bg-green-500':'bg-gray-400'} rounded-full"></span>
+            ${f.onlineStatus==='online'?'Active now':'Offline'}
+          </div>
+        </div>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <button id="video-call-btn" onclick="startCall()" class="w-9 h-9 text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined">video_call</span>
+        </button>
       </div>`;
+    
+    const tipEl = document.getElementById('typing-indicator');
+    if (tipEl) tipEl.classList.add('hidden');
+
     document.getElementById('msgs').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Loading…</div>`;
 
     const friendId=f._id||conv.friendId||conv._id;
+    
+    if (socket) {
+      socket.emit('join:room', { roomId: conv._id });
+    }
+
+    // Call read API
+    fetch(API_BASE+'/api/messages/read', {
+      method: 'POST',
+      headers: H,
+      body: JSON.stringify({ friendId })
+    }).catch(()=>{});
+
     fetch(API_BASE+`/api/friends/dm/${friendId}`,{headers:H})
       .then(r=>r.ok?r.json():[])
       .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
@@ -222,11 +297,26 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     document.getElementById('msgs').innerHTML=allMsgs.map(m=>{
       const mine=m.sender===ME?.id||m.sender?._id===ME?.id||m._tmp;
       const ts=new Date(m.createdAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      
+      let ticksHtml = '';
+      if (mine) {
+        const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+        const isSeen = m.read_by?.includes(friendId) || m.readBy?.includes(friendId);
+        if (isSeen) {
+          ticksHtml = `<span class="text-indigo-200 ml-1 font-bold text-xs" title="Seen">✓✓</span>`;
+        } else {
+          ticksHtml = `<span class="text-gray-300 ml-1 text-xs" title="Sent">✓</span>`;
+        }
+      }
+
       return `<div class="flex ${mine?'justify-end':'justify-start'} bubble-in">
         <div class="max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
           ${mine?'bg-indigo-500 text-white rounded-br-sm':'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm'}">
           ${esc(m.content)}
-          <div class="text-[10px] mt-1 opacity-60 text-right">${ts}</div>
+          <div class="text-[10px] mt-1 opacity-60 text-right flex items-center justify-end gap-1">
+            <span>${ts}</span>
+            ${ticksHtml}
+          </div>
         </div>
       </div>`;
     }).join('');
@@ -239,11 +329,32 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     const content=inp.value.trim();
     if(!content||!activeConv)return;
     inp.value='';
-    allMsgs.push({content,sender:ME?.id,createdAt:new Date().toISOString(),_tmp:true});
-    renderMsgs();
-    const f=activeConv.friend||{};
-    const receiverId=f._id||activeConv.friendId;
-    fetch(API_BASE+'/api/messages',{method:'POST',headers:H,body:JSON.stringify({receiverId,content})}).catch(()=>{});
+
+    const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+
+    if (socket) {
+      socket.emit('typing:stop', { roomId: activeConv._id });
+    }
+
+    if (!allMsgs.some(m => m._tmp && m.content === content)) {
+      allMsgs.push({
+        content,
+        sender: ME?.id,
+        createdAt: new Date().toISOString(),
+        _tmp: true,
+        read_by: [ME?.id]
+      });
+      renderMsgs();
+    }
+
+    fetch(API_BASE+'/api/messages',{
+      method:'POST',
+      headers:H,
+      body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id })
+    }).then(r => r.json()).then(newMsg => {
+      // replace _tmp with actual message if needed
+      loadConvs();
+    }).catch(()=>{});
   };
 
   /* New conv modal */
@@ -287,7 +398,8 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   window.startWith=function(uid,fn,ln){
     closeModal();
-    openConv({_id:uid,friendId:uid,friend:{_id:uid,firstName:fn,lastName:ln},lastMessage:null,unreadCount:0});
+    const roomId = [ME.id, uid].sort().join('_');
+    openConv({_id:roomId,friendId:uid,friend:{_id:uid,firstName:fn,lastName:ln},lastMessage:null,unreadCount:0});
   };
 
   /* Load conversations */
@@ -307,16 +419,205 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   /* Socket.IO real-time */
   try{
-    const socket=io('/',{auth:{token:TK},transports:['websocket','polling']});
-    socket.on('messageReceived',data=>{
-      const senderId=data.sender?._id||data.sender||data.senderId;
+    socket=io('/',{auth:{token:TK},transports:['websocket','polling']});
+    
+    socket.on('connect', () => {
+      if (activeConv) {
+        socket.emit('join:room', { roomId: activeConv._id });
+      }
+    });
+
+    socket.on('message:received',data=>{
+      const senderId=data.sender?.id||data.sender?._id||data.sender;
       const isSelf=senderId===ME?.id;
-      if(activeConv&&(senderId===(activeConv.friend?._id||activeConv.friendId)||isSelf)){
-        if(!isSelf){allMsgs.push({content:data.content,sender:senderId,createdAt:data.createdAt||new Date().toISOString()});renderMsgs();}
+      if(activeConv&&(data.roomId===activeConv._id || data.roomId===[ME.id, activeConv.friendId].sort().join('_'))){
+        if(!isSelf){
+          allMsgs.push({
+            content:data.content,
+            sender:senderId,
+            createdAt:data.createdAt||new Date().toISOString(),
+            read_by: data.read_by || [senderId]
+          });
+          renderMsgs();
+          
+          const friendId=activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
+          fetch(API_BASE+'/api/messages/read', {
+            method: 'POST',
+            headers: H,
+            body: JSON.stringify({ friendId })
+          }).catch(()=>{});
+        }
       }
       loadConvs();
     });
+
+    socket.on('user:typing', data => {
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      if (activeConv && data.userId === friendId) {
+        const friendName = `${activeConv.friend?.firstName || ''} ${activeConv.friend?.lastName || ''}`.trim() || 'Friend';
+        const tipEl = document.getElementById('typing-indicator');
+        if (tipEl) {
+          tipEl.textContent = `${friendName} is typing...`;
+          tipEl.classList.remove('hidden');
+        }
+      }
+    });
+
+    socket.on('user:stop-typing', data => {
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      if (activeConv && data.userId === friendId) {
+        const tipEl = document.getElementById('typing-indicator');
+        if (tipEl) {
+          tipEl.classList.add('hidden');
+        }
+      }
+    });
+
+    socket.on('status:update', data => {
+      const { userId, status } = data;
+      document.querySelectorAll(`[data-user-dot="${userId}"]`).forEach(dot => {
+        if (status === 'online') {
+          dot.classList.remove('hidden');
+        } else {
+          dot.classList.add('hidden');
+        }
+      });
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      if (activeConv && userId === friendId) {
+        const hdrStatus = document.getElementById('chat-hdr-status');
+        if (hdrStatus) {
+          hdrStatus.className = `text-xs ${status==='online'?'text-green-500':'text-gray-400'} flex items-center gap-1`;
+          hdrStatus.innerHTML = `<span class="w-1.5 h-1.5 ${status==='online'?'bg-green-500':'bg-gray-400'} rounded-full"></span>${status==='online'?'Active now':'Offline'}`;
+        }
+      }
+      convs.forEach(c => {
+        if (c.friend && (c.friend._id === userId || c.friend.id === userId)) {
+          c.friend.onlineStatus = status;
+        }
+      });
+    });
+
+    socket.on('call:incoming', data => {
+      activeCallRoom = data.roomId;
+      const callerNameEl = document.getElementById('caller-name');
+      if (callerNameEl) {
+        callerNameEl.textContent = `${data.callerName || 'Teammate'} is calling...`;
+      }
+      document.getElementById('incoming-call-modal').classList.replace('hidden', 'flex');
+    });
+
+    socket.on('call:accepted', data => {
+      showToast('Call accepted!', 'success');
+    });
+
+    socket.on('call:declined', data => {
+      showToast('Call declined', 'error');
+      endCall();
+    });
+
+    socket.on('call:hungup', data => {
+      showToast('Call ended', 'info');
+      if (jitsiApiInstance) {
+        jitsiApiInstance.dispose();
+        jitsiApiInstance = null;
+      }
+      document.getElementById('call-modal').classList.replace('flex', 'hidden');
+      activeCallRoom = null;
+    });
+
   }catch(e){}
+
+  // Handle typing state
+  let typingTimeout = null;
+  const inpEl = document.getElementById('msg-inp');
+  if (inpEl) {
+    inpEl.addEventListener('input', () => {
+      if (!activeConv || !socket) return;
+      socket.emit('typing:start', { roomId: activeConv._id });
+      
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        socket.emit('typing:stop', { roomId: activeConv._id });
+      }, 1500);
+    });
+  }
+
+  // ── Video Calling (Jitsi) ──
+  let jitsiApiInstance = null;
+  let activeCallRoom = null;
+
+  window.startCall = function() {
+    if (!activeConv) return;
+    const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+    const roomId = `ProjectHive-${[ME.id, friendId].sort().join('-')}`;
+    
+    // Notify the other user via Socket.IO
+    if (socket) {
+      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate' });
+    }
+    
+    activeCallRoom = roomId;
+    openJitsiFrame(roomId);
+  };
+
+  function openJitsiFrame(roomId) {
+    document.getElementById('call-modal').classList.replace('hidden', 'flex');
+    const container = document.getElementById('jitsi-container');
+    container.innerHTML = ''; // Clear previous Jitsi instances
+    
+    const domain = "meet.jit.si";
+    const options = {
+      roomName: roomId,
+      width: "100%",
+      height: "100%",
+      parentNode: container,
+      interfaceConfigOverwrite: {
+        SHOW_JITSI_WATERMARK: false,
+        SHOW_WATERMARK_FOR_GUESTS: false,
+      },
+      configOverwrite: {
+        prejoinPageEnabled: false,
+      }
+    };
+    jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
+  }
+
+  window.endCall = function() {
+    if (jitsiApiInstance) {
+      jitsiApiInstance.dispose();
+      jitsiApiInstance = null;
+    }
+    const modal = document.getElementById('call-modal');
+    if (modal) modal.classList.replace('flex', 'hidden');
+    
+    if (socket && activeCallRoom) {
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      socket.emit('call:hangup', { roomId: activeCallRoom, targetId: friendId });
+    }
+    activeCallRoom = null;
+  };
+
+  window.acceptCall = function() {
+    document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
+    if (activeCallRoom) {
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      if (socket) {
+        socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
+      }
+      openJitsiFrame(activeCallRoom);
+    }
+  };
+
+  window.declineCall = function() {
+    document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
+    if (activeCallRoom) {
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      if (socket) {
+        socket.emit('call:decline', { roomId: activeCallRoom, targetId: friendId });
+      }
+    }
+    activeCallRoom = null;
+  };
 })();
 </script>
 </body></html>

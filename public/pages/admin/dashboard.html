@@ -133,6 +133,10 @@ tr:hover td{background:rgba(99,102,241,.03)}
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
     <span>Projects</span><span class="badge-cnt" id="cnt-pr">—</span>
   </button>
+  <button class="sb-item" id="nav-po" onclick="nav('po',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Posts</span><span class="badge-cnt" id="cnt-po">—</span>
+  </button>
   <div class="sb-section">Insights</div>
   <button class="sb-item" id="nav-an" onclick="nav('an',this)">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
@@ -163,6 +167,35 @@ tr:hover td{background:rgba(99,102,241,.03)}
   </div>
 </div>
 <div class="main"><div class="topbar"><div class="topbar-left"><h1 id="pg-title">Control Center</h1></div><div class="topbar-right"><button class="btn" id="maint-btn" onclick="toggleMaint()" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button><button class="btn" onclick="loadAll()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div><div class="content"><div class="maint-banner" id="maint-banner"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div style="font-size:13px;font-weight:800;color:#f59e0b">Maintenance Mode Active</div><div style="font-size:11px;color:var(--sub);margin-top:2px">Site is in maintenance mode. Users will see a maintenance page.</div></div><button class="btn" style="margin-left:auto;border-color:#f59e0b;color:#f59e0b" onclick="toggleMaint()">Disable</button></div><div id="sec-ov" class="section"><div class="stat-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-n" id="st-u">—</div><div class="stat-l">Total Users</div><div class="stat-delta" style="color:var(--grn)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg><span id="st-u-d">—</span> new today</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="st-t">—</div><div class="stat-l">Teams</div><div class="stat-delta" style="color:var(--blu)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span id="st-t-d">—</span> active</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M3 10h18v11H3z"/><line x1="7" y1="15" x2="17" y2="15"/></svg></div><div class="stat-n" id="st-p">—</div><div class="stat-l">Projects</div><div class="stat-delta" style="color:var(--yel)">Total submitted</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(239,68,68,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div><div class="stat-n" id="st-b">—</div><div class="stat-l">Banned</div><div class="stat-delta" style="color:var(--red)">Users restricted</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Recent Members</div></div><div id="recent-wrap"><div class="empty"><span class="spin"></span></div></div></div></div>
+<div id="sec-po" class="section" style="display:none">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Post Moderation
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="srch" id="posrch" placeholder="Search posts…" oninput="rPostsMod()">
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Author</th>
+            <th>Post Content</th>
+            <th>Type</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="potb">
+          <tr><td colspan="5"><div class="empty"><span class="spin"></span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 <div id="sec-pr" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Project Management</div><div style="display:flex;gap:8px;align-items:center"><input class="srch" id="psrch" placeholder="Search projects…" oninput="rProjects()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Featured</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ptb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div>
 <div id="sec-us" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab active" onclick="uTab('all',this)">All</button><button class="tab" onclick="uTab('student',this)">Students</button><button class="tab" onclick="uTab('admin',this)">Admins</button><button class="tab" onclick="uTab('banned',this)">Banned</button></div><input class="srch" id="usrch" placeholder="Search users…" oninput="rUsers()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-tm" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Team Management</div><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab active" onclick="tTab('all',this)">All</button><button class="tab" onclick="tTab('open',this)">Open</button><button class="tab" onclick="tTab('closed',this)">Closed</button></div><input class="srch" id="tsrch" placeholder="Search teams…" oninput="rTeams()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-an" class="section" style="display:none"><div class="analytics-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="stat-n" id="an-u">—</div><div class="stat-l">Registered Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="stat-n" id="an-v">—</div><div class="stat-l">Verified Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="an-a">—</div><div class="stat-l">Admin Users</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>User Distribution by Role</div></div><div style="padding:20px"><div id="role-chart" class="chart-bars"></div><div id="role-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Team Status Breakdown</div></div><div style="padding:20px"><div id="team-chart" class="chart-bars"></div><div id="team-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div></div><div id="sec-sy" class="section" style="display:none"><div class="sys-grid"><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Controls</div><div class="sys-row"><div><div class="sys-label">Maintenance Mode</div><div class="sys-desc">Show maintenance page to all users</div></div><button class="toggle" id="maint-tog" onclick="toggleMaint()"></button></div><div class="sys-row"><div><div class="sys-label">User Registration</div><div class="sys-desc" id="reg-desc">New users can register</div></div><button class="toggle on" id="reg-tog" onclick="toggleReg()"></button></div><div class="sys-row"><div><div class="sys-label">Email Verification</div><div class="sys-desc">Require email verification on signup</div></div><button class="toggle on" id="ev-tog"></button></div></div><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Platform Health</div><div class="sys-row"><div><div class="sys-label">Backend API</div><div class="sys-desc">Render.com server status</div></div><span class="badge active" id="api-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking…</span></div><div class="sys-row"><div><div class="sys-label">Database</div><div class="sys-desc">Supabase PostgreSQL</div></div><span class="badge active" id="db-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking…</span></div><div class="sys-row"><div><div class="sys-label">Admin Email</div><div class="sys-desc">Configured in environment</div></div><span class="badge active"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Set</span></div></div></div></div></div></div></div>
 <script>
@@ -174,7 +207,7 @@ const H={"Authorization":"Bearer "+TK,"Content-Type":"application/json"};
 const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6","#ef4444","#14b8a6"];
 function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
 function ago(d){if(!d)return"—";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
-let AU=[],AT=[],AP=[],uf="all",tf="all";
+let AU=[],AT=[],AP=[],APo=[],uf="all",tf="all";
 // ── Theme ──
 function initTheme(){
   const dark=document.documentElement.getAttribute("data-theme")==="dark";
@@ -193,15 +226,16 @@ function toggleTheme(){
 }
 // ── Nav ──
 function nav(id,btn){
-  const secs=["ov","us","tm","pr","an","sy"];
+  const secs=["ov","us","tm","pr","po","an","sy"];
   secs.forEach(s=>{const el=document.getElementById("sec-"+s);if(el)el.style.display=s===id?"":"none"});
   document.querySelectorAll(".sb-item").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  const titles={ov:"Control Center",us:"User Management",tm:"Team Management",pr:"Project Management",an:"Analytics",sy:"System"};
+  const titles={ov:"Control Center",us:"User Management",tm:"Team Management",pr:"Project Management",po:"Post Moderation",an:"Analytics",sy:"System"};
   const el=document.getElementById("pg-title");if(el)el.textContent=titles[id];
   if(id==="sy"){checkHealth();const mb=document.getElementById("maint-btn");if(mb)mb.style.display="none";}
   else{const mb=document.getElementById("maint-btn");if(mb)mb.style.display="";}
   if(id==="an")renderAnalytics();
+  if(id==="po")rPostsMod();
 }
 // ── Health ──
 async function checkHealth(){
@@ -217,26 +251,28 @@ async function checkHealth(){
 // ── Load ──
 async function loadAll(){
   try{
-    const[st,us,tm,pr]=await Promise.all([
+    const[st,us,tm,pr,po]=await Promise.all([
       fetch(API+"/api/admin/stats",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({})),
       fetch(API+"/api/admin/users?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch(API+"/api/admin/teams?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(API+"/api/admin/projects?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[])
+      fetch(API+"/api/admin/projects?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API+"/api/admin/posts?limit=500",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({}))
     ]);
     AU=Array.isArray(us)?us:(us.users||[]);
     AT=Array.isArray(tm)?tm:(tm.teams||[]);
     AP=Array.isArray(pr)?pr:(pr.projects||[]);
+    APo=po.posts || [];
     const bn=AU.filter(u=>u.isBanned).length;
     const vf=u=>{const e=document.getElementById(u[0]);if(e)e.textContent=u[1]};
     [["st-u",AU.length],["st-t",AT.length],["st-p",st.totalProjects||"—"],["st-b",bn],
      ["st-u-d",AU.filter(u=>{const d=new Date(u.createdAt);return Date.now()-d<86400000}).length],
      ["st-t-d",AT.filter(t=>!t.isClosed&&t.status!=="closed").length],
-     ["cnt-u",AU.length],["cnt-t",AT.length],["cnt-pr",AP.length],
+     ["cnt-u",AU.length],["cnt-t",AT.length],["cnt-pr",AP.length],["cnt-po",APo.length],
      ["an-u",AU.length],["an-v",AU.filter(u=>u.isVerified).length],["an-a",AU.filter(u=>u.role==="admin").length]
     ].forEach(vf);
     // Sync flags from backend
     if(st.flags){const f=st.flags;syncFlags(f);}
-    rRecent();rUsers();rTeams();rProjects();
+    rRecent();rUsers();rTeams();rProjects();rPostsMod();
   }catch(e){console.error(e)}
 }
 // ── Render Recent ──
@@ -343,6 +379,33 @@ async function delP(id,nm){
 async function featureP(id,feat){
   const r=await fetch(API+'/api/admin/projects/'+id+'/feature',{method:'PATCH',headers:H,body:JSON.stringify({featured:feat})});
   if(r.ok)loadAll();else alert('Failed');
+}
+// ── Posts Moderation ──
+function rPostsMod(){
+  const q=(document.getElementById('posrch')?.value||'').toLowerCase();
+  let list=APo;
+  if(q)list=list.filter(p=>(p.content||'').toLowerCase().includes(q) || (p.author? `${p.author.firstName||''} ${p.author.lastName||''}`.toLowerCase() : '').includes(q));
+  const tb=document.getElementById('potb');if(!tb)return;
+  if(!list.length){tb.innerHTML='<tr><td colspan="5"><div class="empty">No posts found</div></td></tr>';return}
+  const delI='<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+  tb.innerHTML=list.map(p=>{
+    const id=p.id||p._id;
+    const authorName = p.author ? `${p.author.firstName||''} ${p.author.lastName||''}`.trim() : 'Anonymous';
+    const postType = p.postType || 'text';
+    const contentPreview = p.content ? (p.content.length > 80 ? p.content.substring(0, 80) + '...' : p.content) : '(No Content)';
+    return `<tr>
+      <td><div style="font-weight:700">${authorName}</div><div style="font-size:10px;color:var(--sub)">${p.author?.email||''}</div></td>
+      <td style="max-width: 300px; word-break: break-word;">${contentPreview}</td>
+      <td><span class="badge active">${postType}</span></td>
+      <td style="font-size:11px;color:var(--sub)">${ago(p.createdAt)}</td>
+      <td><button class="act r" title="Delete Post" onclick="delPostMod('${id}')">${delI}</button></td>
+    </tr>`;
+  }).join('');
+}
+async function delPostMod(id){
+  if(!confirm('Delete this post? This cannot be undone.'))return;
+  const r=await fetch(API+'/api/admin/posts/'+id,{method:'DELETE',headers:H});
+  if(r.ok)loadAll();else alert('Failed to delete post');
 }
 // ── System flags sync ──
 function syncFlags(f){

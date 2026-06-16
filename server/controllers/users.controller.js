@@ -235,3 +235,67 @@ export async function changePassword(req, res, next) {
     res.json({ message: 'Password updated successfully. Please sign in again.' });
   } catch (err) { next(err); }
 }
+
+// ─── GLOBAL SEARCH (Ctrl+K) ──────────────────────────────────────────────────
+export async function globalSearch(req, res, next) {
+  try {
+    const { q } = req.query;
+    if (!q || !q.trim()) {
+      return res.json({ users: [], teams: [], projects: [], posts: [] });
+    }
+    const queryStr = q.trim();
+
+    const [usersRes, teamsRes, projectsRes, postsRes] = await Promise.all([
+      supabaseAdmin.from('users')
+        .select('id, first_name, last_name, avatar, avatar_color, university')
+        .eq('is_public', true)
+        .eq('is_banned', false)
+        .or(`first_name.ilike.%${queryStr}%,last_name.ilike.%${queryStr}%,university.ilike.%${queryStr}%`)
+        .limit(5),
+      supabaseAdmin.from('teams')
+        .select('id, name, category, description')
+        .or(`name.ilike.%${queryStr}%,category.ilike.%${queryStr}%,description.ilike.%${queryStr}%`)
+        .limit(5),
+      supabaseAdmin.from('projects')
+        .select('id, title, category, description')
+        .or(`title.ilike.%${queryStr}%,category.ilike.%${queryStr}%,description.ilike.%${queryStr}%`)
+        .limit(5),
+      supabaseAdmin.from('posts')
+        .select('id, content, post_type')
+        .ilike('content', `%${queryStr}%`)
+        .limit(5)
+    ]);
+
+    res.json({
+      users: (usersRes.data || []).map(u => ({
+        id: u.id,
+        title: `${u.first_name || ''} ${u.last_name || ''}`.trim(),
+        subtitle: u.university || 'Student',
+        avatar: u.avatar,
+        avatarColor: u.avatar_color,
+        type: 'user'
+      })),
+      teams: (teamsRes.data || []).map(t => ({
+        id: t.id,
+        title: t.name,
+        subtitle: t.category || 'Team',
+        type: 'team'
+      })),
+      projects: (projectsRes.data || []).map(p => ({
+        id: p.id,
+        title: p.title,
+        subtitle: p.category || 'Project',
+        type: 'project'
+      })),
+      posts: (postsRes.data || []).map(po => ({
+        id: po.id,
+        title: po.content ? (po.content.substring(0, 50) + '...') : 'Post',
+        subtitle: po.post_type || 'General',
+        type: 'post'
+      }))
+    });
+  } catch (err) {
+    console.error('[ProjectHive] Global search error:', err);
+    next(err);
+  }
+}

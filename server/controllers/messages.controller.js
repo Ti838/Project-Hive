@@ -47,3 +47,100 @@ export async function saveMessage(req, res, next) {
     res.status(201).json(message);
   } catch (err) { next(err); }
 }
+
+export async function getConversations(req, res, next) {
+  try {
+    const myId = req.user.id;
+
+    // Fetch accepted friends
+    const { data: friendsData, error: friendsError } = await supabaseAdmin
+      .from('friends')
+      .select('friend:friend_id(id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major)')
+      .eq('user_id', myId);
+
+    if (friendsError) throw friendsError;
+
+    const conversations = [];
+
+    for (const row of (friendsData || [])) {
+      const friend = row.friend;
+      if (!friend) continue;
+
+      const roomId = [myId, friend.id].sort().join('_');
+
+      // Fetch last message
+      const { data: lastMsg } = await supabaseAdmin
+        .from('messages')
+        .select('*')
+        .eq('room_id', roomId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Fetch unread count
+      const { data: msgs } = await supabaseAdmin
+        .from('messages')
+        .select('id, sender_id, read_by')
+        .eq('room_id', roomId)
+        .neq('sender_id', myId);
+
+      const unreadCount = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId)).length;
+
+      conversations.push({
+        _id: roomId,
+        friendId: friend.id,
+        friend: {
+          _id: friend.id,
+          id: friend.id,
+          firstName: friend.first_name,
+          lastName: friend.last_name,
+          avatar: friend.avatar,
+          avatarColor: friend.avatar_color,
+          onlineStatus: friend.online_status,
+          lastSeen: friend.last_seen,
+          university: friend.university,
+          major: friend.major
+        },
+        lastMessage: lastMsg ? {
+          content: lastMsg.content,
+          sender: lastMsg.sender_id,
+          createdAt: lastMsg.created_at
+        } : null,
+        unreadCount
+      });
+    }
+
+    // Sort by last message time
+    conversations.sort((a, b) => {
+      const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    res.json({ conversations });
+  } catch (err) { next(err); }
+}
+
+export async function markAsRead(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const { friendId } = req.body;
+    if (!friendId) return res.status(400).json({ error: 'Missing friendId' });
+
+    const roomId = [myId, friendId].sort().join('_');
+
+    const { data: msgs } = await supabaseAdmin
+      .from('messages')
+      .select('id, read_by')
+      .eq('room_id', roomId)
+      .neq('sender_id', myId);
+
+    const toUpdate = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId));
+    for (const msg of toUpdate) {
+      const newReadBy = [...(msg.read_by || []), myId];
+      await supabaseAdmin.from('messages').update({ read_by: newReadBy }).eq('id', msg.id);
+    }
+
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+}

@@ -98,3 +98,39 @@ export function broadcastNotification(io, recipientId, notification) {
 export function broadcastToRoom(io, roomId, event, data) {
   if (_io) _io.to(roomId).emit(event, data);
 }
+
+export function handleCallInitiate(socket, data) {
+  const { roomId, targetId, callerName } = data;
+  if (!roomId || !targetId) return;
+  const targetSocket = getUserSocket(targetId);
+  if (targetSocket) {
+    targetSocket.emit('call:incoming', { roomId, callerName, callerId: socket.userId });
+  }
+}
+
+export function handleCallAccept(socket, data) {
+  const { roomId, targetId } = data;
+  if (!roomId || !targetId) return;
+  const targetSocket = getUserSocket(targetId);
+  if (targetSocket) {
+    targetSocket.emit('call:accepted', { roomId });
+  }
+}
+
+export function handleCallDecline(socket, data) {
+  const { roomId, targetId } = data;
+  if (!roomId || !targetId) return;
+  const targetSocket = getUserSocket(targetId);
+  if (targetSocket) {
+    targetSocket.emit('call:declined', { roomId });
+  }
+}
+
+export function handleCallHangup(socket, data) {
+  const { roomId, targetId } = data;
+  if (!roomId || !targetId) return;
+  const targetSocket = getUserSocket(targetId);
+  if (targetSocket) {
+    targetSocket.emit('call:hungup', { roomId });
+  }
+}

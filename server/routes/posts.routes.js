@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.js';
 import {
   getFeed, createPost, deletePost,
   reactToPost, getComments, addComment, deleteComment
@@ -8,7 +8,7 @@ import {
 const router = Router();
 
 // All routes require authentication
-router.use(authenticate);
+router.use(authMiddleware);
 
 // Feed
 router.get('/feed', getFeed);

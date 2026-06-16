@@ -119,6 +119,14 @@ export async function getDMHistory(req, res, next) {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+
+    // Mark messages sent by the friend as read
+    const toUpdate = (messages || []).filter(m => m.sender_id !== myId && (!m.read_by || !m.read_by.includes(myId)));
+    for (const msg of toUpdate) {
+      const newReadBy = [...(msg.read_by || []), myId];
+      await supabaseAdmin.from('messages').update({ read_by: newReadBy }).eq('id', msg.id);
+    }
+
     res.json({ messages: (messages || []).reverse(), roomId });
   } catch (err) { next(err); }
 }

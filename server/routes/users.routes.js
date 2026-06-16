@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/me', authMiddleware, usersController.getCurrentUser);
 router.get('/search', optionalAuthMiddleware, usersController.searchUsers);
+router.get('/global-search', authMiddleware, usersController.globalSearch);
 router.get('/:id', optionalAuthMiddleware, usersController.getUserProfile);
 
 router.put('/me', authMiddleware, usersController.updateProfile);
