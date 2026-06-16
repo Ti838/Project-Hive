@@ -217,3 +217,26 @@ export async function getTeamRequests(req, res, next) {
     res.json(requests || []);
   } catch (err) { next(err); }
 }
+
+// ─── GET MY TEAMS ─────────────────────────────────────────────────────────────
+export async function getMyTeams(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { data: memberships, error } = await supabaseAdmin
+      .from('team_members')
+      .select(`
+        role, joined_at,
+        team:teams(
+          id, name, description, category, tags, is_open, max_size, created_at,
+          leader:leader_id(id, first_name, last_name, avatar, avatar_color),
+          team_members(user_id, role, users(id, first_name, last_name, avatar, avatar_color))
+        )
+      `)
+      .eq('user_id', userId)
+      .order('joined_at', { ascending: false });
+
+    if (error) throw error;
+    const teams = (memberships || []).map(m => ({ ...m.team, myRole: m.role, joinedAt: m.joined_at }));
+    res.json({ teams, total: teams.length });
+  } catch (err) { next(err); }
+}

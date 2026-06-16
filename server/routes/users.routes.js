@@ -4,6 +4,7 @@ import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
+router.get('/', authMiddleware, usersController.listUsers);  // GET /api/users?limit=N
 router.get('/me', authMiddleware, usersController.getCurrentUser);
 router.get('/search', optionalAuthMiddleware, usersController.searchUsers);
 router.get('/global-search', authMiddleware, usersController.globalSearch);

@@ -7,6 +7,8 @@ const router = express.Router();
 // Team CRUD
 router.post('/', authMiddleware, teamsController.createTeam);
 router.get('/', optionalAuthMiddleware, teamsController.getTeams);
+// ⚠️ my-teams MUST be before /:id to avoid being caught as an ID
+router.get('/my-teams', authMiddleware, teamsController.getMyTeams);
 router.get('/:id', optionalAuthMiddleware, teamsController.getTeamDetail);
 router.put('/:id', authMiddleware, teamsController.updateTeam);
 

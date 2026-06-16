@@ -51,7 +51,30 @@ export async function getCurrentUser(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// ─── GET USER PROFILE (by id) ────────────────────────────────────────────────
+// ─── LIST USERS (GET /api/users?limit=N&search=q) ────────────────────────────
+export async function listUsers(req, res, next) {
+  try {
+    const { limit = 20, skip = 0, search } = req.query;
+    let q = supabaseAdmin
+      .from('users')
+      .select('id, first_name, last_name, avatar, avatar_color, university, major, online_status, last_seen, role', { count: 'exact' })
+      .eq('is_verified', true)
+      .eq('is_banned', false)
+      .neq('id', req.user.id);
+
+    if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,university.ilike.%${search}%`);
+
+    const { data: users, error, count } = await q
+      .order('online_status', { ascending: false }) // online users first
+      .order('last_seen', { ascending: false })
+      .range(+skip, +skip + +limit - 1);
+
+    if (error) throw error;
+    res.json({ users: (users || []).map(toClient), total: count || 0 });
+  } catch (err) { next(err); }
+}
+
+
 export async function getUserProfile(req, res, next) {
   try {
     const { id } = req.params;
