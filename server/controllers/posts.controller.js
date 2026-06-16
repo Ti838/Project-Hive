@@ -23,7 +23,7 @@ function normPost(p) {
   };
 }
 
-// GET /api/feed — own + friends' posts, latest first
+// GET /api/feed — own + friends' posts (+ all users if sparse), latest first
 export async function getFeed(req, res, next) {
   try {
     const userId = req.user.id;
@@ -42,8 +42,8 @@ export async function getFeed(req, res, next) {
     );
     const authorIds = [userId, ...friendIds];
 
-    // Fetch posts with author info
-    const { data: posts, error } = await supabaseAdmin
+    // Fetch friend posts first
+    let { data: posts, error } = await supabaseAdmin
       .from('posts')
       .select(`
         id, content, post_type, created_at, updated_at, author_id,
@@ -54,6 +54,23 @@ export async function getFeed(req, res, next) {
       .range(offset, offset + +limit - 1);
 
     if (error) throw error;
+
+    // If fewer than 5 friend posts → also fetch posts from all users (Discover mode)
+    if ((posts || []).length < 5 && offset === 0) {
+      const { data: allPosts } = await supabaseAdmin
+        .from('posts')
+        .select(`
+          id, content, post_type, created_at, updated_at, author_id,
+          author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        `)
+        .not('author_id', 'in', `(${authorIds.join(',')})`)
+        .order('created_at', { ascending: false })
+        .limit(+limit - (posts || []).length);
+
+      posts = [...(posts || []), ...(allPosts || [])].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at)
+      );
+    }
 
     // Fetch reactions & comment counts for these posts
     const postIds = (posts || []).map(p => p.id);
