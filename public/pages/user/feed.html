@@ -328,14 +328,14 @@
   <script>
     (function(){
       const TK = localStorage.getItem('access_token');
-      if (!TK) { window.location.href = '../auth/login.html'; return; }
+      if (!TK) { window.location.href = '/login'; return; }
       try {
         const p = JSON.parse(atob(TK.split('.')[1]));
         if (p.exp && Date.now() >= p.exp * 1000) {
           localStorage.removeItem('access_token');
-          window.location.href = '../auth/login.html'; return;
+          window.location.href = '/login'; return;
         }
-      } catch(e) { window.location.href = '../auth/login.html'; return; }
+      } catch(e) { window.location.href = '/login'; return; }
 
       const H = { Authorization: 'Bearer ' + TK, 'Content-Type': 'application/json' };
       const API_BASE = ['localhost','127.0.0.1'].includes(location.hostname)

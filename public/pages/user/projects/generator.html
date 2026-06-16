@@ -304,11 +304,11 @@
 (function(){
   /* ── Auth ── */
   const TK = localStorage.getItem('access_token');
-  if(!TK){location.href='../../auth/login.html';return;}
+  if(!TK){location.href='/login';return;}
   try{
     const p=JSON.parse(atob(TK.split('.')[1]));
-    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='../../auth/login.html';return;}
-  }catch(e){location.href='../../auth/login.html';return;}
+    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='/login';return;}
+  }catch(e){location.href='/login';return;}
   PHSidebar.init('generator','../../../');
 
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};

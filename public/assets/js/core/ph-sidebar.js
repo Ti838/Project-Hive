@@ -13,17 +13,18 @@ const PHSidebar = (() => {
   window.PH_DEV_MODE = IS_DEV;
 
   const NAV = [
-    { group: null,      href: 'pages/user/dashboard.html',          key: 'dashboard',    icon: `<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>`, fill: 'currentColor', label: 'Dashboard' },
-    { group: null,      href: 'pages/user/feed.html',               key: 'feed',         icon: `<path d="M2 3h20v18H2V3zm2 2v14h16V5H4zm2 3h12v2H6V8zm0 4h12v2H6v-2zm0 4h8v2H6v-2z"/>`, fill: 'currentColor', label: 'Feed' },
-    { group: null,      href: 'pages/user/profile/edit.html',        key: 'profile',      icon: `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`, label: 'Profile' },
-    { group: null,      href: 'pages/user/messages.html',            key: 'messages',     icon: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`, label: 'Messages' },
-    { group: null,      href: 'pages/user/notifications.html',       key: 'notifications',icon: `<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>`, label: 'Notifications' },
-    { group: 'Discover',href: 'pages/user/teams.html',               key: 'teams',        icon: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`, label: 'Find Teams' },
-    { group: null,      href: 'pages/user/people.html',              key: 'people',       icon: `<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>`, fill: 'currentColor', label: 'Find People' },
-    { group: null,      href: 'pages/user/projects/showcase.html',   key: 'showcase',     icon: `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`, label: 'Showcase' },
-    { group: null,      href: 'pages/user/projects/generator.html',  key: 'generator',    icon: `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`, label: 'AI Generator' },
-    { group: 'Account', href: 'pages/user/settings.html',            key: 'settings',     icon: `<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>`, label: 'Settings' },
+    { group: null,      href: '/dashboard',     key: 'dashboard',    icon: `<path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>`, fill: 'currentColor', label: 'Dashboard' },
+    { group: null,      href: '/feed',          key: 'feed',         icon: `<path d="M2 3h20v18H2V3zm2 2v14h16V5H4zm2 3h12v2H6V8zm0 4h12v2H6v-2zm0 4h8v2H6v-2z"/>`, fill: 'currentColor', label: 'Feed' },
+    { group: null,      href: '/profile',       key: 'profile',      icon: `<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>`, label: 'Profile' },
+    { group: null,      href: '/messages',      key: 'messages',     icon: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`, label: 'Messages' },
+    { group: null,      href: '/notifications', key: 'notifications',icon: `<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>`, label: 'Notifications' },
+    { group: 'Discover',href: '/teams',         key: 'teams',        icon: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`, label: 'Find Teams' },
+    { group: null,      href: '/people',        key: 'people',       icon: `<path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>`, fill: 'currentColor', label: 'Find People' },
+    { group: null,      href: '/showcase',      key: 'showcase',     icon: `<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>`, label: 'Showcase' },
+    { group: null,      href: '/generator',     key: 'generator',    icon: `<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>`, label: 'AI Generator' },
+    { group: 'Account', href: '/settings',      key: 'settings',     icon: `<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>`, label: 'Settings' },
   ];
+
 
 
 
@@ -43,7 +44,8 @@ const PHSidebar = (() => {
         lastGroup = item.group;
       }
       const isActive = item.key === active;
-      const href = base + item.href;
+      // Absolute paths (start with /) are used as-is; relative paths get base prepended
+      const href = item.href.startsWith('/') ? item.href : base + item.href;
       html += `
         <a href="${href}" class="ph-sb-link${isActive ? ' active' : ''}" data-key="${item.key}">
           ${svgIcon(item.icon, item.fill || 'none')}
@@ -142,11 +144,8 @@ const PHSidebar = (() => {
     const sidebar = document.getElementById('ph-sidebar');
     if (!sidebar) return;
 
-    // Logo goes to dashboard (not home)
-    const isAdminPage = window.location.pathname.includes('/admin/');
-    const logoHref = isAdminPage
-      ? base + 'pages/admin/dashboard.html'
-      : base + 'pages/user/dashboard.html';
+    // Logo always goes to clean /dashboard URL
+    const logoHref = '/dashboard';
 
     // Show cached user instantly — no flash of '?' or 'Loading...'
     let cachedName = 'Loading\u2026', cachedInitials = '?', cachedBg = '#6366f1', cachedRole = 'Student';

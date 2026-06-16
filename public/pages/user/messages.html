@@ -176,11 +176,11 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 (function(){
   /* Auth */
   const TK = localStorage.getItem('access_token');
-  if(!TK){window.location.href='../auth/login.html';return;}
+  if(!TK){window.location.href='/login';return;}
   try{
     const p=JSON.parse(atob(TK.split('.')[1]));
-    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');window.location.href='../auth/login.html';return;}
-  }catch(e){window.location.href='../auth/login.html';return;}
+    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');window.location.href='/login';return;}
+  }catch(e){window.location.href='/login';return;}
 
   PHSidebar.init('messages','../../');
 

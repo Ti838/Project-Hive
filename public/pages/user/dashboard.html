@@ -711,14 +711,14 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 (function () {
   /* Auth guard */
   const TK = localStorage.getItem('access_token');
-  if (!TK) { window.location.href = '../auth/login.html'; return; }
+  if (!TK) { window.location.href = '/login'; return; }
   try {
     const p = JSON.parse(atob(TK.split('.')[1]));
     if (p.exp && Date.now() >= p.exp * 1000) {
       localStorage.removeItem('access_token');
-      window.location.href = '../auth/login.html'; return;
+      window.location.href = '/login'; return;
     }
-  } catch(e) { window.location.href = '../auth/login.html'; return; }
+  } catch(e) { window.location.href = '/login'; return; }
 
   const H = { Authorization: 'Bearer ' + TK };
   const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://projecthive-backend.onrender.com';

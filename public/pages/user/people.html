@@ -110,7 +110,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
 <script>
 (function(){
   const TK=localStorage.getItem('access_token');
-  if(!TK){location.href='../auth/login.html';return;}
+  if(!TK){location.href='/login';return;}
   PHSidebar.init('people','../../');
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
   const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';

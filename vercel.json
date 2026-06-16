@@ -37,17 +37,21 @@
         { "key": "Cache-Control", "value": "public, max-age=86400" }
       ]
     }
-
   ],
-  "redirects": [
-    { "source": "/login",              "destination": "/pages/auth/login.html",        "permanent": false },
-    { "source": "/register",           "destination": "/pages/auth/register.html",     "permanent": false },
-    { "source": "/dashboard",          "destination": "/pages/user/dashboard.html",    "permanent": false },
-    { "source": "/profile",            "destination": "/pages/user/profile/edit.html", "permanent": false },
-    { "source": "/teams",              "destination": "/pages/user/teams.html",         "permanent": false },
-    { "source": "/projects",           "destination": "/pages/user/projects/showcase.html", "permanent": false },
-    { "source": "/admin",              "destination": "/pages/admin/login.html",        "permanent": false },
-    { "source": "/admin/dashboard",    "destination": "/pages/admin/dashboard.html",    "permanent": false }
+  "rewrites": [
+    { "source": "/login",         "destination": "/pages/auth/login.html" },
+    { "source": "/register",      "destination": "/pages/auth/register.html" },
+    { "source": "/dashboard",     "destination": "/pages/user/dashboard.html" },
+    { "source": "/feed",          "destination": "/pages/user/feed.html" },
+    { "source": "/messages",      "destination": "/pages/user/messages.html" },
+    { "source": "/notifications", "destination": "/pages/user/notifications.html" },
+    { "source": "/people",        "destination": "/pages/user/people.html" },
+    { "source": "/teams",         "destination": "/pages/user/teams.html" },
+    { "source": "/profile",       "destination": "/pages/user/profile/edit.html" },
+    { "source": "/settings",      "destination": "/pages/user/settings.html" },
+    { "source": "/showcase",      "destination": "/pages/user/projects/showcase.html" },
+    { "source": "/generator",     "destination": "/pages/user/projects/generator.html" },
+    { "source": "/admin",         "destination": "/pages/admin/login.html" },
+    { "source": "/admin/dashboard", "destination": "/pages/admin/dashboard.html" }
   ]
 }
-
