@@ -209,3 +209,46 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER users_updated_at    BEFORE UPDATE ON users    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER teams_updated_at    BEFORE UPDATE ON teams    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 CREATE TRIGGER projects_updated_at BEFORE UPDATE ON projects FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ─── POSTS ───────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS posts (
+  id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  author_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+  content       TEXT NOT NULL,
+  post_type     VARCHAR(50) DEFAULT 'general',
+  image_url     TEXT,
+  link_metadata JSONB,
+  created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ─── POST REACTIONS ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS post_reactions (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id    UUID REFERENCES posts(id) ON DELETE CASCADE,
+  user_id    UUID REFERENCES users(id) ON DELETE CASCADE,
+  type       VARCHAR(50) NOT NULL,
+  UNIQUE(post_id, user_id)
+);
+
+-- ─── POST COMMENTS ───────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS post_comments (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  post_id    UUID REFERENCES posts(id) ON DELETE CASCADE,
+  author_id  UUID REFERENCES users(id) ON DELETE CASCADE,
+  content    TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Row Level Security
+ALTER TABLE posts          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE post_reactions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE post_comments  ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "service_role_all_posts"     ON posts          FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "service_role_all_reactions" ON post_reactions FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "service_role_all_comments"  ON post_comments  FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+-- Triggers
+CREATE TRIGGER posts_updated_at BEFORE UPDATE ON posts FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import {
   getFeed, createPost, deletePost,
-  reactToPost, getComments, addComment, deleteComment, getPostById
+  reactToPost, getComments, addComment, deleteComment, getPostById, scrapeMetadata
 } from '../controllers/posts.controller.js';
 
 const router = Router();
@@ -12,6 +12,9 @@ router.use(authMiddleware);
 
 // Feed
 router.get('/feed', getFeed);
+
+// Utilities
+router.get('/utils/scrape-metadata', scrapeMetadata);
 
 // Posts
 router.post('/posts', createPost);

@@ -8,6 +8,8 @@ function normPost(p) {
     postType: p.post_type,
     createdAt: p.created_at,
     updatedAt: p.updated_at,
+    imageUrl: p.image_url || null,
+    linkMetadata: p.link_metadata || null,
     author: p.author ? {
       id: p.author.id,
       firstName: p.author.first_name,
@@ -46,7 +48,7 @@ export async function getFeed(req, res, next) {
     let { data: posts, error } = await supabaseAdmin
       .from('posts')
       .select(`
-        id, content, post_type, created_at, updated_at, author_id,
+        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
         author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
       `)
       .in('author_id', authorIds)
@@ -60,7 +62,7 @@ export async function getFeed(req, res, next) {
       const { data: allPosts } = await supabaseAdmin
         .from('posts')
         .select(`
-          id, content, post_type, created_at, updated_at, author_id,
+          id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
           author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
         `)
         .not('author_id', 'in', `(${authorIds.join(',')})`)
@@ -112,17 +114,25 @@ export async function getFeed(req, res, next) {
 // POST /api/posts — create a post
 export async function createPost(req, res, next) {
   try {
-    const { content, postType = 'general' } = req.body;
+    const { content, postType = 'general', imageUrl = null, linkMetadata = null } = req.body;
     if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
 
     const validTypes = ['general', 'achievement', 'project_update', 'looking_for_team'];
     if (!validTypes.includes(postType)) return res.status(400).json({ error: 'Invalid post type' });
 
+    const insertData = {
+      author_id: req.user.id,
+      content: content.trim(),
+      post_type: postType
+    };
+    if (imageUrl) insertData.image_url = imageUrl;
+    if (linkMetadata) insertData.link_metadata = linkMetadata;
+
     const { data: post, error } = await supabaseAdmin
       .from('posts')
-      .insert({ author_id: req.user.id, content: content.trim(), post_type: postType })
+      .insert(insertData)
       .select(`
-        id, content, post_type, created_at, author_id,
+        id, content, post_type, created_at, author_id, image_url, link_metadata,
         author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
       `)
       .single();
@@ -262,7 +272,7 @@ export async function getPostById(req, res, next) {
     const { data: post, error } = await supabaseAdmin
       .from('posts')
       .select(`
-        id, content, post_type, created_at, updated_at, author_id,
+        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
         author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
       `)
       .eq('id', postId)
@@ -294,4 +304,80 @@ export async function getPostById(req, res, next) {
     });
   } catch (err) { next(err); }
 }
+
+// GET /api/utils/scrape-metadata — scrape OpenGraph tags from any URL
+export async function scrapeMetadata(req, res, next) {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'URL is required' });
+
+    // Add protocol if missing
+    let targetUrl = url.trim();
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      targetUrl = 'https://' + targetUrl;
+    }
+
+    const response = await fetch(targetUrl, {
+      headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36' 
+      },
+      signal: AbortSignal.timeout(5000)
+    });
+
+    if (!response.ok) {
+      return res.status(422).json({ error: 'Failed to fetch the target URL' });
+    }
+
+    const html = await response.text();
+
+    // Helper to extract meta content
+    const getMetaTagContent = (htmlStr, propertyOrName) => {
+      const regex = new RegExp(`<meta[^>]*(?:property|name)=["']${propertyOrName}["'][^>]*content=["']([^"']*)["']`, 'i');
+      const match = htmlStr.match(regex);
+      if (match) return match[1];
+
+      const altRegex = new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*(?:property|name)=["']${propertyOrName}["']`, 'i');
+      const altMatch = htmlStr.match(altRegex);
+      return altMatch ? altMatch[1] : null;
+    };
+
+    // Title parsing
+    let title = getMetaTagContent(html, 'og:title') || getMetaTagContent(html, 'twitter:title');
+    if (!title) {
+      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+      title = titleMatch ? titleMatch[1] : '';
+    }
+
+    // Description parsing
+    let description = getMetaTagContent(html, 'og:description') || getMetaTagContent(html, 'description') || getMetaTagContent(html, 'twitter:description') || '';
+
+    // Image parsing
+    let image = getMetaTagContent(html, 'og:image') || getMetaTagContent(html, 'twitter:image') || '';
+
+    // Resolve relative image path if needed
+    if (image && !/^https?:\/\//i.test(image)) {
+      try {
+        const base = new URL(targetUrl);
+        image = new URL(image, base.origin).href;
+      } catch (e) {}
+    }
+
+    // Domain name extraction
+    let domain = '';
+    try {
+      domain = new URL(targetUrl).hostname;
+    } catch(e) {}
+
+    res.json({
+      title: title?.trim() || domain,
+      description: description?.trim() || '',
+      image: image || '',
+      url: targetUrl,
+      domain
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to scrape metadata: ' + err.message });
+  }
+}
+
 
