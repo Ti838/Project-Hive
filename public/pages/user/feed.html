@@ -891,16 +891,53 @@
         </div>`;
       }
 
+      let feedPage = 1;
+      let feedLoading = false;
+      let hasMoreFeed = true;
+
       // Load Feed List
       async function loadFeed() {
+        feedPage = 1;
+        hasMoreFeed = true;
+        feedLoading = false;
+        const container = document.getElementById('feed-list');
+        container.innerHTML = `
+          <div class="bg-surface-container-lowest p-6 rounded-2xl border border-surface-variant animate-pulse">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-10 h-10 bg-surface-container rounded-full"></div>
+              <div class="flex-1">
+                <div class="h-4 bg-surface-container rounded w-1/3 mb-2"></div>
+                <div class="h-3 bg-surface-container rounded w-1/4"></div>
+              </div>
+            </div>
+            <div class="h-4 bg-surface-container rounded w-full mb-3"></div>
+            <div class="h-4 bg-surface-container rounded w-5/6"></div>
+          </div>
+        `;
+        await fetchFeedPage(1, false);
+      }
+
+      async function fetchFeedPage(page, append = false) {
+        if (feedLoading) return;
+        feedLoading = true;
+        
+        const sentry = document.getElementById('feed-load-more-sentry');
+        if (sentry) sentry.classList.remove('hidden');
+
         try {
-          const r = await fetch(API_BASE + '/api/feed', { headers: H });
+          const limit = 15;
+          const r = await fetch(API_BASE + `/api/feed?page=${page}&limit=${limit}`, { headers: H });
           if (r.ok) {
             const data = await r.json();
             const posts = data.posts || [];
             const container = document.getElementById('feed-list');
 
-            if (!posts.length) {
+            if (posts.length < limit) {
+              hasMoreFeed = false;
+              if (sentry) sentry.classList.add('hidden');
+            }
+
+            if (!posts.length && !append) {
               container.innerHTML = `<div class="bg-surface-container-lowest p-10 rounded-2xl border border-surface-variant text-center text-on-surface-variant feed-card-shadow">
                 <span class="material-symbols-outlined text-4xl text-outline mb-2">forum</span>
                 <p class="font-medium text-sm">Your feed is empty.</p>
@@ -909,15 +946,48 @@
               return;
             }
 
-            container.innerHTML = posts.map(p => renderPostCardHtml(p)).join('');
+            const cardsHtml = posts.map(p => renderPostCardHtml(p)).join('');
+            if (append) {
+              if (sentry) {
+                sentry.insertAdjacentHTML('beforebegin', cardsHtml);
+              } else {
+                container.insertAdjacentHTML('beforeend', cardsHtml);
+              }
+            } else {
+              container.innerHTML = cardsHtml + `<div id="feed-load-more-sentry" class="h-10 flex items-center justify-center text-xs text-on-surface-variant mt-4 ${!hasMoreFeed ? 'hidden' : ''}"><span class="animate-pulse">Loading older posts...</span></div>`;
+              setupInfiniteScrollObserver();
+            }
           }
         } catch(e) {
-          document.getElementById('feed-list').innerHTML = `<div class="bg-surface-container-lowest p-10 rounded-2xl border border-surface-variant text-center text-on-surface-variant feed-card-shadow">
-            <span class="material-symbols-outlined text-4xl text-error mb-2">cloud_off</span>
-            <p class="font-medium text-sm">Failed to load feed</p>
-            <p class="text-xs text-outline mt-1">Please try again later.</p>
-          </div>`;
+          if (!append) {
+            document.getElementById('feed-list').innerHTML = `<div class="bg-surface-container-lowest p-10 rounded-2xl border border-surface-variant text-center text-on-surface-variant feed-card-shadow">
+              <span class="material-symbols-outlined text-4xl text-error mb-2">cloud_off</span>
+              <p class="font-medium text-sm">Failed to load feed</p>
+              <p class="text-xs text-outline mt-1">Please try again later.</p>
+            </div>`;
+          }
+        } finally {
+          feedLoading = false;
         }
+      }
+
+      let infiniteScrollObserver = null;
+      function setupInfiniteScrollObserver() {
+        if (infiniteScrollObserver) {
+          infiniteScrollObserver.disconnect();
+        }
+
+        const sentry = document.getElementById('feed-load-more-sentry');
+        if (!sentry) return;
+
+        infiniteScrollObserver = new IntersectionObserver((entries) => {
+          if (entries[0].isIntersecting && !feedLoading && hasMoreFeed) {
+            feedPage++;
+            fetchFeedPage(feedPage, true);
+          }
+        }, { threshold: 0.1 });
+
+        infiniteScrollObserver.observe(sentry);
       }
 
       // Handles loading a shared post directly
