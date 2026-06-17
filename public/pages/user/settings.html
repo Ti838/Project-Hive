@@ -98,7 +98,7 @@
     btn.innerHTML=`<span style="font-family:'Material Symbols Outlined';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Saving…`;btn.disabled=true;
     try{
       const r=await fetch(API_BASE+"/api/users/me",{method:"PATCH",headers:H,body:JSON.stringify({firstName:document.getElementById("s-fn").value.trim(),lastName:document.getElementById("s-ln").value.trim(),university:document.getElementById("s-uni").value.trim(),bio:document.getElementById("s-bio").value.trim()})});
-      r.ok?PHToast?.success("Account saved! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>"):(async()=>{const d=await r.json();PHToast?.error(d.message||"Failed");})();
+      r.ok?PHToast?.success('Account saved! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>'):(async()=>{const d=await r.json();PHToast?.error(d.message||"Failed");})();
     }catch(e){PHToast?.error("Server offline");}
     btn.innerHTML=`<span style="font-family:'Material Symbols Outlined';font-size:18px">save</span>Save Changes`;btn.disabled=false;
   };
@@ -112,7 +112,7 @@
     const btn=document.getElementById("btn-pw");btn.innerHTML="<span style=\"font-family:'Material Symbols Outlined'\">progress_activity</span> Updating…";btn.disabled=true;
     try{
       const r=await fetch(API_BASE+"/api/users/me/password",{method:"PATCH",headers:H,body:JSON.stringify({currentPassword:document.getElementById("s-op").value,newPassword:np})});
-      r.ok?(PHToast?.success("Password updated! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>"),this.reset()):(async()=>{const d=await r.json();PHToast?.error(d.message||"Failed");})();
+      r.ok?(PHToast?.success('Password updated! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>'),this.reset()):(async()=>{const d=await r.json();PHToast?.error(d.message||"Failed");})();
     }catch(e){PHToast?.error("Server offline");}
     btn.innerHTML=`<span style="font-family:'Material Symbols Outlined';font-size:18px">lock_reset</span>Update Password`;btn.disabled=false;
   };
