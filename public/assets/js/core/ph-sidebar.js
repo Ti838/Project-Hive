@@ -47,7 +47,7 @@ const PHSidebar = (() => {
       // Absolute paths (start with /) are used as-is; relative paths get base prepended
       const href = item.href.startsWith('/') ? item.href : base + item.href;
       html += `
-        <a href="${href}" class="ph-sb-link${isActive ? ' active' : ''}" data-key="${item.key}">
+        <a href="${href}" class="ph-sb-link${isActive ? ' active' : ''}" data-key="${item.key}" title="${item.label}">
           ${svgIcon(item.icon, item.fill || 'none')}
           <span>${item.label}</span>
         </a>`;
@@ -170,6 +170,11 @@ const PHSidebar = (() => {
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
+      <button class="ph-sb-collapse-btn" id="ph-sb-collapse-btn" onclick="PHSidebar.toggleCollapse()" aria-label="Toggle sidebar collapse" title="Toggle Sidebar">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
       <a href="${logoHref}" class="ph-sb-brand">
         <div class="ph-sb-logo">
           <img src="/assets/svg/logo.png" alt="ProjectHive" onerror="this.parentElement.innerHTML='🐝'">
@@ -194,13 +199,13 @@ const PHSidebar = (() => {
           <svg class="ph-theme-svg-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <span class="ph-sb-theme-label" id="ph-sb-theme-label">Light Mode</span>
         </button>
-        <button class="ph-sb-signout" onclick="PHSidebar.logout()">
+        <button class="ph-sb-signout" onclick="PHSidebar.logout()" title="Sign Out">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
             <line x1="21" y1="12" x2="9" y2="12"/>
           </svg>
-          Sign Out
+          <span>Sign Out</span>
         </button>
       </div>`;
 
@@ -235,6 +240,12 @@ const PHSidebar = (() => {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark' || (!savedTheme && matchMedia('(prefers-color-scheme:dark)').matches)) {
       document.documentElement.classList.add('dark');
+    }
+
+    // Collapse init
+    const isCollapsed = localStorage.getItem('ph-sidebar-collapsed') === 'true';
+    if (isCollapsed && window.innerWidth > 768) {
+      document.documentElement.classList.add('sidebar-collapsed');
     }
 
     // ── Keep-alive: ping Render backend so it never sleeps ──
@@ -706,9 +717,92 @@ const PHSidebar = (() => {
 
   // ══ Page Transition System ══════════════════════════════════════════════════
   function initTransitions() {
-    // Scroll to top on every page load
     window.scrollTo({ top: 0, behavior: 'instant' });
-    // No overlay/white-flash transition — navigate directly
+
+    // 1. Create a progress bar if not exists
+    let pb = document.getElementById('ph-progress-bar');
+    if (!pb) {
+      pb = document.createElement('div');
+      pb.id = 'ph-progress-bar';
+      document.body.appendChild(pb);
+    }
+    
+    // Inject transition CSS dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+      body {
+        transition: opacity 0.22s ease-in-out !important;
+      }
+      body.ph-page-fadeout {
+        opacity: 0 !important;
+      }
+      #ph-progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--ac, #6366f1) 0%, #a855f7 50%, var(--ac, #6366f1) 100%);
+        background-size: 200% 100%;
+        animation: ph-progress-pulse 2s infinite linear;
+        z-index: 999999;
+        width: 0;
+        opacity: 0;
+        transition: width 0.4s cubic-bezier(0.1, 0.8, 0.1, 1), opacity 0.2s ease-out;
+        box-shadow: 0 0 8px var(--ac, #6366f1);
+      }
+      @keyframes ph-progress-pulse {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 200% 0%; }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Initial page load: fade in body smoothly
+    document.body.style.opacity = '0';
+    requestAnimationFrame(() => {
+      document.body.style.opacity = '1';
+    });
+
+    // 2. Intercept local link clicks for smooth fadeout + progress animation
+    document.addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+
+      const href = link.getAttribute('href');
+      // Only transition actual local pages (skip hashes, JS functions, or target="_blank")
+      if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.target === '_blank') return;
+      if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return; // ignore modifier clicks
+
+      try {
+        const url = new URL(href, window.location.href);
+        if (url.origin !== window.location.origin) return; // same origin only
+        
+        e.preventDefault();
+        
+        // Show progress bar
+        pb.style.transition = 'width 0.4s cubic-bezier(0.1, 0.8, 0.1, 1)';
+        pb.style.opacity = '1';
+        pb.style.width = '75%';
+        
+        // Fade out current body
+        document.body.classList.add('ph-page-fadeout');
+        
+        // Navigate to the link after the body completes fade-out (200ms)
+        setTimeout(() => {
+          pb.style.width = '100%';
+          window.location.href = href;
+        }, 200);
+      } catch (err) {}
+    });
+
+    // In case browser back/forward cache is used, remove the fadeout class on page show
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) {
+        document.body.classList.remove('ph-page-fadeout');
+        pb.style.opacity = '0';
+        pb.style.width = '0';
+      }
+    });
   }
 
   function logout() {
@@ -719,11 +813,10 @@ const PHSidebar = (() => {
     window.location.href = '/login';
   }
 
-  function toggleTheme() {
-    const dark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
-    syncThemeBtn();
+  function toggleCollapse() {
+    const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+    localStorage.setItem('ph-sidebar-collapsed', collapsed ? 'true' : 'false');
   }
 
-  return { init, logout, toggleTheme, openDrawer, closeDrawer };
+  return { init, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse };
 })();

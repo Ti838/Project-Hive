@@ -105,10 +105,106 @@ tr:hover td{background:rgba(99,102,241,.03)}
 .maint-banner{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:none;align-items:center;gap:12px}
 .maint-banner.show{display:flex}
 /* ── Analytics ── */
-.analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px}
+/* ── Admin Collapsible Sidebar Styles ── */
+.sb {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s, border-color 0.25s !important;
+  position: relative;
+}
+.main {
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+@media (min-width: 769px) {
+  /* Collapse Toggle Button for Admin */
+  .sb-collapse-btn {
+    position: absolute;
+    top: 26px;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--sb);
+    border: 1.5px solid var(--bd);
+    color: var(--sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    z-index: 100;
+    transition: all 0.2s ease;
+  }
+  .sb-collapse-btn:hover {
+    background: var(--ac);
+    color: #fff;
+    border-color: var(--ac);
+    transform: scale(1.1);
+  }
+  .sb-collapse-btn svg {
+    transition: transform 0.3s ease;
+  }
+  .sidebar-collapsed .sb-collapse-btn svg {
+    transform: rotate(180deg);
+  }
+
+  /* Collapsed layout overrides for admin */
+  .sidebar-collapsed .sb {
+    width: 70px !important;
+  }
+  
+  /* Smoothly shrink and fade labels for admin */
+  .sidebar-collapsed .sb-brand-name,
+  .sidebar-collapsed .sb-badge,
+  .sidebar-collapsed .sb-section,
+  .sidebar-collapsed .sb-item span,
+  .sidebar-collapsed .badge-cnt,
+  .sidebar-collapsed #th-lbl,
+  .sidebar-collapsed #th-tog {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    pointer-events: none;
+    transition: opacity 0.15s ease, width 0.15s ease;
+  }
+
+  /* Center brand, navigation items, footer */
+  .sidebar-collapsed .sb-brand {
+    padding: 20px 0;
+    justify-content: center;
+  }
+  .sidebar-collapsed .sb-item {
+    justify-content: center;
+    padding: 10px;
+    width: 54px;
+    margin: 4px auto;
+  }
+  .sidebar-collapsed .sb-theme {
+    justify-content: center;
+    padding: 10px;
+    width: 54px;
+    margin: 0 auto;
+  }
+  .sidebar-collapsed .sb-footer {
+    padding: 12px 0;
+  }
+}
+@media (max-width: 768px) {
+  .sb-collapse-btn {
+    display: none !important;
+  }
+}
 </style></head>
 <body>
 <div class="sb">
+  <button class="sb-collapse-btn" id="sb-collapse-btn" onclick="toggleCollapse()" aria-label="Toggle sidebar collapse" title="Toggle Sidebar">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+  </button>
   <div class="sb-brand">
     <img src="/assets/svg/logo.png" onerror="this.style.display='none'">
     <span class="sb-brand-name">ProjectHive</span>
@@ -116,39 +212,39 @@ tr:hover td{background:rgba(99,102,241,.03)}
   </div>
   <div class="sb-divider"></div>
   <div class="sb-section">Overview</div>
-  <button class="sb-item active" id="nav-ov" onclick="nav('ov',this)">
+  <button class="sb-item active" id="nav-ov" onclick="nav('ov',this)" title="Control Center">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
     <span>Control Center</span>
   </button>
   <div class="sb-section">Manage</div>
-  <button class="sb-item" id="nav-us" onclick="nav('us',this)">
+  <button class="sb-item" id="nav-us" onclick="nav('us',this)" title="Users">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
     <span>Users</span><span class="badge-cnt" id="cnt-u">—</span>
   </button>
-  <button class="sb-item" id="nav-tm" onclick="nav('tm',this)">
+  <button class="sb-item" id="nav-tm" onclick="nav('tm',this)" title="Teams">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     <span>Teams</span><span class="badge-cnt" id="cnt-t">—</span>
   </button>
-  <button class="sb-item" id="nav-pr" onclick="nav('pr',this)">
+  <button class="sb-item" id="nav-pr" onclick="nav('pr',this)" title="Projects">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
     <span>Projects</span><span class="badge-cnt" id="cnt-pr">—</span>
   </button>
-  <button class="sb-item" id="nav-po" onclick="nav('po',this)">
+  <button class="sb-item" id="nav-po" onclick="nav('po',this)" title="Posts">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     <span>Posts</span><span class="badge-cnt" id="cnt-po">—</span>
   </button>
   <div class="sb-section">Insights</div>
-  <button class="sb-item" id="nav-an" onclick="nav('an',this)">
+  <button class="sb-item" id="nav-an" onclick="nav('an',this)" title="Analytics">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     <span>Analytics</span>
   </button>
   <div class="sb-section">Admin</div>
-  <button class="sb-item" id="nav-sy" onclick="nav('sy',this)">
+  <button class="sb-item" id="nav-sy" onclick="nav('sy',this)" title="System">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
     <span>System</span>
   </button>
   <div class="sb-footer">
-    <button class="sb-theme" onclick="toggleTheme()">
+    <button class="sb-theme" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
       <div style="display:flex;align-items:center;gap:10px">
         <span id="th-ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span>
         <span id="th-lbl" style="font-size:13px;font-weight:600;color:var(--tx2)">Dark Mode</span>
@@ -156,11 +252,11 @@ tr:hover td{background:rgba(99,102,241,.03)}
       <div class="toggle on" id="th-tog"></div>
     </button>
     <div class="sb-divider" style="margin:8px 0"></div>
-    <button class="sb-item" onclick="location.href='/dashboard'">
+    <button class="sb-item" onclick="location.href='/dashboard'" title="Back to Site">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Back to Site</span>
     </button>
-    <button class="sb-item" style="color:var(--red)" onclick="doOut()">
+    <button class="sb-item" style="color:var(--red)" onclick="doOut()" title="Sign Out">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       <span>Sign Out</span>
     </button>
@@ -208,6 +304,8 @@ const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6","#ef4444",
 function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
 function ago(d){if(!d)return"—";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
 let AU=[],AT=[],AP=[],APo=[],uf="all",tf="all";
+let curAdminEmail="";
+try{const p=JSON.parse(atob(TK.split(".")[1]));curAdminEmail=(p.email||"").toLowerCase().trim();}catch(e){}
 // ── Theme ──
 function initTheme(){
   const dark=document.documentElement.classList.contains("dark");
@@ -235,6 +333,17 @@ function nav(id,btn){
   else{const mb=document.getElementById("maint-btn");if(mb)mb.style.display="";}
   if(id==="an")renderAnalytics();
   if(id==="po")rPostsMod();
+}
+// ── Collapse ──
+function toggleCollapse() {
+  const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
+  localStorage.setItem('ph-sidebar-collapsed', collapsed ? 'true' : 'false');
+}
+function initCollapse() {
+  const collapsed = localStorage.getItem('ph-sidebar-collapsed') === 'true';
+  if (collapsed && window.innerWidth > 768) {
+    document.documentElement.classList.add('sidebar-collapsed');
+  }
 }
 // ── Health ──
 async function checkHealth(){
@@ -289,8 +398,13 @@ function uTab(f,btn){uf=f;btn.closest(".tabs").querySelectorAll(".tab").forEach(
 function rUsers(){
   const q=document.getElementById("usrch")?.value.toLowerCase()||"";
   let list=AU;
-  if(uf==="banned")list=list.filter(u=>u.isBanned);
-  else if(uf!=="all")list=list.filter(u=>u.role===uf);
+  if(uf==="all") {
+    list=list.filter(u=>u.role!=="admin");
+  } else if(uf==="banned") {
+    list=list.filter(u=>u.isBanned && u.role!=="admin");
+  } else {
+    list=list.filter(u=>u.role===uf);
+  }
   if(q)list=list.filter(u=>((u.firstName||"")+" "+(u.lastName||"")+" "+(u.email||"")).toLowerCase().includes(q));
   const tb=document.getElementById("utb");if(!tb)return;
   if(!list.length){tb.innerHTML='<tr><td colspan="7"><div class="empty">No users found</div></td></tr>';return}
@@ -302,7 +416,15 @@ function rUsers(){
     const nm=(u.firstName||"")+" "+(u.lastName||"");const c=avC(nm);const i=((u.firstName?.[0]||"")+(u.lastName?.[0]||"")).toUpperCase()||"?";
     const av=u.avatar&&u.avatar.startsWith("data:")?'<img src="'+u.avatar+'">':(u.avatar?'<img src="'+u.avatar+'">':i);
     const bn=u.isBanned;const isAdmin=u.role==="admin";
-    return'<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="u-av" style="background:'+c+'">'+av+'</div><div><div style="font-weight:700">'+nm.trim()+'</div><div style="font-size:10px;color:var(--sub)">'+u.university+'</div></div></div></td><td style="color:var(--sub);font-size:11px">'+u.email+'</td><td style="font-size:11px">'+u.university+'</td><td><span class="badge '+u.role+'">'+u.role+'</span></td><td><span class="badge '+(bn?"banned":"active")+'">'+(bn?"Banned":"Active")+'</span></td><td style="color:var(--sub);font-size:11px">'+ago(u.createdAt)+'</td><td><div class="act-row"><button class="act" title="'+(isAdmin?"Demote to Student":"Promote to Admin")+'" onclick="cRole(\''+u._id+'\',\''+(isAdmin?"student":"admin")+'\')">' +rI+'</button><button class="act '+(bn?"g":"r")+'" title="'+(bn?"Unban":"Ban")+'" onclick="banU(\''+u._id+'\','+(!bn)+')">'+(bn?unI:banI)+'</button><button class="act r" title="Delete" onclick="delU(\''+u._id+'\',\''+nm.trim()+'\')">' +delI+'</button></div></td></tr>'
+    const isSelf=u.email.toLowerCase().trim() === curAdminEmail;
+    
+    const actionCell = isSelf ? 
+      '<span class="badge" style="background:var(--ac-light);color:var(--ac);border:1.5px dashed var(--ac);font-weight:700">Active Admin</span>' :
+      '<div class="act-row"><button class="act" title="'+(isAdmin?"Demote to Student":"Promote to Admin")+'" onclick="cRole(\''+u._id+'\',\''+(isAdmin?"student":"admin")+'\')">' +rI+'</button><button class="act '+(bn?"g":"r")+'" title="'+(bn?"Unban":"Ban")+'" onclick="banU(\''+u._id+'\','+(!bn)+')">'+(bn?unI:banI)+'</button><button class="act r" title="Delete" onclick="delU(\''+u._id+'\',\''+nm.trim()+'\')">' +delI+'</button></div>';
+
+    const displayName = isSelf ? nm.trim() + ' <span style="font-size:10px;color:var(--ac);font-weight:800;background:var(--ac-light);padding:2px 6px;border-radius:4px;margin-left:4px">You</span>' : nm.trim();
+
+    return'<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="u-av" style="background:'+c+'">'+av+'</div><div><div style="font-weight:700">'+displayName+'</div><div style="font-size:10px;color:var(--sub)">'+(u.university||"ProjectHive")+'</div></div></div></td><td style="color:var(--sub);font-size:11px">'+u.email+'</td><td style="font-size:11px">'+(u.university||"ProjectHive")+'</td><td><span class="badge '+u.role+'">'+u.role+'</span></td><td><span class="badge '+(bn?"banned":"active")+'">'+(bn?"Banned":"Active")+'</span></td><td style="color:var(--sub);font-size:11px">'+ago(u.createdAt)+'</td><td>'+actionCell+'</td></tr>'
   }).join("");
 }
 // ── Render Teams ──
@@ -471,6 +593,7 @@ function doOut(){
 }
 // ── Init ──
 initTheme();
+initCollapse();
 // Load flags from backend on start
 fetch(API+'/api/admin/flags',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{if(d)syncFlags(d);}).catch(()=>{});
 loadAll();
