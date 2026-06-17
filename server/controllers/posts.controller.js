@@ -252,3 +252,46 @@ export async function deleteComment(req, res, next) {
     res.json({ message: 'Comment deleted' });
   } catch (err) { next(err); }
 }
+
+// GET /api/posts/:id — get a single post
+export async function getPostById(req, res, next) {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.id;
+
+    const { data: post, error } = await supabaseAdmin
+      .from('posts')
+      .select(`
+        id, content, post_type, created_at, updated_at, author_id,
+        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+      `)
+      .eq('id', postId)
+      .maybeSingle();
+
+    if (error || !post) return res.status(404).json({ error: 'Post not found' });
+
+    // Fetch reactions & comments count & my reaction
+    const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
+      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId),
+      supabaseAdmin.from('post_comments').select('id').eq('post_id', postId),
+      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).eq('user_id', userId),
+    ]);
+
+    const reactionsMap = {};
+    (reactions || []).forEach(r => {
+      reactionsMap[r.type] = (reactionsMap[r.type] || 0) + 1;
+    });
+
+    const myReaction = (mine && mine.length > 0) ? mine[0].type : null;
+
+    res.json({
+      post: normPost({
+        ...post,
+        reactions: reactionsMap,
+        comments_count: (comments || []).length,
+        my_reaction: myReaction,
+      })
+    });
+  } catch (err) { next(err); }
+}
+

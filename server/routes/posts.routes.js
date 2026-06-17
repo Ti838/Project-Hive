@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import {
   getFeed, createPost, deletePost,
-  reactToPost, getComments, addComment, deleteComment
+  reactToPost, getComments, addComment, deleteComment, getPostById
 } from '../controllers/posts.controller.js';
 
 const router = Router();
@@ -15,7 +15,9 @@ router.get('/feed', getFeed);
 
 // Posts
 router.post('/posts', createPost);
+router.get('/posts/:id', getPostById);
 router.delete('/posts/:id', deletePost);
+
 
 // Reactions
 router.post('/posts/:id/react', reactToPost);

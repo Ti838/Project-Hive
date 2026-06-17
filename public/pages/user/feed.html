@@ -525,6 +525,205 @@
         } catch(e) {}
       }
 
+      // Bookmarks helper functions
+      function getBookmarks() {
+        try {
+          return JSON.parse(localStorage.getItem('projecthive_bookmarks') || '[]');
+        } catch(e) { return []; }
+      }
+      function isBookmarked(postId) {
+        return getBookmarks().includes(postId);
+      }
+      window.toggleBookmark = function(postId) {
+        let bookmarks = getBookmarks();
+        const btn = document.getElementById(`bookmark-btn-${postId}`);
+        const icon = btn ? btn.querySelector('span') : null;
+        
+        if (bookmarks.includes(postId)) {
+          bookmarks = bookmarks.filter(id => id !== postId);
+          showToast('Post removed from saved items', 'info');
+          if (icon) {
+            icon.textContent = 'bookmark_border';
+            icon.classList.remove('text-primary');
+            icon.style.fontVariationSettings = "'FILL' 0";
+          }
+        } else {
+          bookmarks.push(postId);
+          showToast('Post saved successfully!', 'success');
+          if (icon) {
+            icon.textContent = 'bookmark';
+            icon.classList.add('text-primary');
+            icon.style.fontVariationSettings = "'FILL' 1";
+          }
+        }
+        localStorage.setItem('projecthive_bookmarks', JSON.stringify(bookmarks));
+      }
+
+      // Copy link to clipboard
+      window.sharePost = function(postId) {
+        const url = window.location.origin + window.location.pathname + '?post=' + postId;
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('Direct link copied to clipboard!', 'success');
+        }).catch(() => {
+          showToast('Failed to copy link', 'error');
+        });
+      }
+
+      // Collapsible text handler
+      window.expandPost = function(btn, postId) {
+        const card = document.getElementById(`post-card-${postId}`);
+        if (card) {
+          const brief = card.querySelector(`.post-brief-${postId}`);
+          const full = card.querySelector(`.post-full-${postId}`);
+          if (brief && full) {
+            brief.classList.add('hidden');
+            full.classList.remove('hidden');
+            btn.classList.add('hidden');
+          }
+        }
+      }
+
+      // Unified Post HTML builder
+      function renderPostCardHtml(p, isSharedHighlight = false) {
+        const author = p.author || {};
+        const name = `${author.firstName || ''} ${author.lastName || ''}`.trim() || 'User';
+        const color = getAvatarColor(name);
+        const initials = getInitials(author.firstName, author.lastName);
+        const isOwn = author.id === ME.id || author.id === ME._id;
+
+        // Type badge styles
+        let badgeHtml = '';
+        if (p.postType && p.postType !== 'general') {
+          const colorsMap = {
+            achievement: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
+            project_update: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+            looking_for_team: 'bg-green-500/10 text-green-500 border-green-500/20'
+          };
+          const labelMap = {
+            achievement: 'Achievement',
+            project_update: 'Project Update',
+            looking_for_team: 'Looking for Team'
+          };
+          badgeHtml = `<span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded border ${colorsMap[p.postType] || ''}">${labelMap[p.postType] || p.postType}</span>`;
+        }
+
+        if (isSharedHighlight) {
+          badgeHtml += `<span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded border bg-primary text-white border-primary/20 flex items-center gap-0.5"><span class="material-symbols-outlined text-[10px]">share</span> Shared Post</span>`;
+        }
+
+        // Reactions counters summary HTML
+        let reactionsSummaryHtml = '';
+        const rMap = p.reactions || {};
+        const totalReactions = Object.values(rMap).reduce((a, b) => a + b, 0);
+        if (totalReactions > 0) {
+          const reactionIcons = Object.keys(rMap).map(type => {
+            const icons = { like: '👍', celebrate: '🎉', insightful: '💡', support: '🤝' };
+            return `<span title="${REACTION_LABELS[type]}">${icons[type] || ''} <span class="text-[10px] font-bold ml-0.5">${rMap[type]}</span></span>`;
+          }).join(' ');
+          reactionsSummaryHtml = `<div class="flex items-center gap-2 text-xs text-on-surface-variant pb-3 border-b border-surface-variant">${reactionIcons}</div>`;
+        }
+
+        // Active reaction button highlight
+        const myReact = p.myReaction;
+        let reactBtnClass = 'text-on-surface-variant hover:text-primary';
+        let reactBtnText = 'Like';
+        let reactBtnIcon = `<span class="material-symbols-outlined text-[18px]">favorite</span>`;
+
+        if (myReact) {
+          reactBtnClass = 'text-primary font-bold';
+          reactBtnText = REACTION_LABELS[myReact];
+          if (myReact === 'like') reactBtnIcon = REACTION_SVGS.like;
+          if (myReact === 'celebrate') reactBtnIcon = REACTION_SVGS.celebrate;
+          if (myReact === 'insightful') reactBtnIcon = REACTION_SVGS.insightful;
+          if (myReact === 'support') reactBtnIcon = REACTION_SVGS.support;
+        }
+
+        // Bookmarked state
+        const bookmarked = isBookmarked(p.id);
+
+        // Collapsible Text check
+        const isLong = p.content.length > 280;
+        const contentHtml = isLong 
+          ? `<span class="post-brief-${p.id}">${escapeHtml(p.content.slice(0, 280))}... </span>` + 
+            `<button onclick="expandPost(this, '${p.id}')" class="text-primary font-bold hover:underline inline-block text-xs">see more</button>` +
+            `<span class="post-full-${p.id} hidden whitespace-pre-wrap">${escapeHtml(p.content)}</span>`
+          : `<span class="whitespace-pre-wrap">${escapeHtml(p.content)}</span>`;
+
+        return `<div id="post-card-${p.id}" class="bg-surface-container-lowest p-6 rounded-2xl border border-surface-variant feed-card-shadow flex flex-col gap-4 relative transition-all duration-300">
+          <!-- Header -->
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+              <div class="relative status-indicator-container" data-user-id="${author.id || author._id}">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${initials}</div>
+                ${author.onlineStatus === 'online' ? `<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-surface status-dot" title="Online"></span>` : ''}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-sm text-on-surface">${escapeHtml(name)}</span>
+                  ${badgeHtml}
+                </div>
+                <p class="text-[11px] text-on-surface-variant">${escapeHtml(author.university || '')} • ${formatTimeAgo(p.createdAt)}</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="toggleBookmark('${p.id}')" class="text-outline hover:text-primary p-1 rounded-full hover:bg-primary/5 transition-colors" title="Save Post" id="bookmark-btn-${p.id}">
+                <span class="material-symbols-outlined text-[18px] ${bookmarked ? 'text-primary' : ''}" style="${bookmarked ? "font-variation-settings: 'FILL' 1" : ''}">${bookmarked ? 'bookmark' : 'bookmark_border'}</span>
+              </button>
+              ${isOwn ? `<button onclick="deletePost('${p.id}')" class="text-outline hover:text-error p-1 rounded-full hover:bg-error/5 transition-colors" title="Delete Post">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>` : ''}
+            </div>
+          </div>
+
+          <!-- Content -->
+          <p class="text-sm text-on-surface leading-relaxed">${contentHtml}</p>
+
+          <!-- Reactions Summary -->
+          ${reactionsSummaryHtml}
+
+          <!-- Actions row -->
+          <div class="flex items-center gap-4 pt-1">
+            <!-- Like / React Trigger -->
+            <div class="reaction-trigger">
+              <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs transition-all ${reactBtnClass}">
+                ${reactBtnIcon}
+                <span>${reactBtnText}</span>
+              </button>
+              <!-- Floating Picker -->
+              <div class="reaction-picker">
+                <button onclick="reactPost('${p.id}', 'like')" class="reaction-btn" title="Like">👍</button>
+                <button onclick="reactPost('${p.id}', 'celebrate')" class="reaction-btn" title="Celebrate">🎉</button>
+                <button onclick="reactPost('${p.id}', 'insightful')" class="reaction-btn" title="Insightful">💡</button>
+                <button onclick="reactPost('${p.id}', 'support')" class="reaction-btn" title="Support">🤝</button>
+              </div>
+            </div>
+
+            <button onclick="toggleCommentsSection('${p.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs text-on-surface-variant hover:text-primary transition-all">
+              <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
+              <span>Comment (${p.commentsCount || 0})</span>
+            </button>
+
+            <button onclick="sharePost('${p.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs text-on-surface-variant hover:text-primary transition-all" title="Copy link to post">
+              <span class="material-symbols-outlined text-[18px]">share</span>
+              <span>Share</span>
+            </button>
+          </div>
+
+          <!-- Comments Expandable Panel -->
+          <div id="comments-section-${p.id}" class="hidden mt-3 pt-3 border-t border-surface-variant flex flex-col gap-3">
+            <div id="comments-list-${p.id}" class="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1">
+              <!-- Loaded dynamically -->
+            </div>
+            <!-- Add Comment Input -->
+            <div class="flex gap-2 pt-2 border-t border-surface-variant/50">
+              <input id="comment-input-${p.id}" type="text" placeholder="Add a comment..." class="flex-1 bg-surface-container-low border-none rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary text-on-surface placeholder:text-outline">
+              <button onclick="submitComment('${p.id}')" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0">Send</button>
+            </div>
+          </div>
+        </div>`;
+      }
+
       // Load Feed List
       async function loadFeed() {
         try {
@@ -543,120 +742,7 @@
               return;
             }
 
-            container.innerHTML = posts.map(p => {
-              const author = p.author || {};
-              const name = `${author.firstName || ''} ${author.lastName || ''}`.trim() || 'User';
-              const color = getAvatarColor(name);
-              const initials = getInitials(author.firstName, author.lastName);
-              const isOwn = author.id === ME.id || author.id === ME._id;
-
-              // Type badge styles
-              let badgeHtml = '';
-              if (p.postType && p.postType !== 'general') {
-                const colorsMap = {
-                  achievement: 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20',
-                  project_update: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
-                  looking_for_team: 'bg-green-500/10 text-green-500 border-green-500/20'
-                };
-                const labelMap = {
-                  achievement: 'Achievement',
-                  project_update: 'Project Update',
-                  looking_for_team: 'Looking for Team'
-                };
-                badgeHtml = `<span class="px-2 py-0.5 text-[9px] font-bold uppercase rounded border ${colorsMap[p.postType] || ''}">${labelMap[p.postType] || p.postType}</span>`;
-              }
-
-              // Reactions counters summary HTML
-              let reactionsSummaryHtml = '';
-              const rMap = p.reactions || {};
-              const totalReactions = Object.values(rMap).reduce((a, b) => a + b, 0);
-              if (totalReactions > 0) {
-                const reactionIcons = Object.keys(rMap).map(type => {
-                  const icons = { like: '👍', celebrate: '🎉', insightful: '💡', support: '🤝' };
-                  return `<span title="${REACTION_LABELS[type]}">${icons[type] || ''} <span class="text-[10px] font-bold ml-0.5">${rMap[type]}</span></span>`;
-                }).join(' ');
-                reactionsSummaryHtml = `<div class="flex items-center gap-2 text-xs text-on-surface-variant pb-3 border-b border-surface-variant">${reactionIcons}</div>`;
-              }
-
-              // Active reaction button highlight
-              const myReact = p.myReaction;
-              let reactBtnClass = 'text-on-surface-variant hover:text-primary';
-              let reactBtnText = 'Like';
-              let reactBtnIcon = `<span class="material-symbols-outlined text-[18px]">favorite</span>`;
-
-              if (myReact) {
-                reactBtnClass = 'text-primary font-bold';
-                reactBtnText = REACTION_LABELS[myReact];
-                if (myReact === 'like') reactBtnIcon = REACTION_SVGS.like;
-                if (myReact === 'celebrate') reactBtnIcon = REACTION_SVGS.celebrate;
-                if (myReact === 'insightful') reactBtnIcon = REACTION_SVGS.insightful;
-                if (myReact === 'support') reactBtnIcon = REACTION_SVGS.support;
-              }
-
-              return `<div class="bg-surface-container-lowest p-6 rounded-2xl border border-surface-variant feed-card-shadow flex flex-col gap-4 relative">
-                <!-- Header -->
-                <div class="flex items-start justify-between">
-                  <div class="flex items-center gap-3">
-                    <div class="relative status-indicator-container" data-user-id="${author.id || author._id}">
-                      <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${initials}</div>
-                      ${author.onlineStatus === 'online' ? `<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-surface status-dot" title="Online"></span>` : ''}
-                    </div>
-                    <div>
-                      <div class="flex items-center gap-2">
-                        <span class="font-bold text-sm text-on-surface">${escapeHtml(name)}</span>
-                        ${badgeHtml}
-                      </div>
-                      <p class="text-[11px] text-on-surface-variant">${escapeHtml(author.university || '')} • ${formatTimeAgo(p.createdAt)}</p>
-                    </div>
-                  </div>
-
-                  ${isOwn ? `<button onclick="deletePost('${p.id}')" class="text-outline hover:text-error p-1 rounded-full hover:bg-error/5 transition-colors" title="Delete Post">
-                    <span class="material-symbols-outlined text-[18px]">delete</span>
-                  </button>` : ''}
-                </div>
-
-                <!-- Content -->
-                <p class="text-sm text-on-surface whitespace-pre-wrap leading-relaxed">${escapeHtml(p.content)}</p>
-
-                <!-- Reactions Summary -->
-                ${reactionsSummaryHtml}
-
-                <!-- Actions row -->
-                <div class="flex items-center gap-4 pt-1">
-                  <!-- Like / React Trigger -->
-                  <div class="reaction-trigger">
-                    <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs transition-all ${reactBtnClass}">
-                      ${reactBtnIcon}
-                      <span>${reactBtnText}</span>
-                    </button>
-                    <!-- Floating Picker -->
-                    <div class="reaction-picker">
-                      <button onclick="reactPost('${p.id}', 'like')" class="reaction-btn" title="Like">👍</button>
-                      <button onclick="reactPost('${p.id}', 'celebrate')" class="reaction-btn" title="Celebrate">🎉</button>
-                      <button onclick="reactPost('${p.id}', 'insightful')" class="reaction-btn" title="Insightful">💡</button>
-                      <button onclick="reactPost('${p.id}', 'support')" class="reaction-btn" title="Support">🤝</button>
-                    </div>
-                  </div>
-
-                  <button onclick="toggleCommentsSection('${p.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs text-on-surface-variant hover:text-primary transition-all">
-                    <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
-                    <span>Comment (${p.commentsCount || 0})</span>
-                  </button>
-                </div>
-
-                <!-- Comments Expandable Panel -->
-                <div id="comments-section-${p.id}" class="hidden mt-3 pt-3 border-t border-surface-variant flex flex-col gap-3">
-                  <div id="comments-list-${p.id}" class="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1">
-                    <!-- Loaded dynamically -->
-                  </div>
-                  <!-- Add Comment Input -->
-                  <div class="flex gap-2 pt-2 border-t border-surface-variant/50">
-                    <input id="comment-input-${p.id}" type="text" placeholder="Add a comment..." class="flex-1 bg-surface-container-low border-none rounded-xl px-4 py-2 text-xs outline-none focus:ring-2 focus:ring-primary text-on-surface placeholder:text-outline">
-                    <button onclick="submitComment('${p.id}')" class="bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shrink-0">Send</button>
-                  </div>
-                </div>
-              </div>`;
-            }).join('');
+            container.innerHTML = posts.map(p => renderPostCardHtml(p)).join('');
           }
         } catch(e) {
           document.getElementById('feed-list').innerHTML = `<div class="bg-surface-container-lowest p-10 rounded-2xl border border-surface-variant text-center text-on-surface-variant feed-card-shadow">
@@ -665,6 +751,56 @@
             <p class="text-xs text-outline mt-1">Please try again later.</p>
           </div>`;
         }
+      }
+
+      // Handles loading a shared post directly
+      async function handleSharedPostQuery() {
+        const params = new URLSearchParams(window.location.search);
+        const sharedPostId = params.get('post');
+        if (!sharedPostId) return;
+
+        // Check if it's already rendered in the loaded feed
+        const existingCard = document.getElementById(`post-card-${sharedPostId}`);
+        if (existingCard) {
+          setTimeout(() => {
+            existingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            existingCard.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'dark:ring-offset-slate-900');
+            setTimeout(() => {
+              existingCard.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'dark:ring-offset-slate-900');
+            }, 4000);
+          }, 600);
+          return;
+        }
+
+        // If not in the feed list, fetch single post via the new single post endpoint
+        try {
+          const r = await fetch(API_BASE + `/api/posts/${sharedPostId}`, { headers: H });
+          if (r.ok) {
+            const resData = await r.json();
+            const p = resData.post;
+            if (p) {
+              const container = document.getElementById('feed-list');
+              
+              // Remove empty state message if present
+              const empty = container.querySelector('.forum') || (container.textContent.includes('empty'));
+              if (empty) container.innerHTML = '';
+              
+              const cardHtml = renderPostCardHtml(p, true); // highlight = true
+              container.insertAdjacentHTML('afterbegin', cardHtml);
+              
+              setTimeout(() => {
+                const card = document.getElementById(`post-card-${p.id}`);
+                if (card) {
+                  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  card.classList.add('ring-2', 'ring-primary', 'ring-offset-2', 'dark:ring-offset-slate-900');
+                  setTimeout(() => {
+                    card.classList.remove('ring-2', 'ring-primary', 'ring-offset-2', 'dark:ring-offset-slate-900');
+                  }, 4000);
+                }
+              }, 600);
+            }
+          }
+        } catch(e) {}
       }
 
       // Toggle Reaction Call
@@ -696,6 +832,7 @@
           }
         } catch(e) {}
       }
+
 
       // Expand Comments Section & Fetch Comments
       window.toggleCommentsSection = function(postId) {
@@ -827,10 +964,11 @@
       // Init Page Execution
       async function main() {
         await initProfile();
-        loadFeed();
+        await loadFeed();
         loadSuggestions();
         loadStats();
         initSocket();
+        handleSharedPostQuery();
       }
       
       main();
