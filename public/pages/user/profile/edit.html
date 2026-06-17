@@ -154,7 +154,7 @@
       if(avatarB64)payload.avatar=avatarB64;
       if(bannerB64)payload.bannerImage=bannerB64;
       const r=await fetch(API_BASE+"/api/users/me",{method:"PATCH",headers:H,body:JSON.stringify(payload)});
-      r.ok?PHToast?.success("Profile saved! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>"):(async()=>{const d=await r.json();PHToast?.error(d.message||"Save failed");})();
+      r.ok?PHToast?.success('Profile saved! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>'):(async()=>{const d=await r.json();PHToast?.error(d.message||"Save failed");})();
     }catch(e){PHToast?.error("Server offline");}
     btn.innerHTML=`<span style="font-family:'Material Symbols Outlined';font-size:20px">save</span> Save Profile`;btn.disabled=false;
   };
