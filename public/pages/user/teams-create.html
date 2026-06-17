@@ -198,39 +198,30 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 </div>
 <div>
 <label class="block font-label-md text-label-md text-on-surface-variant mb-2">Max Members</label>
-<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" max="20" min="2" type="number" value="6"/>
+<input id="hive-max-input" class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" max="20" min="2" type="number" value="6"/>
 </div>
 <div class="col-span-2">
 <label class="block font-label-md text-label-md text-on-surface-variant mb-2">Required Skills (Tags)</label>
-<div class="flex flex-wrap gap-2 p-3 border border-outline-variant bg-surface-container-lowest rounded-lg">
-<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">
-                                        Python <button class="material-symbols-outlined text-[14px]" type="button">close</button>
-</div>
-<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">
-                                        TensorFlow <button class="material-symbols-outlined text-[14px]" type="button">close</button>
-</div>
-<div class="flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm">
-                                        Data Analysis <button class="material-symbols-outlined text-[14px]" type="button">close</button>
-</div>
-<input class="border-none bg-transparent p-0 focus:ring-0 font-body-sm text-body-sm flex-1 min-w-[100px]" placeholder="Add skill..." type="text"/>
+<div id="tag-container" class="flex flex-wrap gap-2 p-3 border border-outline-variant bg-surface-container-lowest rounded-lg">
+  <input id="tag-input" class="border-none bg-transparent p-0 focus:ring-0 font-body-sm text-body-sm flex-1 min-w-[100px]" placeholder="Type skill and press Enter..." type="text"/>
 </div>
 </div>
 <div>
 <label class="block font-label-md text-label-md text-on-surface-variant mb-2">Visibility</label>
 <div class="flex items-center gap-4 py-2">
 <span class="font-body-md text-body-md">Open to Applications</span>
-<button class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
+<button id="visibility-btn" class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
 <div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
 </button>
 </div>
 </div>
 <div>
 <label class="block font-label-md text-label-md text-on-surface-variant mb-2">External Project Link (Optional)</label>
-<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" placeholder="https://github.com/..." type="url"/>
+<input id="hive-link-input" class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" placeholder="https://github.com/..." type="url"/>
 </div>
 </div>
 <div class="pt-6 border-t border-surface-container">
-<button class="accent-gradient text-white w-full py-4 rounded-xl font-headline-md text-headline-md flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg" type="button">
+<button id="btn-submit" class="accent-gradient text-white w-full py-4 rounded-xl font-headline-md text-headline-md flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg" type="submit">
 <span class="material-symbols-outlined">hub</span>
                                 Create Hive
                             </button>
@@ -258,21 +249,19 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 <div class="mb-4">
 <p class="text-[10px] font-bold text-on-surface-variant uppercase mb-2 tracking-tighter">Looking For</p>
 <div class="flex flex-wrap gap-2" id="preview-tags">
-<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">Python</span>
-<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">TensorFlow</span>
-<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">+2 more</span>
+  <span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">Python</span>
 </div>
 </div>
 <div class="flex items-center justify-between pt-4 border-t border-surface-container">
 <div class="flex -space-x-2">
-<div class="h-8 w-8 rounded-full border-2 border-white bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold">JD</div>
+<div class="h-8 w-8 rounded-full border-2 border-white bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold" id="preview-leader-av">?</div>
 <div class="h-8 w-8 rounded-full border-2 border-white bg-primary-fixed-dim flex items-center justify-center">
 <span class="material-symbols-outlined text-[16px]">add</span>
 </div>
 </div>
 <div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
 <span class="material-symbols-outlined text-[18px]">group</span>
-<span>1/6</span>
+<span id="preview-members">1/6</span>
 </div>
 </div>
 </div>
@@ -289,73 +278,179 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 </aside>
 </div>
 </main>
-<script>
-        // Simple live-update logic
-        const nameInput = document.getElementById('hive-name-input');
-        const descInput = document.getElementById('hive-desc-input');
-        const categoryInput = document.getElementById('hive-category-input');
-        
-        const previewName = document.getElementById('preview-name');
-        const previewDesc = document.getElementById('preview-desc');
-        const previewCategory = document.getElementById('preview-category');
 
-        nameInput.addEventListener('input', (e) => {
-            previewName.textContent = e.target.value || 'New Project Title';
-        });
-
-        descInput.addEventListener('input', (e) => {
-            previewDesc.textContent = e.target.value || 'Brief project description...';
-        });
-
-        categoryInput.addEventListener('change', (e) => {
-            previewCategory.textContent = e.target.value;
-        });
-
-        // Toggle interaction
-        const toggleBtn = document.querySelector('button[type="button"].relative');
-        let isOpen = true;
-        toggleBtn.addEventListener('click', () => {
-            isOpen = !isOpen;
-            const indicator = toggleBtn.querySelector('div');
-            if (isOpen) {
-                toggleBtn.classList.replace('bg-surface-variant', 'bg-secondary');
-                indicator.classList.replace('left-1', 'right-1');
-            } else {
-                toggleBtn.classList.replace('bg-secondary', 'bg-surface-variant');
-                indicator.classList.replace('right-1', 'left-1');
-            }
-        });
-    </script>
-<link rel="stylesheet" href="/assets/css/app.css">
 <script src="/assets/js/core/api.js"></script>
 <script src="/assets/js/core/auth.js"></script>
-
-<script>Auth.requireAuth(); "PHSidebar.init('teams', '../../')" ;</script>
-<script>
-// Theme toggle
-document.addEventListener('DOMContentLoaded',function(){
-  var toggles=document.querySelectorAll('[onclick*="theme"],[onclick*="Theme"],[data-theme],[class*="theme-toggle"],[id*="theme"]');
-  toggles.forEach(function(el){
-    el.addEventListener('click',function(){
-      var dark=document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme',dark?'dark':'light');
-    });
-  });
-});
-</script><script> "PHSidebar.init('teams', '../../')" ;</script>
+<script src="/assets/js/core/ph-toast.js"></script>
 
 <script>
 (function(){
-  const tk = localStorage.getItem('access_token');
-  if (!tk) { window.location.href = '../../pages/auth/login.html'; return; }
+  // 1. Auth check
+  const TK = localStorage.getItem('access_token');
+  if (!TK) { window.location.href = '/login'; return; }
   try {
-    const p = JSON.parse(atob(tk.split('.')[1]));
+    const p = JSON.parse(atob(TK.split('.')[1]));
     if (p.exp && Date.now() >= p.exp * 1000) {
       localStorage.removeItem('access_token');
-      window.location.href = '../../pages/auth/login.html'; return;
+      window.location.href = '/login'; return;
     }
+  } catch(e) { window.location.href = '/login'; return; }
 
-  } catch(e) { window.location.href = '../../pages/auth/login.html'; return; }
+  // 2. Initialize Sidebar
+  PHSidebar.init('teams', '../../');
+
+  // 3. Form fields
+  const form = document.getElementById('hive-form');
+  const nameInput = document.getElementById('hive-name-input');
+  const descInput = document.getElementById('hive-desc-input');
+  const categoryInput = document.getElementById('hive-category-input');
+  const maxInput = document.getElementById('hive-max-input');
+  const linkInput = document.getElementById('hive-link-input');
+  const tagInput = document.getElementById('tag-input');
+  const tagContainer = document.getElementById('tag-container');
+  const visibilityBtn = document.getElementById('visibility-btn');
+  const submitBtn = document.getElementById('btn-submit');
+
+  // Previews
+  const previewName = document.getElementById('preview-name');
+  const previewDesc = document.getElementById('preview-desc');
+  const previewCategory = document.getElementById('preview-category');
+  const previewTags = document.getElementById('preview-tags');
+  const previewMembers = document.getElementById('preview-members');
+  const previewLeaderAv = document.getElementById('preview-leader-av');
+
+  // State
+  let tags = ['Python', 'TensorFlow', 'Data Analysis'];
+  let isOpen = true;
+
+  // Set initial preview leader initials
+  try {
+    const cached = localStorage.getItem('ph-user-cache');
+    if (cached) {
+      const u = JSON.parse(cached);
+      const fn = u.firstName || u.first_name || '';
+      const ln = u.lastName || u.last_name || '';
+      previewLeaderAv.textContent = ((fn[0]||'') + (ln[0]||'')).toUpperCase() || '?';
+    }
+  } catch(_) {}
+
+  // Render dynamic tags
+  function renderTags() {
+    // Clear all except input
+    const pills = tagContainer.querySelectorAll('.ph-tag-pill');
+    pills.forEach(p => p.remove());
+
+    tags.forEach(t => {
+      const d = document.createElement('div');
+      d.className = 'ph-tag-pill flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm';
+      d.innerHTML = `${t} <button class="material-symbols-outlined text-[14px]" type="button">close</button>`;
+      d.querySelector('button').onclick = () => {
+        tags = tags.filter(x => x !== t);
+        renderTags();
+      };
+      tagContainer.insertBefore(d, tagInput);
+    });
+
+    // Update preview
+    previewTags.innerHTML = tags.length
+      ? tags.map(t => `<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">${t}</span>`).join('')
+      : '<span class="text-on-surface-variant text-[11px] italic">No skills listed</span>';
+  }
+
+  // Handle enter key to add tags
+  tagInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = tagInput.value.trim();
+      if (val && !tags.includes(val)) {
+        tags.push(val);
+        tagInput.value = '';
+        renderTags();
+      }
+    }
+  });
+
+  // Inputs live preview sync
+  nameInput.addEventListener('input', (e) => {
+    previewName.textContent = e.target.value.trim() || 'New Project Title';
+  });
+  descInput.addEventListener('input', (e) => {
+    previewDesc.textContent = e.target.value.trim() || 'Brief project description...';
+  });
+  categoryInput.addEventListener('change', (e) => {
+    previewCategory.textContent = e.target.value;
+  });
+  maxInput.addEventListener('input', (e) => {
+    previewMembers.textContent = `1/${e.target.value || 6}`;
+  });
+
+  // Visibility toggle
+  visibilityBtn.addEventListener('click', () => {
+    isOpen = !isOpen;
+    const indicator = visibilityBtn.querySelector('div');
+    if (isOpen) {
+      visibilityBtn.classList.replace('bg-surface-variant', 'bg-secondary');
+      indicator.classList.replace('left-1', 'right-1');
+    } else {
+      visibilityBtn.classList.replace('bg-secondary', 'bg-surface-variant');
+      indicator.classList.replace('right-1', 'left-1');
+    }
+  });
+
+  // Init tags list on load
+  renderTags();
+
+  // Form submission API call
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    const name = nameInput.value.trim();
+    const description = descInput.value.trim();
+    const category = categoryInput.value;
+    const maxMembers = parseInt(maxInput.value) || 6;
+    const externalLink = linkInput.value.trim();
+
+    if (!name) { PHToast?.error('Please enter a team name'); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Creating...';
+
+    const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://projecthive-backend.onrender.com';
+
+    try {
+      const res = await fetch(API_BASE + '/api/teams', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + TK
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          category,
+          maxMembers,
+          tags,
+          isOpen,
+          externalLink
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        PHToast?.success('Team created successfully!');
+        setTimeout(() => {
+          window.location.href = '/teams';
+        }, 1200);
+      } else {
+        PHToast?.error(data.error || 'Failed to create team');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined">hub</span> Create Hive';
+      }
+    } catch(err) {
+      PHToast?.error('Cannot connect to server. Try again.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined">hub</span> Create Hive';
+    }
+  };
 })();
 </script>
 </body></html>

@@ -138,9 +138,7 @@ const API = (() => {
                 }),
             logout: () => {
                 clearTokens();
-                const d = (window.location.pathname.match(/\//g)||[]).length - 1;
-                const base = d <= 1 ? './' : d === 2 ? '../' : '../../';
-                window.location.href = base + 'pages/auth/login.html';
+                window.location.href = '/login';
             },
         },
 

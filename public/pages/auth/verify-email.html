@@ -67,7 +67,7 @@ footer{position:fixed;bottom:16px;font-size:12px;color:var(--muted);z-index:1}
 <div class="bg-orb orb2"></div>
 
 <div class="card" id="card">
-  <a href="../../index.html" class="logo-row">
+  <a href="/" class="logo-row">
     <img src="/assets/svg/logo.png" alt="ProjectHive" onerror="this.style.display='none'">
     <span class="brand">ProjectHive</span>
   </a>
@@ -86,7 +86,7 @@ footer{position:fixed;bottom:16px;font-size:12px;color:var(--muted);z-index:1}
     <div class="state-icon success">✅</div>
     <h1 class="card-title">Email Verified!</h1>
     <p class="card-sub">Your email has been verified successfully.<br>Welcome to ProjectHive 🐝</p>
-    <a href="login.html" class="btn">Sign In to Your Account →</a>
+    <a href="/login" class="btn">Sign In to Your Account →</a>
     <div class="redirect-bar"><div class="redirect-fill" id="redirect-fill"></div></div>
     <p class="redirect-note">Redirecting to Sign In in 3 seconds…</p>
   </div>
@@ -96,7 +96,7 @@ footer{position:fixed;bottom:16px;font-size:12px;color:var(--muted);z-index:1}
     <div class="state-icon error">❌</div>
     <h1 class="card-title" id="err-title">Verification Failed</h1>
     <p class="card-sub" id="err-msg">This verification link is invalid or has expired.</p>
-    <a href="login.html" class="btn">Go to Sign In</a>
+    <a href="/login" class="btn">Go to Sign In</a>
 
     <!-- Resend email section -->
     <div class="resend-section">
@@ -121,7 +121,7 @@ footer{position:fixed;bottom:16px;font-size:12px;color:var(--muted);z-index:1}
       <input type="email" id="notoken-email" placeholder="Enter your email address">
     </div>
     <button class="btn" onclick="resendFromNoToken()">📧 Send New Verification Link</button>
-    <a href="login.html" class="btn btn-outline" style="margin-top:10px">Back to Sign In</a>
+    <a href="/login" class="btn btn-outline" style="margin-top:10px">Back to Sign In</a>
   </div>
 </div>
 
@@ -162,7 +162,7 @@ function showState(state) {
       setTimeout(() => {
         document.getElementById('redirect-fill').style.width = '100%';
       }, 50);
-      setTimeout(() => { window.location.href = 'login.html'; }, 3000);
+      setTimeout(() => { window.location.href = '/login'; }, 3000);
     } else {
       showState('error');
       document.getElementById('err-msg').textContent =

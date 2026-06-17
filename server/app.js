@@ -126,6 +126,7 @@ app.get('/api/stats', async (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.post('/api/admin/auth/login', adminLogin);
 app.use('/api/users', usersRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/projects', projectsRoutes);
@@ -134,8 +135,6 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
-// ── Dedicated Admin Auth — MUST be before adminRoutes (no auth guard here) ──
-app.post('/api/admin/auth/login', adminLogin);
 
 // Admin routes (require auth + admin role)
 app.use('/api/admin', adminRoutes);
