@@ -289,6 +289,15 @@ nav {
   position: relative;
   z-index: 1;
 }
+#hero-3d-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
 
 .hero-container {
   width: 100%;
@@ -2100,6 +2109,169 @@ function hangupShowcaseCall() {
     animateNumber(document.getElementById('stat-projects'), 420);
     animateNumber(document.getElementById('stat-teams'), 180);
     animateNumber(document.getElementById('stat-universities'), 12);
+  }
+})();
+</script>
+
+<!-- Vanilla-Tilt CDN for 3D card tilt effect -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+<script>
+// 3D Interactive Particle Constellation Background for Hero Section
+(function() {
+  const canvas = document.createElement('canvas');
+  canvas.id = 'hero-3d-canvas';
+  const hero = document.querySelector('.hero');
+  if (hero) {
+    hero.insertBefore(canvas, hero.firstChild);
+  }
+
+  const ctx = canvas.getContext('2d');
+  let width = canvas.width = hero.offsetWidth;
+  let height = canvas.height = hero.offsetHeight;
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = hero.offsetWidth;
+    height = canvas.height = hero.offsetHeight;
+  });
+
+  const particles = [];
+  const particleCount = 75;
+  let mouse = { x: null, y: null, targetX: 0, targetY: 0 };
+
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    mouse.targetX = e.clientX - rect.left;
+    mouse.targetY = e.clientY - rect.top;
+  });
+
+  hero.addEventListener('mouseleave', () => {
+    mouse.targetX = null;
+    mouse.targetY = null;
+  });
+
+  class Particle {
+    constructor() {
+      // 3D coordinates
+      this.x3d = (Math.random() - 0.5) * 600;
+      this.y3d = (Math.random() - 0.5) * 600;
+      this.z3d = (Math.random() - 0.5) * 600;
+      this.size = Math.random() * 2 + 1.2;
+      this.speedX = (Math.random() - 0.5) * 0.4;
+      this.speedY = (Math.random() - 0.5) * 0.4;
+      this.speedZ = (Math.random() - 0.5) * 0.4;
+    }
+
+    update(angleX, angleY) {
+      // Rotate around X-axis
+      let y1 = this.y3d * Math.cos(angleX) - this.z3d * Math.sin(angleX);
+      let z1 = this.y3d * Math.sin(angleX) + this.z3d * Math.cos(angleX);
+
+      // Rotate around Y-axis
+      let x2 = this.x3d * Math.cos(angleY) - z1 * Math.sin(angleY);
+      let z2 = this.x3d * Math.sin(angleY) + z1 * Math.cos(angleY);
+
+      // Move particle in 3D
+      this.x3d += this.speedX;
+      this.y3d += this.speedY;
+      this.z3d += this.speedZ;
+
+      // Wrap-around boundary conditions
+      if (Math.abs(this.x3d) > 350) this.speedX *= -1;
+      if (Math.abs(this.y3d) > 350) this.speedY *= -1;
+      if (Math.abs(this.z3d) > 350) this.speedZ *= -1;
+
+      // Projection calculation
+      const fov = 350;
+      const cameraDistance = 600;
+      const scale = fov / (cameraDistance + z2);
+
+      // Map 3D to 2D screen coordinates
+      this.projX = x2 * scale + width / 2;
+      this.projY = y1 * scale + height / 2;
+      this.alpha = Math.max(0.08, Math.min(1, (z2 + 350) / 700)) * 0.5;
+      this.projSize = Math.max(0.6, this.size * scale * 1.6);
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.projX, this.projY, this.projSize, 0, Math.PI * 2);
+      const isDark = document.documentElement.classList.contains('dark');
+      ctx.fillStyle = isDark ? `rgba(129, 140, 248, ${this.alpha})` : `rgba(99, 102, 241, ${this.alpha})`;
+      ctx.fill();
+    }
+  }
+
+  // Populate particles
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  let angleX = 0.0008;
+  let angleY = 0.0008;
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Dynamic mouse pivoting coordinates
+    if (mouse.x === null && mouse.targetX !== null) {
+      mouse.x = mouse.targetX;
+      mouse.y = mouse.targetY;
+    } else if (mouse.x !== null) {
+      mouse.x += (mouse.targetX - mouse.x) * 0.06;
+      mouse.y += (mouse.targetY - mouse.y) * 0.06;
+    }
+
+    let targetAngleX = 0.0012;
+    let targetAngleY = 0.0012;
+    if (mouse.x !== null) {
+      targetAngleY = (mouse.x - width / 2) * 0.000008;
+      targetAngleX = (mouse.y - height / 2) * 0.000008;
+    }
+    angleX += (targetAngleX - angleX) * 0.04;
+    angleY += (targetAngleY - angleY) * 0.04;
+
+    // Render nodes
+    particles.forEach(p => {
+      p.update(angleX, angleY);
+      p.draw();
+    });
+
+    // Draw connection lines
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const p1 = particles[i];
+        const p2 = particles[j];
+        const dist = Math.hypot(p1.projX - p2.projX, p1.projY - p2.projY);
+        if (dist < 110) {
+          const alpha = (1 - dist / 110) * 0.16 * Math.min(p1.alpha, p2.alpha);
+          ctx.beginPath();
+          ctx.moveTo(p1.projX, p1.projY);
+          ctx.lineTo(p2.projX, p2.projY);
+          const isDark = document.documentElement.classList.contains('dark');
+          ctx.strokeStyle = isDark ? `rgba(129, 140, 248, ${alpha})` : `rgba(99, 102, 241, ${alpha})`;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+})();
+
+// Initialize 3D Card Hover Tilting
+(function() {
+  if (typeof VanillaTilt !== 'undefined') {
+    VanillaTilt.init(document.querySelectorAll(".bento-card, .showcase-widget, .how-step, .match-card"), {
+      max: 6,
+      speed: 1000,
+      glare: true,
+      "max-glare": 0.12,
+      scale: 1.015,
+      gyroscope: true
+    });
   }
 })();
 </script>
