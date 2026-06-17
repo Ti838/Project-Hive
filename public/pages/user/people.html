@@ -119,16 +119,37 @@ body{background:var(--bg);color:var(--tx);margin:0}
   let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],tab='discover',filter='all',sTimer=null;
 
   async function init(){
-    try{const me=await fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.json());myId=me._id||me.id||'';}catch(e){}
-    const [users,friends,pending]=await Promise.all([
+    // Try cached user profile first
+    const cache = localStorage.getItem('ph-user-cache');
+    if (cache) {
+      try {
+        const me = JSON.parse(cache);
+        myId = me._id || me.id || '';
+      } catch(e) {}
+    }
+
+    // Parallel calls
+    const [meRes, users, friends, pending] = await Promise.allSettled([
+      !myId ? fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.json()) : Promise.resolve(null),
       fetch(API_BASE+'/api/users/search?q=&limit=80',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch(API_BASE+'/api/friends',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(API_BASE+'/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API_BASE+'/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[])
     ]);
-    allUsers=Array.isArray(users)?users:(users.users||[]);
-    const fl=Array.isArray(friends)?friends:(friends.friends||[]);
+
+    if (meRes.status === 'fulfilled' && meRes.value) {
+      const me = meRes.value;
+      myId = me._id || me.id || '';
+      localStorage.setItem('ph-user-cache', JSON.stringify(me));
+    }
+
+    const usersVal = users.status === 'fulfilled' ? users.value : [];
+    const friendsVal = friends.status === 'fulfilled' ? friends.value : [];
+    const pendingVal = pending.status === 'fulfilled' ? pending.value : [];
+
+    allUsers=Array.isArray(usersVal)?usersVal:(usersVal.users||[]);
+    const fl=Array.isArray(friendsVal)?friendsVal:(friendsVal.friends||[]);
     fl.forEach(f=>{const id=f._id||f.id||f.friend?._id;if(id)myFriends.add(id);});
-    inReqs=Array.isArray(pending)?pending:(pending.requests||[]);
+    inReqs=Array.isArray(pendingVal)?pendingVal:(pendingVal.requests||[]);
     document.getElementById('st-total').textContent=allUsers.length;
     document.getElementById('st-friends').textContent=myFriends.size;
     document.getElementById('st-pending').textContent=inReqs.length;

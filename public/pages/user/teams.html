@@ -123,11 +123,44 @@
   };
 
   async function load(){
+    // Try caching
+    try {
+      const cacheTeams = localStorage.getItem('ph-teams-all-cache');
+      const cacheMine = localStorage.getItem('ph-teams-mine-cache');
+      if (cacheTeams) {
+        teams = JSON.parse(cacheTeams);
+        document.getElementById('st-total').textContent = teams.length;
+        document.getElementById('st-open').textContent = teams.filter(t=>t.isOpen!==false).length;
+        render(teams);
+      }
+      if (cacheMine) {
+        const mine = JSON.parse(cacheMine);
+        myIds = new Set(mine.map(t => t._id));
+        document.getElementById('st-mine').textContent = mine.length;
+      }
+    } catch(e) {}
+
     try{
       const [tr,mr]=await Promise.allSettled([fetch(API_BASE+'/api/teams',{headers:H}).then(r=>r.json()),fetch(API_BASE+'/api/teams/my-teams',{headers:H}).then(r=>r.json())]);
-      if(tr.status==='fulfilled'){teams=tr.value?.teams||tr.value||[];document.getElementById('st-total').textContent=teams.length;document.getElementById('st-open').textContent=teams.filter(t=>t.isOpen!==false).length;render(teams);}
-      if(mr.status==='fulfilled'){const mine=mr.value?.teams||mr.value||[];myIds=new Set(mine.map(t=>t._id));document.getElementById('st-mine').textContent=mine.length;}
-    }catch(e){document.getElementById('grid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block">cloud_off</span>Server offline</div>`;}
+      if(tr.status==='fulfilled'){
+        teams=tr.value?.teams||tr.value||[];
+        localStorage.setItem('ph-teams-all-cache', JSON.stringify(teams));
+        document.getElementById('st-total').textContent=teams.length;
+        document.getElementById('st-open').textContent=teams.filter(t=>t.isOpen!==false).length;
+        render(teams);
+      }
+      if(mr.status==='fulfilled'){
+        const mine=mr.value?.teams||mr.value||[];
+        localStorage.setItem('ph-teams-mine-cache', JSON.stringify(mine));
+        myIds=new Set(mine.map(t=>t._id));
+        document.getElementById('st-mine').textContent=mine.length;
+        if (tr.status==='fulfilled') render(teams);
+      }
+    }catch(e){
+      if (!teams.length) {
+        document.getElementById('grid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block">cloud_off</span>Server offline</div>`;
+      }
+    }
   }
   load();
 })();

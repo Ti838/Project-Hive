@@ -180,11 +180,29 @@ body{background:var(--bg);color:var(--tx);margin:0}
     ];
   }
 
+  // Read cache
+  try {
+    const cache = localStorage.getItem('ph-notif-cache');
+    if (cache) {
+      all = JSON.parse(cache);
+      stats();
+      render(all);
+    }
+  } catch(e) {}
+
   fetch(API_BASE+'/api/notifications?limit=60',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
-    if(d){all=d.notifications||d||[];}
+    if(d){
+      all=d.notifications||d||[];
+      localStorage.setItem('ph-notif-cache', JSON.stringify(all));
+    }
     if(!all.length)all=demoNotifs();
     stats();render(all);
-  }).catch(()=>{all=demoNotifs();stats();render(all);});
+  }).catch(()=>{
+    if (!all.length) {
+      all=demoNotifs();
+      stats();render(all);
+    }
+  });
 })();
 </script>
 </body></html>

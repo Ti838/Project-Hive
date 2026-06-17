@@ -816,6 +816,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   }
 
   /* Load all dashboard data */
+  /* Load all dashboard data */
   async function load() {
     /* 1. Show cached user info instantly */
     try {
@@ -873,101 +874,114 @@ body, header, aside, main, section, .bg-surface-container-lowest,
       if (cachedOnline) renderOnlineFriends(JSON.parse(cachedOnline));
     } catch (_) {}
 
-    /* 5. Fetch fresh user info */
-    try {
-      const r = await fetch(API_BASE + '/api/users/me', { headers: H });
-      if (r.status === 401 || r.status === 404) {
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('ph-user-cache');
-        window.location.href = '/login';
-        return;
-      }
-      if (r.ok) {
-        const u = await r.json();
-        localStorage.setItem('ph-user-cache', JSON.stringify(u)); // update cache
-        const fn = u.firstName || '', ln = u.lastName || '';
-        const name = (fn + (ln ? ' ' + ln : '')).trim() || 'Student';
-        const ini  = ((fn[0] || '') + (ln[0] || '')).toUpperCase() || '?';
-        const cols = ['#6366f1', '#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'];
-        let h = 0; for (const c of name) h = c.charCodeAt(0) + ((h << 5) - h);
+    /* Helper functions for parallel requests */
+    async function fetchUserProfile() {
+      try {
+        const r = await fetch(API_BASE + '/api/users/me', { headers: H });
+        if (r.status === 401 || r.status === 404) {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('user_data');
+          localStorage.removeItem('ph-user-cache');
+          window.location.href = '/login';
+          return;
+        }
+        if (r.ok) {
+          const u = await r.json();
+          localStorage.setItem('ph-user-cache', JSON.stringify(u)); // update cache
+          const fn = u.firstName || '', ln = u.lastName || '';
+          const name = (fn + (ln ? ' ' + ln : '')).trim() || 'Student';
+          const ini  = ((fn[0] || '') + (ln[0] || '')).toUpperCase() || '?';
+          const cols = ['#6366f1', '#7c3aed', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'];
+          let h = 0; for (const c of name) h = c.charCodeAt(0) + ((h << 5) - h);
 
-        document.getElementById('dash-greeting-name').textContent = fn || 'there';
-        document.getElementById('dash-welcome-name').textContent  = fn || 'Student';
-        document.getElementById('dash-username').textContent      = name;
-        document.getElementById('dash-role').textContent          = (u.role || 'student').charAt(0).toUpperCase() + (u.role || 'student').slice(1);
+          document.getElementById('dash-greeting-name').textContent = fn || 'there';
+          document.getElementById('dash-welcome-name').textContent  = fn || 'Student';
+          document.getElementById('dash-username').textContent      = name;
+          document.getElementById('dash-role').textContent          = (u.role || 'student').charAt(0).toUpperCase() + (u.role || 'student').slice(1);
 
-        const av = document.getElementById('dash-avatar');
-        if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
+          const av = document.getElementById('dash-avatar');
+          if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
 
-        const pct = Math.round(u.profileCompletion ?? u.completion_percentage ?? 0);
-        document.getElementById('dash-profile-pct').textContent  = pct + '%';
-        document.getElementById('dash-profile-bar').style.width  = pct + '%';
-        document.getElementById('dash-profile-step').textContent = pct === 0
-          ? 'Not started' : `Step ${Math.min(Math.ceil(pct / 20) || 1, 5)} of 5`;
-      }
-    } catch (e) {}
-
-    /* 6. Fetch stats in parallel */
-    try {
-      const [tr, fr, pr, mr] = await Promise.allSettled([
-        fetch(API_BASE + '/api/teams/my-teams',         {headers: H}).then(r => r.json()),
-        fetch(API_BASE + '/api/friends',                {headers: H}).then(r => r.json()),
-        fetch(API_BASE + '/api/projects',               {headers: H}).then(r => r.json()),
-        fetch(API_BASE + '/api/messages/conversations', {headers: H}).then(r => r.json()),
-      ]);
-
-      const teamsCount = tr.value?.teams?.length ?? tr.value?.length ?? 0;
-      const friendsCount = fr.value?.friends?.length ?? fr.value?.length ?? 0;
-      const projectsCount = pr.value?.projects?.length ?? pr.value?.length ?? 0;
-      const messagesCount = mr.value?.conversations?.length ?? mr.value?.length ?? 0;
-
-      const statsObj = { teams: teamsCount, friends: friendsCount, projects: projectsCount, messages: messagesCount };
-      localStorage.setItem('ph-stats-cache', JSON.stringify(statsObj));
-
-      // Only animate countUp if it changed from cached value or if no cache exists
-      if (!cachedStatsObj || cachedStatsObj.teams !== teamsCount) countUp('stat-teams', teamsCount);
-      else document.getElementById('stat-teams').textContent = teamsCount;
-
-      if (!cachedStatsObj || cachedStatsObj.friends !== friendsCount) countUp('stat-friends', friendsCount);
-      else document.getElementById('stat-friends').textContent = friendsCount;
-
-      if (!cachedStatsObj || cachedStatsObj.projects !== projectsCount) countUp('stat-projects', projectsCount);
-      else document.getElementById('stat-projects').textContent = projectsCount;
-
-      if (!cachedStatsObj || cachedStatsObj.messages !== messagesCount) countUp('stat-messages', messagesCount);
-      else document.getElementById('stat-messages').textContent = messagesCount;
-
-    } catch (e) {}
-
-    /* 7. Fetch notifications */
-    try {
-      const nr = await fetch(API_BASE + '/api/notifications?limit=6', {headers: H});
-      if (nr.ok) {
-        const nd = await nr.json();
-        const list = nd.notifications || nd;
-        localStorage.setItem('ph-notif-cache', JSON.stringify(list));
-        renderNotifications(list);
-      } else {
-        document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">No notifications yet.</div>';
-      }
-    } catch (e) {
-      document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">Could not load.</div>';
+          const pct = Math.round(u.profileCompletion ?? u.completion_percentage ?? 0);
+          document.getElementById('dash-profile-pct').textContent  = pct + '%';
+          document.getElementById('dash-profile-bar').style.width  = pct + '%';
+          document.getElementById('dash-profile-step').textContent = pct === 0
+            ? 'Not started' : `Step ${Math.min(Math.ceil(pct / 20) || 1, 5)} of 5`;
+        }
+      } catch (e) {}
     }
 
-    /* 8. Fetch online friends */
-    try {
-      const fr = await fetch(API_BASE + '/api/users?limit=20', {headers: H});
-      if (fr.ok) {
-        const fd = await fr.json();
-        const users = (fd.users || fd || []).slice(0, 6);
-        localStorage.setItem('ph-online-cache', JSON.stringify(users));
-        renderOnlineFriends(users);
-      }
-    } catch (e) {
-      document.getElementById('online-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-4">Could not load</div>';
+    async function fetchStats() {
+      try {
+        const [tr, fr, pr, mr] = await Promise.allSettled([
+          fetch(API_BASE + '/api/teams/my-teams',         {headers: H}).then(r => r.json()),
+          fetch(API_BASE + '/api/friends',                {headers: H}).then(r => r.json()),
+          fetch(API_BASE + '/api/projects',               {headers: H}).then(r => r.json()),
+          fetch(API_BASE + '/api/messages/conversations', {headers: H}).then(r => r.json()),
+        ]);
+
+        const teamsCount = tr.value?.teams?.length ?? tr.value?.length ?? 0;
+        const friendsCount = fr.value?.friends?.length ?? fr.value?.length ?? 0;
+        const projectsCount = pr.value?.projects?.length ?? pr.value?.length ?? 0;
+        const messagesCount = mr.value?.conversations?.length ?? mr.value?.length ?? 0;
+
+        const statsObj = { teams: teamsCount, friends: friendsCount, projects: projectsCount, messages: messagesCount };
+        localStorage.setItem('ph-stats-cache', JSON.stringify(statsObj));
+
+        // Only animate countUp if it changed from cached value or if no cache exists
+        if (!cachedStatsObj || cachedStatsObj.teams !== teamsCount) countUp('stat-teams', teamsCount);
+        else document.getElementById('stat-teams').textContent = teamsCount;
+
+        if (!cachedStatsObj || cachedStatsObj.friends !== friendsCount) countUp('stat-friends', friendsCount);
+        else document.getElementById('stat-friends').textContent = friendsCount;
+
+        if (!cachedStatsObj || cachedStatsObj.projects !== projectsCount) countUp('stat-projects', projectsCount);
+        else document.getElementById('stat-projects').textContent = projectsCount;
+
+        if (!cachedStatsObj || cachedStatsObj.messages !== messagesCount) countUp('stat-messages', messagesCount);
+        else document.getElementById('stat-messages').textContent = messagesCount;
+
+      } catch (e) {}
     }
+
+    async function fetchNotifications() {
+      try {
+        const nr = await fetch(API_BASE + '/api/notifications?limit=6', {headers: H});
+        if (nr.ok) {
+          const nd = await nr.json();
+          const list = nd.notifications || nd;
+          localStorage.setItem('ph-notif-cache', JSON.stringify(list));
+          renderNotifications(list);
+        } else {
+          document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">No notifications yet.</div>';
+        }
+      } catch (e) {
+        document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">Could not load.</div>';
+      }
+    }
+
+    async function fetchOnlineFriends() {
+      try {
+        const fr = await fetch(API_BASE + '/api/users?limit=20', {headers: H});
+        if (fr.ok) {
+          const fd = await fr.json();
+          const users = (fd.users || fd || []).slice(0, 6);
+          localStorage.setItem('ph-online-cache', JSON.stringify(users));
+          renderOnlineFriends(users);
+        }
+      } catch (e) {
+        document.getElementById('online-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-4">Could not load</div>';
+      }
+    }
+
+    /* 5. Parallelized background fetches */
+    await Promise.allSettled([
+      fetchUserProfile(),
+      fetchStats(),
+      fetchNotifications(),
+      fetchOnlineFriends()
+    ]);
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', load) : load();

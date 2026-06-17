@@ -429,31 +429,47 @@
 
       // Load Profile & Initialize Creator Avatar
       async function initProfile() {
+        const cache = localStorage.getItem('ph-user-cache');
+        if (cache) {
+          try {
+            ME = JSON.parse(cache);
+            renderProfileData(ME);
+          } catch(e) {}
+        }
+
         try {
           const r = await fetch(API_BASE + '/api/users/me', { headers: H });
           if (r.ok) {
             ME = await r.json();
-            const fn = ME.firstName || ME.user?.firstName || 'Student';
-            const ln = ME.lastName || ME.user?.lastName || '';
-            const name = (fn + ' ' + ln).trim();
-
-            document.getElementById('feed-username').textContent = name;
-            document.getElementById('feed-role').textContent = (ME.role || 'student').charAt(0).toUpperCase() + (ME.role || 'student').slice(1);
-            
-            const initials = getInitials(fn, ln);
-            const color = getAvatarColor(name);
-
-            const av1 = document.getElementById('feed-avatar');
-            const av2 = document.getElementById('creator-avatar');
-            [av1, av2].forEach(el => {
-              if (el) {
-                el.textContent = initials;
-                el.style.background = color;
-                el.style.color = '#fff';
-              }
-            });
+            localStorage.setItem('ph-user-cache', JSON.stringify(ME));
+            renderProfileData(ME);
           }
         } catch(e) {}
+      }
+
+      function renderProfileData(user) {
+        const fn = user.firstName || user.user?.firstName || 'Student';
+        const ln = user.lastName || user.user?.lastName || '';
+        const name = (fn + ' ' + ln).trim();
+
+        const nameEl = document.getElementById('feed-username');
+        if (nameEl) nameEl.textContent = name;
+        
+        const roleEl = document.getElementById('feed-role');
+        if (roleEl) roleEl.textContent = (user.role || 'student').charAt(0).toUpperCase() + (user.role || 'student').slice(1);
+        
+        const initials = getInitials(fn, ln);
+        const color = getAvatarColor(name);
+
+        const av1 = document.getElementById('feed-avatar');
+        const av2 = document.getElementById('creator-avatar');
+        [av1, av2].forEach(el => {
+          if (el) {
+            el.textContent = initials;
+            el.style.background = color;
+            el.style.color = '#fff';
+          }
+        });
       }
 
       // Handle Post Type Selection Styles
@@ -598,35 +614,48 @@
 
       // Load Suggestions / People you know
       async function loadSuggestions() {
+        const cache = localStorage.getItem('ph-feed-suggestions-cache');
+        if (cache) {
+          try {
+            const data = JSON.parse(cache);
+            renderSuggestions(data);
+          } catch(e) {}
+        }
+
         try {
           const r = await fetch(API_BASE + '/api/users?limit=6', { headers: H });
           if (r.ok) {
             const data = await r.json();
-            const users = (data.users || data || []).filter(u => u.id !== ME.id && u._id !== ME.id);
-            const el = document.getElementById('suggested-people-list');
-            if (!users.length) {
-              el.innerHTML = '<div class="text-center py-4 text-xs text-on-surface-variant">No recommendations available.</div>';
-              return;
-            }
-            el.innerHTML = users.slice(0, 4).map(u => {
-              const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
-              const color = getAvatarColor(name);
-              const initials = getInitials(u.firstName, u.lastName);
-              return `<div class="flex items-center justify-between p-2 rounded-xl hover:bg-surface-container-low transition-all">
-                <div class="flex items-center gap-2.5 min-w-0">
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${color}">${initials}</div>
-                  <div class="min-w-0">
-                    <p class="font-semibold text-xs text-on-surface truncate">${escapeHtml(name)}</p>
-                    <p class="text-[10px] text-on-surface-variant truncate">${escapeHtml(u.university || '')}</p>
-                  </div>
-                </div>
-                <button onclick="sendFriendRequest('${u.id || u._id}')" class="text-primary hover:text-primary-dark p-1 rounded-full hover:bg-primary/5 shrink-0 transition-colors" title="Connect">
-                  <span class="material-symbols-outlined text-[18px]">person_add</span>
-                </button>
-              </div>`;
-            }).join('');
+            localStorage.setItem('ph-feed-suggestions-cache', JSON.stringify(data));
+            renderSuggestions(data);
           }
         } catch(e) {}
+      }
+
+      function renderSuggestions(data) {
+        const users = (data.users || data || []).filter(u => u.id !== ME.id && u._id !== ME.id);
+        const el = document.getElementById('suggested-people-list');
+        if (!users.length) {
+          el.innerHTML = '<div class="text-center py-4 text-xs text-on-surface-variant">No recommendations available.</div>';
+          return;
+        }
+        el.innerHTML = users.slice(0, 4).map(u => {
+          const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
+          const color = getAvatarColor(name);
+          const initials = getInitials(u.firstName, u.lastName);
+          return `<div class="flex items-center justify-between p-2 rounded-xl hover:bg-surface-container-low transition-all">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${color}">${initials}</div>
+              <div class="min-w-0">
+                <p class="font-semibold text-xs text-on-surface truncate">${escapeHtml(name)}</p>
+                <p class="text-[10px] text-on-surface-variant truncate">${escapeHtml(u.university || '')}</p>
+              </div>
+            </div>
+            <button onclick="sendFriendRequest('${u.id || u._id}')" class="text-primary hover:text-primary-dark p-1 rounded-full hover:bg-primary/5 shrink-0 transition-colors" title="Connect">
+              <span class="material-symbols-outlined text-[18px]">person_add</span>
+            </button>
+          </div>`;
+        }).join('');
       }
 
       window.sendFriendRequest = async function(friendId) {
@@ -650,6 +679,14 @@
 
       // Load Stats
       async function loadStats() {
+        const cache = localStorage.getItem('ph-feed-stats-cache');
+        if (cache) {
+          try {
+            const data = JSON.parse(cache);
+            renderStats(data.postsCount, data.friendsCount);
+          } catch(e) {}
+        }
+
         try {
           const [postsRes, friendsRes] = await Promise.all([
             fetch(API_BASE + '/api/feed?limit=50', { headers: H }).then(r => r.json()),
@@ -657,11 +694,21 @@
           ]);
 
           const myPosts = (postsRes.posts || []).filter(p => p.author?.id === ME.id || p.author?.id === ME._id);
-          document.getElementById('stats-total-posts').textContent = myPosts.length;
+          const postsCount = myPosts.length;
           
           const acceptedFriends = (friendsRes.friends || friendsRes || []).filter(f => f.status === 'accepted');
-          document.getElementById('stats-total-friends').textContent = acceptedFriends.length;
+          const friendsCount = acceptedFriends.length;
+
+          localStorage.setItem('ph-feed-stats-cache', JSON.stringify({ postsCount, friendsCount }));
+          renderStats(postsCount, friendsCount);
         } catch(e) {}
+      }
+
+      function renderStats(postsCount, friendsCount) {
+        const postsEl = document.getElementById('stats-total-posts');
+        if (postsEl) postsEl.textContent = postsCount;
+        const friendsEl = document.getElementById('stats-total-friends');
+        if (friendsEl) friendsEl.textContent = friendsCount;
       }
 
       // Bookmarks helper functions
@@ -900,20 +947,32 @@
         feedPage = 1;
         hasMoreFeed = true;
         feedLoading = false;
+
+        const cache = localStorage.getItem('ph-feed-posts-cache');
         const container = document.getElementById('feed-list');
-        container.innerHTML = `
-          <div class="bg-surface-container-lowest p-6 rounded-2xl border border-surface-variant animate-pulse">
-            <div class="flex items-center gap-3 mb-4">
-              <div class="w-10 h-10 bg-surface-container rounded-full"></div>
-              <div class="flex-1">
-                <div class="h-4 bg-surface-container rounded w-1/3 mb-2"></div>
-                <div class="h-3 bg-surface-container rounded w-1/4"></div>
+        if (cache) {
+          try {
+            const posts = JSON.parse(cache);
+            if (posts.length > 0) {
+              container.innerHTML = posts.map(p => renderPostCardHtml(p)).join('') + `<div id="feed-load-more-sentry" class="h-10 flex items-center justify-center text-xs text-on-surface-variant mt-4"><span class="animate-pulse">Loading older posts...</span></div>`;
+              setupInfiniteScrollObserver();
+            }
+          } catch(e) {}
+        } else {
+          container.innerHTML = `
+            <div class="bg-surface-container-lowest p-6 rounded-2xl border border-surface-variant animate-pulse">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-surface-container rounded-full"></div>
+                <div class="flex-1">
+                  <div class="h-4 bg-surface-container rounded w-1/3 mb-2"></div>
+                  <div class="h-3 bg-surface-container rounded w-1/4"></div>
+                </div>
               </div>
+              <div class="h-4 bg-surface-container rounded w-full mb-3"></div>
+              <div class="h-4 bg-surface-container rounded w-5/6"></div>
             </div>
-            <div class="h-4 bg-surface-container rounded w-full mb-3"></div>
-            <div class="h-4 bg-surface-container rounded w-5/6"></div>
-          </div>
-        `;
+          `;
+        }
         await fetchFeedPage(1, false);
       }
 
@@ -947,6 +1006,10 @@
             }
 
             const cardsHtml = posts.map(p => renderPostCardHtml(p)).join('');
+            if (page === 1) {
+              localStorage.setItem('ph-feed-posts-cache', JSON.stringify(posts));
+            }
+
             if (append) {
               if (sentry) {
                 sentry.insertAdjacentHTML('beforebegin', cardsHtml);
@@ -1216,10 +1279,12 @@
 
       // Init Page Execution
       async function main() {
-        await initProfile();
-        await loadFeed();
-        loadSuggestions();
-        loadStats();
+        await Promise.allSettled([
+          initProfile(),
+          loadFeed(),
+          loadSuggestions(),
+          loadStats()
+        ]);
         initSocket();
         handleSharedPostQuery();
       }

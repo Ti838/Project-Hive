@@ -267,7 +267,9 @@ const PHSidebar = (() => {
       initGlobalSearch(base); // ← NEW: global Ctrl+K search
     };
 
-    if (document.readyState === 'loading') {
+    if (document.getElementById('ph-sidebar')) {
+      doRender();
+    } else if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', doRender);
     } else {
       doRender();
@@ -730,11 +732,18 @@ const PHSidebar = (() => {
     // Inject transition CSS dynamically
     const style = document.createElement('style');
     style.textContent = `
-      body {
-        transition: opacity 0.22s ease-in-out !important;
+      .ph-page, .ph-main {
+        animation: ph-page-enter 0.22s ease-out both;
+        will-change: opacity, transform;
       }
-      body.ph-page-fadeout {
+      @keyframes ph-page-enter {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .ph-page-exit {
         opacity: 0 !important;
+        transform: translateY(-6px) !important;
+        transition: opacity 0.18s ease-in, transform 0.18s ease-in !important;
       }
       #ph-progress-bar {
         position: fixed;
@@ -757,12 +766,6 @@ const PHSidebar = (() => {
     `;
     document.head.appendChild(style);
 
-    // Initial page load: fade in body smoothly
-    document.body.style.opacity = '0';
-    requestAnimationFrame(() => {
-      document.body.style.opacity = '1';
-    });
-
     // 2. Intercept local link clicks for smooth fadeout + progress animation
     document.addEventListener('click', (e) => {
       const link = e.target.closest('a');
@@ -784,10 +787,13 @@ const PHSidebar = (() => {
         pb.style.opacity = '1';
         pb.style.width = '75%';
         
-        // Fade out current body
-        document.body.classList.add('ph-page-fadeout');
+        // Fade out current content page instead of body
+        const pageEl = document.querySelector('.ph-page') || document.querySelector('.ph-main');
+        if (pageEl) {
+          pageEl.classList.add('ph-page-exit');
+        }
         
-        // Navigate to the link after the body completes fade-out (200ms)
+        // Navigate to the link after the content completes fade-out (200ms)
         setTimeout(() => {
           pb.style.width = '100%';
           window.location.href = href;
@@ -795,10 +801,13 @@ const PHSidebar = (() => {
       } catch (err) {}
     });
 
-    // In case browser back/forward cache is used, remove the fadeout class on page show
+    // In case browser back/forward cache is used, remove the exit class on page show
     window.addEventListener('pageshow', (e) => {
       if (e.persisted) {
-        document.body.classList.remove('ph-page-fadeout');
+        const pageEl = document.querySelector('.ph-page') || document.querySelector('.ph-main');
+        if (pageEl) {
+          pageEl.classList.remove('ph-page-exit');
+        }
         pb.style.opacity = '0';
         pb.style.width = '0';
       }
