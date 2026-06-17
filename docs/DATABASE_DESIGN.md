@@ -172,3 +172,22 @@ For client-side anonymous queries (read-only feeds/search), the following public
 * **Posts:** `CREATE POLICY "read posts" ON posts FOR SELECT USING (true);`
 * **Reactions:** `CREATE POLICY "read reactions" ON post_reactions FOR SELECT USING (true);`
 * **Comments:** `CREATE POLICY "read comments" ON post_comments FOR SELECT USING (true);`
+
+---
+
+## ⚡ Performance & Data Payload Optimization
+
+Storing binary assets (like images) directly in a relational database as Base64 strings can cause performance degradation if payloads are too large. ProjectHive handles this using a client-side preprocessing strategy:
+
+### 1. Client-Side Image Pre-processing
+Rather than sending raw 5MB-10MB camera files to the Express server, the frontend intercepts image selection:
+* **Avatars** are processed on an HTML5 Canvas down to `400x400` pixels.
+* **Banners** are downscaled to `1200x675` pixels.
+* Export is executed as `image/jpeg` with `0.85` quality, compressing the final Base64 string to **under 150KB**.
+
+### 2. Database Footprint Benefits
+* **Fast Query Execution:** Users fetch profiles instantly since the Base64 payloads are tiny, keeping DB buffer pool usage optimized.
+* **No Supabase Payload Timeout:** Avoids HTTP gateway timeouts on slow connections.
+* **Storage Economy:** Eliminates the need for expensive third-party object buckets for basic profile custom media.
+
+---
