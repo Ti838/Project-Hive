@@ -800,9 +800,9 @@ html.dark #ph-transition-overlay {
 @media (min-width: 769px) {
   /* Collapse Toggle Button */
   .ph-sb-collapse-btn {
-    position: absolute;
+    position: fixed;
     top: 28px;
-    right: -10px;
+    left: 248px;
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -814,8 +814,8 @@ html.dark #ph-transition-overlay {
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    z-index: 100;
-    transition: all 0.2s ease;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease, background 0.2s, color 0.2s, border-color 0.2s;
   }
   html.dark .ph-sb-collapse-btn {
     background: #1e293b;
@@ -834,6 +834,9 @@ html.dark #ph-transition-overlay {
   .sidebar-collapsed .ph-sb-collapse-btn svg {
     transform: rotate(180deg);
   }
+  .sidebar-collapsed .ph-sb-collapse-btn {
+    left: 58px;
+  }
 
   /* Collapsed layout overrides */
   .sidebar-collapsed {
@@ -842,9 +845,25 @@ html.dark #ph-transition-overlay {
   .sidebar-collapsed #ph-sidebar {
     width: 70px !important;
   }
+  
+  /* Support Tailwind direct sidebar width classes for content resize */
+  .sidebar-collapsed .ml-\[260px\] {
+    margin-left: 70px !important;
+  }
+  .sidebar-collapsed .left-\[260px\] {
+    left: 70px !important;
+  }
   .sidebar-collapsed .ph-main,
   .sidebar-collapsed .ph-page {
     margin-left: 70px !important;
+  }
+
+  /* Smooth layout transitions on collapse */
+  .ml-\[260px\],
+  .left-\[260px\],
+  .ph-main,
+  .ph-page {
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   }
 
   /* Smoothly shrink and fade labels */
@@ -854,15 +873,7 @@ html.dark #ph-transition-overlay {
   .sidebar-collapsed .ph-sb-theme-label,
   .sidebar-collapsed .ph-sb-signout span,
   .sidebar-collapsed .ph-sb-section {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    pointer-events: none;
-    transition: opacity 0.15s ease, width 0.15s ease;
+    display: none !important;
   }
 
   /* Center items */
@@ -878,29 +889,35 @@ html.dark #ph-transition-overlay {
     padding: 10px 8px;
   }
   .sidebar-collapsed .ph-sb-link {
-    justify-content: center;
-    padding: 10px;
+    justify-content: center !important;
+    padding: 0 !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 6px auto !important;
+    border-radius: 12px !important;
   }
   .sidebar-collapsed .ph-sb-footer {
-    padding: 12px 8px;
+    padding: 12px 0 !important;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
   }
   .sidebar-collapsed .ph-sb-theme-btn {
-    padding: 10px;
-    width: 38px;
-    height: 38px;
-    justify-content: center;
-    border-radius: 10px;
+    padding: 0 !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 6px auto !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
   }
   .sidebar-collapsed .ph-sb-signout {
-    padding: 10px;
-    width: 38px;
-    height: 38px;
-    justify-content: center;
-    border-radius: 10px;
+    padding: 0 !important;
+    width: 48px !important;
+    height: 48px !important;
+    margin: 6px auto !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
   }
 }
 @media (max-width: 768px) {

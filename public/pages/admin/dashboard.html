@@ -5,7 +5,8 @@ html.dark{--bg:#07080f;--sb:#0b0d17;--sf:#0f1020;--bd:#1c1f35;--tx:#e2deee;--sub
 html,body{height:100%}
 body{background:var(--bg);color:var(--tx);display:flex;height:100%;overflow:hidden;transition:background .25s,color .25s}
 /* ── Sidebar ── */
-.sb{width:248px;height:100vh;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;transition:background .25s,border-color .25s}
+.sb{width:248px;height:100vh;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;transition:background .25s,border-color .25s}
+.sb::-webkit-scrollbar{display:none}
 .sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 12px}
 .sb-brand img{width:32px;height:32px;border-radius:10px;flex-shrink:0}
 .sb-brand-name{font-size:15px;font-weight:900;background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex:1}
@@ -117,9 +118,9 @@ tr:hover td{background:rgba(99,102,241,.03)}
 @media (min-width: 769px) {
   /* Collapse Toggle Button for Admin */
   .sb-collapse-btn {
-    position: absolute;
+    position: fixed;
     top: 26px;
-    right: -10px;
+    left: 238px;
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -131,8 +132,8 @@ tr:hover td{background:rgba(99,102,241,.03)}
     justify-content: center;
     cursor: pointer;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    z-index: 100;
-    transition: all 0.2s ease;
+    z-index: 1000;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease, background 0.2s, color 0.2s, border-color 0.2s;
   }
   .sb-collapse-btn:hover {
     background: var(--ac);
@@ -145,6 +146,9 @@ tr:hover td{background:rgba(99,102,241,.03)}
   }
   .sidebar-collapsed .sb-collapse-btn svg {
     transform: rotate(180deg);
+  }
+  .sidebar-collapsed .sb-collapse-btn {
+    left: 60px;
   }
 
   /* Collapsed layout overrides for admin */
@@ -160,15 +164,7 @@ tr:hover td{background:rgba(99,102,241,.03)}
   .sidebar-collapsed .badge-cnt,
   .sidebar-collapsed #th-lbl,
   .sidebar-collapsed #th-tog {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    padding: 0 !important;
-    margin: 0 !important;
-    border: none !important;
-    pointer-events: none;
-    transition: opacity 0.15s ease, width 0.15s ease;
+    display: none !important;
   }
 
   /* Center brand, navigation items, footer */
@@ -199,12 +195,12 @@ tr:hover td{background:rgba(99,102,241,.03)}
 }
 </style></head>
 <body>
+<button class="sb-collapse-btn" id="sb-collapse-btn" onclick="toggleCollapse()" aria-label="Toggle sidebar collapse" title="Toggle Sidebar">
+  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <polyline points="15 18 9 12 15 6"></polyline>
+  </svg>
+</button>
 <div class="sb">
-  <button class="sb-collapse-btn" id="sb-collapse-btn" onclick="toggleCollapse()" aria-label="Toggle sidebar collapse" title="Toggle Sidebar">
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-      <polyline points="15 18 9 12 15 6"></polyline>
-    </svg>
-  </button>
   <div class="sb-brand">
     <img src="/assets/svg/logo.png" onerror="this.style.display='none'">
     <span class="sb-brand-name">ProjectHive</span>

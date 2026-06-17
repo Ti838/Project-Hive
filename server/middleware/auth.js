@@ -1,6 +1,7 @@
 import { verifyAccessToken } from '../utils/jwt.utils.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
-export function authMiddleware(req, res, next) {
+export async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     
@@ -13,6 +14,21 @@ export function authMiddleware(req, res, next) {
     try {
       const decoded = verifyAccessToken(token);
       req.user = decoded;
+
+      // Dynamically resolve 'admin' placeholder ID to real database UUID
+      if (req.user.id === 'admin' && req.user.email) {
+        try {
+          const { data: user } = await supabaseAdmin
+            .from('users')
+            .select('id')
+            .eq('email', req.user.email.toLowerCase())
+            .single();
+          if (user) {
+            req.user.id = user.id;
+          }
+        } catch (_) {}
+      }
+
       next();
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
@@ -26,7 +42,7 @@ export function authMiddleware(req, res, next) {
   }
 }
 
-export function optionalAuthMiddleware(req, res, next) {
+export async function optionalAuthMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
     
@@ -40,6 +56,20 @@ export function optionalAuthMiddleware(req, res, next) {
     try {
       const decoded = verifyAccessToken(token);
       req.user = decoded;
+
+      // Dynamically resolve 'admin' placeholder ID to real database UUID
+      if (req.user.id === 'admin' && req.user.email) {
+        try {
+          const { data: user } = await supabaseAdmin
+            .from('users')
+            .select('id')
+            .eq('email', req.user.email.toLowerCase())
+            .single();
+          if (user) {
+            req.user.id = user.id;
+          }
+        } catch (_) {}
+      }
     } catch (error) {
       req.user = null;
     }
@@ -50,3 +80,4 @@ export function optionalAuthMiddleware(req, res, next) {
     next();
   }
 }
+

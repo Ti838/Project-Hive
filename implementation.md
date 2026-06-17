@@ -51,6 +51,11 @@ This document tracks the execution phases, design rules, and implementation stat
 * **Admin Safe Guards & Segmentations:** Filtered out administrators from default user listings (`All`, `Students`, `Banned`) and restricted them to a secure `Admins` tab. Marked the current administrator as `You` and locked self-destructive controls (self-deletion/self-banning).
 * **SPA-Style Transitions:** Created a linear-gradient top progress loader bar and opacity transition interceptors on navigation clicks to give the multi-page static portal a seamless single-page application feel.
 
+### Phase 11: Sidebar UX & Overflow Alignments ✅ COMPLETED
+* **Centered Collapsed Icons:** Resolved alignment issues in collapsed sidebars (both student and admin panels) by switching text container styles to `display: none !important` and resizing footer buttons to `100%` width to align selection boxes.
+* **Stroke Weight Sync:** Changed the stroke-width of the Sign Out icon from `2.5` to `2` to match the visual weight of other SVG icons.
+* **Overflow & Clipping Fix:** Addressed sidebar overflow clipping in the admin console by adding `scrollbar-width: none` and WebKit scrollbar hides. Moved the collapse toggle button outside the `.sb` sidebar wrapper to the top-level `<body>` context, utilizing `position: fixed` coordinates synchronizing with the collapse transition to prevent truncation.
+
 ---
 
 ## 🎨 Design Rules & Styling Compliance
