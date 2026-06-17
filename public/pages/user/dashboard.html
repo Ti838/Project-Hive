@@ -761,22 +761,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
     const t = setInterval(() => { cur = Math.min(cur + step, target); el.textContent = cur; if (cur >= target) clearInterval(t); }, 40);
   }
 
-  /* Load all dashboard data */
-  async function load() {
-    /* User info */
-    // Show cached data instantly to avoid blank/loading state
-    try {
-      const cached = localStorage.getItem('ph-user-cache');
-      if (cached) {
-        const u = JSON.parse(cached);
-        const fn = u.firstName || u.first_name || '', ln = u.lastName || u.last_name || '';
-        const name = (fn + (ln ? ' ' + ln : '')).trim() || 'Student';
-        const ini  = ((fn[0]||'')+(ln[0]||'')).toUpperCase() || '?';
-        const cols = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
-        let h = 0; for (const c of name) h = c.charCodeAt(0) + ((h<<5)-h);
-        const el_fn  = document.getElementById('dash-greeting-name');
-        const el_wn  = document.getElementById('dash-welcome-name');
-        const el_un  = document.getElementById('dash-username');
+  
   /* Renderers */
   function renderNotifications(list) {
     const el = document.getElementById('notif-list');
