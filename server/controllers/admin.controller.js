@@ -174,7 +174,7 @@ export async function getAdminPosts(req, res, next) {
     let q = supabaseAdmin
       .from('posts')
       .select(`
-        id, content, post_type, created_at,
+        id, content, post_type, created_at, image_url, link_metadata,
         author:users!author_id(id, first_name, last_name, email, university)
       `, { count: 'exact' });
     if (search) q = q.ilike('content', `%${search}%`);
@@ -187,6 +187,8 @@ export async function getAdminPosts(req, res, next) {
       content: p.content,
       postType: p.post_type,
       createdAt: p.created_at,
+      imageUrl: p.image_url || null,
+      linkMetadata: p.link_metadata || null,
       author: p.author ? {
         id: p.author.id,
         firstName: p.author.first_name,
