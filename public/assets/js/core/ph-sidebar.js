@@ -813,6 +813,12 @@ const PHSidebar = (() => {
     window.location.href = '/login';
   }
 
+  function toggleTheme() {
+    const dark = document.documentElement.classList.toggle('dark');
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    syncThemeBtn();
+  }
+
   function toggleCollapse() {
     const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
     localStorage.setItem('ph-sidebar-collapsed', collapsed ? 'true' : 'false');
