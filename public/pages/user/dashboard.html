@@ -807,7 +807,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
               <p class="text-[12px] font-semibold text-on-surface truncate">${name}</p>
               <p class="text-[10px] text-on-surface-variant truncate">${u.university || u.major || 'Student'}</p>
             </div>
-            <a href="/messages" title="Message" class="text-on-surface-variant hover:text-primary transition-colors">
+            <a href="/messages?chat=${u._id || u.id}" title="Message" class="text-on-surface-variant hover:text-primary transition-colors">
               <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
             </a>
           </div>`;
