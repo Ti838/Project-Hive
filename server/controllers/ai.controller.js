@@ -2,7 +2,7 @@
 // Uses Google's REST API directly — no extra SDK needed, just fetch()
 import { getGeminiKey, isGeminiReady } from '../config/gemini.js';
 
-const GEMINI_MODEL = 'gemini-1.5-flash';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 // Rate limiter

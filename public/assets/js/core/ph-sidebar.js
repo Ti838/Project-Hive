@@ -78,8 +78,15 @@ const PHSidebar = (() => {
     if (nameEl) nameEl.textContent = name;
     if (roleEl) roleEl.textContent = role.charAt(0).toUpperCase() + role.slice(1);
     if (avEl) {
-      avEl.textContent = getInitials(fn, ln);
-      avEl.style.background = getAvatarColor(name);
+      const avatar = u.avatar || u.user?.avatar;
+      if (avatar && avatar.startsWith('data:')) {
+        avEl.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" alt="Avatar">`;
+        avEl.style.background = 'transparent';
+      } else {
+        avEl.textContent = getInitials(fn, ln);
+        avEl.style.background = getAvatarColor(name);
+        avEl.style.color = '#fff';
+      }
     }
     // Store name for call notifications
     localStorage.setItem('ph-sb-name', name);
@@ -148,7 +155,7 @@ const PHSidebar = (() => {
     const logoHref = '/dashboard';
 
     // Show cached user instantly — no flash of '?' or 'Loading...'
-    let cachedName = 'Loading\u2026', cachedInitials = '?', cachedBg = '#6366f1', cachedRole = 'Student';
+    let cachedName = 'Loading\u2026', cachedInitials = '?', cachedBg = '#6366f1', cachedRole = 'Student', cachedAvatar = null;
     try {
       const c = JSON.parse(localStorage.getItem('ph-user-cache') || 'null');
       if (c) {
@@ -161,6 +168,7 @@ const PHSidebar = (() => {
         const cols = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
         let h = 0; for (const ch of cachedName) h = ch.charCodeAt(0) + ((h << 5) - h);
         cachedBg = cols[Math.abs(h) % cols.length];
+        cachedAvatar = c.avatar || null;
       }
     } catch(_) {}
 
@@ -185,7 +193,7 @@ const PHSidebar = (() => {
         </div>
       </a>
       <div class="ph-sb-user">
-        <div class="ph-sb-av" id="ph-sb-av" style="background:${cachedBg}">${IS_DEV ? '🔧' : cachedInitials}</div>
+        <div class="ph-sb-av" id="ph-sb-av" style="background:${cachedAvatar ? 'transparent' : cachedBg}">${IS_DEV ? '🔧' : (cachedAvatar ? `<img src="${cachedAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">` : cachedInitials)}</div>
         <div style="min-width:0;">
           <div class="ph-sb-user-name" id="ph-sb-name">${IS_DEV ? 'Dev Preview' : cachedName}</div>
           <div class="ph-sb-user-role" id="ph-sb-role">${IS_DEV ? '<span style="color:#f59e0b;font-size:10px;font-weight:700;letter-spacing:.05em">⚡ LIVE SERVER MODE</span>' : cachedRole}</div>
@@ -265,6 +273,7 @@ const PHSidebar = (() => {
       wireThemeButtons();
       initTransitions();   // ← page transitions
       initGlobalSearch(base); // ← NEW: global Ctrl+K search
+      initGlobalProfile(base); // ← NEW: global user profile modal
     };
 
     if (document.getElementById('ph-sidebar')) {
@@ -814,6 +823,400 @@ const PHSidebar = (() => {
     });
   }
 
+  function initGlobalProfile(base) {
+    if (document.getElementById('global-profile-modal')) return;
+
+    // 1. Inject CSS Styles
+    const style = document.createElement('style');
+    style.textContent = `
+      .gp-modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 17, 23, 0.6);
+        backdrop-filter: blur(12px);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .gp-modal-container {
+        width: 100%;
+        max-width: 500px;
+        background: var(--sf, #ffffff);
+        border: 1px solid var(--bd, rgba(0, 0, 0, 0.08));
+        border-radius: 24px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        max-height: 85vh;
+        animation: gp-modal-enter 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        font-family: 'Inter', sans-serif;
+      }
+      html.dark .gp-modal-container {
+        background: #171821;
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      @keyframes gp-modal-enter {
+        from { opacity: 0; transform: scale(0.9) translateY(20px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+      .gp-modal-container button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // 2. Inject DOM Elements
+    const backdrop = document.createElement('div');
+    backdrop.id = 'global-profile-modal';
+    backdrop.className = 'gp-modal-backdrop';
+    backdrop.style.display = 'none';
+    backdrop.innerHTML = `
+      <div class="gp-modal-container" id="gp-modal-container">
+        <!-- Banner -->
+        <div class="relative h-32 bg-gradient-to-r from-indigo-500 to-purple-600 flex-shrink-0" id="gp-banner-zone" style="position:relative;height:128px;background:linear-gradient(90deg, #6366f1 0%, #a855f7 100%)">
+          <img id="gp-banner" style="display:none;width:100%;height:100%;object-fit:cover;">
+          <button type="button" onclick="closeGlobalProfile()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:50%;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;z-index:10;" onmouseover="this.style.background='rgba(0,0,0,0.6)'" onmouseout="this.style.background='rgba(0,0,0,0.4)'">
+            <span class="material-symbols-outlined" style="font-size:16px;">close</span>
+          </button>
+        </div>
+        
+        <!-- Profile Header Info (Overlapping) -->
+        <div style="padding:16px 24px;border-bottom:1px solid var(--bd, rgba(255,255,255,0.08));position:relative;flex-shrink:0;">
+          <!-- Avatar container -->
+          <div id="gp-avatar-container" style="position:absolute;top:-48px;left:24px;width:90px;height:90px;border-radius:50%;border:4px solid var(--sf,#fff);background:#6366f1;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:28px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);overflow:hidden;">
+            <img id="gp-avatar" style="display:none;width:100%;height:100%;object-fit:cover;">
+            <span id="gp-initials">?</span>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div id="gp-actions" style="display:flex;justify-content:flex-end;gap:8px;height:36px;align-items:center;">
+            <!-- CONNECT, MESSAGE etc -->
+          </div>
+          
+          <!-- Name and Meta -->
+          <div style="margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <h3 id="gp-name" style="font-weight:800;font-size:18px;margin:0;color:var(--tx,#1f2937)">Student Name</h3>
+              <span id="gp-status-dot" style="width:10px;height:10px;border-radius:50%;border:2px solid var(--sf,#fff);background:#9ca3af;display:inline-block" title="Offline"></span>
+            </div>
+            <p id="gp-university-major" style="font-size:12px;color:var(--tx-dim,#6b7280);margin:4px 0 8px 0;font-weight:500;">University · Major</p>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span id="gp-status-badge" style="display:none;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">AVAILABLE</span>
+              <span id="gp-privacy-badge" style="display:none;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;background:rgba(99,102,241,0.1);color:#6366f1">PUBLIC</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Profile Details Body (Scrollable) -->
+        <div style="padding:24px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:20px;" id="gp-body">
+          <!-- Bio -->
+          <div id="gp-section-bio">
+            <h4 style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin:0 0 6px 0;">About</h4>
+            <p id="gp-bio" style="font-size:13px;color:var(--tx,#374151);margin:0;line-height:1.5;white-space:pre-wrap;">No bio provided.</p>
+          </div>
+          
+          <!-- Skills -->
+          <div id="gp-section-skills">
+            <h4 style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin:0 0 8px 0;">Skills & Expertise</h4>
+            <div id="gp-skills-list" style="display:flex;flex-wrap:wrap;gap:6px;">
+              <!-- Badges -->
+            </div>
+          </div>
+          
+          <!-- Contact & Socials -->
+          <div id="gp-section-contact">
+            <h4 style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin:0 0 8px 0;">Links & Contacts</h4>
+            <div id="gp-socials" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <!-- Social rows -->
+            </div>
+          </div>
+          
+          <!-- Lock Screen State -->
+          <div id="gp-lock-screen" style="display:none;padding:32px 16px;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;">
+            <span class="material-symbols-outlined" style="font-size:48px;color:#9ca3af">lock</span>
+            <div>
+              <p style="font-weight:700;font-size:14px;margin:0;color:var(--tx,#1f2937)">This Profile is Private</p>
+              <p style="font-size:12px;color:var(--tx-dim,#6b7280);margin:4px 0 0 0;line-height:1.4;">Send a connection request to see their university department, bio, skills, and projects.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(backdrop);
+
+    // Close on backdrop click
+    backdrop.addEventListener('click', (e) => {
+      if (e.target === backdrop) closeGlobalProfile();
+    });
+  }
+
+  async function showUserProfile(userId) {
+    const modal = document.getElementById('global-profile-modal');
+    if (!modal) return;
+
+    // Show modal with loading state
+    modal.style.display = 'flex';
+    document.getElementById('gp-name').textContent = 'Loading...';
+    document.getElementById('gp-university-major').textContent = '';
+    document.getElementById('gp-status-badge').style.display = 'none';
+    document.getElementById('gp-privacy-badge').style.display = 'none';
+    document.getElementById('gp-bio').textContent = 'Loading details...';
+    document.getElementById('gp-skills-list').innerHTML = '';
+    document.getElementById('gp-socials').innerHTML = '';
+    document.getElementById('gp-actions').innerHTML = '';
+    document.getElementById('gp-lock-screen').style.display = 'none';
+    document.getElementById('gp-section-bio').style.display = 'block';
+    document.getElementById('gp-section-skills').style.display = 'block';
+    document.getElementById('gp-section-contact').style.display = 'block';
+    document.getElementById('gp-avatar').style.display = 'none';
+    document.getElementById('gp-initials').style.display = 'inline';
+    document.getElementById('gp-initials').textContent = '?';
+    document.getElementById('gp-avatar-container').style.background = '#6366f1';
+    document.getElementById('gp-banner').style.display = 'none';
+    document.getElementById('gp-banner-zone').style.background = 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)';
+
+    try {
+      const tk = localStorage.getItem('access_token');
+      const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? '' : 'https://projecthive-backend.onrender.com';
+
+      const r = await fetch(`${apiBase}/api/users/${userId}`, {
+        headers: { Authorization: 'Bearer ' + tk }
+      });
+      if (!r.ok) throw new Error();
+      const u = await r.json();
+
+      const fn = u.firstName || u.first_name || '';
+      const ln = u.lastName || u.last_name || '';
+      const name = `${fn} ${ln}`.trim() || 'Anonymous User';
+      const initials = ((fn[0]||'') + (ln[0]||'')).toUpperCase() || '?';
+
+      document.getElementById('gp-name').textContent = name;
+
+      // Status dot
+      const dot = document.getElementById('gp-status-dot');
+      if (u.onlineStatus === 'online') {
+        dot.style.background = '#10b981';
+        dot.title = 'Online';
+      } else {
+        dot.style.background = '#9ca3af';
+        dot.title = 'Offline';
+      }
+
+      // Avatar
+      const avContainer = document.getElementById('gp-avatar-container');
+      const avImg = document.getElementById('gp-avatar');
+      const avInitials = document.getElementById('gp-initials');
+      if (u.avatar && u.avatar.startsWith('data:')) {
+        avImg.src = u.avatar;
+        avImg.style.display = 'block';
+        avInitials.style.display = 'none';
+        avContainer.style.background = 'transparent';
+      } else {
+        const colors = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+        let h = 0; for (const ch of name) h = ch.charCodeAt(0) + ((h << 5) - h);
+        const avColor = u.avatarColor || colors[Math.abs(h) % colors.length];
+        avInitials.textContent = initials;
+        avInitials.style.display = 'inline';
+        avImg.style.display = 'none';
+        avContainer.style.background = avColor;
+      }
+
+      // Banner
+      const bannerImg = document.getElementById('gp-banner');
+      const bannerZone = document.getElementById('gp-banner-zone');
+      if (u.bannerImage && u.bannerImage.startsWith('data:')) {
+        bannerImg.src = u.bannerImage;
+        bannerImg.style.display = 'block';
+        bannerZone.style.background = '#000';
+      } else {
+        bannerImg.style.display = 'none';
+        bannerZone.style.background = 'linear-gradient(90deg, #6366f1 0%, #a855f7 100%)';
+      }
+
+      // University / Major
+      document.getElementById('gp-university-major').textContent = [u.university, u.major].filter(Boolean).join(' · ') || 'No academic institution listed';
+
+      // Privacy Badge
+      const privBadge = document.getElementById('gp-privacy-badge');
+      privBadge.style.display = 'inline-block';
+      privBadge.style.background = u.isPublic ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)';
+      privBadge.style.color = u.isPublic ? '#10b981' : '#ef4444';
+      privBadge.textContent = u.isPublic ? 'Public' : 'Private';
+
+      // Availability Status Badge
+      const statusBadge = document.getElementById('gp-status-badge');
+      statusBadge.style.display = 'inline-block';
+      if (u.status === 'available') {
+        statusBadge.style.background = 'rgba(16,185,129,0.1)';
+        statusBadge.style.color = '#10b981';
+        statusBadge.textContent = 'Available for projects';
+      } else if (u.status === 'busy') {
+        statusBadge.style.background = 'rgba(245,158,11,0.1)';
+        statusBadge.style.color = '#f59e0b';
+        statusBadge.textContent = 'Busy';
+      } else {
+        statusBadge.style.background = 'rgba(156,163,175,0.1)';
+        statusBadge.style.color = '#9ca3af';
+        statusBadge.textContent = 'Not looking';
+      }
+
+      // Handle Lock screen for private profiles
+      if (u.isLocked) {
+        document.getElementById('gp-section-bio').style.display = 'none';
+        document.getElementById('gp-section-skills').style.display = 'none';
+        document.getElementById('gp-section-contact').style.display = 'none';
+        document.getElementById('gp-lock-screen').style.display = 'flex';
+      } else {
+        document.getElementById('gp-lock-screen').style.display = 'none';
+
+        // Bio
+        document.getElementById('gp-bio').textContent = u.bio || 'No bio written yet.';
+
+        // Skills
+        const skillsList = document.getElementById('gp-skills-list');
+        const skills = u.skills || [];
+        if (skills.length > 0) {
+          skillsList.innerHTML = skills.map(s => `<span style="padding:4px 10px;background:rgba(99,102,241,0.1);color:#6366f1;font-size:11px;font-weight:600;border-radius:8px;">${escapeHtml(s.name || s)}</span>`).join('');
+        } else {
+          skillsList.innerHTML = '<span style="font-size:11px;color:#9ca3af;">No skills listed.</span>';
+        }
+
+        // Socials / Contact
+        const socials = document.getElementById('gp-socials');
+        let socialsHtml = '';
+        if (u.email) {
+          socialsHtml += `<a href="mailto:${u.email}" style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.1);font-size:11px;color:var(--tx,#374151);text-decoration:none;font-weight:500;" class="hover-social"><span class="material-symbols-outlined" style="font-size:14px;color:#6366f1">mail</span> <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(u.email)}</span></a>`;
+        }
+        if (u.github) {
+          socialsHtml += `<a href="${u.github}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.1);font-size:11px;color:var(--tx,#374151);text-decoration:none;font-weight:500;" class="hover-social"><span class="material-symbols-outlined" style="font-size:14px;color:#6366f1">code</span> <span>GitHub</span></a>`;
+        }
+        if (u.linkedin) {
+          socialsHtml += `<a href="${u.linkedin}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.1);font-size:11px;color:var(--tx,#374151);text-decoration:none;font-weight:500;" class="hover-social"><span class="material-symbols-outlined" style="font-size:14px;color:#6366f1">work</span> <span>LinkedIn</span></a>`;
+        }
+        if (u.portfolio) {
+          socialsHtml += `<a href="${u.portfolio}" target="_blank" style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:rgba(99,102,241,0.05);border:1px solid rgba(99,102,241,0.1);font-size:11px;color:var(--tx,#374151);text-decoration:none;font-weight:500;" class="hover-social"><span class="material-symbols-outlined" style="font-size:14px;color:#6366f1">language</span> <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Portfolio</span></a>`;
+        }
+        socials.innerHTML = socialsHtml || '<div style="grid-column:span 2;font-size:11px;color:#9ca3af;">No contact details listed.</div>';
+      }
+
+      // Action Buttons
+      const actions = document.getElementById('gp-actions');
+      const status = u.friendshipStatus;
+
+      let actionsHtml = '';
+      if (status === 'self') {
+        actionsHtml = `<button onclick="location.href='/profile'" style="padding:6px 14px;background:#6366f1;color:#fff;border:none;font-weight:700;font-size:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">edit</span> Edit Profile</button>`;
+      } else if (status === 'friends') {
+        actionsHtml = `
+          <button disabled style="padding:6px 14px;background:rgba(16,185,129,0.1);color:#10b981;border:1px solid rgba(16,185,129,0.2);font-weight:700;font-size:11px;border-radius:10px;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">check</span> Connected</button>
+          <button onclick="location.href='/messages?chat=${userId}'" style="padding:6px 14px;background:#6366f1;color:#fff;border:none;font-weight:700;font-size:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">chat</span> Message</button>
+        `;
+      } else if (status === 'sent') {
+        actionsHtml = `<button disabled style="padding:6px 14px;background:rgba(156,163,175,0.1);color:#9ca3af;border:1px solid rgba(156,163,175,0.2);font-weight:700;font-size:11px;border-radius:10px;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">schedule</span> Request Sent</button>`;
+      } else if (status === 'received') {
+        actionsHtml = `
+          <button onclick="respondToRequest('${u.pendingReqId}', 'accept', '${userId}')" style="padding:6px 14px;background:#10b981;color:#fff;border:none;font-weight:700;font-size:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">check</span> Accept</button>
+          <button onclick="respondToRequest('${u.pendingReqId}', 'reject', '${userId}')" style="padding:6px 14px;background:rgba(239,68,68,0.1);color:#ef4444;border:none;font-weight:700;font-size:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">close</span> Decline</button>
+        `;
+      } else {
+        actionsHtml = `<button onclick="sendFriendRequestGlobal('${userId}')" style="padding:6px 14px;background:#6366f1;color:#fff;border:none;font-weight:700;font-size:11px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:6px;"><span class="material-symbols-outlined" style="font-size:13px;">person_add</span> Connect</button>`;
+      }
+      actions.innerHTML = actionsHtml;
+
+    } catch (e) {
+      document.getElementById('gp-name').textContent = 'Error';
+      document.getElementById('gp-bio').textContent = 'Failed to load details.';
+    }
+  }
+
+  function closeGlobalProfile() {
+    const modal = document.getElementById('global-profile-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function sendFriendRequestGlobal(uid) {
+    const btn = document.querySelector('#gp-actions button');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin material-symbols-outlined" style="font-size:13px;">progress_activity</span> Connecting...`;
+    }
+    try {
+      const tk = localStorage.getItem('access_token');
+      const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? '' : 'https://projecthive-backend.onrender.com';
+      const r = await fetch(`${apiBase}/api/friends/request`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + tk 
+        },
+        body: JSON.stringify({ friendId: uid })
+      });
+      if (r.ok) {
+        if (window.PHToast) PHToast.success('Friend request sent!');
+        showUserProfile(uid); // Refresh modal state
+      } else {
+        if (window.PHToast) PHToast.error('Failed to send request');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;">person_add</span> Connect`;
+        }
+      }
+    } catch(e) {
+      if (window.PHToast) PHToast.error('Server connection error');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:13px;">person_add</span> Connect`;
+      }
+    }
+  }
+
+  async function respondToRequest(reqId, action, uid) {
+    try {
+      const tk = localStorage.getItem('access_token');
+      const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? '' : 'https://projecthive-backend.onrender.com';
+      
+      const endpoint = action === 'accept' ? `/api/friends/accept` : `/api/friends/decline`;
+      const r = await fetch(apiBase + endpoint, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + tk 
+        },
+        body: JSON.stringify({ requestId: reqId })
+      });
+      if (r.ok) {
+        if (window.PHToast) PHToast.success(action === 'accept' ? 'Connected successfully!' : 'Request declined');
+        showUserProfile(uid); // Refresh modal state
+      } else {
+        if (window.PHToast) PHToast.error('Action failed');
+      }
+    } catch(e) {
+      if (window.PHToast) PHToast.error('Server connection error');
+    }
+  }
+
+  function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
+
+  // Expose helper functions globally
+  window.showUserProfile = showUserProfile;
+  window.closeGlobalProfile = closeGlobalProfile;
+  window.sendFriendRequestGlobal = sendFriendRequestGlobal;
+  window.respondToRequest = respondToRequest;
+
   function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
@@ -833,5 +1236,5 @@ const PHSidebar = (() => {
     localStorage.setItem('ph-sidebar-collapsed', collapsed ? 'true' : 'false');
   }
 
-  return { init, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse };
+  return { init, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest };
 })();

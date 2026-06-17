@@ -85,10 +85,66 @@ export async function getUserProfile(req, res, next) {
       .single();
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });
-    if (!user.is_public && req.user?.id !== id) {
-      return res.status(403).json({ error: 'This profile is private' });
+
+    // Check friendship status
+    let friendshipStatus = 'none';
+    const requesterId = req.user?.id;
+    let isFriend = false;
+    let pendingReqId = null;
+
+    if (requesterId === id) {
+      friendshipStatus = 'self';
+    } else if (requesterId) {
+      const { data: fr } = await supabaseAdmin
+        .from('friends')
+        .select('id')
+        .eq('user_id', requesterId)
+        .eq('friend_id', id)
+        .limit(1);
+
+      if (fr && fr.length > 0) {
+        friendshipStatus = 'friends';
+        isFriend = true;
+      } else {
+        const { data: reqSent } = await supabaseAdmin
+          .from('friend_requests')
+          .select('id, from_user_id')
+          .or(`and(from_user_id.eq.${requesterId},to_user_id.eq.${id}),and(from_user_id.eq.${id},to_user_id.eq.${requesterId})`)
+          .eq('status', 'pending')
+          .limit(1);
+
+        if (reqSent && reqSent.length > 0) {
+          friendshipStatus = reqSent[0].from_user_id === requesterId ? 'sent' : 'received';
+          pendingReqId = reqSent[0].id;
+        }
+      }
     }
-    res.json(toClient(user));
+
+    const showDetails = user.is_public || friendshipStatus === 'self' || isFriend;
+
+    if (!showDetails) {
+      // Return redacted profile with isLocked: true
+      return res.json({
+        id: user.id,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        avatar: user.avatar,
+        avatarColor: user.avatar_color,
+        university: user.university,
+        major: user.major,
+        isPublic: user.is_public,
+        isLocked: true,
+        friendshipStatus,
+        pendingReqId,
+      });
+    }
+
+    // Return full profile
+    const clientUser = toClient(user);
+    clientUser.friendshipStatus = friendshipStatus;
+    clientUser.pendingReqId = pendingReqId;
+    clientUser.isLocked = false;
+    res.json(clientUser);
   } catch (err) { next(err); }
 }
 

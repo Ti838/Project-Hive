@@ -2,6 +2,12 @@
 
 <html class="light" lang="en"><head>
 <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
+<style>
+  html { background-color: #F0F2F9 !important; }
+  html.dark { background-color: #0C0D14 !important; }
+  body { background-color: #F0F2F9 !important; }
+  html.dark body { background-color: #0C0D14 !important; }
+</style>
 <link rel="icon" href="/assets/svg/logo.png">
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -798,16 +804,20 @@ body, header, aside, main, section, .bg-surface-container-lowest,
       ? users.map(u => {
           const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
           const ini = ((u.firstName?.[0] || '') + (u.lastName?.[0] || '')).toUpperCase() || '?';
-          return `<div class="flex items-center gap-2.5 px-1 py-1 rounded-xl hover:bg-surface-container cursor-pointer transition-colors">
+          const uid = u.id || u._id;
+          const avatarHtml = u.avatar
+            ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">`
+            : `<div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold" style="background:${avC(name)}">${ini}</div>`;
+          return `<div onclick="showUserProfile('${uid}')" class="flex items-center gap-2.5 px-1 py-1 rounded-xl hover:bg-surface-container cursor-pointer transition-colors">
             <div class="relative flex-shrink-0">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-bold" style="background:${avC(name)}">${ini}</div>
+              ${avatarHtml}
               <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-surface-container-lowest"></span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-[12px] font-semibold text-on-surface truncate">${name}</p>
               <p class="text-[10px] text-on-surface-variant truncate">${u.university || u.major || 'Student'}</p>
             </div>
-            <a href="/messages?chat=${u._id || u.id}" title="Message" class="text-on-surface-variant hover:text-primary transition-colors">
+            <a href="/messages?chat=${uid}" onclick="event.stopPropagation()" title="Message" class="text-on-surface-variant hover:text-primary transition-colors">
               <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
             </a>
           </div>`;
@@ -837,7 +847,17 @@ body, header, aside, main, section, .bg-surface-container-lowest,
         if (el_wn)  el_wn.textContent  = fn || 'Student';
         if (el_un)  el_un.textContent  = name;
         if (el_rol) el_rol.textContent = (u.role || 'student').charAt(0).toUpperCase() + (u.role || 'student').slice(1);
-        if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
+        if (av) {
+          if (u.avatar && u.avatar.startsWith('data:')) {
+            av.innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" alt="Avatar">`;
+            av.style.background = 'transparent';
+          } else {
+            av.textContent = ini;
+            av.style.background = cols[Math.abs(h) % cols.length];
+            av.style.color = '#fff';
+            av.innerHTML = ini;
+          }
+        }
         
         const pct = Math.round(u.profileCompletion ?? u.completion_percentage ?? 0);
         const el_pct = document.getElementById('dash-profile-pct');
@@ -901,7 +921,17 @@ body, header, aside, main, section, .bg-surface-container-lowest,
           document.getElementById('dash-role').textContent          = (u.role || 'student').charAt(0).toUpperCase() + (u.role || 'student').slice(1);
 
           const av = document.getElementById('dash-avatar');
-          if (av) { av.textContent = ini; av.style.background = cols[Math.abs(h) % cols.length]; av.style.color = '#fff'; }
+          if (av) {
+            if (u.avatar && u.avatar.startsWith('data:')) {
+              av.innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;" alt="Avatar">`;
+              av.style.background = 'transparent';
+            } else {
+              av.textContent = ini;
+              av.style.background = cols[Math.abs(h) % cols.length];
+              av.style.color = '#fff';
+              av.innerHTML = ini;
+            }
+          }
 
           const pct = Math.round(u.profileCompletion ?? u.completion_percentage ?? 0);
           document.getElementById('dash-profile-pct').textContent  = pct + '%';
