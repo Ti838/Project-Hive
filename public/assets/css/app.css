@@ -35,12 +35,13 @@ html.dark{
   --shadow-md:0 4px 16px rgba(0,0,0,.4);
 }
 
-body{background:var(--bg);color:var(--txt);min-height:100vh;transition:background .2s,color .2s}
+html { overflow-x: hidden; }
+body{background:var(--bg);color:var(--txt);min-height:100vh;transition:background .2s,color .2s;overflow-x:hidden}
 
 /* ── Layout ── */
 .ph-layout{display:flex;min-height:100vh}
-.ph-sidebar{width:240px;flex-shrink:0;background:var(--sb);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:20;transition:background .2s}
-.ph-main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh}
+.ph-sidebar{width:240px;flex-shrink:0;background:var(--sb);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;display:flex;flex-direction:column;z-index:20;transition:background .2s;overflow-x:hidden}
+.ph-main{flex:1;margin-left:240px;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
 @media(max-width:768px){.ph-sidebar{display:none}.ph-main{margin-left:0}}
 
 /* ── Sidebar Brand ── */
@@ -49,7 +50,7 @@ body{background:var(--bg);color:var(--txt);min-height:100vh;transition:backgroun
 .ph-brand-sub{font-size:11px;font-weight:600;color:var(--primary)}
 
 /* ── Sidebar Nav ── */
-.ph-nav{flex:1;padding:10px 10px;overflow-y:auto}
+.ph-nav{flex:1;padding:10px 10px;overflow-y:auto;overflow-x:hidden}
 .ph-nav-section{font-size:10px;font-weight:700;color:var(--muted);padding:14px 10px 4px;letter-spacing:.08em;text-transform:uppercase}
 .ph-nav-link{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:13px;font-weight:500;color:var(--sub);transition:all .15s;text-decoration:none;cursor:pointer;border:none;background:none;width:100%;text-align:left}
 .ph-nav-link:hover{background:var(--primary-soft);color:var(--txt)}
