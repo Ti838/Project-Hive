@@ -105,7 +105,31 @@ tr:hover td{background:rgba(99,102,241,.03)}
 /* ── Maintenance overlay ── */
 .maint-banner{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:none;align-items:center;gap:12px}
 .maint-banner.show{display:flex}
-/* ── Analytics ── */
+/* ── Analytics grid ── */
+.analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
+/* ── Mobile hamburger ── */
+.mob-menu{display:none;position:fixed;top:12px;left:12px;z-index:200;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sb);color:var(--sub);cursor:pointer;align-items:center;justify-content:center}
+.mob-menu:hover{border-color:var(--ac);color:var(--ac)}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49}
+.mob-overlay.open{display:block}
+@media(max-width:768px){
+  .mob-menu{display:flex}
+  .sb{position:fixed;z-index:100;transform:translateX(-100%)}
+  .sb.mob-open{transform:translateX(0)}
+  .main{margin-left:0!important}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .analytics-grid{grid-template-columns:repeat(2,1fr)}
+  .sys-grid{grid-template-columns:1fr}
+  .topbar{padding:0 16px;padding-left:52px}
+  .content{padding:16px}
+  .card-hdr{flex-direction:column;align-items:flex-start;gap:8px}
+  .tabs{overflow-x:auto}
+  td,th{padding:8px 10px;font-size:11px}
+  .srch{width:100%;min-width:0}
+}
+@media(max-width:480px){
+  .stat-grid,.analytics-grid{grid-template-columns:1fr}
+}
 /* ── Admin Collapsible Sidebar Styles ── */
 .sb {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s, border-color 0.25s !important;
@@ -195,6 +219,10 @@ tr:hover td{background:rgba(99,102,241,.03)}
 }
 </style></head>
 <body>
+<button class="mob-menu" onclick="toggleMobMenu()" aria-label="Menu">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+</button>
+<div class="mob-overlay" onclick="toggleMobMenu()"></div>
 <button class="sb-collapse-btn" id="sb-collapse-btn" onclick="toggleCollapse()" aria-label="Toggle sidebar collapse" title="Toggle Sidebar">
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="15 18 9 12 15 6"></polyline>
@@ -585,7 +613,12 @@ async function delT(id,nm){
 function doOut(){
   localStorage.removeItem('admin_token');
   localStorage.removeItem('access_token');
-  location.href='/login';
+  location.href='/admin';
+}
+// ── Mobile menu ──
+function toggleMobMenu(){
+  document.querySelector('.sb')?.classList.toggle('mob-open');
+  document.querySelector('.mob-overlay')?.classList.toggle('open');
 }
 // ── Init ──
 initTheme();
