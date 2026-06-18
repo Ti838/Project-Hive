@@ -611,13 +611,30 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   };
 
   window.toggleAIPopup=function(){
-    open=!open;
-    document.getElementById('ai-popup').classList.toggle('open',open);
-    document.getElementById('ai-fab-btn').classList.toggle('is-open',open);
-    document.getElementById('ai-icon-open').style.display=open?'none':'block';
-    document.getElementById('ai-icon-close').style.display=open?'block':'none';
-    if(open) setTimeout(()=>document.getElementById('ai-input')?.focus(),200);
+    try {
+      open=!open;
+      const popup = document.getElementById('ai-popup');
+      const fabBtn = document.getElementById('ai-fab-btn');
+      const iconOpen = document.getElementById('ai-icon-open');
+      const iconClose = document.getElementById('ai-icon-close');
+      if(popup) popup.classList.toggle('open',open);
+      if(fabBtn) fabBtn.classList.toggle('is-open',open);
+      if(iconOpen) iconOpen.style.display=open?'none':'block';
+      if(iconClose) iconClose.style.display=open?'block':'none';
+      if(open) setTimeout(()=>document.getElementById('ai-input')?.focus(),200);
+    } catch(err) { console.error('[ProjectHive] AI popup error:', err); }
   };
+
+  // Attach click handler programmatically (more reliable than inline onclick)
+  const fabBtn = document.getElementById('ai-fab-btn');
+  if (fabBtn) {
+    fabBtn.removeAttribute('onclick'); // remove inline handler
+    fabBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      toggleAIPopup();
+    });
+  }
 
   function addMsg(html,role){
     const msgs=document.getElementById('ai-msgs');
