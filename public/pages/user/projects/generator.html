@@ -463,13 +463,14 @@
     btn.disabled=true;
     showLoading();
 
+    const domainStr=domains.length?domains.join(', '):(custom||'General');
     const prompt=[
       domains.length?`Domains: ${domains.join(', ')}`:'',
       level?`Skill level: ${level}`:'',
       custom||'',
     ].filter(Boolean).join('. ');
 
-    const body=JSON.stringify({prompt,domains,level,count:5});
+    const body=JSON.stringify({domain:domainStr,skills:[level||'General'],teamSize:3,timelineWeeks:8,constraints:custom||''});
 
     try{
       /* Try authenticated endpoint first */
