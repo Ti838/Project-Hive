@@ -255,6 +255,22 @@ const PHSidebar = (() => {
         document.head.appendChild(link);
       });
     }, 3000);
+
+    // ── Restore user preferences (accent color + font size) globally ─────
+    try {
+      const ac = localStorage.getItem('ph-accent');
+      if (ac) {
+        document.documentElement.style.setProperty('--ac', ac);
+        document.documentElement.style.setProperty('--ac2', ac);
+        const rgb = [parseInt(ac.slice(1,3),16), parseInt(ac.slice(3,5),16), parseInt(ac.slice(5,7),16)];
+        document.documentElement.style.setProperty('--ac-light', `rgba(${rgb.join(',')},0.12)`);
+      }
+      const fs = localStorage.getItem('ph-font-size');
+      if (fs) {
+        const map = {small:'13px', normal:'15px', large:'17px'};
+        document.documentElement.style.setProperty('--font-base', map[fs] || '15px');
+      }
+    } catch(_) {}
   }
 
   // Mobile overlay
