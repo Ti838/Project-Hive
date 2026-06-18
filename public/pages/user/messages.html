@@ -839,21 +839,26 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
         if(!isSelf){
           allMsgs.push({
             content:data.content,
-            sender:senderId,
+            sender:data.sender || senderId,
             createdAt:data.createdAt||new Date().toISOString(),
             read_by: data.read_by || [senderId]
           });
-          renderMsgs();
-          
-          const friendId=activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
-          fetch(API_BASE+'/api/messages/read', {
-            method: 'POST',
-            headers: H,
-            body: JSON.stringify({ friendId })
-          }).catch(()=>{});
+          // Use correct renderer based on conversation type
+          if (activeConv.type === 'team') {
+            renderTeamMsgs();
+          } else {
+            renderMsgs();
+            const friendId=activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
+            fetch(API_BASE+'/api/messages/read', {
+              method: 'POST',
+              headers: H,
+              body: JSON.stringify({ friendId })
+            }).catch(()=>{});
+          }
         }
       }
-      loadConvs();
+      if (currentTab === 'chats') loadConvs();
+      if (currentTab === 'teams') loadTeamConvs();
     });
 
     socket.on('user:typing', data => {
