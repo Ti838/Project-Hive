@@ -5,15 +5,27 @@ import { getGeminiKey, isGeminiReady } from '../config/gemini.js';
 const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_BASE  = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-// Rate limiter
+// Rate limiter (sliding window — auto-cleans old entries)
 const rateLimitMap = new Map();
 function checkLimit(key, max) {
-  const hourKey = `${key}-${new Date().getHours()}`;
-  const count   = rateLimitMap.get(hourKey) || 0;
-  if (count >= max) return false;
-  rateLimitMap.set(hourKey, count + 1);
+  const now = Date.now();
+  const windowMs = 60 * 60 * 1000; // 1 hour
+  let record = rateLimitMap.get(key);
+  if (!record || (now - record.start) > windowMs) {
+    record = { start: now, count: 0 };
+  }
+  if (record.count >= max) return false;
+  record.count++;
+  rateLimitMap.set(key, record);
   return true;
 }
+// Cleanup stale entries every 30 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const [k, v] of rateLimitMap) {
+    if (now - v.start > 3600000) rateLimitMap.delete(k);
+  }
+}, 30 * 60 * 1000);
 
 // ── Core generation logic ────────────────────────────────────────────────────
 async function generateIdeas({ domain, skills, teamSize, timelineWeeks, constraints }) {
@@ -122,8 +134,8 @@ export async function generateProjectIdeas(req, res, next) {
     }
 
     const userId = req.user?.id || req.user?.userId || 'anon';
-    if (!checkLimit(`user-${userId}`, 10)) {
-      return res.status(429).json({ error: 'Rate limit: 10 AI requests per hour per user.' });
+    if (!checkLimit(`user-${userId}`, 30)) {
+      return res.status(429).json({ error: 'Rate limit: 30 AI requests per hour per user.' });
     }
 
     const { domain, skills, teamSize, timelineWeeks, constraints } = req.body;
@@ -164,8 +176,8 @@ export async function generateProjectIdeasPublic(req, res, next) {
     }
 
     const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
-    if (!checkLimit(`ip-${ip}`, 5)) {
-      return res.status(429).json({ error: 'Rate limit: 5 free generations/hour.' });
+    if (!checkLimit(`ip-${ip}`, 15)) {
+      return res.status(429).json({ error: 'Rate limit: 15 free generations/hour.' });
     }
 
     const { domain, skills, teamSize, timelineWeeks, constraints } = req.body;
@@ -207,8 +219,8 @@ export async function chatWithAI(req, res, next) {
     }
 
     const userId = req.user?.id || req.user?.userId || 'anon';
-    if (!checkLimit(`chat-${userId}`, 20)) {
-      return res.status(429).json({ error: 'Rate limit: 20 AI chats per hour.' });
+    if (!checkLimit(`chat-${userId}`, 50)) {
+      return res.status(429).json({ error: 'Rate limit: 50 AI chats per hour.' });
     }
 
     const { message, imageBase64, mimeType } = req.body;
