@@ -318,6 +318,7 @@
   PHSidebar.init('generator','../../../');
 
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
+  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
 
   /* ── State ── */
   let domains=[], level='';
@@ -472,7 +473,7 @@
 
     try{
       /* Try authenticated endpoint first */
-      const r=await fetch('/api/ai/generate-ideas',{method:'POST',headers:H,body});
+      const r=await fetch(API_BASE+'/api/ai/generate-ideas',{method:'POST',headers:H,body});
       const d=await r.json();
       if(d.ideas && d.ideas.length){ renderIdeas(d.ideas); }
       else if(d.error&&(d.error.includes('API key')||d.error.includes('not configured'))){ showNoKey(); }
@@ -480,7 +481,7 @@
     }catch(e){
       /* Fallback to public endpoint */
       try{
-        const r2=await fetch('/api/ai/generate-ideas-public',{method:'POST',headers:{'Content-Type':'application/json'},body});
+        const r2=await fetch(API_BASE+'/api/ai/generate-ideas-public',{method:'POST',headers:{'Content-Type':'application/json'},body});
         const d2=await r2.json();
         if(d2.ideas && d2.ideas.length){ renderIdeas(d2.ideas); }
         else{ showNoKey(); }
