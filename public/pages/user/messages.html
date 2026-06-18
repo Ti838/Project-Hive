@@ -174,39 +174,61 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   </div>
 </div>
 
-<!-- Video Call Modal -->
-<div id="call-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex-col items-center justify-center">
-  <div class="bg-white dark:bg-gray-900 rounded-2xl w-[90%] h-[90%] max-w-5xl flex flex-col shadow-2xl overflow-hidden relative">
-    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center bg-gray-50 dark:bg-gray-950">
-      <h3 class="font-bold flex items-center gap-2 text-indigo-500">
-        <span class="material-symbols-outlined">video_call</span> Video Chat Room
-      </h3>
-      <button onclick="endCall()" class="flex items-center gap-1 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors">
-        <span class="material-symbols-outlined text-sm">call_end</span> End Call
+<!-- Video/Voice Call Modal (Google Meet style) -->
+<div id="call-modal" class="fixed inset-0 bg-black z-50 hidden flex-col">
+  <div class="flex-1 flex flex-col h-full">
+    <!-- Call header -->
+    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-white/80">videocam</span>
+        <span class="text-white font-bold text-sm">ProjectHive Call</span>
+        <span id="call-timer" class="text-white/50 text-xs font-mono">00:00</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+        <span class="text-green-400 text-xs font-semibold">Connected</span>
+      </div>
+    </div>
+    <!-- Jitsi container -->
+    <div id="jitsi-container" class="flex-1 w-full bg-gray-950"></div>
+    <!-- Call controls bar -->
+    <div class="absolute bottom-0 left-0 right-0 z-10 flex justify-center items-center gap-4 p-5 bg-gradient-to-t from-black/70 to-transparent">
+      <button onclick="endCall()" class="w-14 h-14 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg shadow-red-500/40">
+        <span class="material-symbols-outlined text-2xl">call_end</span>
       </button>
     </div>
-    <div id="jitsi-container" class="flex-1 w-full bg-black"></div>
   </div>
 </div>
 
 <!-- Incoming Call Modal -->
-<div id="incoming-call-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center">
-  <div class="bg-white dark:bg-gray-900 rounded-2xl p-6 w-[360px] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-gray-800 text-center">
-    <div class="w-16 h-16 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-500 animate-pulse mb-4">
-      <span class="material-symbols-outlined text-4xl">phone_in_talk</span>
+<div id="incoming-call-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden items-center justify-center">
+  <div class="bg-white dark:bg-gray-900 rounded-3xl p-8 w-[380px] max-w-[92vw] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-gray-800 text-center relative overflow-hidden">
+    <!-- Pulsing ring animation -->
+    <div class="relative mb-6">
+      <div class="absolute inset-0 w-20 h-20 rounded-full bg-green-400/20 animate-ping" style="animation-duration:1.5s"></div>
+      <div class="absolute inset-0 w-20 h-20 rounded-full bg-green-400/10 animate-ping" style="animation-duration:2s;animation-delay:.3s"></div>
+      <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30">
+        <span class="material-symbols-outlined text-white text-4xl" style="animation: ring-shake 0.5s ease-in-out infinite alternate">phone_in_talk</span>
+      </div>
     </div>
-    <h3 class="font-bold text-lg mb-1" id="caller-name">Incoming Call...</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">Your teammate is calling you</p>
+    <h3 class="font-bold text-xl mb-1 text-gray-900 dark:text-white" id="caller-name">Incoming Call...</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Your teammate wants to connect</p>
     <div class="flex gap-4 w-full">
-      <button onclick="declineCall()" class="flex-1 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-full transition-colors flex items-center justify-center gap-1.5">
-        <span class="material-symbols-outlined text-base">call_end</span> Decline
+      <button onclick="declineCall()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-red-500/25">
+        <span class="material-symbols-outlined text-lg">call_end</span> Decline
       </button>
-      <button onclick="acceptCall()" class="flex-1 py-2.5 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-full transition-colors flex items-center justify-center gap-1.5">
-        <span class="material-symbols-outlined text-base">call</span> Accept
+      <button onclick="acceptCall()" class="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-green-500/25">
+        <span class="material-symbols-outlined text-lg">call</span> Accept
       </button>
     </div>
   </div>
 </div>
+<style>
+@keyframes ring-shake {
+  0% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
+}
+</style>
 
 <script>
 (function(){
@@ -708,6 +730,16 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
         callerNameEl.textContent = `${data.callerName || 'Teammate'} is calling...`;
       }
       document.getElementById('incoming-call-modal').classList.replace('hidden', 'flex');
+      // Play ringtone
+      startRingtone();
+      // Auto-decline after 30 seconds if not answered
+      setTimeout(() => {
+        const modal = document.getElementById('incoming-call-modal');
+        if (modal && !modal.classList.contains('hidden')) {
+          declineCall();
+          showToast('Missed call', 'error');
+        }
+      }, 30000);
     });
 
     socket.on('call:accepted', data => {
@@ -720,6 +752,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     });
 
     socket.on('call:hungup', data => {
+      stopRingtone();
       showToast('Call ended', 'info');
       if (jitsiApiInstance) {
         jitsiApiInstance.dispose();
@@ -809,10 +842,25 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       }
     };
     jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
+
+    // Start call timer
+    let callSeconds = 0;
+    window._callTimerInterval = setInterval(() => {
+      callSeconds++;
+      const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+      const s = String(callSeconds % 60).padStart(2, '0');
+      const el = document.getElementById('call-timer');
+      if (el) el.textContent = m + ':' + s;
+    }, 1000);
   }
 
 
   window.endCall = function() {
+    // Stop call timer
+    if (window._callTimerInterval) { clearInterval(window._callTimerInterval); window._callTimerInterval = null; }
+    const timerEl = document.getElementById('call-timer');
+    if (timerEl) timerEl.textContent = '00:00';
+
     if (jitsiApiInstance) {
       jitsiApiInstance.dispose();
       jitsiApiInstance = null;
@@ -827,18 +875,53 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     activeCallRoom = null;
   };
 
-  window.acceptCall = function() {
+  // ── Ringtone for incoming calls ──
+  let ringtoneAudio = null;
+  function startRingtone() {
+    try {
+      // Use Web Audio API to generate a ringtone (no external file needed)
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 440;
+      gain.gain.value = 0.15;
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      // Ring pattern: beep 0.5s, silence 0.5s
+      let on = true;
+      ringtoneAudio = {
+        ctx, osc, gain,
+        interval: setInterval(() => {
+          on = !on;
+          gain.gain.value = on ? 0.15 : 0;
+        }, 600),
+        stop() {
+          clearInterval(this.interval);
+          try { osc.stop(); ctx.close(); } catch(_){}
+        }
+      };
+    } catch(_) {}
+  }
+  function stopRingtone() {
+    if (ringtoneAudio) { ringtoneAudio.stop(); ringtoneAudio = null; }
+  }
+
+  window.acceptCall = async function() {
+    stopRingtone();
     document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
     if (activeCallRoom) {
       const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
       if (socket) {
         socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
       }
-      openJitsiFrame(activeCallRoom);
+      await openJitsiFrame(activeCallRoom);
     }
   };
 
   window.declineCall = function() {
+    stopRingtone();
     document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
     if (activeCallRoom) {
       const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
