@@ -114,8 +114,8 @@ tr:hover td{background:rgba(99,102,241,.03)}
 .mob-overlay.open{display:block}
 @media(max-width:768px){
   .mob-menu{display:flex}
-  .sb{position:fixed;z-index:100;transform:translateX(-100%)}
-  .sb.mob-open{transform:translateX(0)}
+  .sb{position:fixed;z-index:100;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
+  .sb.mob-open,.sb.open{transform:translateX(0)}
   .main{margin-left:0!important}
   .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
   .analytics-grid{grid-template-columns:repeat(2,1fr)}
