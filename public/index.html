@@ -2285,5 +2285,12 @@ function hangupShowcaseCall() {
   }
 })();
 </script>
+<script>
+// Warm up backend on landing page visit — prevents cold start when user clicks Login/Register
+(function(){
+  const API = 'https://projecthive-backend.onrender.com';
+  setTimeout(function(){ fetch(API+'/health',{method:'GET',cache:'no-store'}).catch(function(){}); }, 1500);
+})();
+</script>
 </body>
 </html>

@@ -1236,5 +1236,29 @@ const PHSidebar = (() => {
     localStorage.setItem('ph-sidebar-collapsed', collapsed ? 'true' : 'false');
   }
 
-  return { init, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest };
+  // ── Backend Keep-Alive Ping ────────────────────────────────────────────────
+  // Prevents Render.com free tier cold starts by pinging /health every 4 minutes
+  function startKeepAlive() {
+    const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? '' : 'https://projecthive-backend.onrender.com';
+    const INTERVAL = 4 * 60 * 1000; // 4 minutes
+
+    function ping() {
+      fetch(API_BASE + '/health', { method: 'GET', cache: 'no-store' }).catch(() => {});
+    }
+
+    // Initial ping after 2 seconds (don't block page load)
+    setTimeout(ping, 2000);
+    // Then every 4 minutes
+    setInterval(ping, INTERVAL);
+  }
+
+  // Auto-start keep-alive when sidebar initializes (i.e. user is on an authenticated page)
+  const _origInit = init;
+  function initWithKeepAlive(active, base) {
+    _origInit(active, base);
+    startKeepAlive();
+  }
+
+  return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest };
 })();
