@@ -220,6 +220,27 @@ const PHSidebar = (() => {
     loadUser(base);
     loadUnreadCount(base);
 
+    // ── Restore sidebar scroll position (persisted across page navigations) ──
+    const navWrap = document.querySelector('#ph-sidebar .ph-sb-nav');
+    if (navWrap) {
+      const savedScroll = sessionStorage.getItem('ph-sb-scroll');
+      if (savedScroll) {
+        navWrap.scrollTop = parseInt(savedScroll) || 0;
+      } else {
+        // First visit — scroll active link into view without animation
+        const activeLink = navWrap.querySelector('.ph-sb-link.active');
+        if (activeLink) activeLink.scrollIntoView({ block: 'center', behavior: 'instant' });
+      }
+    }
+
+    // Save sidebar scroll position before navigating away
+    document.querySelectorAll('#ph-sidebar .ph-sb-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const nw = document.querySelector('#ph-sidebar .ph-sb-nav');
+        if (nw) sessionStorage.setItem('ph-sb-scroll', nw.scrollTop);
+      });
+    });
+
     // ── Prefetch all sidebar pages for instant navigation ──────────────────
     // After 3 seconds (don't compete with initial page load), inject <link rel="prefetch"> for all nav pages
     setTimeout(() => {
