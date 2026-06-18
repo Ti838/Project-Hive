@@ -320,12 +320,12 @@ const PHSidebar = (() => {
     const doRender = () => {
       render(active, base);
       buildOverlay();
-      buildBottomNav(active, base); // ← NEW: premium mobile bottom nav
-      injectHamburger(base);
-      wireThemeButtons();
-      initTransitions();   // ← page transitions
-      initGlobalSearch(base); // ← NEW: global Ctrl+K search
-      initGlobalProfile(base); // ← NEW: global user profile modal
+      try { if (typeof buildBottomNav === 'function') buildBottomNav(active, base); } catch(_) {}
+      try { injectHamburger(base); } catch(_) {}
+      try { wireThemeButtons(); } catch(_) {}
+      try { if (typeof initTransitions === 'function') initTransitions(); } catch(_) {}
+      try { initGlobalSearch(base); } catch(_) {}
+      try { if (typeof initGlobalProfile === 'function') initGlobalProfile(base); } catch(_) {}
     };
 
     if (document.getElementById('ph-sidebar')) {
