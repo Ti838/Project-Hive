@@ -27,6 +27,17 @@ body{font-family:'Inter',sans-serif;overflow:hidden;}
 .conv-item:hover{background:rgba(99,102,241,.08);}
 .conv-item.active{background:rgba(99,102,241,.15);}
 .dark .conv-item.active{background:rgba(99,102,241,.2);}
+/* Mobile: show only conv list OR chat, not both */
+@media(max-width:768px){
+  .msg-conv-panel{position:absolute;inset:0;width:100% !important;z-index:20;transition:transform .25s ease;}
+  .msg-conv-panel.hidden-mobile{transform:translateX(-100%);}
+  .msg-chat-area{width:100% !important;}
+  .msg-back-btn{display:flex !important;}
+  .msg-layout{position:relative;}
+}
+@media(min-width:769px){
+  .msg-back-btn{display:none !important;}
+}
 </style>
 <script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"accent":"#6366f1","accent-dark":"#818cf8"}}}}</script>
 <style id="ph-design-vars">
@@ -69,10 +80,10 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   </header>
 
   <!-- Chat layout -->
-  <div class="flex flex-1 overflow-hidden">
+  <div class="msg-layout flex flex-1 overflow-hidden">
 
     <!-- Conversations panel -->
-    <aside class="w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
+    <aside class="msg-conv-panel w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
       <div class="p-3">
         <input id="conv-search" type="text" placeholder="Search conversations…"
           oninput="filterConvs(this.value)"
@@ -94,11 +105,13 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
 
     <!-- Chat area -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <main class="msg-chat-area flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
       <!-- Chat header -->
       <div id="chat-hdr" class="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-5 flex items-center gap-3">
+        <button class="msg-back-btn items-center gap-1 text-indigo-500 text-sm font-semibold" style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;" onclick="showConvPanel()">
+          <span class="material-symbols-outlined text-base">arrow_back</span>
+        </button>
         <div class="text-sm text-gray-400 flex items-center gap-2">
-          <span class="material-symbols-outlined">arrow_back_ios</span>
           Select a conversation to start chatting
         </div>
       </div>
@@ -811,5 +824,24 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     activeCallRoom = null;
   };
 })();
+</script>
+<script>
+// Mobile responsive: toggle between conversation list and chat
+function showConvPanel() {
+  document.querySelector('.msg-conv-panel')?.classList.remove('hidden-mobile');
+}
+function hideConvPanel() {
+  document.querySelector('.msg-conv-panel')?.classList.add('hidden-mobile');
+}
+// When a conversation is clicked on mobile, hide the panel
+const origConvList = document.getElementById('conv-list');
+if (origConvList) {
+  origConvList.addEventListener('click', function(e) {
+    const convItem = e.target.closest('.conv-item');
+    if (convItem && window.innerWidth <= 768) {
+      hideConvPanel();
+    }
+  });
+}
 </script>
 </body></html>

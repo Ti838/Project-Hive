@@ -252,7 +252,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 </header>
 
 <!-- MAIN CONTENT WRAPPER -->
-<main class="ml-[260px] pt-20 flex min-h-screen max-md:ml-0">
+<main class="ml-[260px] pt-20 flex min-h-screen max-md:ml-0 max-md:pb-20">
 <!-- DASHBOARD BODY -->
 <div class="flex-1 p-10 max-w-[1000px] max-md:p-4">
   <header class="mb-stack-lg">
@@ -338,7 +338,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
     <!-- Quick Actions -->
     <div class="lg:col-span-2">
       <h3 style="font-size:15px;font-weight:800;color:var(--tx);margin:0 0 14px">Quick Actions</h3>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+      <div class="qa-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
         <a href="/messages" class="qa-card" style="--ic-bg:rgba(59,130,246,.12);--ic-c:#3b82f6">
           <div class="qa-ic"><span class="material-symbols-outlined">mail</span></div>
           <span class="qa-lbl">Messages</span>
@@ -532,6 +532,16 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 .ai-fab-glow{position:absolute;inset:-5px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);opacity:.25;filter:blur(10px);animation:aipulse 2.5s ease-in-out infinite;z-index:-1}
 @keyframes aipulse{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:.45;transform:scale(1.15)}}
 .ai-popup{position:absolute;bottom:74px;right:0;width:360px;background:var(--tw-surf,#fff);border:1.5px solid var(--tw-bd,#e2e8f0);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.18),0 4px 16px rgba(99,102,241,.12);display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(16px) scale(.96);pointer-events:none;transition:opacity .22s,transform .22s;max-height:520px}
+/* Mobile: AI popup full-width, Quick Actions 2-col, bottom padding for bottom nav */
+@media(max-width:640px){
+  #ai-fab-wrap{bottom:20px;right:16px}
+  #ai-fab-btn{width:50px;height:50px}
+  .ai-popup{width:calc(100vw - 32px) !important;right:-12px;bottom:64px;max-height:70vh}
+  .qa-grid{grid-template-columns:repeat(2,1fr) !important}
+  .qa-card{padding:14px 8px !important}
+  .qa-ic{width:40px;height:40px;border-radius:12px}
+  .qa-lbl{font-size:11px}
+}
 .ai-popup.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
 .ai-popup-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--tw-bd,#e2e8f0);background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(236,72,153,.03));flex-shrink:0}
 .ai-popup-msgs{flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px;min-height:80px;max-height:220px;scrollbar-width:thin}
