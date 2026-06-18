@@ -219,6 +219,21 @@ const PHSidebar = (() => {
 
     loadUser(base);
     loadUnreadCount(base);
+
+    // ── Prefetch all sidebar pages for instant navigation ──────────────────
+    // After 3 seconds (don't compete with initial page load), inject <link rel="prefetch"> for all nav pages
+    setTimeout(() => {
+      NAV.forEach(item => {
+        const href = item.href.startsWith('/') ? item.href : base + item.href;
+        if (item.key === active) return; // skip current page
+        if (document.querySelector(`link[rel="prefetch"][href="${href}"]`)) return; // already exists
+        const link = document.createElement('link');
+        link.rel = 'prefetch';
+        link.href = href;
+        link.as = 'document';
+        document.head.appendChild(link);
+      });
+    }, 3000);
   }
 
   // Mobile overlay
