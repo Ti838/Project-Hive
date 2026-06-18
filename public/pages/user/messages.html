@@ -106,9 +106,12 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
           oninput="filterConvs(this.value)"
           class="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
       </div>
-      <!-- Tabs: Chats | Requests -->
+      <!-- Tabs: Chats | Teams | Requests -->
       <div class="flex border-b border-gray-200 dark:border-gray-800 px-2 gap-1 shrink-0">
         <button id="tab-chats" onclick="switchTab('chats')" class="flex-1 py-2 text-xs font-semibold text-indigo-500 border-b-2 border-indigo-500 transition-colors">Chats</button>
+        <button id="tab-teams" onclick="switchTab('teams')" class="flex-1 py-2 text-xs font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors flex items-center justify-center gap-1">
+          Teams <span id="team-badge" class="hidden bg-purple-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-bold">0</span>
+        </button>
         <button id="tab-requests" onclick="switchTab('requests')" class="flex-1 py-2 text-xs font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors flex items-center justify-center gap-1">
           Requests <span id="req-badge" class="hidden bg-red-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-bold">0</span>
         </button>
@@ -402,38 +405,49 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     const box=document.getElementById('msgs');box.scrollTop=box.scrollHeight;
   }
 
-  /* Send message */
+  /* Send message — works for both DM and Team chats */
   window.sendMsg=function(){
     const inp=document.getElementById('msg-inp');
     const content=inp.value.trim();
     if(!content||!activeConv)return;
     inp.value='';
 
-    const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
-
     if (socket) {
       socket.emit('typing:stop', { roomId: activeConv._id });
     }
 
-    if (!allMsgs.some(m => m._tmp && m.content === content)) {
-      allMsgs.push({
-        content,
-        sender: ME?.id,
-        createdAt: new Date().toISOString(),
-        _tmp: true,
-        read_by: [ME?.id]
-      });
-      renderMsgs();
-    }
+    // Optimistic UI — show message immediately
+    allMsgs.push({
+      content,
+      sender: ME?.id,
+      createdAt: new Date().toISOString(),
+      _tmp: true,
+      read_by: [ME?.id]
+    });
 
-    fetch(API_BASE+'/api/messages',{
-      method:'POST',
-      headers:H,
-      body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id })
-    }).then(r => r.json()).then(newMsg => {
-      // replace _tmp with actual message if needed
-      loadConvs();
-    }).catch(()=>{});
+    if (activeConv.type === 'team') {
+      renderTeamMsgs();
+      // Send via socket for real-time + save via API
+      if (socket) {
+        socket.emit('message:send', { roomId: activeConv._id, content });
+      }
+      fetch(API_BASE+'/api/messages', {
+        method:'POST',
+        headers:H,
+        body:JSON.stringify({ roomId: activeConv._id, content })
+      }).catch(()=>{});
+    } else {
+      renderMsgs();
+      const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+
+      fetch(API_BASE+'/api/messages',{
+        method:'POST',
+        headers:H,
+        body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id })
+      }).then(r => r.json()).then(newMsg => {
+        loadConvs();
+      }).catch(()=>{});
+    }
   };
 
   /* New conv modal */
@@ -543,25 +557,190 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   let currentTab = 'chats';
   let pendingRequests = [];
+  let teamConvs = [];
 
-  // Switch between Chats and Requests tabs
+  // Switch between Chats, Teams, and Requests tabs
   window.switchTab = function(tab) {
     currentTab = tab;
     const chatsBtn  = document.getElementById('tab-chats');
+    const teamsBtn  = document.getElementById('tab-teams');
     const reqBtn    = document.getElementById('tab-requests');
     const active    = 'text-indigo-500 border-b-2 border-indigo-500';
     const inactive  = 'text-gray-400 border-b-2 border-transparent';
 
+    chatsBtn.className = `flex-1 py-2 text-xs font-semibold ${tab==='chats'?active:inactive} transition-colors`;
+    teamsBtn.className = `flex-1 py-2 text-xs font-semibold ${tab==='teams'?active:inactive} hover:text-gray-600 transition-colors flex items-center justify-center gap-1`;
+    reqBtn.className   = `flex-1 py-2 text-xs font-semibold ${tab==='requests'?active:inactive} hover:text-gray-600 transition-colors flex items-center justify-center gap-1`;
+
     if (tab === 'chats') {
-      chatsBtn.className = `flex-1 py-2 text-xs font-semibold ${active} transition-colors`;
-      reqBtn.className   = `flex-1 py-2 text-xs font-semibold ${inactive} hover:text-gray-600 transition-colors flex items-center justify-center gap-1`;
       renderConvs(convs);
+    } else if (tab === 'teams') {
+      renderTeamConvs(teamConvs);
     } else {
-      chatsBtn.className = `flex-1 py-2 text-xs font-semibold ${inactive} hover:text-gray-600 transition-colors`;
-      reqBtn.className   = `flex-1 py-2 text-xs font-semibold ${active} transition-colors flex items-center justify-center gap-1`;
       renderRequests(pendingRequests);
     }
   };
+
+  // ── Team Conversations ──────────────────────────────────────────────────────
+  async function loadTeamConvs() {
+    try {
+      const r = await fetch(API_BASE + '/api/messages/team-conversations', { headers: H });
+      if (r.ok) {
+        const d = await r.json();
+        teamConvs = d.teams || [];
+        // Show badge
+        const badge = document.getElementById('team-badge');
+        if (badge && teamConvs.length > 0) {
+          badge.textContent = teamConvs.length;
+          badge.classList.remove('hidden');
+        }
+      }
+    } catch(e) {}
+  }
+
+  function renderTeamConvs(list) {
+    const el = document.getElementById('conv-list');
+    if (!list.length) {
+      el.innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
+        <span class="material-symbols-outlined text-3xl">groups</span>
+        <p>No team chats yet</p>
+        <a href="/teams" class="mt-1 text-indigo-500 text-xs font-semibold hover:underline">Join a team</a>
+      </div>`;
+      return;
+    }
+    const TEAM_COLORS = ['#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6','#6366f1'];
+    el.innerHTML = list.map((t, i) => {
+      const color = TEAM_COLORS[i % TEAM_COLORS.length];
+      const last = t.lastMessage ? `${t.lastMessage.senderName}: ${t.lastMessage.content}` : 'No messages yet';
+      const isActive = activeConv && activeConv._id === t._id;
+      return `<div class="conv-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-0.5${isActive?' active':''}"
+        onclick='openTeamConv(${JSON.stringify(t).replace(/'/g,"&#39;")})'>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${color}">
+          <span class="material-symbols-outlined text-base">groups</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="font-semibold text-sm truncate">${esc(t.name)}</div>
+          <div class="text-xs text-gray-400 truncate">${esc(last.substring(0,40))}</div>
+        </div>
+        <span class="text-[9px] text-gray-400 shrink-0">${t.memberCount} <span class="material-symbols-outlined text-[10px]">person</span></span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Open Team Conversation ──────────────────────────────────────────────────
+  window.openTeamConv = function(team) {
+    if (activeConv && socket) {
+      socket.emit('leave:room');
+    }
+
+    // Mark as team conversation
+    activeConv = { _id: team._id, type: 'team', name: team.name, memberCount: team.memberCount };
+    renderTeamConvs(teamConvs);
+
+    // Hide mobile conv panel
+    if (typeof hideConvPanel === 'function') hideConvPanel();
+
+    // Build team chat header with group call buttons
+    document.getElementById('chat-hdr').innerHTML = `
+      <button class="msg-back-btn items-center gap-1 text-indigo-500 text-sm font-semibold" style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;" onclick="showConvPanel()">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+      </button>
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-purple-500 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-base">groups</span>
+        </div>
+        <div>
+          <div class="font-bold text-sm">${esc(team.name)}</div>
+          <div class="text-xs text-gray-400">${team.memberCount} members</div>
+        </div>
+      </div>
+      <div class="ml-auto flex items-center gap-2">
+        <button onclick="startGroupVoiceCall()" class="w-9 h-9 text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Group Voice Call">
+          <span class="material-symbols-outlined">call</span>
+        </button>
+        <button onclick="startGroupVideoCall()" class="w-9 h-9 text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Group Video Call">
+          <span class="material-symbols-outlined">video_call</span>
+        </button>
+      </div>`;
+
+    // Load team messages
+    document.getElementById('msgs').innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Loading…</div>`;
+
+    if (socket) {
+      socket.emit('join:room', { roomId: team._id });
+    }
+
+    fetch(API_BASE + `/api/messages/teams/${team._id}`, { headers: H })
+      .then(r => r.ok ? r.json() : { messages: [] })
+      .then(d => {
+        allMsgs = (d.messages || []).map(m => ({
+          content: m.content,
+          sender: m.sender,
+          createdAt: m.created_at || m.createdAt,
+          read_by: m.read_by
+        }));
+        renderTeamMsgs();
+      })
+      .catch(() => { allMsgs = []; renderTeamMsgs(); });
+  };
+
+  // Render team messages (shows sender name for each message)
+  function renderTeamMsgs() {
+    if (!allMsgs.length) {
+      document.getElementById('msgs').innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
+        <span class="material-symbols-outlined text-4xl">groups</span><p>No messages yet. Start the conversation!</p></div>`;
+      return;
+    }
+    document.getElementById('msgs').innerHTML = allMsgs.map(m => {
+      const sender = m.sender || {};
+      const sId = sender.id || sender._id || m.sender;
+      const mine = sId === ME?.id;
+      const senderName = mine ? '' : `${sender.first_name || sender.firstName || 'Unknown'}`;
+      const ts = new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const color = avC(senderName || 'X');
+
+      return `<div class="flex ${mine ? 'justify-end' : 'justify-start'} bubble-in">
+        ${!mine ? `<div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-auto mr-1.5" style="background:${color}">${(senderName[0] || '?').toUpperCase()}</div>` : ''}
+        <div class="max-w-[60%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
+          ${mine ? 'bg-indigo-500 text-white rounded-br-sm' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm'}">
+          ${!mine ? `<div class="text-[10px] font-bold mb-0.5" style="color:${color}">${esc(senderName)}</div>` : ''}
+          ${esc(m.content)}
+          <div class="text-[10px] mt-1 opacity-60 text-right">${ts}</div>
+        </div>
+      </div>`;
+    }).join('');
+    const box = document.getElementById('msgs'); box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Group Call Functions ──────────────────────────────────────────────────────
+  window.startGroupVideoCall = function() {
+    if (!activeConv || activeConv.type !== 'team') return;
+    const roomId = `ProjectHive-team-${activeConv._id}`;
+    const callerName = localStorage.getItem('ph-sb-name') || 'Your teammate';
+
+    if (socket) {
+      socket.emit('call:group', { roomId, teamId: activeConv._id, callerName });
+    }
+
+    activeCallRoom = roomId;
+    openJitsiFrame(roomId, false);
+  };
+
+  window.startGroupVoiceCall = function() {
+    if (!activeConv || activeConv.type !== 'team') return;
+    const roomId = `ProjectHive-team-voice-${activeConv._id}`;
+    const callerName = localStorage.getItem('ph-sb-name') || 'Your teammate';
+
+    if (socket) {
+      socket.emit('call:group', { roomId, teamId: activeConv._id, callerName });
+    }
+
+    activeCallRoom = roomId;
+    openJitsiFrame(roomId, true);
+  };
+
+  // Load team conversations on init
+  loadTeamConvs();
 
   // Load Message Requests
   async function loadRequests() {

@@ -18,6 +18,7 @@ import {
   handleCallAccept,
   handleCallDecline,
   handleCallHangup,
+  handleGroupCallInitiate,
 } from './services/socket.service.js';
 
 const PORT = process.env.PORT || 5000;
@@ -90,6 +91,7 @@ async function startServer() {
       socket.on('call:accept',   (data) => handleCallAccept(socket, data));
       socket.on('call:decline',  (data) => handleCallDecline(socket, data));
       socket.on('call:hangup',   (data) => handleCallHangup(socket, data));
+      socket.on('call:group',    (data) => handleGroupCallInitiate(socket, data));
 
       socket.on('disconnect', (reason) => {
         handleLeaveRoom(socket);

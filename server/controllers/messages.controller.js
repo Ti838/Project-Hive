@@ -1,5 +1,71 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
+// ── Get all team conversations for the current user ──────────────────────────
+export async function getTeamConversations(req, res, next) {
+  try {
+    const myId = req.user.id;
+
+    // Get teams user is a member of
+    const { data: memberships, error: memErr } = await supabaseAdmin
+      .from('team_members')
+      .select('team_id, role')
+      .eq('user_id', myId);
+
+    if (memErr) throw memErr;
+    if (!memberships || memberships.length === 0) return res.json({ teams: [] });
+
+    const teamIds = memberships.map(m => m.team_id);
+
+    // Get team details
+    const { data: teams, error: teamErr } = await supabaseAdmin
+      .from('teams')
+      .select('id, name, description, category')
+      .in('id', teamIds);
+
+    if (teamErr) throw teamErr;
+
+    // For each team, get last message and member count
+    const result = await Promise.all((teams || []).map(async team => {
+      const { data: lastMsg } = await supabaseAdmin
+        .from('messages')
+        .select('content, sender_id, created_at, sender:sender_id(first_name)')
+        .eq('room_id', team.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const { count: memberCount } = await supabaseAdmin
+        .from('team_members')
+        .select('id', { count: 'exact', head: true })
+        .eq('team_id', team.id);
+
+      return {
+        _id: team.id,
+        type: 'team',
+        name: team.name,
+        description: team.description,
+        category: team.category,
+        memberCount: memberCount || 0,
+        role: memberships.find(m => m.team_id === team.id)?.role || 'member',
+        lastMessage: lastMsg ? {
+          content: lastMsg.content,
+          senderName: lastMsg.sender?.first_name || 'Someone',
+          createdAt: lastMsg.created_at
+        } : null
+      };
+    }));
+
+    // Sort by last message time
+    result.sort((a, b) => {
+      const tA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const tB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return tB - tA;
+    });
+
+    res.json({ teams: result });
+  } catch (err) { next(err); }
+}
+
 export async function getTeamMessages(req, res, next) {
   try {
     const { teamId } = req.params;

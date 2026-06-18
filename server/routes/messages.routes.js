@@ -15,6 +15,7 @@ router.post('/requests/:id/accept', authMiddleware, mc.acceptMessageRequest);
 router.post('/requests/:id/decline',authMiddleware, mc.declineMessageRequest);
 
 // Team messages
+router.get('/team-conversations',   authMiddleware, mc.getTeamConversations);
 router.get('/teams/:teamId',        authMiddleware, mc.getTeamMessages);
 router.get('/team/:teamId',         authMiddleware, mc.getTeamMessages);
 

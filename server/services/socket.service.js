@@ -134,3 +134,36 @@ export function handleCallHangup(socket, data) {
     targetSocket.emit('call:hungup', { roomId });
   }
 }
+
+// ── Group Call: notify all team members ──────────────────────────────────────
+export async function handleGroupCallInitiate(socket, data) {
+  const { roomId, teamId, callerName } = data;
+  if (!roomId || !teamId) return;
+
+  try {
+    // Get all team members except the caller
+    const { data: members } = await supabaseAdmin
+      .from('team_members')
+      .select('user_id')
+      .eq('team_id', teamId)
+      .neq('user_id', socket.userId);
+
+    if (!members) return;
+
+    // Notify each online team member
+    for (const member of members) {
+      const memberSocket = getUserSocket(member.user_id);
+      if (memberSocket) {
+        memberSocket.emit('call:incoming', {
+          roomId,
+          callerName,
+          callerId: socket.userId,
+          isGroup: true,
+          teamId
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[ProjectHive] Group call error:', err);
+  }
+}
