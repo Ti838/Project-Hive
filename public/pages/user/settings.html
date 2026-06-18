@@ -109,11 +109,19 @@ body{background:var(--bg);color:var(--tx);margin:0}
     <div id="st-av" style="width:34px;height:34px;border-radius:50%;background:var(--ac);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">?</div>
   </div>
 
-  <div class="st-hero">
-    <div style="position:relative;z-index:1">
-      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">⚙ Account Management</div>
-      <div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:6px">Settings</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.75)">Manage your account, security, appearance and privacy</div>
+  <!-- Profile Header Card -->
+  <div style="margin:0 20px 18px;background:linear-gradient(135deg,#6366f1 0%,#7c3aed 50%,#a855f7 100%);border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:16px;position:relative;overflow:hidden">
+    <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.06);top:-60px;right:-40px"></div>
+    <div id="st-av2" style="width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.2);color:#fff;font-size:18px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;backdrop-filter:blur(10px);border:2px solid rgba(255,255,255,.2)">?</div>
+    <div style="flex:1;min-width:0">
+      <div id="st-name" style="font-size:18px;font-weight:800;color:#fff">Your Name</div>
+      <div id="st-email" style="font-size:12px;color:rgba(255,255,255,.7);margin-top:2px">email@example.com</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div style="text-align:center;padding:8px 14px;background:rgba(255,255,255,.12);border-radius:10px;backdrop-filter:blur(8px)">
+        <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:600">Member since</div>
+        <div id="st-joined" style="font-size:13px;font-weight:800;color:#fff">—</div>
+      </div>
     </div>
   </div>
 
@@ -221,10 +229,16 @@ body{background:var(--bg);color:var(--tx);margin:0}
     document.getElementById("s-uni").value=u.university||"";
     document.getElementById("s-bio").value=u.bio||"";
     const av=document.getElementById("st-av");
+    const initials=((u.firstName?.[0]||"")+(u.lastName?.[0]||"")).toUpperCase()||"?";
     if(av){
       if(u.avatar&&u.avatar.startsWith("data:")){av.style.backgroundImage=`url(${u.avatar})`;av.style.backgroundSize="cover";av.textContent="";}
-      else{av.textContent=((u.firstName?.[0]||"")+(u.lastName?.[0]||"")).toUpperCase()||"?";av.style.background=u.avatarColor||"var(--ac)";}
+      else{av.textContent=initials;av.style.background=u.avatarColor||"var(--ac)";}
     }
+    /* Profile header card */
+    const av2=document.getElementById("st-av2");if(av2)av2.textContent=initials;
+    const nm=document.getElementById("st-name");if(nm)nm.textContent=(u.firstName||"")+" "+(u.lastName||"")||"Your Name";
+    const em=document.getElementById("st-email");if(em)em.textContent=u.email||"";
+    const jn=document.getElementById("st-joined");if(jn&&u.createdAt){const d=new Date(u.createdAt);jn.textContent=d.toLocaleDateString("en-US",{month:"short",year:"numeric"});}
   }).catch(()=>{});
 
   /* Save account */
