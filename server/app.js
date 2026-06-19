@@ -146,6 +146,29 @@ app.use((req, res) => {
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API route not found' });
   }
+  // ── Clean URL routing — serve correct HTML for user-friendly paths ──
+  const routes = {
+    '/login':              'pages/auth/login.html',
+    '/register':           'pages/auth/register.html',
+    '/forgot-password':    'pages/auth/forgot-password.html',
+    '/reset-password':     'pages/auth/reset-password.html',
+    '/verify-email':       'pages/auth/verify-email.html',
+    '/admin':              'pages/admin/login.html',
+    '/admin/login':        'pages/admin/login.html',
+    '/admin/dashboard':    'pages/admin/dashboard.html',
+    '/dashboard':          'pages/user/dashboard.html',
+    '/feed':               'pages/user/feed.html',
+    '/messages':           'pages/user/messages.html',
+    '/people':             'pages/user/people.html',
+    '/teams':              'pages/user/teams.html',
+    '/teams/create':       'pages/user/teams-create.html',
+    '/settings':           'pages/user/settings.html',
+    '/notifications':      'pages/user/notifications.html',
+  };
+  const target = routes[req.path];
+  if (target) {
+    return res.sendFile(path.join(publicDir, target));
+  }
   // For any other path, serve index.html (handles direct URL access)
   res.sendFile(path.join(publicDir, 'index.html'));
 });

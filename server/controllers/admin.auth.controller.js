@@ -1,6 +1,7 @@
 // ── Admin Authentication Controller ─────────────────────────────────────────
 // Industrial-level: Admin credentials live ONLY in .env, not in the DB.
 // Regular users can NEVER log in through this endpoint.
+// Admin does NOT need a user account — fully independent auth system.
 import jwt from 'jsonwebtoken';
 
 export async function adminLogin(req, res) {
@@ -24,7 +25,6 @@ export async function adminLogin(req, res) {
     const passwordMatch = password === ADMIN_PASSWORD;
 
     if (!emailMatch || !passwordMatch) {
-      // Generic error — don't hint which field is wrong
       console.warn('[Admin] ❌ Failed admin login attempt for:', email);
       return res.status(401).json({ error: 'Invalid admin credentials.' });
     }

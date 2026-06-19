@@ -13,6 +13,7 @@ function normUser(u) {
     _id: u.id, id: u.id,
     firstName: u.first_name, lastName: u.last_name,
     email: u.email, university: u.university, role: u.role,
+    avatar: u.avatar || null, avatarColor: u.avatar_color || null,
     isVerified: u.is_verified, isBanned: u.is_banned,
     createdAt: u.created_at,
   };
@@ -21,26 +22,35 @@ function normUser(u) {
 // GET /api/admin/stats
 export async function getStats(req, res, next) {
   try {
-    const [
-      { count: users },
-      { count: teams },
-      { count: projects },
-      { count: messages },
-      { count: onlineUsers },
-    ] = await Promise.all([
-      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('messages').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('online_status', 'online'),
+    const safeCount = async (table, filters = {}) => {
+      try {
+        let q = supabaseAdmin.from(table).select('*', { count: 'exact', head: true });
+        for (const [key, val] of Object.entries(filters)) q = q.eq(key, val);
+        const { count } = await q;
+        return count || 0;
+      } catch { return 0; }
+    };
+
+    const [users, teams, projects, messages, onlineUsers, bannedUsers, posts] = await Promise.all([
+      safeCount('users'),
+      safeCount('teams'),
+      safeCount('projects'),
+      safeCount('messages'),
+      safeCount('users', { online_status: 'online' }),
+      safeCount('users', { is_banned: true }),
+      safeCount('posts'),
     ]);
 
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    const { count: newUsersToday } = await supabaseAdmin
-      .from('users').select('*', { count: 'exact', head: true })
-      .gte('created_at', today.toISOString());
+    let newUsersToday = 0;
+    try {
+      const { count } = await supabaseAdmin
+        .from('users').select('*', { count: 'exact', head: true })
+        .gte('created_at', today.toISOString());
+      newUsersToday = count || 0;
+    } catch {}
 
-    res.json({ users, teams, projects, totalProjects: projects, messages, onlineUsers, newUsersToday, flags: FLAGS });
+    res.json({ users, teams, projects, totalProjects: projects, messages, onlineUsers, newUsersToday, bannedUsers, posts, flags: FLAGS });
   } catch (err) { next(err); }
 }
 
@@ -49,7 +59,7 @@ export async function getUsers(req, res, next) {
   try {
     const { skip = 0, limit = 200, search = '' } = req.query;
     let q = supabaseAdmin.from('users')
-      .select('id,first_name,last_name,email,university,role,is_verified,is_banned,created_at', { count: 'exact' });
+      .select('id,first_name,last_name,email,university,role,is_verified,is_banned,avatar,avatar_color,created_at', { count: 'exact' });
     if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
     const { data: users, error, count } = await q.range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     if (error) throw error;
@@ -98,10 +108,17 @@ export async function getTeams(req, res, next) {
     const { skip = 0, limit = 200 } = req.query;
     const { data: teams, error, count } = await supabaseAdmin
       .from('teams')
-      .select('id,name,description,category,status,is_closed,max_members,members,created_at', { count: 'exact' })
+      .select('id, name, description, category, is_open, max_size, leader_id, created_at, team_members(user_id)', { count: 'exact' })
       .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     if (error) throw error;
-    res.json({ teams: teams || [], total: count || 0 });
+    // Normalize for frontend
+    const normalized = (teams || []).map(t => ({
+      ...t,
+      member_count: t.team_members?.length || 0,
+      max_members: t.max_size,
+      is_closed: !t.is_open,
+    }));
+    res.json({ teams: normalized, total: count || 0 });
   } catch (err) { next(err); }
 }
 
@@ -119,12 +136,21 @@ export async function deleteTeam(req, res, next) {
 export async function getProjects(req, res, next) {
   try {
     const { skip = 0, limit = 200 } = req.query;
-    const { data: projects, error, count } = await supabaseAdmin
+    // Try with is_featured first, fall back without if column doesn't exist
+    let result = await supabaseAdmin
       .from('projects')
-      .select('id,title,description,category,status,is_featured,created_at,owner_id', { count: 'exact' })
+      .select('id, title, description, category, status, is_featured, created_at, owner_id, owner:owner_id(id, first_name, last_name, email)', { count: 'exact' })
       .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
-    if (error) throw error;
-    res.json({ projects: projects || [], total: count || 0 });
+    
+    if (result.error && result.error.message?.includes('is_featured')) {
+      // Column doesn't exist yet — query without it
+      result = await supabaseAdmin
+        .from('projects')
+        .select('id, title, description, category, status, created_at, owner_id, owner:owner_id(id, first_name, last_name, email)', { count: 'exact' })
+        .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
+    }
+    if (result.error) throw result.error;
+    res.json({ projects: result.data || [], total: result.count || 0 });
   } catch (err) { next(err); }
 }
 
@@ -143,7 +169,12 @@ export async function featureProject(req, res, next) {
     const { data, error } = await supabaseAdmin
       .from('projects').update({ is_featured: Boolean(featured) }).eq('id', req.params.id)
       .select('id,is_featured').single();
-    if (error) throw error;
+    if (error) {
+      if (error.message?.includes('is_featured')) {
+        return res.status(400).json({ error: 'Feature column not yet added. Run schema_update.sql in Supabase.' });
+      }
+      throw error;
+    }
     res.json({ message: featured ? 'Project featured' : 'Project unfeatured', project: data });
   } catch (err) { next(err); }
 }

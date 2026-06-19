@@ -32,16 +32,13 @@ export async function getFeed(req, res, next) {
     const { page = 1, limit = 20 } = req.query;
     const offset = (page - 1) * limit;
 
-    // Get friend IDs
+    // Get friend IDs (friends table stores mutual rows: user_id → friend_id)
     const { data: friendships } = await supabaseAdmin
       .from('friends')
-      .select('requester_id, recipient_id')
-      .or(`requester_id.eq.${userId},recipient_id.eq.${userId}`)
-      .eq('status', 'accepted');
+      .select('friend_id')
+      .eq('user_id', userId);
 
-    const friendIds = (friendships || []).map(f =>
-      f.requester_id === userId ? f.recipient_id : f.requester_id
-    );
+    const friendIds = (friendships || []).map(f => f.friend_id);
     const authorIds = [userId, ...friendIds];
 
     // Fetch friend posts first

@@ -1052,14 +1052,31 @@ const PHSidebar = (() => {
 
       document.getElementById('gp-name').textContent = name;
 
-      // Status dot
+      // Status dot + activity text
       const dot = document.getElementById('gp-status-dot');
+      const lastSeenVal = u.lastSeen || u.last_seen || '';
       if (u.onlineStatus === 'online') {
-        dot.style.background = '#10b981';
-        dot.title = 'Online';
+        dot.style.background = '#31A24C';
+        dot.style.boxShadow = '0 0 0 3px rgba(49,162,76,.25)';
+        dot.title = 'Active now';
       } else {
         dot.style.background = '#9ca3af';
-        dot.title = 'Offline';
+        dot.style.boxShadow = 'none';
+        // Calculate time-ago for tooltip
+        if (lastSeenVal) {
+          const diffMs = Date.now() - new Date(lastSeenVal).getTime();
+          const diffMin = Math.floor(diffMs / 60000);
+          const diffHr = Math.floor(diffMin / 60);
+          const diffDay = Math.floor(diffHr / 24);
+          if (diffMin < 1) dot.title = 'Active now';
+          else if (diffMin < 60) dot.title = `Active ${diffMin}m ago`;
+          else if (diffHr < 24) dot.title = `Active ${diffHr}h ago`;
+          else if (diffDay === 1) dot.title = 'Active yesterday';
+          else if (diffDay < 7) dot.title = `Active ${diffDay}d ago`;
+          else dot.title = 'Offline';
+        } else {
+          dot.title = 'Offline';
+        }
       }
 
       // Avatar

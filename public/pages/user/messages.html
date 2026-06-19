@@ -44,6 +44,13 @@ body{font-family:'Inter',sans-serif;overflow:hidden;}
 .conv-item:hover{background:rgba(99,102,241,.08);}
 .conv-item.active{background:rgba(99,102,241,.15);}
 .dark .conv-item.active{background:rgba(99,102,241,.2);}
+/* Messenger-style activity dot */
+.status-dot-online{background:#31A24C !important;box-shadow:0 0 0 2px var(--surface, #fff);}
+.status-dot-online.pulse{animation:statusPulse 2s ease-in-out infinite;}
+@keyframes statusPulse{0%,100%{box-shadow:0 0 0 2px var(--surface, #fff)}50%{box-shadow:0 0 0 2px var(--surface, #fff), 0 0 0 5px rgba(49,162,76,.25)}}
+.activity-label{font-size:11px;line-height:1.2;white-space:nowrap;}
+.activity-label.active{color:#31A24C;font-weight:600;}
+.activity-label.away{color:var(--sub, #64748B);}
 /* Mobile: show only conv list OR chat, not both */
 @media(max-width:768px){
   .msg-conv-panel{position:absolute;inset:0;width:100% !important;z-index:20;transition:transform .25s ease;}
@@ -251,8 +258,42 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
   function ini(f,l){return((f?.[0]||'')+(l?.[0]||'')).toUpperCase()||'?';}
   function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+  function showToast(msg, type='info') {
+    if (typeof PHToast !== 'undefined') {
+      if (type === 'error') PHToast.error(msg);
+      else if (type === 'success') PHToast.success(msg);
+      else PHToast.info ? PHToast.info(msg) : PHToast.success(msg);
+    }
+  }
+
+  // ── Messenger-style time-ago for activity status ──
+  function activityTimeAgo(dateStr) {
+    if (!dateStr) return { text: 'Offline', isOnline: false, cssClass: 'away' };
+    const now = Date.now();
+    const then = new Date(dateStr).getTime();
+    if (isNaN(then)) return { text: 'Offline', isOnline: false, cssClass: 'away' };
+    const diffMs = now - then;
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHr = Math.floor(diffMin / 60);
+    const diffDay = Math.floor(diffHr / 24);
+
+    if (diffMin < 1) return { text: 'Active now', isOnline: true, cssClass: 'active' };
+    if (diffMin < 60) return { text: `Active ${diffMin}m ago`, isOnline: false, cssClass: 'away' };
+    if (diffHr < 24) return { text: `Active ${diffHr}h ago`, isOnline: false, cssClass: 'away' };
+    if (diffDay === 1) return { text: 'Active yesterday', isOnline: false, cssClass: 'away' };
+    if (diffDay < 7) return { text: `Active ${diffDay}d ago`, isOnline: false, cssClass: 'away' };
+    return { text: 'Offline', isOnline: false, cssClass: 'away' };
+  }
+
+  function getActivityStatus(friend) {
+    if (!friend) return { text: 'Offline', isOnline: false, cssClass: 'away' };
+    if (friend.onlineStatus === 'online') return { text: 'Active now', isOnline: true, cssClass: 'active' };
+    return activityTimeAgo(friend.lastSeen);
+  }
 
   let ME={},convs=[],allMsgs=[],activeConv=null,allUsers=[],socket=null;
+  let friendIds = new Set(); // Track friend IDs for call gating
 
   /* Load self */
   try {
@@ -286,15 +327,22 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       const color=avC(name);
       const last=c.lastMessage?.content||'Say hello!';
       const isActive=activeConv&&(activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
+      const status = getActivityStatus(f);
       return `<div class="conv-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-0.5${isActive?' active':''}"
         onclick='openConv(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
         <div class="relative shrink-0">
           <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
-          <span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white dark:border-gray-900 status-dot ${f.onlineStatus === 'online' ? '' : 'hidden'}" data-user-dot="${f._id||f.id}"></span>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-white dark:border-gray-900 status-dot ${status.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-dot="${f._id||f.id}"></span>
         </div>
         <div class="flex-1 min-w-0">
-          <div class="font-semibold text-sm truncate">${esc(name)}</div>
-          <div class="text-xs text-gray-400 truncate">${esc(last.substring(0,40))}</div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-sm truncate">${esc(name)}</span>
+            ${status.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0 md:hidden"></span>' : ''}
+          </div>
+          <div class="text-xs text-gray-400 truncate flex items-center gap-1">
+            <span class="truncate">${esc(last.substring(0,35))}</span>
+            <span class="shrink-0 text-[10px] activity-label ${status.cssClass}" data-user-activity="${f._id||f.id}">${status.isOnline ? '' : ' · ' + status.text}</span>
+          </div>
         </div>
         ${c.unreadCount?`<span class="bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold shrink-0">${c.unreadCount}</span>`:''}
       </div>`;
@@ -319,22 +367,35 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     const name=`${f.firstName||''} ${f.lastName||''}`.trim()||'User';
     const color=avC(name);
     
+    const hdrStatus = getActivityStatus(f);
     document.getElementById('chat-hdr').innerHTML=`
+      <button class="msg-back-btn items-center gap-1 text-indigo-500 text-sm font-semibold" style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;" onclick="showConvPanel()">
+        <span class="material-symbols-outlined text-base">arrow_back</span>
+      </button>
       <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+        <div class="relative">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${hdrStatus.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-hdr-dot="${f._id||f.id}"></span>
+        </div>
         <div>
           <div class="font-bold text-sm">${esc(name)}</div>
-          <div id="chat-hdr-status" class="text-xs ${f.onlineStatus==='online'?'text-green-500':'text-gray-400'} flex items-center gap-1">
-            <span class="w-1.5 h-1.5 ${f.onlineStatus==='online'?'bg-green-500':'bg-gray-400'} rounded-full"></span>
-            ${f.onlineStatus==='online'?'Active now':'Offline'}
+          <div id="chat-hdr-status" class="activity-label ${hdrStatus.cssClass} flex items-center gap-1.5" data-user-hdr-activity="${f._id||f.id}" data-last-seen="${f.lastSeen||''}">
+            ${hdrStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>' : ''}
+            ${hdrStatus.text}
           </div>
         </div>
       </div>
+      </div>
       <div class="ml-auto flex items-center gap-2">
-        <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Voice Call">
+        ${!friendIds.has(f._id||f.id) ? `
+          <button onclick="addFriendFromChat('${f._id||f.id}')" class="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors" title="Add as friend to unlock calls">
+            <span class="material-symbols-outlined text-sm">person_add</span> Add Friend
+          </button>
+        ` : ''}
+        <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 ${friendIds.has(f._id||f.id) ? 'text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} rounded-full flex items-center justify-center transition-colors" title="${friendIds.has(f._id||f.id) ? 'Voice Call' : 'Add as friend first to call'}">
           <span class="material-symbols-outlined">call</span>
         </button>
-        <button id="video-call-btn" onclick="startCall()" class="w-9 h-9 text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Video Call">
+        <button id="video-call-btn" onclick="startCall()" class="w-9 h-9 ${friendIds.has(f._id||f.id) ? 'text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} rounded-full flex items-center justify-center transition-colors" title="${friendIds.has(f._id||f.id) ? 'Video Call' : 'Add as friend first to call'}">
           <span class="material-symbols-outlined">video_call</span>
         </button>
       </div>`;
@@ -495,6 +556,21 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     openConv({_id:roomId,friendId:uid,friend:{_id:uid,firstName:fn,lastName:ln},lastMessage:null,unreadCount:0});
   };
 
+  // Add friend directly from chat header
+  window.addFriendFromChat = async function(userId) {
+    try {
+      const r = await fetch(API_BASE + `/api/friends/request/${userId}`, { method: 'POST', headers: H });
+      const d = await r.json();
+      if (r.ok) {
+        showToast('Friend request sent! They can accept to unlock calls.', 'success');
+      } else {
+        showToast(d.error || d.message || 'Could not send request', 'error');
+      }
+    } catch(e) {
+      showToast('Failed to send friend request', 'error');
+    }
+  };
+
   /* Load conversations */
   async function loadConvs(){
     // Read cache
@@ -510,6 +586,21 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       const r=await fetch(API_BASE+'/api/messages/conversations',{headers:H});
       const d=await r.json();
       convs=d.conversations||d||[];
+      // Build friend set for call gating
+      friendIds.clear();
+      convs.forEach(c => {
+        if (c.friend && (c.friend._id || c.friend.id)) {
+          friendIds.add(c.friend._id || c.friend.id);
+        }
+      });
+      // Also fetch actual friends list for accuracy
+      try {
+        const fr = await fetch(API_BASE+'/api/friends', { headers: H });
+        if (fr.ok) {
+          const fd = await fr.json();
+          (fd.friends||[]).forEach(f => friendIds.add(f.id || f._id));
+        }
+      } catch(e) {}
       localStorage.setItem('ph-convs-cache', JSON.stringify(convs));
       renderConvs(convs);
 
@@ -884,27 +975,56 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     });
 
     socket.on('status:update', data => {
-      const { userId, status } = data;
-      document.querySelectorAll(`[data-user-dot="${userId}"]`).forEach(dot => {
-        if (status === 'online') {
-          dot.classList.remove('hidden');
-        } else {
-          dot.classList.add('hidden');
-        }
-      });
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      if (activeConv && userId === friendId) {
-        const hdrStatus = document.getElementById('chat-hdr-status');
-        if (hdrStatus) {
-          hdrStatus.className = `text-xs ${status==='online'?'text-green-500':'text-gray-400'} flex items-center gap-1`;
-          hdrStatus.innerHTML = `<span class="w-1.5 h-1.5 ${status==='online'?'bg-green-500':'bg-gray-400'} rounded-full"></span>${status==='online'?'Active now':'Offline'}`;
-        }
-      }
+      const { userId, status, lastSeen } = data;
+
+      // Update conversation data model
       convs.forEach(c => {
         if (c.friend && (c.friend._id === userId || c.friend.id === userId)) {
           c.friend.onlineStatus = status;
+          if (lastSeen) c.friend.lastSeen = lastSeen;
         }
       });
+
+      // Update green dots in conv list
+      document.querySelectorAll(`[data-user-dot="${userId}"]`).forEach(dot => {
+        if (status === 'online') {
+          dot.classList.remove('hidden');
+          dot.classList.add('status-dot-online', 'pulse');
+        } else {
+          dot.classList.add('hidden');
+          dot.classList.remove('status-dot-online', 'pulse');
+        }
+      });
+
+      // Update activity labels in conv list
+      const convFriend = convs.find(c => c.friend && (c.friend._id === userId || c.friend.id === userId))?.friend;
+      const actStatus = getActivityStatus(convFriend || { onlineStatus: status, lastSeen });
+      document.querySelectorAll(`[data-user-activity="${userId}"]`).forEach(el => {
+        el.className = `shrink-0 text-[10px] activity-label ${actStatus.cssClass}`;
+        el.textContent = actStatus.isOnline ? '' : ' · ' + actStatus.text;
+      });
+
+      // Update chat header if this is the active conversation
+      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+      if (activeConv && userId === friendId) {
+        // Update header status label
+        const hdrStatus = document.getElementById('chat-hdr-status');
+        if (hdrStatus) {
+          hdrStatus.className = `activity-label ${actStatus.cssClass} flex items-center gap-1.5`;
+          if (lastSeen) hdrStatus.setAttribute('data-last-seen', lastSeen);
+          hdrStatus.innerHTML = `${actStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>' : ''}${actStatus.text}`;
+        }
+        // Update header green dot
+        document.querySelectorAll(`[data-user-hdr-dot="${userId}"]`).forEach(dot => {
+          if (status === 'online') {
+            dot.classList.remove('hidden');
+            dot.classList.add('status-dot-online', 'pulse');
+          } else {
+            dot.classList.add('hidden');
+            dot.classList.remove('status-dot-online', 'pulse');
+          }
+        });
+      }
     });
 
     socket.on('call:incoming', data => {
@@ -924,6 +1044,11 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
           showToast('Missed call', 'error');
         }
       }, 30000);
+    });
+
+    socket.on('call:error', data => {
+      showToast(data.message || 'Cannot start call', 'error');
+      endCall();
     });
 
     socket.on('call:accepted', data => {
@@ -963,13 +1088,49 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     });
   }
 
-  // ── Video Calling (Jitsi) ──
+  // ── Heartbeat: keep server-side activity tracking accurate ──
+  setInterval(() => {
+    if (socket && socket.connected) {
+      socket.emit('heartbeat');
+    }
+  }, 30000); // every 30 seconds
+
+  // ── Auto-refresh "Active Xm ago" labels every 60s ──
+  setInterval(() => {
+    // Refresh conv list activity labels
+    convs.forEach(c => {
+      const f = c.friend;
+      if (!f) return;
+      const uid = f._id || f.id;
+      const status = getActivityStatus(f);
+      document.querySelectorAll(`[data-user-activity="${uid}"]`).forEach(el => {
+        el.className = `shrink-0 text-[10px] activity-label ${status.cssClass}`;
+        el.textContent = status.isOnline ? '' : ' · ' + status.text;
+      });
+    });
+    // Refresh chat header activity label
+    const hdrEl = document.getElementById('chat-hdr-status');
+    if (hdrEl && activeConv) {
+      const f = activeConv.friend;
+      if (f) {
+        const status = getActivityStatus(f);
+        hdrEl.className = `activity-label ${status.cssClass} flex items-center gap-1.5`;
+        hdrEl.innerHTML = `${status.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>' : ''}${status.text}`;
+      }
+    }
+  }, 60000); // every 60 seconds
+
   let jitsiApiInstance = null;
   let activeCallRoom = null;
 
   window.startCall = function() {
     if (!activeConv) return;
     const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+    // Friend-gating: only friends can call
+    if (!friendIds.has(friendId)) {
+      showToast('You need to be friends first to start a video call. Send a friend request!', 'error');
+      return;
+    }
     const roomId = `ProjectHive-${[ME.id, friendId].sort().join('-')}`;
     
     // Notify the other user via Socket.IO
@@ -985,6 +1146,11 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   window.startVoiceCall = function() {
     if (!activeConv) return;
     const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+    // Friend-gating: only friends can call
+    if (!friendIds.has(friendId)) {
+      showToast('You need to be friends first to start a voice call. Send a friend request!', 'error');
+      return;
+    }
     const roomId = `ProjectHive-voice-${[ME.id, friendId].sort().join('-')}`;
     
     if (socket) {

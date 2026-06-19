@@ -4,25 +4,37 @@ let _io = null;
 export function setIo(io) { _io = io; }
 
 const activeUsers = new Map(); // userId -> socket
+const userActivity = new Map(); // userId -> { lastActivity: ISO string }
 
 export async function registerUserSocket(socket) {
   activeUsers.set(socket.userId, socket);
+  const now = new Date().toISOString();
+  userActivity.set(socket.userId, { lastActivity: now });
   try {
-    await supabaseAdmin.from('users').update({ online_status: 'online', last_seen: new Date().toISOString() }).eq('id', socket.userId);
+    await supabaseAdmin.from('users').update({ online_status: 'online', last_seen: now }).eq('id', socket.userId);
   } catch (_) { /* non-fatal */ }
-  if (_io) _io.emit('status:update', { userId: socket.userId, status: 'online' });
+  if (_io) _io.emit('status:update', { userId: socket.userId, status: 'online', lastSeen: now });
+
+  // Track activity on any socket event (heartbeat)
+  socket.on('heartbeat', () => {
+    const ts = new Date().toISOString();
+    userActivity.set(socket.userId, { lastActivity: ts });
+  });
 }
 
 export async function unregisterUserSocket(userId) {
   activeUsers.delete(userId);
+  const now = new Date().toISOString();
+  userActivity.set(userId, { lastActivity: now });
   try {
-    await supabaseAdmin.from('users').update({ online_status: 'offline', last_seen: new Date().toISOString() }).eq('id', userId);
+    await supabaseAdmin.from('users').update({ online_status: 'offline', last_seen: now }).eq('id', userId);
   } catch (_) { /* non-fatal */ }
-  if (_io) _io.emit('status:update', { userId, status: 'offline' });
+  if (_io) _io.emit('status:update', { userId, status: 'offline', lastSeen: now });
 }
 
 export function getUserSocket(userId) { return activeUsers.get(userId); }
 export function getActiveUsers() { return Array.from(activeUsers.keys()); }
+export function isUserOnline(userId) { return activeUsers.has(userId); }
 
 export async function handleJoinRoom(socket, data) {
   const roomId = typeof data === 'string' ? data : data?.roomId;
@@ -99,9 +111,27 @@ export function broadcastToRoom(io, roomId, event, data) {
   if (_io) _io.to(roomId).emit(event, data);
 }
 
-export function handleCallInitiate(socket, data) {
+export async function handleCallInitiate(socket, data) {
   const { roomId, targetId, callerName } = data;
   if (!roomId || !targetId) return;
+
+  // Server-side friend-gating: verify friendship before allowing call
+  try {
+    const { data: friendship } = await supabaseAdmin
+      .from('friends')
+      .select('id')
+      .eq('user_id', socket.userId)
+      .eq('friend_id', targetId)
+      .maybeSingle();
+
+    if (!friendship) {
+      socket.emit('call:error', { message: 'You must be friends to call this person' });
+      return;
+    }
+  } catch (e) {
+    // If DB check fails, allow the call (fail-open for UX)
+  }
+
   const targetSocket = getUserSocket(targetId);
   if (targetSocket) {
     targetSocket.emit('call:incoming', { roomId, callerName, callerId: socket.userId });

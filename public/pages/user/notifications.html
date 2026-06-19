@@ -174,40 +174,15 @@ body{background:var(--bg);color:var(--tx);margin:0}
     PHToast?.success('All marked as read <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>');
   };
 
-  // Generate demo notifications if API returns nothing
-  function demoNotifs(){
-    return [
-      {_id:'d1',type:'team',message:'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> You were invited to join "WebCraft Team"',read:false,createdAt:new Date(Date.now()-300000)},
-      {_id:'d2',type:'friend',message:'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c1.33-4 4-6 9-6 5 0 7.67 2 9 6-1.33 4-4 6-9 6-5 0-7.67-2-9-6z"/></svg></span> Ahmed Hassan sent you a friend request',read:false,createdAt:new Date(Date.now()-1800000)},
-      {_id:'d3',type:'project',message:'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span> Your project "EcoRoute" received 5 new views',read:false,createdAt:new Date(Date.now()-3600000)},
-      {_id:'d4',type:'message',message:'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span> Sarah sent you a new message',read:true,createdAt:new Date(Date.now()-7200000)},
-      {_id:'d5',type:'team',message:'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Your team application was approved!',read:true,createdAt:new Date(Date.now()-86400000)},
-      {_id:'d6',type:'system',message:'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Welcome to ProjectHive! Complete your profile to get started',read:true,createdAt:new Date(Date.now()-172800000)},
-    ];
-  }
-
-  // Read cache
-  try {
-    const cache = localStorage.getItem('ph-notif-cache');
-    if (cache) {
-      all = JSON.parse(cache);
-      stats();
-      render(all);
-    }
-  } catch(e) {}
-
+  // Fetch real notifications from API — NO fake/demo data
   fetch(API_BASE+'/api/notifications?limit=60',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
     if(d){
       all=d.notifications||d||[];
-      localStorage.setItem('ph-notif-cache', JSON.stringify(all));
     }
-    if(!all.length)all=demoNotifs();
     stats();render(all);
   }).catch(()=>{
-    if (!all.length) {
-      all=demoNotifs();
-      stats();render(all);
-    }
+    all=[];
+    stats();render(all);
   });
 })();
 </script>

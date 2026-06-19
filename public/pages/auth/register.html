@@ -74,6 +74,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(248,250,252,
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
+/* University Autocomplete */
+.uni-wrap{position:relative}
+.uni-dropdown{position:absolute;top:100%;left:0;right:0;max-height:220px;overflow-y:auto;background:var(--card);border:1.5px solid var(--primary);border-top:0;border-radius:0 0 12px 12px;z-index:50;display:none;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.uni-dropdown.show{display:block}
+.uni-opt{padding:10px 14px;font-size:14px;cursor:pointer;transition:background .15s;color:var(--txt);border-bottom:1px solid var(--border)}
+.uni-opt:last-child{border-bottom:0}
+.uni-opt:hover,.uni-opt.active{background:rgba(99,102,241,.1);color:var(--primary)}
+.uni-opt mark{background:rgba(99,102,241,.25);color:var(--primary);border-radius:2px;padding:0 1px}
+.uni-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;margin-top:4px;padding:2px 8px;border-radius:6px;font-weight:600}
+.uni-badge.valid{background:rgba(16,185,129,.1);color:#10b981}
+.uni-badge.invalid{background:rgba(239,68,68,.08);color:#ef4444}
 @media(max-width:540px){.two-col{grid-template-columns:1fr}.card{padding:28px 20px;border-radius:18px}.page{padding:72px 12px 32px}nav{padding:0 16px}}
 </style>
 </head>
@@ -135,10 +146,13 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 
       <div class="field">
         <label for="university">University / Institution</label>
-        <div class="input-wrap">
+        <div class="input-wrap uni-wrap">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-          <input id="university" type="text" placeholder="e.g. BUET, DU, NSU…" required>
+          <input id="university" type="text" placeholder="Type university name…" required autocomplete="off" list="uni-list">
+          <datalist id="uni-list"></datalist>
+          <div class="uni-dropdown" id="uni-dropdown"></div>
         </div>
+        <div id="uni-status"></div>
       </div>
 
       <div class="field">
@@ -185,6 +199,7 @@ footer{text-align:center;padding:20px;font-size:13px;color:var(--muted)}
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/api.js"></script>
 <script src="/assets/js/core/auth.js"></script>
+<script src="/assets/js/core/bd-universities.js"></script>
 <script>
 if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){window.location.href='/dashboard';}
 
@@ -239,7 +254,7 @@ function showSuccessState(email){
       </p>
       <p class="success-note">
         Click the link in your email to activate your account.<br>
-        <small style="opacity:.6">Check spam/junk if you don't see it within a minute.</small>
+        <small style="opacity:.6">The email should arrive within a minute.</small>
       </p>
       <a href="/login" class="success-btn">Go to Sign In →</a>
     </div>`;
@@ -291,6 +306,105 @@ async function handleRegister(e){
     btn.disabled=false;txt.textContent='Create Account';
   }
 }
+
+// ── University Autocomplete ──────────────────────────────────────────────
+(function(){
+  const inp = document.getElementById('university');
+  const dd = document.getElementById('uni-dropdown');
+  const dl = document.getElementById('uni-list');
+  const status = document.getElementById('uni-status');
+  if (!inp || !window.BD_UNIVERSITIES) return;
+
+  const unis = window.BD_UNIVERSITIES;
+  let activeIdx = -1;
+
+  // Populate native datalist as fallback
+  unis.forEach(u => { const o = document.createElement('option'); o.value = u; dl.appendChild(o); });
+
+  function renderDropdown(query) {
+    if (!query || query.length < 1) { dd.classList.remove('show'); return; }
+    const q = query.toLowerCase();
+    // Smart match: search by name, abbreviation, or partial
+    const matches = unis.filter(u => {
+      const low = u.toLowerCase();
+      if (low.includes(q)) return true;
+      // Also match abbreviation in parentheses
+      const abbrMatch = u.match(/\(([^)]+)\)/);
+      if (abbrMatch && abbrMatch[1].toLowerCase().includes(q)) return true;
+      return false;
+    }).slice(0, 8);
+
+    if (!matches.length) { dd.classList.remove('show'); return; }
+
+    dd.innerHTML = matches.map((m, i) => {
+      // Highlight matching text
+      const idx = m.toLowerCase().indexOf(q);
+      let html = m;
+      if (idx >= 0) {
+        html = m.slice(0, idx) + '<mark>' + m.slice(idx, idx + q.length) + '</mark>' + m.slice(idx + q.length);
+      }
+      return '<div class="uni-opt" data-idx="'+i+'" data-val="'+m.replace(/"/g,'&quot;')+'">' + html + '</div>';
+    }).join('');
+    activeIdx = -1;
+    dd.classList.add('show');
+
+    // Click handler
+    dd.querySelectorAll('.uni-opt').forEach(opt => {
+      opt.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        inp.value = opt.dataset.val;
+        dd.classList.remove('show');
+        validateUni(opt.dataset.val);
+      });
+    });
+  }
+
+  function validateUni(val) {
+    const match = unis.find(u => u.toLowerCase() === val.toLowerCase());
+    if (match) {
+      status.innerHTML = '<span class="uni-badge valid"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>Verified University</span>';
+    } else if (val.length > 2) {
+      status.innerHTML = '<span class="uni-badge invalid">Not in verified list — select from suggestions</span>';
+    } else {
+      status.innerHTML = '';
+    }
+  }
+
+  inp.addEventListener('input', () => {
+    renderDropdown(inp.value.trim());
+    validateUni(inp.value.trim());
+  });
+
+  inp.addEventListener('focus', () => {
+    if (inp.value.trim().length >= 1) renderDropdown(inp.value.trim());
+  });
+
+  inp.addEventListener('blur', () => {
+    setTimeout(() => dd.classList.remove('show'), 150);
+  });
+
+  // Keyboard navigation
+  inp.addEventListener('keydown', (e) => {
+    const opts = dd.querySelectorAll('.uni-opt');
+    if (!opts.length || !dd.classList.contains('show')) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIdx = Math.min(activeIdx + 1, opts.length - 1);
+      opts.forEach((o,i) => o.classList.toggle('active', i === activeIdx));
+      opts[activeIdx]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIdx = Math.max(activeIdx - 1, 0);
+      opts.forEach((o,i) => o.classList.toggle('active', i === activeIdx));
+      opts[activeIdx]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && activeIdx >= 0) {
+      e.preventDefault();
+      inp.value = opts[activeIdx].dataset.val;
+      dd.classList.remove('show');
+      validateUni(inp.value);
+    }
+  });
+})();
 </script>
 </body>
 </html>

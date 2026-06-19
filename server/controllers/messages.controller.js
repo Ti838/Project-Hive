@@ -220,6 +220,7 @@ export async function getConversations(req, res, next) {
             university: friend.university,
             major: friend.major
           },
+
           lastMessage: lastMsg ? {
             content: lastMsg.content,
             sender: lastMsg.sender_id,
@@ -277,12 +278,12 @@ export async function sendDirectMessage(req, res, next) {
 
     const roomId = givenRoomId || [senderId, receiverId].sort().join('_');
 
-    // Check if friends
+    // Check if friends (friends table stores mutual rows: user_id → friend_id)
     const { data: friendship } = await supabaseAdmin
       .from('friends')
       .select('id')
-      .or(`and(requester_id.eq.${senderId},recipient_id.eq.${receiverId}),and(requester_id.eq.${receiverId},recipient_id.eq.${senderId})`)
-      .eq('status', 'accepted')
+      .eq('user_id', senderId)
+      .eq('friend_id', receiverId)
       .maybeSingle();
 
     const areFriends = !!friendship;

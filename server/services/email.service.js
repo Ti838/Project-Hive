@@ -22,8 +22,13 @@ async function sendEmail({ to, toName = '', subject, html }) {
   const body = {
     sender:      { name: FROM_NAME, email: FROM_EMAIL },
     to:          [{ email: to, name: toName || to }],
+    replyTo:     { email: FROM_EMAIL, name: FROM_NAME },
     subject,
     htmlContent: html,
+    headers: {
+      'X-Mailer': 'ProjectHive',
+      'List-Unsubscribe': `<mailto:${FROM_EMAIL}?subject=unsubscribe>`
+    },
   };
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -118,7 +123,7 @@ export async function sendVerificationEmail(email, firstName, token) {
     <div style="text-align:center;margin:0 0 28px;">
       <a href="${verifyUrl}"
          style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:14px;font-size:15px;font-weight:700;letter-spacing:0.01em;">
-        ✅ Verify Email Address
+        Verify Email Address
       </a>
     </div>
     <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);border-radius:12px;padding:16px;margin-bottom:20px;">
@@ -133,7 +138,7 @@ export async function sendVerificationEmail(email, firstName, token) {
   return sendEmail({
     to: email,
     toName: firstName,
-    subject: '✅ Verify your ProjectHive email',
+    subject: 'Verify your ProjectHive email',
     html: emailWrapper(content),
   });
 }
@@ -168,14 +173,14 @@ export async function sendWelcomeEmail(email, firstName) {
     <div style="text-align:center;">
       <a href="${dashUrl}"
          style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:14px;font-size:15px;font-weight:700;">
-        🚀 Go to Dashboard
+        Go to Dashboard
       </a>
     </div>`;
 
   return sendEmail({
     to: email,
     toName: firstName,
-    subject: '🎉 Welcome to ProjectHive!',
+    subject: 'Welcome to ProjectHive!',
     html: emailWrapper(content),
   });
 }
@@ -193,7 +198,7 @@ export async function sendPasswordResetEmail(email, firstName, token) {
     <div style="text-align:center;margin:0 0 28px;">
       <a href="${resetUrl}"
          style="display:inline-block;padding:15px 40px;background:linear-gradient(135deg,#6366f1,#7c3aed);color:#fff;text-decoration:none;border-radius:14px;font-size:15px;font-weight:700;">
-        🔐 Reset My Password
+        Reset My Password
       </a>
     </div>
     <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:16px;margin-bottom:20px;">
@@ -208,7 +213,7 @@ export async function sendPasswordResetEmail(email, firstName, token) {
   return sendEmail({
     to: email,
     toName: firstName,
-    subject: '🔐 Reset your ProjectHive password',
+    subject: 'Reset your ProjectHive password',
     html: emailWrapper(content),
   });
 }
