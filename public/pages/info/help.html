@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Help Center — ProjectHive</title>
+<meta name="description" content="ProjectHive Help Center — find answers to common questions and get support.">
+<link rel="icon" href="/favicon.png?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#F8FAFC;--sf:#fff;--sf2:#F1F5F9;--bd:#E2E8F0;--tx:#0F172A;--sub:#64748B;--ac:#6366f1}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);line-height:1.6}
+.nav{position:sticky;top:0;z-index:50;background:rgba(248,250,252,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:0 24px}
+.nav-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;font-size:17px;color:var(--ac)}
+.nav-links{display:flex;gap:6px}
+.nav-links a{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub);text-decoration:none;transition:all .15s}
+.nav-links a:hover{color:var(--ac);background:rgba(99,102,241,.06)}
+
+/* Hero */
+.hero{text-align:center;padding:60px 24px 40px;background:linear-gradient(180deg,rgba(99,102,241,.04) 0%,transparent 100%)}
+.hero h1{font-size:36px;font-weight:900;margin-bottom:10px}
+.hero p{color:var(--sub);font-size:16px;max-width:500px;margin:0 auto 28px}
+.search-box{max-width:480px;margin:0 auto;position:relative}
+.search-box input{width:100%;padding:14px 16px 14px 44px;border:2px solid var(--bd);border-radius:14px;font-size:14px;font-family:inherit;background:var(--sf);outline:none;transition:border .2s}
+.search-box input:focus{border-color:var(--ac)}
+.search-box .material-symbols-outlined{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:20px}
+
+/* Categories */
+.categories{max-width:900px;margin:40px auto;padding:0 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.cat{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:24px;text-align:center;cursor:pointer;transition:all .2s;text-decoration:none;color:var(--tx)}
+.cat:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(99,102,241,.08);border-color:var(--ac)}
+.cat .ic{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.cat .ic .material-symbols-outlined{font-size:24px;color:#fff}
+.cat h3{font-size:13px;font-weight:700;margin-bottom:4px}
+.cat p{font-size:11px;color:var(--sub)}
+
+/* FAQ */
+.faq-section{max-width:700px;margin:40px auto;padding:0 24px 80px}
+.faq-section h2{font-size:24px;font-weight:800;margin-bottom:24px;text-align:center}
+.faq{background:var(--sf);border:1px solid var(--bd);border-radius:14px;margin-bottom:10px;overflow:hidden;transition:box-shadow .2s}
+.faq:hover{box-shadow:0 4px 16px rgba(0,0,0,.04)}
+.faq-q{padding:18px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;user-select:none}
+.faq-q .material-symbols-outlined{font-size:20px;color:var(--sub);transition:transform .2s}
+.faq.open .faq-q .material-symbols-outlined{transform:rotate(180deg);color:var(--ac)}
+.faq-a{padding:0 20px;max-height:0;overflow:hidden;transition:all .25s ease}
+.faq.open .faq-a{max-height:300px;padding:0 20px 18px}
+.faq-a p{font-size:13px;color:var(--sub);line-height:1.7}
+.faq-a a{color:var(--ac);font-weight:600;text-decoration:none}
+
+/* Contact */
+.contact{max-width:700px;margin:0 auto 60px;padding:0 24px}
+.contact-card{background:linear-gradient(135deg,#6366f1,#7c3aed);border-radius:20px;padding:40px;text-align:center;color:#fff}
+.contact-card h2{font-size:22px;font-weight:800;margin-bottom:8px}
+.contact-card p{font-size:14px;opacity:.85;margin-bottom:20px}
+.contact-card a{display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:rgba(255,255,255,.2);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.3);border-radius:12px;color:#fff;text-decoration:none;font-size:14px;font-weight:700;transition:background .2s}
+.contact-card a:hover{background:rgba(255,255,255,.3)}
+
+.footer{text-align:center;padding:40px 24px;border-top:1px solid var(--bd)}
+.footer p{font-size:12px;color:var(--sub)}
+.footer a{color:var(--ac);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand"><img src="/favicon.png?v=2" alt="PH" style="width:24px;height:24px;border-radius:4px">ProjectHive</a>
+    <div class="nav-links">
+      <a href="/about">About</a>
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Help Center</h1>
+  <p>How can we help you today? Find answers to common questions below.</p>
+  <div class="search-box">
+    <span class="material-symbols-outlined">search</span>
+    <input type="text" placeholder="Search for help..." id="faq-search" oninput="filterFAQs(this.value)">
+  </div>
+</section>
+
+<div class="categories">
+  <a class="cat" href="#getting-started">
+    <div class="ic" style="background:linear-gradient(135deg,#6366f1,#7c3aed)"><span class="material-symbols-outlined">rocket_launch</span></div>
+    <h3>Getting Started</h3><p>Account setup & basics</p>
+  </a>
+  <a class="cat" href="#profile">
+    <div class="ic" style="background:linear-gradient(135deg,#10b981,#059669)"><span class="material-symbols-outlined">person</span></div>
+    <h3>Profile & Account</h3><p>Settings & privacy</p>
+  </a>
+  <a class="cat" href="#teams">
+    <div class="ic" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><span class="material-symbols-outlined">groups</span></div>
+    <h3>Teams & Projects</h3><p>Collaboration tools</p>
+  </a>
+  <a class="cat" href="#feed">
+    <div class="ic" style="background:linear-gradient(135deg,#ec4899,#db2777)"><span class="material-symbols-outlined">feed</span></div>
+    <h3>Feed & Posts</h3><p>Sharing & engagement</p>
+  </a>
+  <a class="cat" href="#messaging">
+    <div class="ic" style="background:linear-gradient(135deg,#3b82f6,#2563eb)"><span class="material-symbols-outlined">chat</span></div>
+    <h3>Messaging</h3><p>Chat & communication</p>
+  </a>
+</div>
+
+<div class="faq-section">
+  <h2>Frequently Asked Questions</h2>
+
+  <div class="faq" data-cat="getting-started" id="getting-started">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I create an account?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Click <a href="/register">Create Account</a>, fill in your name, university email, and password. You'll receive a verification email — click the link to activate your account.</p></div>
+  </div>
+  <div class="faq" data-cat="getting-started">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">I didn't receive the verification email<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Check your spam/junk folder. If it's not there, go to the login page and click "Resend Verification Email". Make sure you entered the correct email address during registration.</p></div>
+  </div>
+  <div class="faq" data-cat="getting-started">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I use ProjectHive if I'm not a university student?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>ProjectHive is primarily designed for university students and recent graduates. However, anyone with a valid email can create an account and use the platform for academic collaboration.</p></div>
+  </div>
+
+  <div class="faq" data-cat="profile" id="profile">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I edit my profile?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Go to <a href="/profile">Profile</a> to edit your name, bio, skills, avatar, banner, social links, and privacy settings. Your profile completion percentage updates in real-time as you fill in more details.</p></div>
+  </div>
+  <div class="faq" data-cat="profile">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I change my password?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Go to <a href="/settings">Settings</a> → Account section → Change Password. Enter your current password and your new password. If you forgot your password, use the <a href="/forgot-password">Forgot Password</a> link on the login page.</p></div>
+  </div>
+  <div class="faq" data-cat="profile">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I delete my account?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Go to <a href="/settings">Settings</a> → Danger Zone → Delete Account. This action is permanent and cannot be undone. You can export your data before deletion.</p></div>
+  </div>
+
+  <div class="faq" data-cat="teams" id="teams">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I create a team?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Go to <a href="/teams/create">Teams → Create Team</a>. Fill in your team name, description, required skills, and max members. You can then invite people to join your team.</p></div>
+  </div>
+  <div class="faq" data-cat="teams">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do I showcase my project?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Go to <a href="/showcase">Project Showcase</a> to add your projects. Include a title, description, tech stack, GitHub/live links, and a cover image to make your project stand out.</p></div>
+  </div>
+
+  <div class="faq" data-cat="feed" id="feed">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">What are post types?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>You can categorize your posts as: <strong>General</strong> (updates), <strong>Achievement</strong> (accomplishments), <strong>Project Update</strong> (progress), or <strong>Looking for Team</strong> (recruitment). This helps others filter and discover relevant content.</p></div>
+  </div>
+  <div class="faq" data-cat="feed">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How do hashtags work?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Add #hashtags to your posts to make them discoverable. Trending hashtags appear in the sidebar. Click any hashtag to filter the feed by that topic.</p></div>
+  </div>
+
+  <div class="faq" data-cat="messaging" id="messaging">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">How does messaging work?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>Go to <a href="/messages">Messages</a> to chat with your friends. Messages are delivered in real-time using WebSockets. You can see online status and "last seen" timestamps for your contacts.</p></div>
+  </div>
+  <div class="faq" data-cat="messaging">
+    <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">Can I message anyone?<span class="material-symbols-outlined">expand_more</span></div>
+    <div class="faq-a"><p>You can message anyone who has accepted your friend request. Send a friend request first from the <a href="/people">People</a> page, and once accepted, you'll be able to start a conversation.</p></div>
+  </div>
+</div>
+
+<div class="contact">
+  <div class="contact-card">
+    <h2>Still need help?</h2>
+    <p>Can't find what you're looking for? Reach out to our support team.</p>
+    <a href="mailto:support@projecthive.com"><span class="material-symbols-outlined" style="font-size:18px">mail</span> support@projecthive.com</a>
+  </div>
+</div>
+
+<footer class="footer">
+  <p><img src="/favicon.png?v=2" alt="" style="width:12px;height:12px;border-radius:2px;vertical-align:middle"> <a href="/">ProjectHive</a> © 2026 · <a href="/about">About</a> · <a href="/terms">Terms</a> · <a href="/privacy">Privacy</a></p>
+</footer>
+
+<script>
+function filterFAQs(q) {
+  const query = q.toLowerCase().trim();
+  document.querySelectorAll('.faq').forEach(faq => {
+    const text = faq.textContent.toLowerCase();
+    faq.style.display = !query || text.includes(query) ? '' : 'none';
+  });
+}
+</script>
+</body>
+</html>

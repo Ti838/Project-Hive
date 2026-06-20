@@ -8,7 +8,7 @@
   body { background-color: #F0F2F9 !important; }
   html.dark body { background-color: #0C0D14 !important; }
 </style>
-<link rel="icon" href="/assets/svg/logo.png">
+<link rel="icon" href="/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/ph-design.css">
@@ -61,6 +61,15 @@ body{background:var(--bg);color:var(--tx);margin:0}
 .empty-ic{font-family:'Material Symbols Outlined';font-size:64px;color:var(--bd2)}
 .req-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:18px;padding:18px;display:flex;align-items:center;gap:14px}
 .req-av{width:52px;height:52px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff;flex-shrink:0}
+.glowing-ring {
+  box-shadow: 0 0 0 3px #10b981, 0 0 12px rgba(16,185,129,0.5) !important;
+  animation: pulse-ring 2s infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0px rgba(16,185,129,0.7), 0 0 0 0px rgba(16,185,129,0.4) !important; }
+  70% { box-shadow: 0 0 0 6px rgba(16,185,129,0), 0 0 12px rgba(16,185,129,0.6) !important; }
+  100% { box-shadow: 0 0 0 0px rgba(16,185,129,0), 0 0 0px rgba(16,185,129,0) !important; }
+}
 </style>
 </head>
 <body data-no-float-theme="1">
@@ -91,6 +100,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
   <div class="tabs">
     <button id="tab-discover" class="tab on" onclick="switchTab('discover')"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span> Discover</button>
+    <button id="tab-recommended" class="tab" onclick="switchTab('recommended')"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></span> Recommended</button>
     <button id="tab-friends" class="tab" onclick="switchTab('friends')"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> My Friends</button>
     <button id="tab-requests" class="tab" onclick="switchTab('requests')"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/><path d="m16 19 2 2 4-4"/></svg></span> Requests</button>
   </div>
@@ -122,7 +132,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
   const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
   const COLS=['#6366F1','#7C3AED','#EC4899','#10B981','#F59E0B','#3B82F6','#EF4444','#14B8A6'];
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
-  let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],tab='discover',filter='all',sTimer=null;
+  let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],recList=[],tab='discover',filter='all',sTimer=null;
 
   async function init(){
     // Try cached user profile first
@@ -135,11 +145,12 @@ body{background:var(--bg);color:var(--tx);margin:0}
     }
 
     // Parallel calls
-    const [meRes, users, friends, pending] = await Promise.allSettled([
+    const [meRes, users, friends, pending, recs] = await Promise.allSettled([
       !myId ? fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.json()) : Promise.resolve(null),
       fetch(API_BASE+'/api/users/search?q=&limit=80',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch(API_BASE+'/api/friends',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(API_BASE+'/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[])
+      fetch(API_BASE+'/api/friends/requests',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
+      fetch(API_BASE+'/api/friends/recommendations',{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[])
     ]);
 
     if (meRes.status === 'fulfilled' && meRes.value) {
@@ -151,21 +162,30 @@ body{background:var(--bg);color:var(--tx);margin:0}
     const usersVal = users.status === 'fulfilled' ? users.value : [];
     const friendsVal = friends.status === 'fulfilled' ? friends.value : [];
     const pendingVal = pending.status === 'fulfilled' ? pending.value : [];
+    const recsVal = recs.status === 'fulfilled' ? recs.value : [];
 
     allUsers=Array.isArray(usersVal)?usersVal:(usersVal.users||[]);
     const fl=Array.isArray(friendsVal)?friendsVal:(friendsVal.friends||[]);
     fl.forEach(f=>{const id=f._id||f.id||f.friend?._id;if(id)myFriends.add(id);});
     inReqs=Array.isArray(pendingVal)?pendingVal:(pendingVal.requests||[]);
+    recList=Array.isArray(recsVal)?recsVal:(recsVal.recommendations||[]);
     document.getElementById('st-total').textContent=allUsers.length;
     document.getElementById('st-friends').textContent=myFriends.size;
     document.getElementById('st-pending').textContent=inReqs.length;
     if(inReqs.length){document.getElementById('req-badge').style.display='flex';document.getElementById('req-cnt').textContent=inReqs.length;}
     render();
+    const params = new URLSearchParams(window.location.search);
+    const uid = params.get('uid');
+    if (uid) {
+      setTimeout(() => {
+        if (typeof showUserProfile === 'function') showUserProfile(uid);
+      }, 500);
+    }
   }
 
   window.switchTab=function(t){
     tab=t;
-    ['discover','friends','requests'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('on',x===t));
+    ['discover','recommended','friends','requests'].forEach(x=>document.getElementById('tab-'+x).classList.toggle('on',x===t));
     document.getElementById('search-area').style.display=t==='discover'?'flex':'none';
     render();
   };
@@ -177,6 +197,20 @@ body{background:var(--bg);color:var(--tx);margin:0}
     if(tab==='friends'){
       const list=allUsers.filter(u=>myFriends.has(u._id||u.id));
       g.innerHTML=list.length?list.map(u=>card(u,'friends')).join(''):empty('handshake','No friends yet','Discover people and add them!');return;
+    }
+    if(tab==='recommended'){
+      g.innerHTML=recList.length?recList.map(u=>{
+        const id=u.id||u._id;
+        let mutualText = '';
+        if (u.mutualCount > 0) {
+          const names = u.mutualFriends.map(f => f.name).join(', ');
+          mutualText = `<div style="font-size:11px;color:#8b5cf6;font-weight:600;margin-top:2px;" title="${names}">${u.mutualCount} mutual friend${u.mutualCount > 1 ? 's' : ''}</div>`;
+        } else {
+          mutualText = `<div style="font-size:11px;color:var(--sub);margin-top:2px;">Suggested for you</div>`;
+        }
+        return card({ ...u, _id: id, mutualHtml: mutualText }, myFriends.has(id)?'friends':sentReqs.has(id)?'sent':'none');
+      }).join(''):empty('group_add','No recommendations yet','Expand your network to get recommendations!');
+      return;
     }
     if(tab==='requests'){
       if(!inReqs.length){g.innerHTML=empty('pending','No pending requests','You are all caught up!');return;}
@@ -223,14 +257,16 @@ body{background:var(--bg);color:var(--tx);margin:0}
     const sl=u.status==='available'?'Available':u.status==='busy'?'Busy':'Not looking';
     const photoEl=u.avatar?`<img src="${u.avatar}" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:11px;">`:ini;
     const btn=state==='friends'?`<button class="btn-add friends" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">check</span>Friends</button>`:state==='sent'?`<button class="btn-add sent" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">schedule</span>Sent</button>`:`<button class="btn-add" onclick="addFriend('${id}',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_add</span>Add Friend</button>`;
+    const isOnline = u.onlineStatus === 'online' || u.online_status === 'online';
     return `<div class="ucard">
       <div class="ucard-banner" style="background:linear-gradient(135deg,${c}cc,${c}55)">
-        <div class="ucard-av" style="background:${u.avatar ? 'transparent' : c};cursor:pointer;" onclick="showUserProfile('${id}')" title="View Profile">${photoEl}</div>
+        <div class="ucard-av ${isOnline ? 'glowing-ring' : ''}" style="background:${u.avatar ? 'transparent' : c};cursor:pointer;" onclick="showUserProfile('${id}')" title="View Profile">${photoEl}</div>
       </div>
       <div class="ucard-body">
         <div>
           <div class="ucard-name" style="cursor:pointer;" onclick="showUserProfile('${id}')" title="View Profile">${nm}</div>
           <div class="ucard-meta"><span class="sdot" style="background:${sd}"></span><span>${sl}</span>${u.university?`<span>·</span><span>${u.university}</span>`:''}</div>
+          ${u.mutualHtml || ''}
         </div>
         ${u.bio?`<div class="ucard-bio">${u.bio}</div>`:''}
         ${skills?`<div style="display:flex;flex-wrap:wrap;gap:4px">${skills}</div>`:''}
@@ -270,4 +306,4 @@ body{background:var(--bg);color:var(--tx);margin:0}
   init();
 })();
 </script>
-</body></html>
+<script src="/assets/js/core/info-modal.js"></script></body></html>

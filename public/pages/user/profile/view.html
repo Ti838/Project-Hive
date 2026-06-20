@@ -1,0 +1,466 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile — ProjectHive</title>
+<script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
+<style>html{background:#F0F2F9!important}html.dark{background:#0C0D14!important}body{background:#F0F2F9!important}html.dark body{background:#0C0D14!important}</style>
+<link rel="icon" href="/favicon.png?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/ph-design.css">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<script src="/assets/js/core/ph-toast.js"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<style>
+body{margin:0;font-family:'Inter',sans-serif;color:var(--tx);background:var(--bg)}
+*{box-sizing:border-box}
+
+/* ═══ Container ═══ */
+.pv-wrap{max-width:850px;margin:0 auto;padding:0 16px 60px}
+
+/* ═══ Top Card (Banner + Header) ═══ */
+.pv-top-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:10px;overflow:hidden;margin-bottom:10px}
+
+/* Banner */
+.pv-banner{height:200px;position:relative;background:linear-gradient(135deg,#374151 0%,#1f2937 50%,#111827 100%)}
+.pv-banner img{width:100%;height:100%;object-fit:cover}
+
+/* Header section under banner */
+.pv-header{padding:0 24px 20px;position:relative}
+.pv-avatar-wrap{margin-top:-48px;margin-bottom:12px;display:flex;align-items:flex-end;justify-content:space-between}
+.pv-avatar{width:128px;height:128px;border-radius:50%;border:4px solid var(--sf);overflow:hidden;flex-shrink:0;background:#6366f1;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#fff;position:relative;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.pv-avatar img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.pv-actions{display:flex;gap:8px;align-items:flex-end;padding-bottom:4px;flex-wrap:wrap}
+
+/* Name Section */
+.pv-name{font-size:24px;font-weight:700;margin:0;line-height:1.3}
+.pv-headline{font-size:14px;color:var(--sub);margin:2px 0 0;line-height:1.5}
+.pv-location{font-size:14px;color:var(--sub);margin:6px 0 0;display:flex;align-items:center;gap:4px}
+.pv-location .material-symbols-outlined{font-size:16px}
+
+/* Stats row — LinkedIn style "X connections" */
+.pv-connections{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.pv-conn-link{font-size:14px;font-weight:600;color:var(--ac,#6366f1);cursor:pointer;text-decoration:none}
+.pv-conn-link:hover{text-decoration:underline}
+.pv-conn-sep{color:var(--sub);font-size:13px}
+
+/* ═══ Buttons — LinkedIn style ═══ */
+.pv-btn{padding:6px 16px;border-radius:999px;border:none;font-size:14px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:'Inter',sans-serif;transition:all .15s;line-height:1.4}
+.pv-btn .material-symbols-outlined{font-size:18px}
+.pv-btn-primary{background:#6366f1;color:#fff}
+.pv-btn-primary:hover{background:#4f46e5}
+.pv-btn-outline{background:transparent;border:1.5px solid var(--ac,#6366f1);color:var(--ac,#6366f1)}
+.pv-btn-outline:hover{background:rgba(99,102,241,.06);border-color:#4f46e5}
+.pv-btn-ghost{background:transparent;border:1.5px solid var(--bd);color:var(--sub)}
+.pv-btn-ghost:hover{background:var(--bd);color:var(--tx)}
+
+/* ═══ Section Cards ═══ */
+.pv-section{background:var(--sf);border:1.5px solid var(--bd);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.pv-section-hdr{padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.pv-section-hdr h2{font-size:20px;font-weight:700;margin:0}
+.pv-section-hdr a{font-size:14px;font-weight:600;color:var(--sub);text-decoration:none;display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;transition:background .15s}
+.pv-section-hdr a:hover{background:var(--bd)}
+.pv-section-body{padding:0 24px 20px}
+
+/* ═══ About ═══ */
+.pv-bio{font-size:14px;line-height:1.7;color:var(--tx);white-space:pre-wrap}
+
+/* ═══ Skills ═══ */
+.pv-skills-list{display:flex;flex-wrap:wrap;gap:8px}
+.pv-skill-tag{padding:6px 16px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(99,102,241,.08);color:var(--ac,#6366f1);border:1px solid rgba(99,102,241,.15);transition:all .12s}
+.pv-skill-tag:hover{background:rgba(99,102,241,.14)}
+
+/* ═══ Experience/Details ═══ */
+.pv-detail-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--bd)}
+.pv-detail-item:last-child{border-bottom:none}
+.pv-detail-icon{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:rgba(99,102,241,.06)}
+.pv-detail-icon .material-symbols-outlined{font-size:22px;color:var(--ac,#6366f1)}
+.pv-detail-text h4{font-size:14px;font-weight:600;margin:0;color:var(--tx)}
+.pv-detail-text p{font-size:13px;color:var(--sub);margin:2px 0 0}
+
+/* ═══ Social/Links ═══ */
+.pv-link-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}
+.pv-link-item:last-child{border-bottom:none}
+.pv-link-icon{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.pv-link-icon .material-symbols-outlined{font-size:18px}
+.pv-link-text{flex:1;min-width:0}
+.pv-link-text .label{font-size:12px;font-weight:600;color:var(--sub)}
+.pv-link-text a{font-size:13px;font-weight:600;color:var(--ac);text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pv-link-text a:hover{text-decoration:underline}
+
+/* ═══ Activity ═══ */
+.pv-activity-item{padding:14px 0;border-bottom:1px solid var(--bd)}
+.pv-activity-item:last-child{border-bottom:none}
+.pv-activity-head{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pv-activity-head .av{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0}
+.pv-activity-head .meta{font-size:12px;color:var(--sub)}
+.pv-activity-head .meta strong{color:var(--tx);font-weight:600}
+.pv-activity-content{font-size:14px;line-height:1.6;color:var(--tx);padding-left:36px}
+.pv-activity-stats{display:flex;gap:14px;padding-left:36px;margin-top:6px;font-size:12px;color:var(--sub)}
+
+/* ═══ Empty ═══ */
+.pv-empty{text-align:center;padding:28px 16px;color:var(--sub)}
+.pv-empty .material-symbols-outlined{font-size:36px;opacity:.3;display:block;margin-bottom:6px}
+.pv-empty p{font-size:13px;margin:0}
+
+/* ═══ 2-col layout ═══ */
+.pv-2col{display:grid;grid-template-columns:1fr 320px;gap:10px;align-items:start}
+@media(max-width:768px){
+  .pv-2col{grid-template-columns:1fr}
+  .pv-banner{height:140px}
+  .pv-avatar{width:96px;height:96px;font-size:36px}
+  .pv-header{padding:0 16px 16px}
+  .pv-section-body{padding:0 16px 16px}
+  .pv-wrap{padding:0 8px 40px}
+}
+
+/* Profile Strength Card */
+.pv-strength-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:10px;padding:20px 24px;margin-bottom:10px}
+.pv-strength-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.pv-strength-title{font-size:14px;font-weight:700;color:var(--tx);margin:0}
+.pv-strength-lbl{font-size:12px;font-weight:700;color:var(--ac)}
+.pv-strength-bar-bg{height:6px;background:var(--bd);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.pv-strength-bar-fill{height:100%;background:linear-gradient(90deg,var(--ac),#a855f7,#ec4899);border-radius:999px;width:0%;transition:width 0.8s ease}
+.pv-strength-desc{font-size:12px;color:var(--sub);line-height:1.5;margin:0}
+
+/* Skeleton Loader */
+.pv-skel {
+  background: linear-gradient(90deg, var(--sf2) 25%, var(--sf) 50%, var(--sf2) 75%);
+  background-size: 200%;
+  animation: pv-sh 1.4s infinite;
+  border-radius: 4px;
+}
+@keyframes pv-sh {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+</style>
+</head>
+<body data-no-float-theme="1">
+<div id="ph-sidebar"></div>
+<div class="ph-page">
+  <div class="ph-topbar">
+    <a href="/feed" style="color:var(--sub);display:flex;align-items:center;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--sub)'"><span class="material-symbols-outlined">arrow_back</span></a>
+    <span class="material-symbols-outlined" style="color:var(--ac)">person</span>
+    <h1 id="page-title" style="font-size:16px;font-weight:800;margin:0;flex:1;color:var(--tx)">Profile</h1>
+  </div>
+
+  <div class="pv-wrap">
+    <!-- Top Card -->
+    <div class="pv-top-card">
+      <div class="pv-banner" id="pv-banner"></div>
+      <div class="pv-header">
+        <div class="pv-avatar-wrap">
+          <div class="pv-avatar" id="pv-avatar"><span id="pv-initials">?</span></div>
+          <div class="pv-actions" id="pv-actions"></div>
+        </div>
+        <h1 class="pv-name" id="pv-name"></h1>
+        <p class="pv-headline" id="pv-headline"></p>
+        <p class="pv-location" id="pv-location" style="display:none"><span class="material-symbols-outlined">location_on</span><span id="pv-uni-text"></span></p>
+        <div class="pv-connections" id="pv-connections"></div>
+      </div>
+    </div>
+
+    <!-- 2-Column Layout -->
+    <div class="pv-2col">
+      <!-- Left -->
+      <div>
+        <!-- Profile Strength Card (Own Profile only) -->
+        <div class="pv-strength-card" id="pv-strength-card" style="display:none">
+          <div class="pv-strength-hdr">
+            <h3 class="pv-strength-title">Profile Strength: <span id="pv-strength-name">Beginner</span></h3>
+            <span class="pv-strength-lbl" id="pv-strength-pct">0%</span>
+          </div>
+          <div class="pv-strength-bar-bg">
+            <div class="pv-strength-bar-fill" id="pv-strength-bar-fill"></div>
+          </div>
+          <p class="pv-strength-desc" id="pv-strength-desc"></p>
+        </div>
+
+        <!-- About -->
+        <div class="pv-section" id="sec-about">
+          <div class="pv-section-hdr"><h2>About</h2></div>
+          <div class="pv-section-body"><p class="pv-bio" id="pv-bio"></p></div>
+        </div>
+
+        <!-- Activity -->
+        <div class="pv-section" id="sec-activity">
+          <div class="pv-section-hdr"><h2>Activity</h2><a href="/feed"><span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>See all</a></div>
+          <div class="pv-section-body" id="pv-activity">
+            <!-- Professional Skeleton Loader -->
+            <div class="pv-activity-item" style="border-bottom:none; padding-bottom:0">
+              <div class="pv-activity-head">
+                <div class="pv-skel" style="width:28px; height:28px; border-radius:50%"></div>
+                <div class="pv-skel" style="width:140px; height:12px;"></div>
+              </div>
+              <div class="pv-skel" style="height:14px; width:90%; margin-top:10px;"></div>
+              <div class="pv-skel" style="height:14px; width:60%; margin-top:6px;"></div>
+            </div>
+            <div class="pv-activity-item" style="border-bottom:none; padding-bottom:0; margin-top: 10px;">
+              <div class="pv-activity-head">
+                <div class="pv-skel" style="width:28px; height:28px; border-radius:50%"></div>
+                <div class="pv-skel" style="width:120px; height:12px;"></div>
+              </div>
+              <div class="pv-skel" style="height:14px; width:80%; margin-top:10px;"></div>
+              <div class="pv-skel" style="height:14px; width:40%; margin-top:6px;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Skills -->
+        <div class="pv-section" id="sec-skills">
+          <div class="pv-section-hdr"><h2>Skills</h2></div>
+          <div class="pv-section-body"><div class="pv-skills-list" id="pv-skills"></div></div>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div>
+        <!-- Education / Details -->
+        <div class="pv-section" id="sec-details">
+          <div class="pv-section-hdr"><h2>Education</h2></div>
+          <div class="pv-section-body" id="pv-details"></div>
+        </div>
+
+        <!-- Links -->
+        <div class="pv-section" id="sec-links" style="display:none">
+          <div class="pv-section-hdr"><h2>Contact Info</h2></div>
+          <div class="pv-section-body" id="pv-links"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/assets/js/core/info-modal.js"></script>
+<script>
+(function(){
+  const TK = localStorage.getItem('access_token');
+  if (!TK) { location.href='/login'; return; }
+  try { const p=JSON.parse(atob(TK.split('.')[1])); if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='/login';return;} } catch(e){location.href='/login';return;}
+
+  PHSidebar.init('profile','../../../');
+
+  const H = { Authorization:'Bearer '+TK, 'Content-Type':'application/json' };
+  const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? '' : 'https://projecthive-backend.onrender.com';
+
+  const params = new URLSearchParams(location.search);
+  const viewId = params.get('id');
+  const myData = JSON.parse(localStorage.getItem('user_data')||'{}');
+  const isOwnProfile = !viewId || viewId === myData.id;
+  const userId = viewId || myData.id;
+
+  let friendCount = 0;
+
+  async function loadProfile() {
+    try {
+      const endpoint = isOwnProfile ? '/api/users/me' : `/api/users/${userId}`;
+      const r = await fetch(API + endpoint, { headers: H });
+      if (!r.ok) throw new Error('Failed');
+      const u = await r.json();
+      renderProfile(u);
+
+      if (isOwnProfile) {
+        const fr = await fetch(API + '/api/friends', { headers: H });
+        if (fr.ok) { const d = await fr.json(); friendCount = (d.friends||[]).length; updateConnections(); }
+      }
+
+      const postR = await fetch(API + '/api/posts/feed', { headers: H });
+      if (postR.ok) {
+        const pd = await postR.json();
+        const myPosts = (pd.posts||[]).filter(p => p.user_id === userId || p.userId === userId);
+        renderActivity(myPosts.slice(0, 4), u);
+      }
+    } catch(e) { console.error(e); PHToast?.error('Could not load profile'); }
+  }
+
+  function updateConnections() {
+    document.getElementById('pv-connections').innerHTML = `<span class="pv-conn-link">${friendCount} friend${friendCount!==1?'s':''}</span>`;
+  }
+
+  function renderProfile(u) {
+    const fn = u.firstName || u.first_name || '';
+    const ln = u.lastName || u.last_name || '';
+    const name = (fn + ' ' + ln).trim() || 'Unknown User';
+
+    // Title
+    document.getElementById('pv-name').textContent = name;
+    document.getElementById('page-title').textContent = name;
+    document.title = name + ' — ProjectHive';
+
+    // Avatar
+    const av = document.getElementById('pv-avatar');
+    const ini = document.getElementById('pv-initials');
+    if (u.avatar && u.avatar.startsWith('data:')) {
+      const img = document.createElement('img'); img.src = u.avatar; img.alt = name;
+      av.appendChild(img); ini.style.display = 'none';
+    } else {
+      ini.textContent = ((fn[0]||'')+(ln[0]||'')).toUpperCase() || '?';
+      av.style.background = u.avatarColor || u.avatar_color || '#6366f1';
+    }
+
+    // Banner
+    const bEl = document.getElementById('pv-banner');
+    if (u.bannerImage || u.banner_image) {
+      const bimg = document.createElement('img');
+      bimg.src = u.bannerImage || u.banner_image;
+      bEl.appendChild(bimg);
+    }
+
+    // Headline — major + university like LinkedIn
+    const headline = u.major ? (u.major + (u.university ? ' at ' + u.university : '')) : (u.university || 'Student');
+    document.getElementById('pv-headline').textContent = headline;
+
+    // Location
+    if (u.university) {
+      document.getElementById('pv-location').style.display = 'flex';
+      document.getElementById('pv-uni-text').textContent = u.university;
+    }
+
+    // Bio
+    document.getElementById('pv-bio').textContent = u.bio || 'No information provided.';
+    if (!u.bio) document.getElementById('sec-about').style.display = 'none';
+
+    // Skills
+    const skillsEl = document.getElementById('pv-skills');
+    const skills = u.skills || [];
+    if (skills.length) {
+      skillsEl.innerHTML = skills.map(s => `<span class="pv-skill-tag">${s.name||s}</span>`).join('');
+    } else {
+      document.getElementById('sec-skills').style.display = 'none';
+    }
+
+    // Details / Education
+    const detailsHtml = [];
+    if (u.university) {
+      const yearText = u.yearOfStudy || u.year_of_study;
+      const ys = ['','1st Year','2nd Year','3rd Year','4th Year','5th Year / Masters'];
+      detailsHtml.push(`<div class="pv-detail-item">
+        <div class="pv-detail-icon"><span class="material-symbols-outlined">school</span></div>
+        <div class="pv-detail-text">
+          <h4>${u.university}</h4>
+          <p>${[u.major, yearText ? ys[yearText] || '' : ''].filter(Boolean).join(' · ')}</p>
+          ${u.createdAt || u.created_at ? `<p style="font-size:12px;color:var(--sub);margin-top:2px">Member since ${new Date(u.createdAt||u.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'})}</p>` : ''}
+        </div>
+      </div>`);
+    }
+    document.getElementById('pv-details').innerHTML = detailsHtml.join('') || '<div class="pv-empty"><span class="material-symbols-outlined">school</span><p>No education info</p></div>';
+
+    // Social Links
+    const links = [];
+    if (u.github) links.push({icon:'code', label:'GitHub', url:u.github, bg:'#24292e'});
+    if (u.linkedin) links.push({icon:'work', label:'LinkedIn', url:u.linkedin, bg:'#0a66c2'});
+    if (u.portfolio) links.push({icon:'language', label:'Website', url:u.portfolio, bg:'#6366f1'});
+    if (u.email && isOwnProfile) links.push({icon:'email', label:'Email', url:'mailto:'+u.email, bg:'#ea4335', display:u.email});
+    if (links.length) {
+      document.getElementById('sec-links').style.display = 'block';
+      document.getElementById('pv-links').innerHTML = links.map(l => `
+        <div class="pv-link-item">
+          <div class="pv-link-icon" style="background:${l.bg}15"><span class="material-symbols-outlined" style="color:${l.bg}">${l.icon}</span></div>
+          <div class="pv-link-text">
+            <div class="label">${l.label}</div>
+            <a href="${l.url}" target="_blank">${l.display || l.url.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</a>
+          </div>
+        </div>`).join('');
+    }
+
+    // Action Buttons
+    const acts = document.getElementById('pv-actions');
+    if (isOwnProfile) {
+      acts.innerHTML = `
+        <button class="pv-btn pv-btn-primary" onclick="location.href='/profile/edit'"><span class="material-symbols-outlined">edit</span>Edit profile</button>
+        <button class="pv-btn pv-btn-ghost" onclick="location.href='/settings'"><span class="material-symbols-outlined">settings</span></button>`;
+    } else {
+      const fs = u.friendshipStatus;
+      if (fs === 'friends') {
+        acts.innerHTML = `
+          <button class="pv-btn pv-btn-primary" onclick="location.href='/messages'"><span class="material-symbols-outlined">send</span>Message</button>
+          <button class="pv-btn pv-btn-ghost" disabled style="opacity:.7"><span class="material-symbols-outlined">check</span>Friends</button>`;
+      } else if (fs === 'sent') {
+        acts.innerHTML = `<button class="pv-btn pv-btn-ghost" disabled><span class="material-symbols-outlined">schedule</span>Pending</button>`;
+      } else if (fs === 'received') {
+        acts.innerHTML = `
+          <button class="pv-btn pv-btn-primary" onclick="acceptReq('${u.pendingReqId}')"><span class="material-symbols-outlined">check</span>Accept</button>
+          <button class="pv-btn pv-btn-ghost" onclick="rejectReq('${u.pendingReqId}')"><span class="material-symbols-outlined">close</span>Ignore</button>`;
+      } else {
+        acts.innerHTML = `
+          <button class="pv-btn pv-btn-primary" onclick="sendReq('${u.id}')"><span class="material-symbols-outlined">person_add</span>Connect</button>
+          <button class="pv-btn pv-btn-ghost" onclick="location.href='/messages'"><span class="material-symbols-outlined">send</span>Message</button>`;
+      }
+    }
+
+    // Profile strength card (own profile only)
+    if (isOwnProfile) {
+      document.getElementById('pv-strength-card').style.display = 'block';
+      const pct = u.profileCompletion || u.completionPercentage || u.completion_percentage || 0;
+      document.getElementById('pv-strength-pct').textContent = pct + '%';
+      document.getElementById('pv-strength-bar-fill').style.width = pct + '%';
+      
+      let lvl = 'Beginner';
+      let desc = 'Add a profile photo, bio, skills, and links to reach Intermediate.';
+      if (pct >= 85) {
+        lvl = 'All-Star 🌟';
+        desc = 'Excellent! Your profile is complete and optimized for recruiters and teams.';
+      } else if (pct >= 50) {
+        lvl = 'Intermediate';
+        desc = 'Great start! Add more social links or skills to become an All-Star.';
+      }
+      
+      document.getElementById('pv-strength-name').textContent = lvl;
+      document.getElementById('pv-strength-desc').textContent = desc;
+    }
+
+    updateConnections();
+  }
+
+  function renderActivity(posts, user) {
+    const el = document.getElementById('pv-activity');
+    if (!posts.length) {
+      el.innerHTML = `<div class="pv-empty"><span class="material-symbols-outlined">article</span><p>No activity yet</p></div>`;
+      return;
+    }
+    const fn = user.firstName || user.first_name || '';
+    const ln = user.lastName || user.last_name || '';
+    const name = (fn + ' ' + ln).trim();
+    const avColor = user.avatarColor || user.avatar_color || '#6366f1';
+    const initials = ((fn[0]||'')+(ln[0]||'')).toUpperCase();
+
+    el.innerHTML = posts.map(p => {
+      const date = new Date(p.created_at || p.createdAt);
+      const ago = timeAgo(date);
+      const content = (p.content||'').substring(0, 180) + ((p.content||'').length > 180 ? '…' : '');
+      return `<div class="pv-activity-item">
+        <div class="pv-activity-head">
+          <div class="av" style="background:${avColor}">${user.avatar ? '' : initials}</div>
+          <div class="meta"><strong>${name}</strong> posted this · ${ago}</div>
+        </div>
+        <div class="pv-activity-content">${content}</div>
+        <div class="pv-activity-stats">
+          ${p.likes_count||p.likesCount ? `<span>${p.likes_count||p.likesCount} likes</span>` : ''}
+          ${p.comments_count||p.commentsCount ? `<span>${p.comments_count||p.commentsCount} comments</span>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function timeAgo(date) {
+    const s = Math.floor((Date.now()-date.getTime())/1000);
+    if(s<60)return 'just now';
+    if(s<3600)return Math.floor(s/60)+'m';
+    if(s<86400)return Math.floor(s/3600)+'h';
+    if(s<604800)return Math.floor(s/86400)+'d';
+    if(s<2592000)return Math.floor(s/604800)+'w';
+    return date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  }
+
+  window.sendReq = async function(id) {
+    try { const r = await fetch(API+'/api/friends/request/'+id,{method:'POST',headers:H}); r.ok?(PHToast?.success('Request sent!'),loadProfile()):PHToast?.error('Failed'); } catch(e){PHToast?.error('Error');}
+  };
+  window.acceptReq = async function(id) {
+    try { const r = await fetch(API+'/api/friends/accept/'+id,{method:'POST',headers:H}); r.ok?(PHToast?.success('Connected!'),loadProfile()):PHToast?.error('Failed'); } catch(e){PHToast?.error('Error');}
+  };
+  window.rejectReq = async function(id) {
+    try { const r = await fetch(API+'/api/friends/reject/'+id,{method:'POST',headers:H}); r.ok?(PHToast?.success('Ignored'),loadProfile()):PHToast?.error('Failed'); } catch(e){PHToast?.error('Error');}
+  };
+
+  loadProfile();
+})();
+</script>
+</body></html>

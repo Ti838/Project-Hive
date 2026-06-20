@@ -155,7 +155,7 @@ export async function updateProfile(req, res, next) {
     const {
       firstName, lastName, bio, university, major, yearOfStudy,
       avatar, bannerImage, avatarColor, status, hoursPerWeek,
-      github, linkedin, portfolio, isPublic,
+      github, linkedin, portfolio, isPublic, skills
     } = req.body;
 
     // Build update object (snake_case for Supabase)
@@ -176,6 +176,21 @@ export async function updateProfile(req, res, next) {
     if (portfolio !== undefined)    updates.portfolio = portfolio;
     if (isPublic !== undefined)     updates.is_public = isPublic;
 
+    // Update skills first if provided
+    if (skills !== undefined) {
+      await supabaseAdmin.from('skills').delete().eq('user_id', userId);
+      if (skills && skills.length > 0) {
+        const skillRows = skills.map(s => ({
+          user_id: userId,
+          name: typeof s === 'string' ? s : (s.name || ''),
+          level: s.level || 'intermediate'
+        })).filter(s => s.name);
+        if (skillRows.length > 0) {
+          await supabaseAdmin.from('skills').insert(skillRows);
+        }
+      }
+    }
+
     // Calculate completion %
     const { data: existing } = await supabaseAdmin
       .from('users')
@@ -184,6 +199,7 @@ export async function updateProfile(req, res, next) {
       .single();
 
     const merged = { ...existing, ...updates };
+    const finalSkills = skills !== undefined ? skills : (existing?.skills || []);
     const fields = [
       merged.first_name && merged.last_name,
       merged.avatar || merged.avatar_color,
@@ -191,7 +207,7 @@ export async function updateProfile(req, res, next) {
       merged.university,
       merged.major,
       merged.year_of_study,
-      existing?.skills?.length > 0,
+      finalSkills.length > 0,
       merged.github || merged.linkedin || merged.portfolio,
     ];
     updates.completion_percentage = Math.round((fields.filter(Boolean).length / fields.length) * 100);
@@ -214,7 +230,8 @@ export async function updateProfile(req, res, next) {
 // ─── SEARCH USERS ────────────────────────────────────────────────────────────
 export async function searchUsers(req, res, next) {
   try {
-    const { query, skip = 0, limit = 20, university, yearOfStudy } = req.query;
+    const { query, q: queryQ, skip = 0, limit = 20, university, yearOfStudy } = req.query;
+    const searchTerm = query || queryQ;
 
     let q = supabaseAdmin
       .from('users')
@@ -222,8 +239,8 @@ export async function searchUsers(req, res, next) {
       .eq('is_public', true)
       .eq('is_banned', false);
 
-    if (query) {
-      q = q.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%,university.ilike.%${query}%,major.ilike.%${query}%`);
+    if (searchTerm) {
+      q = q.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,university.ilike.%${searchTerm}%,major.ilike.%${searchTerm}%`);
     }
     if (university) q = q.ilike('university', `%${university}%`);
     if (yearOfStudy) q = q.eq('year_of_study', parseInt(yearOfStudy));

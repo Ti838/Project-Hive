@@ -8,7 +8,7 @@
   body { background-color: #F0F2F9 !important; }
   html.dark body { background-color: #0C0D14 !important; }
 </style>
-<link rel="icon" href="/assets/svg/logo.png">
+<link rel="icon" href="/favicon.png?v=2">
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>ProjectHive | Student Dashboard</title>
@@ -221,6 +221,9 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 <div class="flex items-center gap-4">
   <!-- Hamburger shown on mobile via CSS -->
   <div id="ph-hamburger-slot"></div>
+  <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-outline-variant/20 dark:hover:bg-white/10 transition-colors shrink-0 text-on-surface dark:text-white" title="Go Back">
+    <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+  </button>
   <div class="relative">
     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
     <input id="dash-search" class="bg-surface-container-low border-none rounded-pill pl-10 pr-4 py-2 w-80 max-md:w-40 focus:ring-2 focus:ring-secondary text-body-sm transition-all" placeholder="Search research, teams, or tools..." type="text"/>
@@ -242,7 +245,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
       <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/notifications'">
         <span class="material-symbols-outlined">notifications</span>
       </button>
-      <span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+      <span id="topbar-unread" class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface hidden"></span>
     </div>
   </div>
   <div class="flex items-center gap-3">
@@ -787,6 +790,20 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   if (si) {
     si.addEventListener('focus', () => si.parentElement.classList.add('scale-105'));
     si.addEventListener('blur',  () => si.parentElement.classList.remove('scale-105'));
+    si.addEventListener('input', (e) => {
+      const val = e.target.value;
+      if (val) {
+        const backdrop = document.getElementById('ph-search-backdrop');
+        const gInput = document.getElementById('ph-search-input');
+        if (backdrop && gInput) {
+          backdrop.style.display = 'flex';
+          gInput.value = val;
+          gInput.focus();
+          gInput.dispatchEvent(new Event('input', { bubbles: true }));
+          si.value = '';
+        }
+      }
+    });
   }
 
   /* Animate number count-up */
@@ -833,8 +850,8 @@ body, header, aside, main, section, .bg-surface-container-lowest,
     function avC(s) { let h = 0; for (const c of s || '') h = c.charCodeAt(0) + ((h << 5) - h); return COLS[Math.abs(h) % COLS.length]; }
     el.innerHTML = users.length
       ? users.map(u => {
-          const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
-          const ini = ((u.firstName?.[0] || '') + (u.lastName?.[0] || '')).toUpperCase() || '?';
+          const name = `${u.firstName || u.first_name || ''} ${u.lastName || u.last_name || ''}`.trim() || 'User';
+          const ini = ((u.firstName?.[0] || u.first_name?.[0] || '') + (u.lastName?.[0] || u.last_name?.[0] || '')).toUpperCase() || '?';
           const uid = u.id || u._id;
           const avatarHtml = u.avatar
             ? `<img src="${u.avatar}" class="w-8 h-8 rounded-full object-cover">`
@@ -853,7 +870,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
             </a>
           </div>`;
         }).join('')
-      : '<div class="text-center text-on-surface-variant text-[12px] py-4">No users found</div>';
+      : '<div class="text-center text-on-surface-variant text-[12px] py-4">No friends online</div>';
   }
 
   /* Load all dashboard data */
@@ -1014,6 +1031,12 @@ body, header, aside, main, section, .bg-surface-container-lowest,
           const list = nd.notifications || nd;
           localStorage.setItem('ph-notif-cache', JSON.stringify(list));
           renderNotifications(list);
+          const unread = list.filter(n => !n.read).length;
+          const topbarDot = document.getElementById('topbar-unread');
+          if (topbarDot) {
+            if (unread > 0) topbarDot.classList.remove('hidden');
+            else topbarDot.classList.add('hidden');
+          }
         } else {
           document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">No notifications yet.</div>';
         }
@@ -1024,12 +1047,13 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 
     async function fetchOnlineFriends() {
       try {
-        const fr = await fetch(API_BASE + '/api/users?limit=20', {headers: H});
+        const fr = await fetch(API_BASE + '/api/friends', {headers: H});
         if (fr.ok) {
           const fd = await fr.json();
-          const users = (fd.users || fd || []).slice(0, 6);
-          localStorage.setItem('ph-online-cache', JSON.stringify(users));
-          renderOnlineFriends(users);
+          const allFriends = fd.friends || fd || [];
+          const onlineFriends = allFriends.filter(f => f && f.online_status === 'online').slice(0, 6);
+          localStorage.setItem('ph-online-cache', JSON.stringify(onlineFriends));
+          renderOnlineFriends(onlineFriends);
         }
       } catch (e) {
         document.getElementById('online-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-4">Could not load</div>';
@@ -1068,4 +1092,4 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   });
 })();
 </script>
-</body></html>
+<script src="/assets/js/core/info-modal.js"></script></body></html>

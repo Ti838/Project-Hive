@@ -4,6 +4,7 @@ import { supabaseAdmin } from '../config/supabase.js';
 const FLAGS = {
   maintenanceMode: false,
   registrationEnabled: true,
+  emailVerification: false,
 };
 export function getFlags() { return FLAGS; }
 
@@ -139,14 +140,14 @@ export async function getProjects(req, res, next) {
     // Try with is_featured first, fall back without if column doesn't exist
     let result = await supabaseAdmin
       .from('projects')
-      .select('id, title, description, category, status, is_featured, created_at, owner_id, owner:owner_id(id, first_name, last_name, email)', { count: 'exact' })
+      .select('id, title, description, category, status, is_featured, created_at, owner_id, author:users!owner_id(id, first_name, last_name, email)', { count: 'exact' })
       .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     
     if (result.error && result.error.message?.includes('is_featured')) {
       // Column doesn't exist yet — query without it
       result = await supabaseAdmin
         .from('projects')
-        .select('id, title, description, category, status, created_at, owner_id, owner:owner_id(id, first_name, last_name, email)', { count: 'exact' })
+        .select('id, title, description, category, status, created_at, owner_id, author:users!owner_id(id, first_name, last_name, email)', { count: 'exact' })
         .range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     }
     if (result.error) throw result.error;
@@ -188,7 +189,7 @@ export async function getSystemFlags(req, res) {
 
 // PATCH /api/admin/flags
 export async function updateFlags(req, res) {
-  const allowed = ['maintenanceMode', 'registrationEnabled'];
+  const allowed = ['maintenanceMode', 'registrationEnabled', 'emailVerification'];
   for (const key of allowed) {
     if (req.body[key] !== undefined) FLAGS[key] = Boolean(req.body[key]);
   }

@@ -185,7 +185,7 @@ const PHSidebar = (() => {
       </button>
       <a href="${logoHref}" class="ph-sb-brand">
         <div class="ph-sb-logo">
-          <img src="/assets/svg/logo.png" alt="ProjectHive" onerror="this.parentElement.innerHTML='🐝'">
+          <img src="/favicon.png?v=2" alt="ProjectHive" onerror="this.parentElement.innerHTML='🐝'">
         </div>
         <div class="ph-sb-brand-txt">
           <div class="ph-sb-brand-name">ProjectHive</div>
@@ -321,7 +321,9 @@ const PHSidebar = (() => {
       render(active, base);
       buildOverlay();
       try { if (typeof buildBottomNav === 'function') buildBottomNav(active, base); } catch(_) {}
+      try { if (typeof buildMobileFAB === 'function') buildMobileFAB(base); } catch(_) {}
       try { injectHamburger(base); } catch(_) {}
+      try { if (typeof setupMobileHeader === 'function') setupMobileHeader(); } catch(_) {}
       try { wireThemeButtons(); } catch(_) {}
       try { if (typeof initTransitions === 'function') initTransitions(); } catch(_) {}
       try { initGlobalSearch(base); } catch(_) {}
@@ -689,6 +691,20 @@ const PHSidebar = (() => {
     document.body.appendChild(nav);
   }
 
+  // ══ Premium Mobile Floating Action Button (FAB) for AI ════════════════════
+  function buildMobileFAB(base) {
+    if (document.getElementById('ph-mobile-fab')) return; // already injected
+
+    const fab = document.createElement('a');
+    fab.id = 'ph-mobile-fab';
+    fab.href = '/generator';
+    fab.className = 'ph-mobile-fab';
+    fab.title = 'AI Generator';
+    fab.innerHTML = `<span class="material-symbols-outlined">auto_awesome</span>`;
+    
+    document.body.appendChild(fab);
+  }
+
   /** Inject a hamburger button into the page topbar/header for mobile */
   function injectHamburger(base) {
     // Look for an existing hamburger slot first
@@ -713,6 +729,28 @@ const PHSidebar = (() => {
       <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
     </svg>`;
     header.insertBefore(btn, header.firstChild);
+  }
+
+  /** Set up LinkedIn-style mobile header: Move Avatar to left and bind to drawer */
+  function setupMobileHeader() {
+    if (window.innerWidth <= 768) {
+      const avatar = document.getElementById('feed-avatar');
+      const hamburgerSlot = document.getElementById('ph-hamburger-slot');
+      
+      if (avatar && hamburgerSlot) {
+        // Move avatar to the left slot
+        hamburgerSlot.innerHTML = '';
+        hamburgerSlot.appendChild(avatar);
+        
+        // Bind drawer opening to Avatar
+        avatar.style.cursor = 'pointer';
+        avatar.onclick = PHSidebar.openDrawer;
+        
+        // Remove standard hamburger button if it exists
+        const oldHamburger = document.getElementById('ph-hamburger-btn') || document.querySelector('.ph-hamburger');
+        if (oldHamburger) oldHamburger.style.display = 'none';
+      }
+    }
   }
 
   /** Wire up any dark_mode buttons that don't already have an onclick */
@@ -750,32 +788,6 @@ const PHSidebar = (() => {
     if (dSun)  dSun.style.display  = isDark ? 'none'  : 'block';
     if (dMoon) dMoon.style.display = isDark ? 'block' : 'none';
 
-    // Auto-inject floating button on pages without one
-    injectFloatingThemeBtn();
-  }
-
-  function injectFloatingThemeBtn() {
-    // Skip if page already has its own theme button
-    if (document.body?.getAttribute('data-no-float-theme')) return;
-    // If page already has a #ph-float-theme btn, skip
-    if (document.getElementById('ph-float-theme')) return;
-    // Find any topbar / ph-topbar
-    const topbar = document.querySelector('.ph-topbar') || document.querySelector('header');
-    if (!topbar) return;
-    // Check if topbar already has a theme btn
-    if (topbar.querySelector('[data-theme-wired], .ph-topbar-theme')) return;
-
-    const isDark = document.documentElement.classList.contains('dark');
-    const btn = document.createElement('button');
-    btn.id = 'ph-float-theme';
-    btn.className = 'ph-topbar-theme';
-    btn.title = 'Toggle dark/light mode';
-    btn.setAttribute('data-theme-wired', '1');
-    btn.innerHTML = `
-      <svg class="ph-theme-svg-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:${isDark?'none':'block'}"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-      <svg class="ph-theme-svg-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:${isDark?'block':'none'}"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
-    btn.addEventListener('click', toggleTheme);
-    topbar.appendChild(btn);
   }
 
   // ══ Page Transition System ══════════════════════════════════════════════════

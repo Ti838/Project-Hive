@@ -566,9 +566,37 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
 }
 .ph-bn-item:active { transform: scale(0.92); }
 
+/* Mobile Floating Action Button (FAB) */
+.ph-mobile-fab {
+  display: none;
+  position: fixed;
+  bottom: 84px; /* Above bottom nav */
+  right: 16px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  color: #ffffff;
+  z-index: 55;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4), 0 8px 30px rgba(236, 72, 153, 0.3);
+  text-decoration: none;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s;
+}
+.ph-mobile-fab:active {
+  transform: scale(0.92);
+}
+.ph-mobile-fab .material-symbols-outlined {
+  font-size: 26px;
+}
+
 @media (max-width: 768px) {
   /* Show bottom nav on mobile */
   #ph-bottom-nav { display: flex; }
+
+  /* Show FAB on mobile */
+  .ph-mobile-fab { display: flex; }
 
   /* Sidebar slides off-screen */
   #ph-sidebar {
@@ -585,19 +613,39 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
   .ph-page { margin-left: 0 !important; padding-bottom: 72px; }
   .ph-content { padding: 16px; }
 
-  /* Topbar — cleaner on mobile */
-  .ph-topbar {
-    padding: 0 16px;
+  /* Topbar — cleaner on mobile (LinkedIn Style) */
+  .ph-topbar, header.fixed {
+    padding: 0 16px !important;
     height: 56px;
     background: var(--ph-bg) !important;
     border-bottom: 1px solid var(--ph-border);
+    gap: 12px !important;
   }
+  header.fixed > div:first-child { flex: 1; gap: 12px !important; }
+  #feed-search { width: 100% !important; max-width: none !important; }
+  .border-r.border-outline-variant, 
+  header .hidden.sm\:block, 
+  button[title="Go Back"] { display: none !important; }
 
-  /* Fix Tailwind-based page offsets */
+  /* Fix Tailwind-based page offsets & Full-Width Feed Cards */
   main[class*="ml-"],
   main[class*="ml-64"],
   div[class*="ml-[260px]"],
-  main[style*="margin-left"] { margin-left: 0 !important; }
+  main[style*="margin-left"] { 
+    margin-left: 0 !important; 
+    padding-left: 0 !important; 
+    padding-right: 0 !important; 
+  }
+  header[class*="left-"] { left: 0 !important; width: 100% !important; }
+
+  /* Full-width Cards (LinkedIn style) */
+  main > div.max-w-\[680px\] { max-width: 100% !important; }
+  .feed-card-shadow, .ph-card, .bg-surface-container-lowest, section.bg-surface-container-lowest {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin-bottom: 8px !important;
+  }
   header[class*="left-"] { left: 0 !important; width: 100% !important; }
 
   /* Make tailwind pages also get bottom padding */

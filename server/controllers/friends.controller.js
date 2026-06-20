@@ -130,3 +130,116 @@ export async function getDMHistory(req, res, next) {
     res.json({ messages: (messages || []).reverse(), roomId });
   } catch (err) { next(err); }
 }
+
+export async function getRecommendedFriends(req, res, next) {
+  try {
+    const myId = req.user.id;
+
+    // 1. Fetch all friends of current user
+    const { data: myFriendsRows } = await supabaseAdmin
+      .from('friends')
+      .select('friend_id')
+      .eq('user_id', myId);
+    
+    const myFriendIds = new Set((myFriendsRows || []).map(r => r.friend_id));
+
+    if (myFriendIds.size === 0) {
+      // Fallback cold start: recommend users from the same university, otherwise any user
+      const { data: me } = await supabaseAdmin.from('users').select('university').eq('id', myId).single();
+      const university = me?.university;
+
+      if (university) {
+        const { data: recs } = await supabaseAdmin.from('users')
+          .select('id, first_name, last_name, avatar, avatar_color, university, major, online_status, last_seen')
+          .neq('id', myId)
+          .eq('university', university)
+          .limit(15);
+        
+        if (recs && recs.length > 0) {
+          return res.json({ recommendations: recs.map(u => ({
+            id: u.id,
+            firstName: u.first_name,
+            lastName: u.last_name,
+            avatar: u.avatar,
+            avatarColor: u.avatar_color,
+            university: u.university,
+            major: u.major,
+            mutualCount: 0,
+            mutualFriends: []
+          })) });
+        }
+      }
+      const { data: recs } = await supabaseAdmin.from('users')
+        .select('id, first_name, last_name, avatar, avatar_color, university, major, online_status, last_seen')
+        .neq('id', myId)
+        .limit(15);
+
+      return res.json({ recommendations: (recs || []).map(u => ({
+        id: u.id,
+        firstName: u.first_name,
+        lastName: u.last_name,
+        avatar: u.avatar,
+        avatarColor: u.avatar_color,
+        university: u.university,
+        major: u.major,
+        mutualCount: 0,
+        mutualFriends: []
+      })) });
+    }
+
+    // 2. Fetch friends of my friends (friend-of-a-friend traversal)
+    const { data: fofRows } = await supabaseAdmin
+      .from('friends')
+      .select('user_id, friend_id, friend:friend_id(id, first_name, last_name, avatar, avatar_color, university, major)')
+      .in('user_id', Array.from(myFriendIds))
+      .neq('friend_id', myId);
+
+    // 3. Fetch names of my friends to build mutual friend labels
+    const { data: myFriendsDetails } = await supabaseAdmin
+      .from('users')
+      .select('id, first_name, last_name')
+      .in('id', Array.from(myFriendIds));
+    const friendNamesMap = new Map((myFriendsDetails || []).map(u => [u.id, `${u.first_name} ${u.last_name}`]));
+
+    // 4. Count mutual friends
+    const fofMap = new Map();
+    
+    (fofRows || []).forEach(row => {
+      const fofId = row.friend_id;
+      // Skip if already friends
+      if (myFriendIds.has(fofId)) return;
+      if (!row.friend) return; // safety check
+
+      if (!fofMap.has(fofId)) {
+        fofMap.set(fofId, {
+          user: row.friend,
+          mutualFriendIds: new Set()
+        });
+      }
+      fofMap.get(fofId).mutualFriendIds.add(row.user_id);
+    });
+
+    const recommendations = [];
+    fofMap.forEach((val, fofId) => {
+      const mutualFriends = Array.from(val.mutualFriendIds).map(id => ({
+        id,
+        name: friendNamesMap.get(id) || 'Teammate'
+      }));
+      recommendations.push({
+        id: val.user.id,
+        firstName: val.user.first_name,
+        lastName: val.user.last_name,
+        avatar: val.user.avatar,
+        avatarColor: val.user.avatar_color,
+        university: val.user.university,
+        major: val.user.major,
+        mutualCount: mutualFriends.length,
+        mutualFriends
+      });
+    });
+
+    recommendations.sort((a, b) => b.mutualCount - a.mutualCount);
+
+    res.json({ recommendations: recommendations.slice(0, 15) });
+  } catch (err) { next(err); }
+}

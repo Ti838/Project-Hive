@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { supabaseAdmin } from '../config/supabase.js';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.utils.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../services/email.service.js';
+import { getFlags } from './admin.controller.js';
 
 // ─── Helper: strip sensitive fields ──────────────────────────────────────────
 function sanitizeUser(user) {
@@ -14,6 +15,11 @@ function sanitizeUser(user) {
 // ─── REGISTER ────────────────────────────────────────────────────────────────
 export async function register(req, res, next) {
   try {
+    const FLAGS = getFlags();
+    if (!FLAGS.registrationEnabled) {
+      return res.status(403).json({ error: 'New user registration is currently disabled by administrators.' });
+    }
+
     const { firstName, lastName, email, password, university, major, yearOfStudy } = req.body;
 
     if (!firstName || !lastName || !email || !password) {
@@ -233,8 +239,9 @@ export async function login(req, res, next) {
       return res.status(403).json({ error: 'Your account has been suspended.' });
     }
 
-    // Block login if email not verified
-    if (!user.is_verified) {
+    // Block login if email not verified and email verification is enforced
+    const FLAGS = getFlags();
+    if (FLAGS.emailVerification && !user.is_verified) {
       return res.status(403).json({
         error: 'Please verify your email before logging in. Check your inbox for the verification link.',
         requiresVerification: true,

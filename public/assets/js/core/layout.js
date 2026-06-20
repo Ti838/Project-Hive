@@ -13,7 +13,7 @@ const PH = {
     return '../../';
   },
 };
-Object.defineProperty(PH, 'logo', { get: () => PH.base + 'assets/svg/logo.png' });
+Object.defineProperty(PH, 'logo', { get: () => '/favicon.png?v=2' });
 Object.defineProperty(PH, 'svg',  { get: () => PH.base + 'assets/svg/' });
 
 // ══ Theme ══

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy — ProjectHive</title>
+<meta name="description" content="ProjectHive Privacy Policy — how we collect, use, and protect your personal data.">
+<link rel="icon" href="/favicon.png?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#F8FAFC;--sf:#fff;--sf2:#F1F5F9;--bd:#E2E8F0;--tx:#0F172A;--sub:#64748B;--ac:#6366f1}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--tx);line-height:1.7}
+.nav{position:sticky;top:0;z-index:50;background:rgba(248,250,252,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);padding:0 24px}
+.nav-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:60px}
+.nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none;font-weight:800;font-size:17px;color:var(--ac)}
+.nav-links{display:flex;gap:6px}
+.nav-links a{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--sub);text-decoration:none;transition:all .15s}
+.nav-links a:hover{color:var(--ac);background:rgba(99,102,241,.06)}
+
+.content{max-width:800px;margin:0 auto;padding:60px 24px 80px}
+.content h1{font-size:32px;font-weight:900;margin-bottom:8px}
+.content .updated{font-size:13px;color:var(--sub);margin-bottom:40px}
+.content h2{font-size:20px;font-weight:800;margin:36px 0 12px;display:flex;align-items:center;gap:8px}
+.content h2 .material-symbols-outlined{color:var(--ac);font-size:22px}
+.content p,.content li{font-size:14px;color:var(--sub);line-height:1.8;margin-bottom:12px}
+.content ul{padding-left:24px;margin-bottom:16px}
+.content li{margin-bottom:6px}
+.content strong{color:var(--tx)}
+.content table{width:100%;border-collapse:collapse;margin:16px 0 24px;font-size:13px}
+.content th,.content td{text-align:left;padding:12px 16px;border:1px solid var(--bd)}
+.content th{background:var(--sf2);font-weight:700;color:var(--tx);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.content td{color:var(--sub)}
+
+.footer{text-align:center;padding:40px 24px;border-top:1px solid var(--bd)}
+.footer p{font-size:12px;color:var(--sub)}
+.footer a{color:var(--ac);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-brand"><img src="/favicon.png?v=2" alt="PH" style="width:24px;height:24px;border-radius:4px">ProjectHive</a>
+    <div class="nav-links">
+      <a href="/about">About</a>
+      <a href="/terms">Terms</a>
+      <a href="/help">Help</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: June 1, 2026</p>
+
+  <p>At ProjectHive, we take your privacy seriously. This policy explains what information we collect, how we use it, and your rights regarding your data.</p>
+
+  <h2><span class="material-symbols-outlined">database</span> 1. Information We Collect</h2>
+  <table>
+    <tr><th>Data Type</th><th>What We Collect</th><th>Why</th></tr>
+    <tr><td><strong>Account Info</strong></td><td>Name, email, password (hashed), university</td><td>To create and manage your account</td></tr>
+    <tr><td><strong>Profile Data</strong></td><td>Bio, skills, avatar, social links, major</td><td>To display your public profile</td></tr>
+    <tr><td><strong>Content</strong></td><td>Posts, comments, messages, projects</td><td>To provide platform features</td></tr>
+    <tr><td><strong>Usage Data</strong></td><td>Login timestamps, feature usage</td><td>To improve the platform</td></tr>
+    <tr><td><strong>Device Info</strong></td><td>Browser type, IP address</td><td>Security and fraud prevention</td></tr>
+  </table>
+
+  <h2><span class="material-symbols-outlined">settings</span> 2. How We Use Your Data</h2>
+  <ul>
+    <li>To <strong>provide and maintain</strong> the ProjectHive platform and its features.</li>
+    <li>To <strong>personalize your experience</strong> — suggest teammates, relevant content, and trending topics.</li>
+    <li>To <strong>communicate with you</strong> — account verification, password resets, and important updates.</li>
+    <li>To <strong>ensure security</strong> — detect and prevent fraud, abuse, and unauthorized access.</li>
+    <li>To <strong>improve the platform</strong> — analyze usage patterns and optimize features.</li>
+  </ul>
+
+  <h2><span class="material-symbols-outlined">share</span> 3. Data Sharing</h2>
+  <p>We do <strong>not sell your personal data</strong> to third parties. We may share limited data in these cases:</p>
+  <ul>
+    <li><strong>With your consent</strong> — when you explicitly agree to share information.</li>
+    <li><strong>Service providers</strong> — hosting (Render/Vercel), database (Supabase), email services — who process data on our behalf.</li>
+    <li><strong>Legal requirements</strong> — if required by law or to protect our rights and safety.</li>
+  </ul>
+
+  <h2><span class="material-symbols-outlined">lock</span> 4. Data Security</h2>
+  <p>We implement industry-standard security measures to protect your data:</p>
+  <ul>
+    <li>Passwords are <strong>hashed using bcrypt</strong> — we never store plain-text passwords.</li>
+    <li>API access is protected with <strong>JWT authentication</strong>.</li>
+    <li>All data is transmitted over <strong>HTTPS encryption</strong>.</li>
+    <li>We use <strong>rate limiting</strong> to prevent brute-force attacks.</li>
+    <li>Database access is restricted with <strong>Row Level Security (RLS)</strong> policies.</li>
+  </ul>
+
+  <h2><span class="material-symbols-outlined">visibility</span> 5. Your Privacy Controls</h2>
+  <p>You have full control over your privacy through the <a href="/settings" style="color:var(--ac);font-weight:600">Settings</a> page:</p>
+  <ul>
+    <li><strong>Profile visibility</strong> — choose to make your profile public or private.</li>
+    <li><strong>Email visibility</strong> — control whether your email is shown on your profile.</li>
+    <li><strong>Online status</strong> — choose whether friends can see when you're online.</li>
+    <li><strong>Friend requests</strong> — enable or disable incoming friend requests.</li>
+    <li><strong>Discoverability</strong> — control whether you appear in "Find People" searches.</li>
+  </ul>
+
+  <h2><span class="material-symbols-outlined">delete</span> 6. Data Deletion</h2>
+  <p>You can request deletion of your account and all associated data at any time:</p>
+  <ul>
+    <li>Go to <strong>Settings → Danger Zone → Delete Account</strong> to permanently delete your data.</li>
+    <li>You can also <strong>export your data</strong> as JSON before deletion.</li>
+    <li>After deletion, your data is permanently removed within <strong>30 days</strong>.</li>
+  </ul>
+
+  <h2><span class="material-symbols-outlined">cookie</span> 7. Cookies & Local Storage</h2>
+  <p>ProjectHive uses <strong>localStorage</strong> to store:</p>
+  <ul>
+    <li><strong>Authentication token</strong> — to keep you logged in.</li>
+    <li><strong>Theme preference</strong> — light/dark mode setting.</li>
+    <li><strong>Cached data</strong> — profile info and feed data for faster loading.</li>
+    <li><strong>Bookmarks</strong> — your saved posts list.</li>
+  </ul>
+  <p>We do not use third-party tracking cookies.</p>
+
+  <h2><span class="material-symbols-outlined">child_care</span> 8. Children's Privacy</h2>
+  <p>ProjectHive is intended for users aged <strong>16 and above</strong>. We do not knowingly collect data from children under 16. If we discover such data, we will delete it immediately.</p>
+
+  <h2><span class="material-symbols-outlined">mail</span> 9. Contact Us</h2>
+  <p>For any privacy-related questions or concerns, contact us at <strong>privacy@projecthive.com</strong> or visit our <a href="/help" style="color:var(--ac);font-weight:600">Help Center</a>.</p>
+</div>
+
+<footer class="footer">
+  <p><img src="/favicon.png?v=2" alt="" style="width:12px;height:12px;border-radius:2px;vertical-align:middle"> <a href="/">ProjectHive</a> © 2026 · <a href="/about">About</a> · <a href="/terms">Terms</a> · <a href="/help">Help</a></p>
+</footer>
+</body>
+</html>

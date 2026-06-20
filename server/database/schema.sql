@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS projects (
               CHECK (status IN ('active','completed','archived')),
   likes       INTEGER DEFAULT 0,
   views       INTEGER DEFAULT 0,
+  is_featured BOOLEAN DEFAULT FALSE,
   created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -124,6 +125,30 @@ CREATE TABLE IF NOT EXISTS messages (
 
 -- Index for fast room lookup
 CREATE INDEX IF NOT EXISTS idx_messages_room_id ON messages(room_id);
+
+-- ─── DM REQUESTS ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS dm_requests (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  from_user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  to_user_id   UUID REFERENCES users(id) ON DELETE CASCADE,
+  room_id      VARCHAR(255) NOT NULL,
+  status       VARCHAR(20) DEFAULT 'pending'
+               CHECK (status IN ('pending','accepted','declined')),
+  created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(room_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dm_requests_to_user ON dm_requests(to_user_id);
+CREATE INDEX IF NOT EXISTS idx_dm_requests_room ON dm_requests(room_id);
+
+-- ─── SAVED PROJECTS ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS saved_projects (
+  id         UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id    UUID REFERENCES users(id) ON DELETE CASCADE,
+  project_id UUID REFERENCES projects(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, project_id)
+);
 
 -- ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS notifications (
@@ -178,6 +203,8 @@ ALTER TABLE teams        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE team_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE messages     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE dm_requests  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE saved_projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE friend_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE friends      ENABLE ROW LEVEL SECURITY;
@@ -191,6 +218,8 @@ CREATE POLICY "service_role_all_teams"         ON teams         FOR ALL TO servi
 CREATE POLICY "service_role_all_team_members"  ON team_members  FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_role_all_projects"      ON projects      FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_role_all_messages"      ON messages      FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "service_role_all_dm_requests"   ON dm_requests   FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "service_role_all_saved_projects" ON saved_projects FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_role_all_notifications" ON notifications FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_role_all_friend_req"    ON friend_requests FOR ALL TO service_role USING (true) WITH CHECK (true);
 CREATE POLICY "service_role_all_friends"       ON friends       FOR ALL TO service_role USING (true) WITH CHECK (true);

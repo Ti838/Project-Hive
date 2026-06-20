@@ -9,7 +9,7 @@
   body { background-color: #F0F2F9 !important; }
   html.dark body { background-color: #0C0D14 !important; }
 </style>
-<link rel="icon" href="/assets/svg/logo.png">
+<link rel="icon" href="/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
@@ -53,7 +53,10 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 <div class="ml-[260px] min-h-screen max-md:ml-0">
   <header class="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-8 h-16 flex items-center gap-4 max-md:px-4">
     <div id="ph-hamburger-slot"></div>
-    <span class="material-symbols-outlined text-indigo-500">star</span>
+    <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors shrink-0 text-gray-700 dark:text-gray-300" title="Go Back">
+      <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+    </button>
+    <span class="material-symbols-outlined text-indigo-500 hidden md:block">star</span>
     <h1 class="font-bold text-lg">Project Showcase</h1>
     <div class="ml-auto flex gap-3">
       <div class="relative">
@@ -165,7 +168,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       const col=avC(p.title||'P');
       const tech=(p.techStack||p.tags||[]).slice(0,4);
       const isMine=(p.author?._id||p.author)===myId;
-      return `<div class="project-card bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+      return `<div id="project-card-${p._id||p.id}" class="project-card bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
         <!-- Header banner -->
         <div class="h-20 flex items-center justify-center relative" style="background:linear-gradient(135deg,${col}22,${col}44)">
           <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg" style="background:${col}">${(p.title||'P')[0].toUpperCase()}</div>
@@ -240,7 +243,27 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   async function load(){
     try{
       const r=await fetch(API_BASE+'/api/projects',{headers:H});
-      if(r.ok){const d=await r.json();allProjects=d.projects||d||[];render(allProjects);}
+      if(r.ok){
+        const d=await r.json();
+        allProjects=d.projects||d||[];
+        render(allProjects);
+        
+        // Check for pid in URL
+        const params = new URLSearchParams(window.location.search);
+        const pid = params.get('pid');
+        if (pid) {
+          setTimeout(() => {
+            const card = document.getElementById(`project-card-${pid}`);
+            if (card) {
+              card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              card.classList.add('ring-2', 'ring-indigo-500', 'ring-offset-2', 'dark:ring-offset-slate-900');
+              setTimeout(() => {
+                card.classList.remove('ring-2', 'ring-indigo-500', 'ring-offset-2', 'dark:ring-offset-slate-900');
+              }, 4000);
+            }
+          }, 600);
+        }
+      }
       else throw new Error();
     }catch(e){
       document.getElementById('projects-grid').innerHTML=`<div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
@@ -250,4 +273,4 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   load();
 })();
 </script>
-</body></html>
+<script src="/assets/js/core/info-modal.js"></script></body></html>

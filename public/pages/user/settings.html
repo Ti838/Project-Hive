@@ -1,148 +1,459 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Settings — ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><style>html { background-color: #F0F2F9 !important; } html.dark { background-color: #0C0D14 !important; } body { background-color: #F0F2F9 !important; } html.dark body { background-color: #0C0D14 !important; }</style><link rel="icon" href="/assets/svg/logo.png"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/ph-design.css"><link rel="stylesheet" href="/assets/css/ph-system.css?v=2"><script src="/assets/js/core/ph-toast.js"></script><script src="/assets/js/core/ph-sidebar.js?v=2"></script><style>
-body{background:var(--bg);color:var(--tx);margin:0;font-family:'Inter',sans-serif}
-/* ── Layout ── */
-.st-layout{max-width:980px;margin:0 auto;padding:0 28px 80px;display:flex;gap:24px;align-items:flex-start}
-/* ── Nav — Glassmorphism ── */
-.st-nav{width:230px;flex-shrink:0;position:sticky;top:80px;background:color-mix(in srgb,var(--sf) 85%,transparent);border:1.5px solid var(--bd);border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.06);padding:10px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
-.st-nav-btn{display:flex;align-items:center;gap:11px;padding:12px 16px;width:100%;border:none;background:transparent;color:var(--sub);font-size:13px;font-weight:600;font-family:'Inter',sans-serif;cursor:pointer;text-align:left;transition:all .25s cubic-bezier(.4,0,.2,1);border-radius:14px;position:relative;overflow:hidden}
-.st-nav-btn::before{content:'';position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,var(--ac),#8b5cf6);opacity:0;transition:opacity .25s;z-index:0}
-.st-nav-btn:hover{background:var(--sf2);color:var(--tx);transform:translateX(3px)}
-.st-nav-btn.on{color:#fff;font-weight:700;box-shadow:0 4px 20px rgba(99,102,241,.3)}
-.st-nav-btn.on::before{opacity:1}
-.st-nav-btn.on>*{position:relative;z-index:1}
-.st-nav-btn.on .st-nav-ic{color:#fff}
-.st-nav-btn.danger{color:#ef4444}
-.st-nav-btn.danger:hover{background:rgba(239,68,68,.08)}
-.st-nav-btn.danger.on{color:#fff}
-.st-nav-btn.danger.on::before{background:linear-gradient(135deg,#ef4444,#dc2626);opacity:1}
-.st-nav-ic{font-family:'Material Symbols Outlined';font-size:19px;width:22px;text-align:center;line-height:1;transition:color .25s}
-.st-sep{height:1.5px;background:linear-gradient(90deg,transparent,var(--bd),transparent);margin:8px 14px}
-/* ── Content ── */
-.st-content{flex:1;display:flex;flex-direction:column;gap:20px;min-width:0}
-.sec{display:none}.sec.on{display:flex;flex-direction:column;gap:20px}
-/* ── Cards — Premium ── */
-.sc{background:var(--sf);border:1.5px solid var(--bd);border-radius:22px;box-shadow:0 2px 12px rgba(0,0,0,.03);overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1)}
-.sc:hover{box-shadow:0 12px 40px rgba(0,0,0,.08);border-color:rgba(99,102,241,.18)}
-.sc-hdr{padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,rgba(99,102,241,.03),transparent)}
-.sc-ic{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:20px;flex-shrink:0;transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-.sc:hover .sc-ic{transform:scale(1.1) rotate(-3deg)}
-.sc-hdr h2{font-size:15px;font-weight:800;margin:0;color:var(--tx);letter-spacing:-.02em}
-.sc-hdr p{font-size:11.5px;color:var(--sub);margin:3px 0 0;line-height:1.3}
-.sc-body{padding:22px 24px}
-/* ── Form ── */
-.fi-wrap{display:flex;flex-direction:column;gap:7px}
-.fi-lbl{font-size:10.5px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.07em}
-.fi{width:100%;background:var(--sf2);border:1.5px solid var(--bd);border-radius:14px;padding:12px 16px;font-size:13.5px;color:var(--tx);font-family:'Inter',sans-serif;outline:none;transition:all .25s cubic-bezier(.4,0,.2,1);box-sizing:border-box}
-.fi:focus{border-color:var(--ac);box-shadow:0 0 0 4px var(--ac-light);background:var(--sf)}
-.fi::placeholder{color:var(--sub)}.fi:disabled{opacity:.4;cursor:not-allowed;background:var(--sf3,var(--sf2))}
-/* ── Toggles — Smooth ── */
-.tog-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;gap:16px}
-.tog-row+.tog-row{border-top:1.5px solid var(--bd)}
-.tog-lbl{font-size:13.5px;font-weight:700;color:var(--tx)}
-.tog-sub{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.4}
-.tog{position:relative;width:50px;height:28px;background:var(--bd2,#cbd5e1);border-radius:999px;cursor:pointer;transition:all .35s cubic-bezier(.4,0,.2,1);border:none;flex-shrink:0}
-.tog.on{background:linear-gradient(135deg,var(--ac),#8b5cf6);box-shadow:0 3px 14px rgba(99,102,241,.35)}
-.tog::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:all .35s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.tog.on::after{left:25px;box-shadow:0 2px 10px rgba(99,102,241,.3)}
-/* ── Theme/Accent — Premium ── */
-.th-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px}
-.th-card{padding:22px 14px;border-radius:16px;border:2px solid var(--bd);background:var(--sf2);cursor:pointer;text-align:center;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative;overflow:hidden}
-.th-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.05),transparent);opacity:0;transition:opacity .25s}
-.th-card:hover{border-color:var(--ac);transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
-.th-card:hover::after{opacity:1}
-.th-card.sel{border-color:var(--ac);background:var(--ac-light);box-shadow:0 6px 24px rgba(99,102,241,.2);transform:translateY(-2px)}
-.th-card .ti{font-size:32px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;height:40px}
-.th-card .tl{font-size:12px;font-weight:700;color:var(--sub)}
-.th-card.sel .tl{color:var(--ac);font-weight:800}
-.acc-grid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
-.acc-dot{width:38px;height:38px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:all .25s cubic-bezier(.34,1.56,.64,1);position:relative}
-.acc-dot:hover{transform:scale(1.25);box-shadow:0 6px 16px rgba(0,0,0,.18)}
-.acc-dot.sel{border-color:var(--tx);box-shadow:0 0 0 3px var(--sf),0 6px 16px rgba(0,0,0,.12);transform:scale(1.15)}
-.acc-dot.sel::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:900;text-shadow:0 1px 3px rgba(0,0,0,.4)}
-.acc-preview{padding:14px 18px;border-radius:14px;background:var(--ac-light);border:1.5px solid var(--ac);display:flex;align-items:center;gap:12px}
-/* ── Danger — Refined ── */
-.danger-item{background:rgba(239,68,68,.02);border:1.5px solid rgba(239,68,68,.1);border-radius:16px;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;transition:all .25s}
-.danger-item:hover{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.25);transform:translateX(2px)}
-/* ── Buttons — Premium ── */
-.btn-p{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:14px;border:none;background:linear-gradient(135deg,var(--ac),#8b5cf6);color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .25s cubic-bezier(.4,0,.2,1);letter-spacing:.01em;position:relative;overflow:hidden}
-.btn-p::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);opacity:0;transition:opacity .25s}
-.btn-p:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
-.btn-p:hover::before{opacity:1}
-.btn-p:active{transform:translateY(0);box-shadow:0 2px 8px rgba(99,102,241,.2)}
-.btn-p:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-d{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:14px;border:1.5px solid rgba(239,68,68,.25);background:rgba(239,68,68,.03);color:#ef4444;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .25s}
-.btn-d:hover{background:rgba(239,68,68,.12);border-color:#ef4444;transform:translateY(-2px);box-shadow:0 6px 20px rgba(239,68,68,.18)}
-/* ── Tips ── */
-.tip-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:13px;background:var(--sf2);font-size:12.5px;color:var(--sub);transition:all .2s;border:1px solid transparent}
-.tip-item:hover{background:var(--ac-light);border-color:rgba(99,102,241,.1);transform:translateX(3px)}
-.tip-ic{font-family:'Material Symbols Outlined';font-size:17px;color:var(--green,#10b981);flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
-.sec.on{animation:fadeUp .4s cubic-bezier(.4,0,.2,1)}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Settings — ProjectHive</title>
+  <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
+  <style>
+    html { background-color: #F0F2F9 !important; }
+    html.dark { background-color: #0C0D14 !important; }
+    body { background-color: #F0F2F9 !important; }
+    html.dark body { background-color: #0C0D14 !important; }
+    
+    /* Hide scrollbar for clean look */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.2); border-radius: 10px; }
+    .dark ::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4); }
+  </style>
+  <link rel="icon" href="/favicon.png?v=2">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/assets/css/ph-design.css">
+  <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#f7f9fb",
+            "inverse-surface": "#0C0D14",
+            "primary": "#6366f1",
+            "surface-container": "#eceef0",
+            "surface-container-low": "#f2f4f6",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#464553",
+            "outline": "#777584",
+            "outline-variant": "#c8c4d5",
+          }
+        }
+      }
+    }
+  </script>
 
-/* ── Mobile ── */
-@media(max-width:768px){
-  .st-layout{flex-direction:column!important;gap:16px!important;padding:0 14px 60px!important}
-  .st-nav{width:100%!important;position:static!important;display:flex!important;flex-wrap:wrap!important;gap:4px!important;padding:8px!important;border-radius:18px!important}
-  .st-nav-btn{flex:1!important;min-width:calc(33% - 4px)!important;padding:10px 6px!important;font-size:10.5px!important;text-align:center!important;justify-content:center!important;border-radius:12px!important;gap:4px!important}
-  .st-nav-ic{display:block!important;margin:0 auto 3px!important;font-size:16px!important}
-  .st-sep{display:none!important}
-  .sc-body{padding:18px!important}
-  .sc-hdr{padding:16px 18px!important}
-  .sc-body form div[style*="grid-template-columns"]{grid-template-columns:1fr!important}
-  .th-grid{grid-template-columns:1fr 1fr 1fr!important;gap:10px}
-  .danger-item{flex-direction:column!important;align-items:stretch!important;gap:12px;text-align:center}
-  .danger-item .btn-p,.danger-item .btn-d{justify-content:center;width:100%}
-  .acc-grid{justify-content:center}
-  .tog-row{gap:12px!important}
-}
-@media(max-width:420px){
-  .st-nav-btn{min-width:calc(50% - 4px)!important;font-size:9.5px!important}
-  .th-grid{grid-template-columns:1fr 1fr!important}
-}
-</style></head>
-<body data-no-float-theme="1">
+  <script src="/assets/js/core/ph-toast.js"></script>
+  <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .sec { display: none; }
+      .sec.on { display: flex; animation: fadeUp 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+      @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px) scale(0.98); }
+        to { opacity: 1; transform: none; }
+      }
+      .tog-row { @apply flex items-center justify-between py-4 border-b border-outline-variant/30 dark:border-white/10 last:border-0; }
+      .tog { @apply relative w-12 h-6 rounded-full bg-outline-variant dark:bg-white/20 cursor-pointer transition-all duration-300 shrink-0 border-none; }
+      .tog.on { @apply bg-gradient-to-br from-primary to-purple-500 shadow-[0_3px_14px_rgba(99,102,241,0.35)]; }
+      .tog::after { content: ''; @apply absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-all duration-300 shadow-md; }
+      .tog.on::after { @apply left-7; }
+
+      .acc-dot { @apply w-10 h-10 rounded-full cursor-pointer border-4 border-transparent transition-transform duration-300 relative; }
+      .acc-dot:hover { @apply scale-125 shadow-lg; }
+      .acc-dot.sel { @apply border-white dark:border-inverse-surface shadow-[0_0_0_3px_theme(colors.surface)] dark:shadow-[0_0_0_3px_theme(colors.inverse-surface)] scale-110; }
+      .acc-dot.sel::after { content: '✓'; @apply absolute inset-0 flex items-center justify-center text-white text-sm font-black drop-shadow-md; }
+    }
+  </style>
+</head>
+<body data-no-float-theme="1" class="text-on-surface dark:text-white transition-colors duration-300">
 <div id="ph-sidebar"></div>
-<div class="ph-page">
-  <div class="ph-topbar">
+<div class="ph-page pl-0 md:pl-[260px] min-h-screen">
+  
+  <div class="ph-topbar bg-surface/80 dark:bg-[#0C0D14]/80 backdrop-blur-xl border-b border-outline-variant/30 dark:border-white/10 px-8 h-16 sticky top-0 z-40 flex items-center gap-3">
     <div id="ph-hamburger-slot"></div>
-    <span style="font-family:'Material Symbols Outlined';font-size:22px;color:var(--ac)">settings</span>
-    <h1 style="font-size:17px;font-weight:800;margin:0;flex:1;color:var(--tx);letter-spacing:-.02em">Settings</h1>
-    <div id="st-av" style="width:36px;height:36px;border-radius:50%;background:var(--ac);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(99,102,241,.2);transition:transform .2s;cursor:pointer" title="Your profile">?</div>
+    <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-outline-variant/20 dark:hover:bg-white/10 transition-colors shrink-0 text-on-surface dark:text-white" title="Go Back">
+      <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+    </button>
+    <span class="material-symbols-outlined text-[22px] text-primary hidden md:block">settings</span>
+    <h1 class="text-[17px] font-extrabold m-0 flex-1 tracking-tight">Settings</h1>
+    <div id="st-av" class="w-9 h-9 rounded-full bg-primary text-white text-[13px] font-extrabold flex items-center justify-center shrink-0 shadow-md cursor-pointer hover:scale-105 transition-transform" title="Your profile">?</div>
   </div>
 
-  <!-- Profile Header Card -->
-  <div style="margin:0 20px 24px;background:linear-gradient(135deg,#4338ca 0%,#6366f1 25%,#8b5cf6 50%,#a855f7 75%,#ec4899 100%);background-size:200% 200%;animation:gradShift 8s ease-in-out infinite;border-radius:24px;padding:28px 32px;display:flex;align-items:center;gap:20px;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(99,102,241,.25)">
-    <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.06);top:-100px;right:-80px;animation:float 6s ease-in-out infinite"></div>
-    <div style="position:absolute;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04);bottom:-50px;left:60px;animation:float 8s ease-in-out infinite reverse"></div>
-    <div style="position:absolute;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.03);top:20px;left:40%;animation:float 10s ease-in-out infinite"></div>
+  <!-- Premium Header -->
+  <div class="m-5 md:m-8 rounded-3xl p-8 md:p-10 flex items-center gap-6 relative overflow-hidden shadow-2xl" 
+       style="background: linear-gradient(135deg, #4338ca 0%, #6366f1 25%, #8b5cf6 50%, #a855f7 75%, #ec4899 100%); background-size: 200% 200%; animation: gradShift 8s ease-in-out infinite;">
+    <div class="absolute w-[300px] h-[300px] rounded-full bg-white/5 -top-[100px] -right-[80px] animate-[float_6s_ease-in-out_infinite]"></div>
+    <div class="absolute w-[180px] h-[180px] rounded-full bg-white/5 -bottom-[50px] left-[60px] animate-[float_8s_ease-in-out_infinite_reverse]"></div>
     <style>@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}@keyframes gradShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}</style>
-    <div id="st-av2" style="width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.15);color:#fff;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:2px solid rgba(255,255,255,.3);box-shadow:0 8px 24px rgba(0,0,0,.15);transition:transform .3s">?</div>
-    <div style="flex:1;min-width:0;position:relative;z-index:1">
-      <div id="st-name" style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.03em;text-shadow:0 2px 8px rgba(0,0,0,.1)">Your Name</div>
-      <div id="st-email" style="font-size:12.5px;color:rgba(255,255,255,.7);margin-top:4px;font-weight:500">email@example.com</div>
+    
+    <div id="st-av2" class="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-white/15 text-white text-2xl md:text-3xl font-black flex items-center justify-center shrink-0 backdrop-blur-xl border-2 border-white/30 shadow-xl relative z-10">?</div>
+    
+    <div class="flex-1 min-w-0 relative z-10">
+      <div id="st-name" class="text-2xl md:text-3xl font-black text-white tracking-tight drop-shadow-md">Your Name</div>
+      <div id="st-email" class="text-sm text-white/80 mt-1 font-medium">email@example.com</div>
     </div>
-    <div style="display:flex;gap:10px;position:relative;z-index:1">
-      <div style="text-align:center;padding:12px 20px;background:rgba(255,255,255,.1);border-radius:16px;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.15);transition:all .2s">
-        <div style="font-size:9.5px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.08em">Member since</div>
-        <div id="st-joined" style="font-size:15px;font-weight:800;color:#fff;margin-top:3px">—</div>
+    
+    <div class="hidden sm:block relative z-10">
+      <div class="text-center py-3 px-5 bg-white/10 rounded-2xl backdrop-blur-md border border-white/20">
+        <div class="text-[10px] text-white/60 font-bold uppercase tracking-widest">Member since</div>
+        <div id="st-joined" class="text-base font-extrabold text-white mt-1">—</div>
       </div>
     </div>
   </div>
 
-  <div class="st-layout">
-    <aside class="st-nav">
-      <button class="st-nav-btn on" onclick="show('account',this)"><span class="st-nav-ic">person</span>Account</button>
-      <button class="st-nav-btn" onclick="show('security',this)"><span class="st-nav-ic">lock</span>Security</button>
-      <button class="st-nav-btn" onclick="show('notifs',this)"><span class="st-nav-ic">notifications</span>Notifications</button>
-      <button class="st-nav-btn" onclick="show('appear',this)"><span class="st-nav-ic">palette</span>Appearance</button>
-      <button class="st-nav-btn" onclick="show('privacy',this)"><span class="st-nav-ic">shield</span>Privacy</button>
-      <div class="st-sep"></div>
-      <button class="st-nav-btn danger" onclick="show('danger',this)"><span class="st-nav-ic">warning</span>Danger Zone</button>
+  <div class="max-w-5xl mx-auto px-5 md:px-8 pb-20 flex flex-col md:flex-row gap-8 items-start">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="w-full md:w-[240px] shrink-0 sticky top-24 bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl p-3 shadow-lg flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible">
+      <button class="st-nav-btn on group relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-semibold text-on-surface-variant dark:text-white/70 text-left transition-all hover:bg-surface-container-low dark:hover:bg-white/10 [&.on]:text-white overflow-hidden shrink-0 whitespace-nowrap" onclick="show('account',this)">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary to-purple-500 opacity-0 group-[.on]:opacity-100 transition-opacity -z-10"></div>
+        <span class="material-symbols-outlined text-[20px] group-[.on]:text-white">person</span> <span class="relative z-10">Account</span>
+      </button>
+      <button class="st-nav-btn group relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-semibold text-on-surface-variant dark:text-white/70 text-left transition-all hover:bg-surface-container-low dark:hover:bg-white/10 [&.on]:text-white overflow-hidden shrink-0 whitespace-nowrap" onclick="show('security',this)">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary to-purple-500 opacity-0 group-[.on]:opacity-100 transition-opacity -z-10"></div>
+        <span class="material-symbols-outlined text-[20px] group-[.on]:text-white">lock</span> <span class="relative z-10">Security</span>
+      </button>
+      <button class="st-nav-btn group relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-semibold text-on-surface-variant dark:text-white/70 text-left transition-all hover:bg-surface-container-low dark:hover:bg-white/10 [&.on]:text-white overflow-hidden shrink-0 whitespace-nowrap" onclick="show('notifs',this)">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary to-purple-500 opacity-0 group-[.on]:opacity-100 transition-opacity -z-10"></div>
+        <span class="material-symbols-outlined text-[20px] group-[.on]:text-white">notifications</span> <span class="relative z-10">Notifications</span>
+      </button>
+      <button class="st-nav-btn group relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-semibold text-on-surface-variant dark:text-white/70 text-left transition-all hover:bg-surface-container-low dark:hover:bg-white/10 [&.on]:text-white overflow-hidden shrink-0 whitespace-nowrap" onclick="show('appear',this)">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary to-purple-500 opacity-0 group-[.on]:opacity-100 transition-opacity -z-10"></div>
+        <span class="material-symbols-outlined text-[20px] group-[.on]:text-white">palette</span> <span class="relative z-10">Appearance</span>
+      </button>
+      <button class="st-nav-btn group relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-semibold text-on-surface-variant dark:text-white/70 text-left transition-all hover:bg-surface-container-low dark:hover:bg-white/10 [&.on]:text-white overflow-hidden shrink-0 whitespace-nowrap" onclick="show('privacy',this)">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary to-purple-500 opacity-0 group-[.on]:opacity-100 transition-opacity -z-10"></div>
+        <span class="material-symbols-outlined text-[20px] group-[.on]:text-white">shield</span> <span class="relative z-10">Privacy</span>
+      </button>
+      <div class="hidden md:block h-[1px] bg-gradient-to-r from-transparent via-outline-variant/30 dark:via-white/20 to-transparent my-2"></div>
+      <button class="st-nav-btn danger group relative flex items-center gap-3 px-4 py-3 w-full rounded-2xl text-sm font-semibold text-red-500 text-left transition-all hover:bg-red-500/10 [&.on]:text-white overflow-hidden shrink-0 whitespace-nowrap" onclick="show('danger',this)">
+        <div class="absolute inset-0 bg-gradient-to-br from-red-500 to-red-600 opacity-0 group-[.on]:opacity-100 transition-opacity -z-10"></div>
+        <span class="material-symbols-outlined text-[20px] group-[.on]:text-white">warning</span> <span class="relative z-10">Danger Zone</span>
+      </button>
     </aside>
-    <div class="st-content">
-<!-- ACCOUNT --><div id="sec-account" class="sec on"><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(99,102,241,.12);color:#6366f1">person</div><div><h2>Account Information</h2><p>Update your public profile details</p></div></div><div class="sc-body"><form id="form-acc" style="display:flex;flex-direction:column;gap:14px"><div style="display:grid;grid-template-columns:1fr 1fr;gap:13px"><div class="fi-wrap"><span class="fi-lbl">First Name</span><input id="s-fn" class="fi" placeholder="First name"></div><div class="fi-wrap"><span class="fi-lbl">Last Name</span><input id="s-ln" class="fi" placeholder="Last name"></div></div><div class="fi-wrap"><span class="fi-lbl">Email (read-only)</span><input id="s-em" class="fi" disabled></div><div class="fi-wrap"><span class="fi-lbl">University</span><input id="s-uni" class="fi" placeholder="Your university"></div><div class="fi-wrap"><span class="fi-lbl">Bio</span><textarea id="s-bio" class="fi" rows="3" style="resize:none" placeholder="Tell people about yourself…"></textarea></div><div><button type="submit" id="btn-acc" class="btn-p"><span style="font-family:'Material Symbols Outlined';font-size:18px">save</span>Save Changes</button></div></form></div></div></div><!-- SECURITY --><div id="sec-security" class="sec"><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(16,185,129,.12);color:#10b981">lock</div><div><h2>Change Password</h2><p>Use a strong unique password</p></div></div><div class="sc-body"><form id="form-pw" style="display:flex;flex-direction:column;gap:14px"><div class="fi-wrap"><span class="fi-lbl">Current Password</span><input id="s-op" type="password" class="fi" placeholder="••••••••"></div><div class="fi-wrap"><span class="fi-lbl">New Password</span><input id="s-np" type="password" class="fi" placeholder="Min. 8 characters"></div><div class="fi-wrap"><span class="fi-lbl">Confirm New Password</span><input id="s-cp" type="password" class="fi" placeholder="••••••••"></div><div><button type="submit" id="btn-pw" class="btn-p"><span style="font-family:'Material Symbols Outlined';font-size:18px">lock_reset</span>Update Password</button></div></form></div></div><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(245,158,11,.12);color:#f59e0b">verified_user</div><div><h2>Security Tips</h2><p>Best practices to protect your account</p></div></div><div class="sc-body" style="display:flex;flex-direction:column;gap:8px"><div class="tip-item"><span class="tip-ic">check_circle</span>Use at least 8 characters in your password</div><div class="tip-item"><span class="tip-ic">check_circle</span>Mix letters, numbers and special characters</div><div class="tip-item"><span class="tip-ic" style="color:#f59e0b">info</span>Never share your password with anyone</div><div class="tip-item"><span class="tip-ic" style="color:#6366f1">notifications_active</span>Enable notifications for login alerts</div></div></div></div>
-<!-- NOTIFICATIONS --><div id="sec-notifs" class="sec"><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(59,130,246,.12);color:#3b82f6">notifications</div><div><h2>Notification Preferences</h2><p>Choose what updates you receive</p></div></div><div class="sc-body"><div class="tog-row"><div><div class="tog-lbl">Team Invites & Updates</div><div class="tog-sub">Get notified when you receive team invitations</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">New Messages</div><div class="tog-sub">Direct messages from teammates</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Project Updates</div><div class="tog-sub">Changes to projects you are part of</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Friend Requests</div><div class="tog-sub">When someone wants to connect with you</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Email Digest</div><div class="tog-sub">Weekly summary sent to your email</div></div><button class="tog" onclick="this.classList.toggle('on')"></button></div><div style="margin-top:16px"><button class="btn-p" onclick="PHToast?.success('Preferences saved!')"><span style="font-family:'Material Symbols Outlined';font-size:18px">save</span>Save Preferences</button></div></div></div></div><!-- APPEARANCE --><div id="sec-appear" class="sec"><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(168,85,247,.12);color:#a855f7">dark_mode</div><div><h2>Theme</h2><p>Choose your preferred interface look</p></div></div><div class="sc-body"><div class="th-grid"><div id="th-light" class="th-card" onclick="setTheme('light')"><span class="ti"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></span></span><span class="tl">Light</span></div><div id="th-dark" class="th-card" onclick="setTheme('dark')"><span class="ti"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></span></span><span class="tl">Dark</span></div><div id="th-auto" class="th-card" onclick="setTheme('auto')"><span class="ti"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span></span><span class="tl">System</span></div></div></div></div><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(236,72,153,.12);color:#ec4899">palette</div><div><h2>Accent Color</h2><p>Personalize your interface color</p></div></div><div class="sc-body"><div class="acc-grid" id="acc-grid"></div><div class="acc-preview"><span style="font-family:'Material Symbols Outlined';color:var(--ac)">check_circle</span><span style="font-size:13px;font-weight:600;color:var(--ac)">Active: <span id="acc-hex">#6366F1</span></span></div></div></div><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(16,185,129,.12);color:#10b981">text_fields</div><div><h2>Font Size</h2><p>Adjust the interface text size</p></div></div><div class="sc-body" style="display:flex;gap:10px;flex-wrap:wrap"><button class="th-card" style="padding:12px 20px;flex:1;min-width:80px" onclick="setFont('small')"><span style="font-size:12px;font-weight:700;color:var(--sub)">Aa</span><span style="display:block;font-size:11px;color:var(--sub);margin-top:4px">Small</span></button><button class="th-card sel" style="padding:12px 20px;flex:1;min-width:80px" onclick="setFont('normal')"><span style="font-size:15px;font-weight:700;color:var(--sub)">Aa</span><span style="display:block;font-size:11px;color:var(--sub);margin-top:4px">Default</span></button><button class="th-card" style="padding:12px 20px;flex:1;min-width:80px" onclick="setFont('large')"><span style="font-size:19px;font-weight:700;color:var(--sub)">Aa</span><span style="display:block;font-size:11px;color:var(--sub);margin-top:4px">Large</span></button></div></div></div><!-- PRIVACY --><div id="sec-privacy" class="sec"><div class="sc"><div class="sc-hdr"><div class="sc-ic" style="background:rgba(99,102,241,.12);color:#6366f1">shield</div><div><h2>Privacy Settings</h2><p>Control who can see your profile</p></div></div><div class="sc-body"><div class="tog-row"><div><div class="tog-lbl">Public Profile</div><div class="tog-sub">Anyone can view your profile and projects</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Show Email</div><div class="tog-sub">Display your email on your public profile</div></div><button class="tog" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Show in Find People</div><div class="tog-sub">Let others discover your profile</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Allow Friend Requests</div><div class="tog-sub">Let others send you friend requests</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div class="tog-row"><div><div class="tog-lbl">Show Online Status</div><div class="tog-sub">Let friends see when you are online</div></div><button class="tog on" onclick="this.classList.toggle('on')"></button></div><div style="margin-top:16px"><button class="btn-p" onclick="PHToast?.success('Privacy settings saved!')"><span style="font-family:'Material Symbols Outlined';font-size:18px">save</span>Save Privacy Settings</button></div></div></div></div><!-- DANGER --><div id="sec-danger" class="sec"><div class="sc" style="border-color:rgba(239,68,68,.25)"><div class="sc-hdr" style="background:rgba(239,68,68,.04)"><div class="sc-ic" style="background:rgba(239,68,68,.12);color:#ef4444">warning</div><div><h2 style="color:#ef4444">Danger Zone</h2><p>Irreversible actions — proceed carefully</p></div></div><div class="sc-body" style="display:flex;flex-direction:column;gap:12px"><div class="danger-item"><div><div style="font-size:13px;font-weight:700;color:#ef4444">Export My Data</div><div style="font-size:11px;color:var(--sub);margin-top:3px">Download all your profile data as JSON</div></div><button class="btn-p" style="background:linear-gradient(135deg,#f59e0b,#d97706)" onclick="PHToast?.success('Data export started — check your email')"><span style="font-family:'Material Symbols Outlined';font-size:17px">download</span>Export</button></div><div class="danger-item"><div><div style="font-size:13px;font-weight:700;color:#ef4444">Sign Out Everywhere</div><div style="font-size:11px;color:var(--sub);margin-top:3px">Log out from all active sessions</div></div><button class="btn-d" onclick="PHToast?.success('Signed out from all devices')"><span style="font-family:'Material Symbols Outlined';font-size:17px">logout</span>Sign Out All</button></div><div class="danger-item"><div><div style="font-size:13px;font-weight:700;color:#ef4444">Delete Account</div><div style="font-size:11px;color:var(--sub);margin-top:3px">Permanently delete all your data. Cannot be undone.</div></div><button class="btn-d" onclick="delAccount()"><span style="font-family:'Material Symbols Outlined';font-size:17px">delete_forever</span>Delete</button></div></div></div></div></div></div></div></div>
+
+    <div class="flex-1 flex flex-col gap-6 min-w-0 w-full">
+      
+      <!-- ACCOUNT SECTION -->
+      <div id="sec-account" class="sec on flex-col gap-6">
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm hover:shadow-xl hover:border-primary/30 transition-all duration-300 overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-primary/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">person</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Account Information</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Update your public profile details</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8">
+            <form id="form-acc" class="flex flex-col gap-5">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <label class="flex flex-col gap-2">
+                  <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">First Name</span>
+                  <input id="s-fn" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none" placeholder="First name">
+                </label>
+                <label class="flex flex-col gap-2">
+                  <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">Last Name</span>
+                  <input id="s-ln" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none" placeholder="Last name">
+                </label>
+              </div>
+              <label class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">Email (read-only)</span>
+                <input id="s-em" disabled class="w-full bg-surface-container dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm opacity-60 cursor-not-allowed">
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">University</span>
+                <input id="s-uni" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none" placeholder="Your university">
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">Bio</span>
+                <textarea id="s-bio" rows="4" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none resize-none" placeholder="Tell people about yourself…"></textarea>
+              </label>
+              <div class="mt-2">
+                <button type="submit" id="btn-acc" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-primary to-purple-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] active:translate-y-0 transition-all disabled:opacity-50">
+                  <span class="material-symbols-outlined text-[18px]">save</span> Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECURITY SECTION -->
+      <div id="sec-security" class="sec flex-col gap-6">
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-emerald-500/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">lock</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Change Password</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Use a strong unique password</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8">
+            <form id="form-pw" class="flex flex-col gap-5">
+              <label class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">Current Password</span>
+                <input id="s-op" type="password" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none" placeholder="••••••••">
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">New Password</span>
+                <input id="s-np" type="password" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none" placeholder="Min. 8 characters">
+              </label>
+              <label class="flex flex-col gap-2">
+                <span class="text-[11px] font-bold text-on-surface-variant dark:text-white/60 uppercase tracking-wider">Confirm New Password</span>
+                <input id="s-cp" type="password" class="w-full bg-surface-container-low dark:bg-black/20 border border-outline-variant/30 dark:border-white/10 rounded-2xl px-4 py-3 text-sm focus:border-primary focus:ring-4 focus:ring-primary/20 transition-all outline-none" placeholder="••••••••">
+              </label>
+              <div class="mt-2">
+                <button type="submit" id="btn-pw" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-primary to-purple-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] transition-all">
+                  <span class="material-symbols-outlined text-[18px]">lock_reset</span> Update Password
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-amber-500/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">verified_user</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Security Tips</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Best practices to protect your account</p>
+            </div>
+          </div>
+          <div class="p-6 flex flex-col gap-3">
+            <div class="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low dark:bg-white/5 text-sm hover:bg-primary/5 hover:translate-x-1 transition-all border border-transparent hover:border-primary/10">
+              <span class="material-symbols-outlined text-emerald-500 text-[20px]">check_circle</span> Use at least 8 characters in your password
+            </div>
+            <div class="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low dark:bg-white/5 text-sm hover:bg-primary/5 hover:translate-x-1 transition-all border border-transparent hover:border-primary/10">
+              <span class="material-symbols-outlined text-emerald-500 text-[20px]">check_circle</span> Mix letters, numbers and special characters
+            </div>
+            <div class="flex items-center gap-3 p-4 rounded-2xl bg-surface-container-low dark:bg-white/5 text-sm hover:bg-primary/5 hover:translate-x-1 transition-all border border-transparent hover:border-primary/10">
+              <span class="material-symbols-outlined text-amber-500 text-[20px]">info</span> Never share your password with anyone
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTIFICATIONS SECTION -->
+      <div id="sec-notifs" class="sec flex-col gap-6">
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-blue-500/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">notifications</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Notification Preferences</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Choose what updates you receive</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8">
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Team Invites & Updates</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Get notified when you receive team invitations</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">New Messages</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Direct messages from teammates</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Project Updates</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Changes to projects you are part of</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Friend Requests</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">When someone wants to connect with you</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row border-b-0">
+              <div><div class="text-sm font-bold">Email Digest</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Weekly summary sent to your email</div></div>
+              <button class="tog" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mt-8">
+              <button class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-primary to-purple-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] transition-all" onclick="PHToast?.success('Preferences saved!')">
+                <span class="material-symbols-outlined text-[18px]">save</span> Save Preferences
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- APPEARANCE SECTION -->
+      <div id="sec-appear" class="sec flex-col gap-6">
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-purple-500/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">dark_mode</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Theme</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Choose your preferred interface look</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8">
+            <div class="grid grid-cols-3 gap-4">
+              <div id="th-light" class="th-card bg-surface-container-low dark:bg-white/5 border-2 border-outline-variant/30 dark:border-white/10 rounded-2xl p-4 text-center cursor-pointer hover:border-primary hover:-translate-y-1 transition-all [&.sel]:border-primary [&.sel]:bg-primary/10 [&.sel]:shadow-lg" onclick="setTheme('light')">
+                <span class="material-symbols-outlined text-[32px] mb-2 block">light_mode</span>
+                <span class="tl text-xs font-bold text-on-surface-variant dark:text-white/60">Light</span>
+              </div>
+              <div id="th-dark" class="th-card bg-surface-container-low dark:bg-white/5 border-2 border-outline-variant/30 dark:border-white/10 rounded-2xl p-4 text-center cursor-pointer hover:border-primary hover:-translate-y-1 transition-all [&.sel]:border-primary [&.sel]:bg-primary/10 [&.sel]:shadow-lg" onclick="setTheme('dark')">
+                <span class="material-symbols-outlined text-[32px] mb-2 block">dark_mode</span>
+                <span class="tl text-xs font-bold text-on-surface-variant dark:text-white/60">Dark</span>
+              </div>
+              <div id="th-auto" class="th-card bg-surface-container-low dark:bg-white/5 border-2 border-outline-variant/30 dark:border-white/10 rounded-2xl p-4 text-center cursor-pointer hover:border-primary hover:-translate-y-1 transition-all [&.sel]:border-primary [&.sel]:bg-primary/10 [&.sel]:shadow-lg" onclick="setTheme('auto')">
+                <span class="material-symbols-outlined text-[32px] mb-2 block">devices</span>
+                <span class="tl text-xs font-bold text-on-surface-variant dark:text-white/60">System</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-pink-500/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-pink-500/10 text-pink-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">palette</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Accent Color</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Personalize your interface color</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8">
+            <div class="flex flex-wrap gap-4 mb-6" id="acc-grid"></div>
+            <div class="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex items-center gap-3 w-fit pr-6">
+              <span class="material-symbols-outlined text-primary">check_circle</span>
+              <span class="text-sm font-bold text-primary">Active: <span id="acc-hex">#6366F1</span></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-emerald-500/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">text_fields</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Font Size</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Adjust the interface text size</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8 flex gap-4">
+            <button class="th-card flex-1 p-4 rounded-2xl bg-surface-container-low dark:bg-white/5 border-2 border-outline-variant/30 dark:border-white/10 hover:border-primary transition-all [&.sel]:border-primary [&.sel]:bg-primary/10" onclick="setFont('small')">
+              <span class="block text-xs font-bold text-on-surface-variant dark:text-white/60 mb-1">Aa</span>
+              <span class="block text-[11px]">Small</span>
+            </button>
+            <button class="th-card sel flex-1 p-4 rounded-2xl bg-surface-container-low dark:bg-white/5 border-2 border-outline-variant/30 dark:border-white/10 hover:border-primary transition-all [&.sel]:border-primary [&.sel]:bg-primary/10" onclick="setFont('normal')">
+              <span class="block text-sm font-bold text-on-surface-variant dark:text-white/60 mb-1">Aa</span>
+              <span class="block text-[11px]">Default</span>
+            </button>
+            <button class="th-card flex-1 p-4 rounded-2xl bg-surface-container-low dark:bg-white/5 border-2 border-outline-variant/30 dark:border-white/10 hover:border-primary transition-all [&.sel]:border-primary [&.sel]:bg-primary/10" onclick="setFont('large')">
+              <span class="block text-lg font-bold text-on-surface-variant dark:text-white/60 mb-1">Aa</span>
+              <span class="block text-[11px]">Large</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRIVACY SECTION -->
+      <div id="sec-privacy" class="sec flex-col gap-6">
+        <div class="bg-surface dark:bg-white/5 border border-outline-variant/30 dark:border-white/10 rounded-3xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-outline-variant/30 dark:border-white/10 flex items-center gap-4 bg-gradient-to-br from-primary/5 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">shield</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0">Privacy Settings</h2>
+              <p class="text-xs text-on-surface-variant dark:text-white/60 m-0 mt-1">Control who can see your profile</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8">
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Public Profile</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Anyone can view your profile and projects</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Show Email</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Display your email on your public profile</div></div>
+              <button class="tog" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Show in Find People</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let others discover your profile</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Allow Friend Requests</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let others send you friend requests</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row border-b-0">
+              <div><div class="text-sm font-bold">Show Online Status</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let friends see when you are online</div></div>
+              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="mt-8">
+              <button class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-primary to-purple-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] transition-all" onclick="PHToast?.success('Privacy settings saved!')">
+                <span class="material-symbols-outlined text-[18px]">save</span> Save Privacy Settings
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DANGER SECTION -->
+      <div id="sec-danger" class="sec flex-col gap-6">
+        <div class="bg-red-500/5 border border-red-500/20 rounded-3xl shadow-sm overflow-hidden">
+          <div class="p-6 border-b border-red-500/20 flex items-center gap-4 bg-gradient-to-br from-red-500/10 to-transparent">
+            <div class="w-12 h-12 rounded-2xl bg-red-500/20 text-red-500 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">warning</span>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold m-0 text-red-500">Danger Zone</h2>
+              <p class="text-xs text-red-500/80 m-0 mt-1">Irreversible actions — proceed carefully</p>
+            </div>
+          </div>
+          <div class="p-6 md:p-8 flex flex-col gap-4">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/20 transition-all">
+              <div>
+                <div class="text-sm font-bold text-red-500">Export My Data</div>
+                <div class="text-xs text-red-500/70 mt-1">Download all your profile data as JSON</div>
+              </div>
+              <button class="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-lg transition-all" onclick="PHToast?.success('Data export started — check your email')">
+                <span class="material-symbols-outlined text-[18px]">download</span> Export
+              </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/20 transition-all">
+              <div>
+                <div class="text-sm font-bold text-red-500">Sign Out Everywhere</div>
+                <div class="text-xs text-red-500/70 mt-1">Log out from all active sessions</div>
+              </div>
+              <button class="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 font-bold text-sm hover:bg-red-500/20 hover:-translate-y-0.5 hover:shadow-lg transition-all" onclick="PHToast?.success('Signed out from all devices')">
+                <span class="material-symbols-outlined text-[18px]">logout</span> Sign Out All
+              </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/20 transition-all">
+              <div>
+                <div class="text-sm font-bold text-red-500">Delete Account</div>
+                <div class="text-xs text-red-500/70 mt-1">Permanently delete all your data. Cannot be undone.</div>
+              </div>
+              <button class="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-500 font-bold text-sm hover:bg-red-500/20 hover:-translate-y-0.5 hover:shadow-lg transition-all" onclick="delAccount()">
+                <span class="material-symbols-outlined text-[18px]">delete_forever</span> Delete
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
 <script>
 (function(){
   const TK=localStorage.getItem("access_token");
@@ -279,4 +590,4 @@ body{background:var(--bg);color:var(--tx);margin:0;font-family:'Inter',sans-seri
     catch(e){PHToast?.error("Server offline");}
   };
 })();
-</script></body></html>
+</script><script src="/assets/js/core/info-modal.js"></script></body></html>

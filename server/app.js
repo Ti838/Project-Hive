@@ -124,9 +124,28 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-// API Routes
+// Auth and Admin routes are exempted from maintenance mode
 app.use('/api/auth', authRoutes);
 app.post('/api/admin/auth/login', adminLogin);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminDevRouter); // dev only
+
+// Maintenance Mode Middleware
+app.use('/api', (req, res, next) => {
+  const FLAGS = getFlags();
+  // Allow system requests through
+  if (req.path === '/health' || req.path === '/public-stats') {
+    return next();
+  }
+  if (FLAGS.maintenanceMode) {
+    return res.status(503).json({ 
+      error: 'ProjectHive is currently undergoing maintenance. Please check back later.',
+      maintenanceMode: true
+    });
+  }
+  next();
+});
+
 app.use('/api/users', usersRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/projects', projectsRoutes);
@@ -135,10 +154,6 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
-
-// Admin routes (require auth + admin role)
-app.use('/api/admin', adminRoutes);
-app.use('/api/admin', adminDevRouter); // dev only: /api/admin/promote-me
 
 
 // 404 handler for API routes only — HTML pages are served by express.static above
@@ -164,6 +179,15 @@ app.use((req, res) => {
     '/teams/create':       'pages/user/teams-create.html',
     '/settings':           'pages/user/settings.html',
     '/notifications':      'pages/user/notifications.html',
+    '/profile':            'pages/user/profile/view.html',
+    '/profile/edit':       'pages/user/profile/edit.html',
+    '/showcase':           'pages/user/projects/showcase.html',
+    '/about':              'pages/info/about.html',
+    '/help':               'pages/info/help.html',
+    '/terms':              'pages/info/terms.html',
+    '/privacy':            'pages/info/privacy.html',
+    '/saved':              'pages/user/saved.html',
+    '/generator':          'pages/user/projects/generator.html',
   };
   const target = routes[req.path];
   if (target) {

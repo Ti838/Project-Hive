@@ -9,7 +9,7 @@
   body { background-color: #F0F2F9 !important; }
   html.dark body { background-color: #0C0D14 !important; }
 </style>
-<link rel="icon" href="/assets/svg/logo.png">
+<link rel="icon" href="/favicon.png?v=2">
 <!-- Preconnect to CDNs for faster loading -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,7 +96,10 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   <!-- Top bar -->
   <header class="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-5 gap-3 shrink-0 z-30">
     <div id="ph-hamburger-slot"></div>
-    <span class="material-symbols-outlined text-indigo-500">chat</span>
+    <button onclick="history.back()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 text-gray-700 dark:text-gray-300" title="Go Back">
+      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+    </button>
+    <span class="material-symbols-outlined text-indigo-500 hidden md:block">chat</span>
     <h1 class="font-bold text-base">Messages</h1>
     <button onclick="openNewConv()" class="ml-auto flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full transition-colors">
       <span class="material-symbols-outlined text-base">edit</span> New
@@ -201,6 +204,15 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     </div>
     <!-- Jitsi container -->
     <div id="jitsi-container" class="flex-1 w-full bg-gray-950"></div>
+    <!-- WebRTC Video container -->
+    <div id="webrtc-container" class="hidden flex-1 w-full bg-gray-950 relative flex items-center justify-center">
+      <!-- Remote Video (Full Screen) -->
+      <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+      <!-- Local Video (Floating Bubble) -->
+      <div class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
+        <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+      </div>
+    </div>
     <!-- Call controls bar -->
     <div class="absolute bottom-0 left-0 right-0 z-10 flex justify-center items-center gap-4 p-5 bg-gradient-to-t from-black/70 to-transparent">
       <button onclick="endCall()" class="w-14 h-14 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg shadow-red-500/40">
@@ -443,12 +455,19 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       
       let ticksHtml = '';
       if (mine) {
-        const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+        const friend = activeConv?.friend || {};
+        const friendId = friend._id || friend.id || activeConv?.friendId;
         const isSeen = m.read_by?.includes(friendId) || m.readBy?.includes(friendId);
         if (isSeen) {
-          ticksHtml = `<span class="text-indigo-200 ml-1 font-bold text-xs" title="Seen">✓✓</span>`;
+          const fn = friend.firstName || '';
+          const ln = friend.lastName || '';
+          const c = friend.avatarColor || avC(`${fn} ${ln}`);
+          const photo = friend.avatar 
+            ? `<img src="${friend.avatar}" class="w-full h-full object-cover rounded-full">`
+            : `<span class="text-[7px] font-bold text-white">${((fn[0]||'') + (ln[0]||'')).toUpperCase()}</span>`;
+          ticksHtml = `<div class="w-4 h-4 rounded-full flex items-center justify-center shrink-0 ml-1 border border-white dark:border-gray-900" style="background:${friend.avatar ? 'transparent' : c};" title="Seen">${photo}</div>`;
         } else {
-          ticksHtml = `<span class="text-gray-300 ml-1 text-xs" title="Sent">✓</span>`;
+          ticksHtml = `<span class="material-symbols-outlined text-[11px] text-indigo-300/80 ml-1" title="Sent">check_circle</span>`;
         }
       }
 
@@ -1029,6 +1048,8 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
     socket.on('call:incoming', data => {
       activeCallRoom = data.roomId;
+      incomingCallIsWebRTC = !!data.isWebRTC;
+      incomingCallIsVoiceOnly = !!data.isVoiceOnly;
       const callerNameEl = document.getElementById('caller-name');
       if (callerNameEl) {
         callerNameEl.textContent = `${data.callerName || 'Teammate'} is calling...`;
@@ -1044,6 +1065,10 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
           showToast('Missed call', 'error');
         }
       }, 30000);
+    });
+
+    socket.on('webrtc:signal', data => {
+      handleWebRTCSignal(data);
     });
 
     socket.on('call:error', data => {
@@ -1063,6 +1088,20 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     socket.on('call:hungup', data => {
       stopRingtone();
       showToast('Call ended', 'info');
+      // WebRTC cleanup
+      if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+      }
+      if (peerConnection) {
+        peerConnection.close();
+        peerConnection = null;
+      }
+      isWebRTCCall = false;
+      pendingSdpOffer = null;
+      document.getElementById('webrtc-container').classList.add('hidden');
+      document.getElementById('jitsi-container').classList.remove('hidden');
+
       if (jitsiApiInstance) {
         jitsiApiInstance.dispose();
         jitsiApiInstance = null;
@@ -1122,31 +1161,43 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   let jitsiApiInstance = null;
   let activeCallRoom = null;
+  
+  // WebRTC Calling System
+  let localStream = null;
+  let peerConnection = null;
+  let isWebRTCCall = false;
+  let incomingCallIsWebRTC = false;
+  let incomingCallIsVoiceOnly = false;
+  let pendingSdpOffer = null;
+
+  const rtcConfig = {
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+      { urls: 'stun:stun2.l.google.com:19302' }
+    ]
+  };
 
   window.startCall = function() {
     if (!activeConv) return;
     const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
-    // Friend-gating: only friends can call
     if (!friendIds.has(friendId)) {
       showToast('You need to be friends first to start a video call. Send a friend request!', 'error');
       return;
     }
     const roomId = `ProjectHive-${[ME.id, friendId].sort().join('-')}`;
     
-    // Notify the other user via Socket.IO
     if (socket) {
-      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate' });
+      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate', isWebRTC: true, isVoiceOnly: false });
     }
     
     activeCallRoom = roomId;
-    openJitsiFrame(roomId, false);
+    initiateWebRTCCall(friendId, false);
   };
 
-  // ── Voice Call (audio-only) ──
   window.startVoiceCall = function() {
     if (!activeConv) return;
     const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
-    // Friend-gating: only friends can call
     if (!friendIds.has(friendId)) {
       showToast('You need to be friends first to start a voice call. Send a friend request!', 'error');
       return;
@@ -1154,20 +1205,145 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     const roomId = `ProjectHive-voice-${[ME.id, friendId].sort().join('-')}`;
     
     if (socket) {
-      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate', isVoiceOnly: true });
+      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate', isWebRTC: true, isVoiceOnly: true });
     }
     
     activeCallRoom = roomId;
-    openJitsiFrame(roomId, true); // true = voice only
+    initiateWebRTCCall(friendId, true);
   };
 
+  async function initiateWebRTCCall(targetUserId, voiceOnly = false) {
+    isWebRTCCall = true;
+    document.getElementById('call-modal').classList.replace('hidden', 'flex');
+    document.getElementById('jitsi-container').classList.add('hidden');
+    document.getElementById('webrtc-container').classList.remove('hidden');
+
+    const timerEl = document.getElementById('call-timer');
+    if (timerEl) timerEl.textContent = 'Calling...';
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        video: !voiceOnly,
+        audio: true
+      });
+      document.getElementById('webrtc-local-video').srcObject = localStream;
+
+      peerConnection = new RTCPeerConnection(rtcConfig);
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+      peerConnection.onicecandidate = event => {
+        if (event.candidate && socket) {
+          socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
+        }
+      };
+
+      peerConnection.ontrack = event => {
+        document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+        startCallTimer();
+      };
+
+      const offer = await peerConnection.createOffer();
+      await peerConnection.setLocalDescription(offer);
+
+      if (socket) {
+        socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
+      }
+    } catch (err) {
+      console.error('[WebRTC] Error initiating call:', err);
+      showToast('Could not access camera/microphone', 'error');
+      endCall();
+    }
+  }
+
+  async function acceptWebRTCCall(targetUserId, voiceOnly = false) {
+    isWebRTCCall = true;
+    document.getElementById('call-modal').classList.replace('hidden', 'flex');
+    document.getElementById('jitsi-container').classList.add('hidden');
+    document.getElementById('webrtc-container').classList.remove('hidden');
+
+    const timerEl = document.getElementById('call-timer');
+    if (timerEl) timerEl.textContent = 'Connecting...';
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({
+        video: !voiceOnly,
+        audio: true
+      });
+      document.getElementById('webrtc-local-video').srcObject = localStream;
+
+      peerConnection = new RTCPeerConnection(rtcConfig);
+      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+      peerConnection.onicecandidate = event => {
+        if (event.candidate && socket) {
+          socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
+        }
+      };
+
+      peerConnection.ontrack = event => {
+        document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+        startCallTimer();
+      };
+
+      if (pendingSdpOffer) {
+        await peerConnection.setRemoteDescription(new RTCSessionDescription(pendingSdpOffer));
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
+        pendingSdpOffer = null;
+      }
+    } catch (err) {
+      console.error('[WebRTC] Error accepting call:', err);
+      showToast('Could not access camera/microphone', 'error');
+      endCall();
+    }
+  }
+
+  function handleWebRTCSignal(data) {
+    const { signal } = data;
+    if (!signal) return;
+
+    if (signal.sdp) {
+      if (peerConnection) {
+        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+          .then(async () => {
+            if (signal.sdp.type === 'offer') {
+              const answer = await peerConnection.createAnswer();
+              await peerConnection.setLocalDescription(answer);
+              socket.emit('webrtc:signal', { targetId: data.senderId, signal: { sdp: peerConnection.localDescription } });
+            }
+          });
+      } else {
+        pendingSdpOffer = signal.sdp;
+      }
+    } else if (signal.candidate) {
+      if (peerConnection) {
+        peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
+          .catch(e => console.error('[WebRTC] Error adding ICE candidate:', e));
+      }
+    }
+  }
+
+  function startCallTimer() {
+    if (window._callTimerInterval) return;
+    let callSeconds = 0;
+    const timerEl = document.getElementById('call-timer');
+    if (timerEl) timerEl.textContent = '00:00';
+    window._callTimerInterval = setInterval(() => {
+      callSeconds++;
+      const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+      const s = String(callSeconds % 60).padStart(2, '0');
+      if (timerEl) timerEl.textContent = m + ':' + s;
+    }, 1000);
+  }
 
   async function openJitsiFrame(roomId, voiceOnly = false) {
     document.getElementById('call-modal').classList.replace('hidden', 'flex');
+    document.getElementById('jitsi-container').classList.remove('hidden');
+    document.getElementById('webrtc-container').classList.add('hidden');
     const container = document.getElementById('jitsi-container');
     container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;font-size:14px;">Loading call...</div>';
     
-    // Lazy-load Jitsi API if not already loaded
     await loadJitsiAPI();
     if (!window.JitsiMeetExternalAPI) {
       container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ff6b6b;font-size:14px;">Failed to load call service. Please refresh.</div>';
@@ -1187,26 +1363,15 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       },
       configOverwrite: {
         prejoinPageEnabled: false,
-        startWithVideoMuted: voiceOnly,   // audio-only if voice call
+        startWithVideoMuted: voiceOnly,
         startWithAudioMuted: false,
       }
     };
     jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
-
-    // Start call timer
-    let callSeconds = 0;
-    window._callTimerInterval = setInterval(() => {
-      callSeconds++;
-      const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-      const s = String(callSeconds % 60).padStart(2, '0');
-      const el = document.getElementById('call-timer');
-      if (el) el.textContent = m + ':' + s;
-    }, 1000);
+    startCallTimer();
   }
 
-
   window.endCall = function() {
-    // Stop call timer
     if (window._callTimerInterval) { clearInterval(window._callTimerInterval); window._callTimerInterval = null; }
     const timerEl = document.getElementById('call-timer');
     if (timerEl) timerEl.textContent = '00:00';
@@ -1215,6 +1380,21 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       jitsiApiInstance.dispose();
       jitsiApiInstance = null;
     }
+
+    if (localStream) {
+      localStream.getTracks().forEach(track => track.stop());
+      localStream = null;
+    }
+    if (peerConnection) {
+      peerConnection.close();
+      peerConnection = null;
+    }
+    isWebRTCCall = false;
+    pendingSdpOffer = null;
+
+    document.getElementById('webrtc-container').classList.add('hidden');
+    document.getElementById('jitsi-container').classList.remove('hidden');
+
     const modal = document.getElementById('call-modal');
     if (modal) modal.classList.replace('flex', 'hidden');
     
@@ -1225,11 +1405,9 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     activeCallRoom = null;
   };
 
-  // ── Ringtone for incoming calls ──
   let ringtoneAudio = null;
   function startRingtone() {
     try {
-      // Use Web Audio API to generate a ringtone (no external file needed)
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -1239,7 +1417,6 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      // Ring pattern: beep 0.5s, silence 0.5s
       let on = true;
       ringtoneAudio = {
         ctx, osc, gain,
@@ -1266,7 +1443,11 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
       if (socket) {
         socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
       }
-      await openJitsiFrame(activeCallRoom);
+      if (incomingCallIsWebRTC) {
+        await acceptWebRTCCall(friendId, incomingCallIsVoiceOnly);
+      } else {
+        await openJitsiFrame(activeCallRoom, incomingCallIsVoiceOnly);
+      }
     }
   };
 
@@ -1302,4 +1483,4 @@ if (origConvList) {
   });
 }
 </script>
-</body></html>
+<script src="/assets/js/core/info-modal.js"></script></body></html>

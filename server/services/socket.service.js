@@ -3,17 +3,25 @@ import { supabaseAdmin } from '../config/supabase.js';
 let _io = null;
 export function setIo(io) { _io = io; }
 
-const activeUsers = new Map(); // userId -> socket
+const activeUsers = new Map(); // userId -> Set of sockets
 const userActivity = new Map(); // userId -> { lastActivity: ISO string }
 
 export async function registerUserSocket(socket) {
-  activeUsers.set(socket.userId, socket);
+  if (!activeUsers.has(socket.userId)) {
+    activeUsers.set(socket.userId, new Set());
+  }
+  const sockets = activeUsers.get(socket.userId);
+  sockets.add(socket);
+
   const now = new Date().toISOString();
   userActivity.set(socket.userId, { lastActivity: now });
-  try {
-    await supabaseAdmin.from('users').update({ online_status: 'online', last_seen: now }).eq('id', socket.userId);
-  } catch (_) { /* non-fatal */ }
-  if (_io) _io.emit('status:update', { userId: socket.userId, status: 'online', lastSeen: now });
+
+  if (sockets.size === 1) {
+    try {
+      await supabaseAdmin.from('users').update({ online_status: 'online', last_seen: now }).eq('id', socket.userId);
+    } catch (_) { /* non-fatal */ }
+    if (_io) _io.emit('status:update', { userId: socket.userId, status: 'online', lastSeen: now });
+  }
 
   // Track activity on any socket event (heartbeat)
   socket.on('heartbeat', () => {
@@ -22,17 +30,27 @@ export async function registerUserSocket(socket) {
   });
 }
 
-export async function unregisterUserSocket(userId) {
-  activeUsers.delete(userId);
-  const now = new Date().toISOString();
-  userActivity.set(userId, { lastActivity: now });
-  try {
-    await supabaseAdmin.from('users').update({ online_status: 'offline', last_seen: now }).eq('id', userId);
-  } catch (_) { /* non-fatal */ }
-  if (_io) _io.emit('status:update', { userId, status: 'offline', lastSeen: now });
+export async function unregisterUserSocket(socket) {
+  const userId = socket.userId;
+  const sockets = activeUsers.get(userId);
+  if (sockets) {
+    sockets.delete(socket);
+    if (sockets.size === 0) {
+      activeUsers.delete(userId);
+      const now = new Date().toISOString();
+      userActivity.set(userId, { lastActivity: now });
+      try {
+        await supabaseAdmin.from('users').update({ online_status: 'offline', last_seen: now }).eq('id', userId);
+      } catch (_) { /* non-fatal */ }
+      if (_io) _io.emit('status:update', { userId, status: 'offline', lastSeen: now });
+    }
+  }
 }
 
-export function getUserSocket(userId) { return activeUsers.get(userId); }
+export function getUserSocket(userId) {
+  const sockets = activeUsers.get(userId);
+  return (sockets && sockets.size > 0) ? Array.from(sockets)[0] : null;
+}
 export function getActiveUsers() { return Array.from(activeUsers.keys()); }
 export function isUserOnline(userId) { return activeUsers.has(userId); }
 

@@ -8,7 +8,7 @@
   body { background-color: #F0F2F9 !important; }
   html.dark body { background-color: #0C0D14 !important; }
 </style>
-<link rel="icon" href="/assets/svg/logo.png">
+<link rel="icon" href="/favicon.png?v=2">
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Create New Hive | ProjectHive</title>
@@ -164,7 +164,11 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 <main class="ml-[260px] p-margin-desktop min-h-screen">
 <header class="mb-stack-lg flex justify-between items-center">
 <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
-<link rel="icon" href="/assets/svg/logo.png">
+<link rel="icon" href="/favicon.png?v=2">
+<div class="flex items-start gap-4">
+<button onclick="history.back()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors shrink-0 text-on-surface" title="Go Back">
+  <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
 <div>
 <h2 class="font-headline-lg text-headline-lg text-primary">Assemble Your Hive</h2>
 <p class="font-body-md text-body-md text-on-surface-variant">Create a new collaborative research team and start your next breakthrough.</p>
@@ -459,4 +463,4 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
   };
 })();
 </script>
-</body></html>
+<script src="/assets/js/core/info-modal.js"></script></body></html>

@@ -1,11 +1,14 @@
 import 'dotenv/config';
 import http from 'http';
 import { Server } from 'socket.io';
+import Redis from 'ioredis';
+import { createAdapter } from '@socket.io/redis-adapter';
 
 import app from './app.js';
 import { connectDB } from './config/db.js';
 import { initializeGemini } from './config/gemini.js';
 import { socketAuthMiddleware } from './middleware/socketAuth.js';
+import { supabaseAdmin } from './config/supabase.js';
 import {
   setIo,
   registerUserSocket,
@@ -73,6 +76,19 @@ async function startServer() {
       pingInterval: 25000,
     });
 
+    if (process.env.REDIS_URL) {
+      try {
+        const pubClient = new Redis(process.env.REDIS_URL);
+        const subClient = pubClient.duplicate();
+        io.adapter(createAdapter(pubClient, subClient));
+        console.log('[ProjectHive] 🚀 Upstash Redis Socket.IO adapter enabled');
+      } catch (err) {
+        console.error('[ProjectHive] ⚠️ Failed to initialize Redis Socket.IO adapter:', err.message);
+      }
+    } else {
+      console.log('[ProjectHive] ℹ️ REDIS_URL not set; using local memory Socket.IO adapter');
+    }
+
     setIo(io);
     io.use(socketAuthMiddleware);
 
@@ -92,21 +108,36 @@ async function startServer() {
       socket.on('call:decline',  (data) => handleCallDecline(socket, data));
       socket.on('call:hangup',   (data) => handleCallHangup(socket, data));
       socket.on('call:group',    (data) => handleGroupCallInitiate(socket, data));
+      socket.on('webrtc:signal', (data) => {
+        const { targetId, signal } = data;
+        const targetSocket = getUserSocket(targetId);
+        if (targetSocket) {
+          targetSocket.emit('webrtc:signal', { senderId: socket.userId, signal });
+        }
+      });
 
       socket.on('disconnect', (reason) => {
         handleLeaveRoom(socket);
-        unregisterUserSocket(socket.userId);
+        unregisterUserSocket(socket);
         console.log('[ProjectHive] 🔌 User disconnected:', socket.userId, '| Reason:', reason);
       });
       socket.on('error', (err) => console.error('[ProjectHive] Socket error:', err));
     });
 
-    server.listen(PORT, () => {
+    server.listen(PORT, async () => {
       console.log(`\n[ProjectHive] ✅ Server running on port ${PORT}`);
       console.log(`[ProjectHive] 🌐 API:       http://localhost:${PORT}/api`);
       console.log(`[ProjectHive] 🔌 Socket.IO: ws://localhost:${PORT}`);
       console.log(`[ProjectHive] 🗄️  Database:  Supabase PostgreSQL`);
       console.log(`[ProjectHive] 📧 Email:     Brevo SMTP\n`);
+
+      // Clean up any stale online statuses from previous server run
+      try {
+        await supabaseAdmin.from('users').update({ online_status: 'offline' }).neq('id', '00000000-0000-0000-0000-000000000000');
+        console.log('[ProjectHive] 🧹 Stale online statuses reset to offline');
+      } catch (err) {
+        console.error('[ProjectHive] ⚠️ Failed to reset online statuses on startup:', err.message);
+      }
 
       // ─── Keep-alive: self-ping every 14 min to prevent Render cold starts ──
       if (process.env.NODE_ENV === 'production') {
