@@ -214,21 +214,39 @@ API ENDPOINTS (60+)
     Server → Client: new_message, user_typing, user_online, user_offline, notification
 
 ================================================================================
-SECURITY
+SECURITY (21 Vulnerabilities Identified & Resolved — OWASP Top 10)
 ================================================================================
 
-  ✅ JWT HS256 authentication (access + refresh token rotation)
-  ✅ bcrypt password hashing (12 rounds)
-  ✅ Email verification required before login
-  ✅ Admin credentials stored only in server env (never in DB)
-  ✅ Admin JWT separate from user JWT (type: admin_access)
-  ✅ Cloudflare Turnstile CAPTCHA on register + login
-  ✅ Helmet HTTP security headers
-  ✅ CORS configured for frontend origin only
-  ✅ Rate limiting: 100 requests / 15 minutes per IP
-  ✅ Admin panel not linked from user sidebar
-  ✅ SQL injection protection via Supabase parameterized queries
-  ✅ HTTPS enforced by Vercel and Render
+  AUTHENTICATION & ACCESS CONTROL
+    ✅ JWT HS256 authentication (access + refresh token rotation)
+    ✅ Token type validation — access/refresh tokens cannot be confused
+    ✅ bcrypt password hashing (12 rounds)
+    ✅ Email verification required before login
+    ✅ No hardcoded fallback JWT secrets — server fails fast if missing
+    ✅ Admin credentials stored only in server env (never in DB)
+    ✅ Admin JWT separate from user JWT (type: admin_access, 4h expiry)
+    ✅ Admin login uses timing-safe comparison (crypto.timingSafeEqual)
+    ✅ Admin brute-force protection (5 attempts / 15-minute lockout)
+    ✅ Dev privilege escalation endpoint disabled at route level in production
+
+  INPUT VALIDATION & INJECTION PREVENTION
+    ✅ XSS sanitization middleware strips <script>, event handlers, javascript: URIs
+    ✅ SQL/PostgREST filter injection prevented via sanitizeSearch() (7 endpoints)
+    ✅ SSRF protection blocks internal/private/loopback IPs on URL scraper
+
+  INFRASTRUCTURE SECURITY
+    ✅ Content Security Policy (CSP) with strict CDN allowlist via Helmet
+    ✅ HSTS (max-age=31536000; includeSubDomains; preload)
+    ✅ Referrer-Policy: strict-origin-when-cross-origin
+    ✅ Permissions-Policy: camera=(), microphone=(), geolocation=()
+    ✅ X-Frame-Options: SAMEORIGIN (prevents clickjacking)
+    ✅ Cloudflare Turnstile CAPTCHA verification on auth endpoints
+    ✅ Layered rate limiting: 500 req/15min global + 20 req/15min auth
+    ✅ CORS configured for frontend origin only
+    ✅ Body size limit capped at 2MB (prevents DoS)
+    ✅ HTTPS enforced by Vercel and Render
+
+  Full audit report: docs/SECURITY_AUDIT.md
 
 ================================================================================
 DATABASE SCHEMA

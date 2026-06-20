@@ -113,7 +113,8 @@ Project-Hive/
 │   ├── middleware/
 │   │   ├── auth.js                      # JWT verify middleware
 │   │   ├── socketAuth.js                # Socket.IO JWT auth
-│   │   ├── turnstile.js                 # Cloudflare Turnstile CAPTCHA
+│   │   ├── turnstile.js                 # Cloudflare Turnstile CAPTCHA verification
+│   │   ├── sanitize.js                  # XSS input sanitization (global)
 │   │   └── errorHandler.js             # Global error handler
 │   ├── services/
 │   │   ├── email.service.js             # Brevo SMTP (verify, welcome, reset)
@@ -373,15 +374,33 @@ The admin panel is a fully separate, secure control center.
 
 ## 🔒 Security
 
+> 21 vulnerabilities identified and resolved — see [`docs/SECURITY_AUDIT.md`](docs/SECURITY_AUDIT.md) for full OWASP-classified report.
+
+### Authentication & Access Control
 - Passwords hashed with **bcrypt** (12 rounds)
 - JWT access tokens expire in **24h**, refresh tokens in **7 days**
+- **Token type validation** — access and refresh tokens cannot be confused
 - Email must be verified before first login
 - All user routes protected by `authMiddleware`
-- Admin routes protected by dedicated `requireAdminToken` guard
+- Admin routes protected by dedicated `requireAdminToken` guard (4h expiry)
 - Admin credentials stored **only** in server environment variables (never in DB)
-- **Cloudflare Turnstile** CAPTCHA on register & login
-- `X-Frame-Options`, `X-Content-Type-Options`, and other security headers via **Helmet**
-- Rate limiting: 100 requests per 15 minutes per IP
+- **No hardcoded fallback secrets** — server fails fast if `JWT_SECRET` is missing
+- Admin login uses **timing-safe comparison** (prevents timing attacks)
+
+### Input Validation & Injection Prevention
+- **XSS sanitization middleware** strips `<script>`, event handlers, `javascript:` URIs from all inputs
+- **SQL/PostgREST filter injection** prevented via `sanitizeSearch()` across all 7 search endpoints
+- **SSRF protection** blocks internal/private IPs on URL metadata scraper
+
+### Infrastructure Security
+- **Content Security Policy (CSP)** with strict allowlist via Helmet
+- **HSTS**, **Referrer-Policy**, **Permissions-Policy** headers
+- `X-Frame-Options: SAMEORIGIN` prevents clickjacking
+- **Cloudflare Turnstile** CAPTCHA verification on auth endpoints
+- **Layered rate limiting**: 500 req/15min global + 20 req/15min on auth endpoints
+- **Admin brute-force protection**: 5 attempts per 15-minute lockout
+- Body size limit capped at **2MB** (prevents DoS)
+- Dev privilege escalation endpoint disabled at route level in production
 
 ---
 

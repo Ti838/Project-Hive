@@ -56,6 +56,19 @@ This document tracks the execution phases, design rules, and implementation stat
 * **Stroke Weight Sync:** Changed the stroke-width of the Sign Out icon from `2.5` to `2` to match the visual weight of other SVG icons.
 * **Overflow & Clipping Fix:** Addressed sidebar overflow clipping in the admin console by adding `scrollbar-width: none` and WebKit scrollbar hides. Moved the collapse toggle button outside the `.sb` sidebar wrapper to the top-level `<body>` context, utilizing `position: fixed` coordinates synchronizing with the collapse transition to prevent truncation.
 
+### Phase 12: Security Hardening (OWASP Top 10 Audit) ✅ COMPLETED
+* **21 Vulnerabilities Identified & Resolved** across 5 CRITICAL, 7 HIGH, 6 MEDIUM, 3 LOW severity levels.
+* **JWT Hardening:** Removed hardcoded fallback secrets (fail-fast pattern), added token type validation to prevent access/refresh confusion.
+* **Admin Auth Hardening:** Replaced `===` with `crypto.timingSafeEqual()` for constant-time comparison, added 5-attempt/15-min brute-force rate limiter, reduced token lifetime from 8h to 4h.
+* **Injection Prevention:** Created `sanitizeSearch()` utility stripping SQL/PostgREST-dangerous characters, applied across all 7 search endpoints in 4 controllers. Strengthened regex to also block Cloudflare WAF trigger patterns.
+* **XSS Sanitization:** Created global `server/middleware/sanitize.js` that strips `<script>`, `<iframe>`, event handlers, `javascript:` URIs from all incoming request bodies.
+* **SSRF Protection:** Hardened `/api/utils/scrape-metadata` to block `localhost`, private IPs (`10.x`, `192.168.x`, `172.16-31.x`), IPv6 loopback, `.internal` domains, and octal IP bypasses.
+* **CSP & Headers:** Enabled strict Content Security Policy via Helmet with CDN allowlist, added HSTS, Referrer-Policy, Permissions-Policy headers to both Express and Vercel config.
+* **Rate Limiting:** Implemented layered architecture — 500 req/15min global + 20 req/15min for auth endpoints (login, register, forgot-password).
+* **CAPTCHA:** Replaced pass-through Turnstile middleware with proper Cloudflare API verification.
+* **Infrastructure:** Reduced body size limit from 10MB to 2MB, guarded dev promotion endpoint at route level, imported missing `getFlags` function.
+* **Documentation:** Created comprehensive `docs/SECURITY_AUDIT.md` with OWASP classifications for all 21 vulnerabilities.
+
 ---
 
 ## 🎨 Design Rules & Styling Compliance
