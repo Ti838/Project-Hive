@@ -1,6 +1,12 @@
 import bcryptjs from 'bcryptjs';
 import { supabaseAdmin } from '../config/supabase.js';
 
+// Sanitize search input to prevent Supabase PostgREST filter injection
+function sanitizeSearch(input) {
+  if (!input || typeof input !== 'string') return '';
+  return input.replace(/[%_(),.;'"\\=<>!#|&\-\[\]{}^~`]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
+}
+
 // ─── Helper: sanitize user output ────────────────────────────────────────────
 function sanitize(user) {
   if (!user) return null;
@@ -62,7 +68,8 @@ export async function listUsers(req, res, next) {
       .eq('is_banned', false)
       .neq('id', req.user.id);
 
-    if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,university.ilike.%${search}%`);
+    const s = sanitizeSearch(search);
+    if (s) q = q.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,university.ilike.%${s}%`);
 
     const { data: users, error, count } = await q
       .order('online_status', { ascending: false }) // online users first
@@ -240,7 +247,8 @@ export async function searchUsers(req, res, next) {
       .eq('is_banned', false);
 
     if (searchTerm) {
-      q = q.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,university.ilike.%${searchTerm}%,major.ilike.%${searchTerm}%`);
+      const st = sanitizeSearch(searchTerm);
+      if (st) q = q.or(`first_name.ilike.%${st}%,last_name.ilike.%${st}%,email.ilike.%${st}%,university.ilike.%${st}%,major.ilike.%${st}%`);
     }
     if (university) q = q.ilike('university', `%${university}%`);
     if (yearOfStudy) q = q.eq('year_of_study', parseInt(yearOfStudy));
@@ -346,19 +354,19 @@ export async function globalSearch(req, res, next) {
         .select('id, first_name, last_name, avatar, avatar_color, university')
         .eq('is_public', true)
         .eq('is_banned', false)
-        .or(`first_name.ilike.%${queryStr}%,last_name.ilike.%${queryStr}%,university.ilike.%${queryStr}%`)
+        .or(`first_name.ilike.%${sanitizeSearch(queryStr)}%,last_name.ilike.%${sanitizeSearch(queryStr)}%,university.ilike.%${sanitizeSearch(queryStr)}%`)
         .limit(5),
       supabaseAdmin.from('teams')
         .select('id, name, category, description')
-        .or(`name.ilike.%${queryStr}%,category.ilike.%${queryStr}%,description.ilike.%${queryStr}%`)
+        .or(`name.ilike.%${sanitizeSearch(queryStr)}%,category.ilike.%${sanitizeSearch(queryStr)}%,description.ilike.%${sanitizeSearch(queryStr)}%`)
         .limit(5),
       supabaseAdmin.from('projects')
         .select('id, title, category, description')
-        .or(`title.ilike.%${queryStr}%,category.ilike.%${queryStr}%,description.ilike.%${queryStr}%`)
+        .or(`title.ilike.%${sanitizeSearch(queryStr)}%,category.ilike.%${sanitizeSearch(queryStr)}%,description.ilike.%${sanitizeSearch(queryStr)}%`)
         .limit(5),
       supabaseAdmin.from('posts')
         .select('id, content, post_type')
-        .ilike('content', `%${queryStr}%`)
+        .ilike('content', `%${sanitizeSearch(queryStr)}%`)
         .limit(5)
     ]);
 

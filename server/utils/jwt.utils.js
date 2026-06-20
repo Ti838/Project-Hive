@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 
-// Determine signing strategy: RS256 (key pair) or HS256 (secret)
+// ── SECURITY: No fallback secrets — fail fast if not configured ──────────────
 function getSignConfig() {
   if (process.env.JWT_PRIVATE_KEY) {
     return {
@@ -8,8 +8,10 @@ function getSignConfig() {
       algorithm: 'RS256',
     };
   }
-  // Fallback to HS256 with a simple secret (development)
-  const secret = process.env.JWT_SECRET || 'projecthive-dev-secret-change-in-production';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL: JWT_SECRET is not set. Server cannot sign tokens without a secret.');
+  }
   return { secret, algorithm: 'HS256' };
 }
 
@@ -20,7 +22,10 @@ function getVerifyConfig() {
       algorithms: ['RS256'],
     };
   }
-  const secret = process.env.JWT_SECRET || 'projecthive-dev-secret-change-in-production';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL: JWT_SECRET is not set. Server cannot verify tokens without a secret.');
+  }
   return { secret, algorithms: ['HS256'] };
 }
 
@@ -62,20 +67,26 @@ export function generateTokenPair(userId, email, role = 'student') {
 
 export function verifyAccessToken(token) {
   const { secret, algorithms } = getVerifyConfig();
-  try {
-    return jwt.verify(token, secret, { algorithms });
-  } catch (error) {
-    throw error;
+  const decoded = jwt.verify(token, secret, { algorithms });
+  // Prevent refresh tokens from being used as access tokens
+  if (decoded.type && decoded.type !== 'access' && decoded.type !== 'admin_access') {
+    const err = new Error('Invalid token type');
+    err.name = 'JsonWebTokenError';
+    throw err;
   }
+  return decoded;
 }
 
 export function verifyRefreshToken(token) {
   const { secret, algorithms } = getVerifyConfig();
-  try {
-    return jwt.verify(token, secret, { algorithms });
-  } catch (error) {
-    throw error;
+  const decoded = jwt.verify(token, secret, { algorithms });
+  // Ensure only refresh tokens are accepted for refresh operations
+  if (decoded.type && decoded.type !== 'refresh') {
+    const err = new Error('Invalid token type');
+    err.name = 'JsonWebTokenError';
+    throw err;
   }
+  return decoded;
 }
 
 export function decodeToken(token) {

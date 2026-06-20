@@ -10,6 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 
 import { errorHandler } from './middleware/errorHandler.js';
+import { sanitizeInputMiddleware } from './middleware/sanitize.js';
 
 import authRoutes from './routes/auth.routes.js';
 import usersRoutes from './routes/users.routes.js';
@@ -22,6 +23,7 @@ import friendsRoutes from './routes/friends.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { adminDevRouter } from './routes/admin.routes.js';
 import { adminLogin } from './controllers/admin.auth.controller.js';
+import { getFlags } from './controllers/admin.controller.js';
 import postsRoutes from './routes/posts.routes.js';
 
 const app = express();
@@ -32,8 +34,27 @@ app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet({
-  contentSecurityPolicy: false, // Disabled to allow CDN scripts (Tailwind, fonts)
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.socket.io", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      connectSrc: ["'self'", "https://projecthive-backend.onrender.com", "wss://projecthive-backend.onrender.com", "https://generativelanguage.googleapis.com", "https://api.brevo.com"],
+      frameSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+    },
+  },
   crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,     // 1 year
+    includeSubDomains: true,
+    preload: true,
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
 // Serve static frontend files from /public
@@ -74,9 +95,12 @@ app.use(cors(corsOptions));
 // Logging
 app.use(morgan('combined'));
 
-// Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// Body parsing (2MB default — large enough for normal requests, prevents DoS)
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ limit: '2mb', extended: true }));
+
+// XSS sanitization — strip dangerous HTML/scripts from all inputs
+app.use(sanitizeInputMiddleware);
 
 // Rate limiting
 const limiter = rateLimit({
@@ -87,6 +111,20 @@ const limiter = rateLimit({
   legacyHeaders: false,
 });
 app.use('/api/', limiter);
+
+// Stricter rate limiter for auth endpoints (brute-force protection)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,                   // 20 attempts per window
+  message: 'Too many authentication attempts. Please try again in 15 minutes.',
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+});
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/register', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/admin/auth/login', authLimiter);
 
 // Health check (both paths for keep-alive compatibility)
 app.get('/health', (req, res) => {
@@ -128,7 +166,10 @@ app.get('/api/stats', async (req, res) => {
 app.use('/api/auth', authRoutes);
 app.post('/api/admin/auth/login', adminLogin);
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin', adminDevRouter); // dev only
+// DEV ONLY: promote-me endpoint — only register in non-production
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api/admin', adminDevRouter);
+}
 
 // Maintenance Mode Middleware
 app.use('/api', (req, res, next) => {

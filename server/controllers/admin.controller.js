@@ -1,5 +1,13 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
+// ── Input sanitizer for Supabase filter parameters ───────────────────────────
+// Prevents injection through ilike/or filter patterns
+function sanitizeSearch(input) {
+  if (!input || typeof input !== 'string') return '';
+  // Strip SQL/filter-dangerous chars AND patterns that trigger Cloudflare WAF
+  return input.replace(/[%_(),.;'"\\=<>!#|&\-\[\]{}^~`]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
+}
+
 // ── System Flags (in-memory; survives per-process, reset on redeploy) ────────
 const FLAGS = {
   maintenanceMode: false,
@@ -61,7 +69,8 @@ export async function getUsers(req, res, next) {
     const { skip = 0, limit = 200, search = '' } = req.query;
     let q = supabaseAdmin.from('users')
       .select('id,first_name,last_name,email,university,role,is_verified,is_banned,avatar,avatar_color,created_at', { count: 'exact' });
-    if (search) q = q.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%`);
+    const s = sanitizeSearch(search);
+    if (s) q = q.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,email.ilike.%${s}%`);
     const { data: users, error, count } = await q.range(+skip, +skip + +limit - 1).order('created_at', { ascending: false });
     if (error) throw error;
     res.json({ users: (users || []).map(normUser), total: count || 0 });
@@ -209,7 +218,8 @@ export async function getAdminPosts(req, res, next) {
         id, content, post_type, created_at, image_url, link_metadata,
         author:users!author_id(id, first_name, last_name, email, university)
       `, { count: 'exact' });
-    if (search) q = q.ilike('content', `%${search}%`);
+    const s = sanitizeSearch(search);
+    if (s) q = q.ilike('content', `%${s}%`);
     const { data: posts, error, count } = await q
       .range(+skip, +skip + +limit - 1)
       .order('created_at', { ascending: false });

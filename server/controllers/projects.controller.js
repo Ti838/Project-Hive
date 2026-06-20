@@ -1,5 +1,10 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
+function sanitizeSearch(input) {
+  if (!input || typeof input !== 'string') return '';
+  return input.replace(/[%_(),.;'"\\=<>!#|&\-\[\]{}^~`]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
+}
+
 export async function submitProject(req, res, next) {
   try {
     const userId = req.user.id;
@@ -41,7 +46,7 @@ export async function getProjects(req, res, next) {
       .select('*, owner:owner_id(id, first_name, last_name, avatar, avatar_color, university)', { count: 'exact' })
       .eq('status', 'active');
 
-    if (search) q = q.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+    if (search) { const s = sanitizeSearch(search); if (s) q = q.or(`title.ilike.%${s}%,description.ilike.%${s}%`); }
     if (category) q = q.eq('category', category);
 
     if (sortBy === 'popular') q = q.order('likes', { ascending: false });

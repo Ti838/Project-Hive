@@ -314,6 +314,42 @@ export async function scrapeMetadata(req, res, next) {
       targetUrl = 'https://' + targetUrl;
     }
 
+    // SSRF Protection: block internal/private network addresses
+    try {
+      const parsed = new URL(targetUrl);
+      // Only allow http and https protocols
+      if (!['http:', 'https:'].includes(parsed.protocol)) {
+        return res.status(400).json({ error: 'Only HTTP/HTTPS URLs are allowed' });
+      }
+      const hostname = parsed.hostname.toLowerCase();
+      // Block internal addresses
+      const blockedPatterns = [
+        /^localhost$/i,
+        /^127\.\d+\.\d+\.\d+$/,
+        /^10\.\d+\.\d+\.\d+$/,
+        /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/,
+        /^192\.168\.\d+\.\d+$/,
+        /^0\.0\.0\.0$/,
+        /^169\.254\.\d+\.\d+$/,        // link-local
+        /^\[?::1\]?$/,                   // IPv6 loopback
+        /^\[?fe80:/i,                    // IPv6 link-local
+        /^\[?fc00:/i,                    // IPv6 private
+        /^\[?fd/i,                       // IPv6 private
+        /\.local$/i,
+        /\.internal$/i,
+        /\.onrender\.com$/i,             // Block requests back to our own backend
+      ];
+      if (blockedPatterns.some(p => p.test(hostname))) {
+        return res.status(400).json({ error: 'Cannot scrape internal or private URLs' });
+      }
+      // Block numeric IPs that start with 0 (octal bypass)
+      if (/^0\d/.test(hostname)) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+      }
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid URL' });
+    }
+
     const response = await fetch(targetUrl, {
       headers: { 
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36' 

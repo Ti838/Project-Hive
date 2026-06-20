@@ -1,5 +1,10 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
+function sanitizeSearch(input) {
+  if (!input || typeof input !== 'string') return '';
+  return input.replace(/[%_(),.;'"\\=<>!#|&\-\[\]{}^~`]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
+}
+
 // ─── CREATE TEAM ──────────────────────────────────────────────────────────────
 export async function createTeam(req, res, next) {
   try {
@@ -56,7 +61,7 @@ export async function getTeams(req, res, next) {
       `, { count: 'exact' })
       .eq('is_open', true);
 
-    if (search) q = q.ilike('name', `%${search}%`);
+    if (search) { const s = sanitizeSearch(search); if (s) q = q.ilike('name', `%${s}%`); }
     if (category) q = q.eq('category', category);
 
     q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1).order('created_at', { ascending: false });
