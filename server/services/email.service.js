@@ -1,58 +1,96 @@
 /**
  * ProjectHive Email Service
- * Uses Brevo HTTP API (not SMTP) — works on Render free tier
+ * Primary: Gmail SMTP (100% inbox — proper SPF/DKIM)
+ * Fallback: Brevo HTTP API (if Gmail not configured)
  */
+import nodemailer from 'nodemailer';
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
   ? (process.env.FRONTEND_URL_PROD || 'https://projecthive-bd.vercel.app')
   : 'http://localhost:5000';
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const FROM_EMAIL = process.env.BREVO_FROM_EMAIL || 'timonbiswas33@gmail.com';
+const FROM_EMAIL = process.env.GMAIL_USER || process.env.BREVO_FROM_EMAIL || 'timonbiswas33@gmail.com';
 const FROM_NAME  = 'ProjectHive';
 
-// ─── HTTP API send helper ──────────────────────────────────────────────────────
-async function sendEmail({ to, toName = '', subject, html }) {
-  if (!BREVO_API_KEY) {
-    console.warn('[Email] No BREVO_API_KEY set — logging email to console');
-    console.log(`[Email] TO: ${to}\n[Email] SUBJECT: ${subject}`);
-    return { id: 'console-only' };
-  }
-
-  const body = {
-    sender:      { name: FROM_NAME, email: FROM_EMAIL },
-    to:          [{ email: to, name: toName || to }],
-    replyTo:     { email: FROM_EMAIL, name: FROM_NAME },
-    subject,
-    htmlContent: html,
-    headers: {
-      'X-Mailer': 'ProjectHive',
-      'List-Unsubscribe': `<mailto:${FROM_EMAIL}?subject=unsubscribe>`,
-      'Precedence': 'bulk',
-      'X-Entity-Ref-ID': `ph-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+// ─── Gmail SMTP transporter ────────────────────────────────────────────────────
+let gmailTransporter = null;
+if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+  gmailTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
-    tags: ['projecthive', 'transactional'],
-  };
-
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method:  'POST',
-    headers: {
-      'accept':       'application/json',
-      'content-type': 'application/json',
-      'api-key':      BREVO_API_KEY,
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(10000),
   });
+  console.log('[Email] ✅ Gmail SMTP configured — emails will land in inbox!');
+} else {
+  console.warn('[Email] ⚠️  Gmail not configured. Set GMAIL_USER + GMAIL_APP_PASSWORD for inbox delivery.');
+}
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Brevo API error ${res.status}: ${err}`);
+// ─── Brevo HTTP API fallback ───────────────────────────────────────────────────
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+
+// ─── Unified send helper ───────────────────────────────────────────────────────
+async function sendEmail({ to, toName = '', subject, html }) {
+
+  // ── Strategy 1: Gmail SMTP (preferred — 100% inbox) ──
+  if (gmailTransporter) {
+    try {
+      const info = await gmailTransporter.sendMail({
+        from: `"${FROM_NAME}" <${process.env.GMAIL_USER}>`,
+        to,
+        subject,
+        html,
+      });
+      console.log('[Email] ✉️  Gmail sent to:', to, '| messageId:', info.messageId);
+      return { messageId: info.messageId };
+    } catch (err) {
+      console.error('[Email] Gmail SMTP failed:', err.message, '— trying Brevo fallback...');
+    }
   }
 
-  const data = await res.json();
-  console.log('[Email] ✉️  Sent to:', to, '| messageId:', data.messageId);
-  return data;
+  // ── Strategy 2: Brevo HTTP API (fallback) ──
+  if (BREVO_API_KEY) {
+    const body = {
+      sender:      { name: FROM_NAME, email: FROM_EMAIL },
+      to:          [{ email: to, name: toName || to }],
+      replyTo:     { email: FROM_EMAIL, name: FROM_NAME },
+      subject,
+      htmlContent: html,
+      headers: {
+        'X-Mailer': 'ProjectHive',
+        'List-Unsubscribe': `<mailto:${FROM_EMAIL}?subject=unsubscribe>`,
+        'Precedence': 'bulk',
+        'X-Entity-Ref-ID': `ph-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
+      },
+      tags: ['projecthive', 'transactional'],
+    };
+
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method:  'POST',
+      headers: {
+        'accept':       'application/json',
+        'content-type': 'application/json',
+        'api-key':      BREVO_API_KEY,
+      },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Brevo API error ${res.status}: ${err}`);
+    }
+
+    const data = await res.json();
+    console.log('[Email] ✉️  Brevo sent to:', to, '| messageId:', data.messageId);
+    return data;
+  }
+
+  // ── No email service configured ──
+  console.warn('[Email] No email service configured — logging to console');
+  console.log(`[Email] TO: ${to}\n[Email] SUBJECT: ${subject}`);
+  return { id: 'console-only' };
 }
 
 // ─── Shared email wrapper ──────────────────────────────────────────────────────
