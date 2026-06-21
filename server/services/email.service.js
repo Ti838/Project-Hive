@@ -27,8 +27,11 @@ async function sendEmail({ to, toName = '', subject, html }) {
     htmlContent: html,
     headers: {
       'X-Mailer': 'ProjectHive',
-      'List-Unsubscribe': `<mailto:${FROM_EMAIL}?subject=unsubscribe>`
+      'List-Unsubscribe': `<mailto:${FROM_EMAIL}?subject=unsubscribe>`,
+      'Precedence': 'bulk',
+      'X-Entity-Ref-ID': `ph-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
     },
+    tags: ['projecthive', 'transactional'],
   };
 
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
