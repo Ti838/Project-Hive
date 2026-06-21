@@ -659,18 +659,18 @@ const PHSidebar = (() => {
     });
   }
 
-  // ══ Premium Mobile Bottom Navigation Bar ═════════════════════════════════
+  // ══ Premium Mobile Bottom Navigation Bar (with center AI button) ═══════════
   function buildBottomNav(active, base) {
     if (document.getElementById('ph-bottom-nav')) return; // already injected
 
-    // 5 most important pages for mobile
+    // 5 items: Home, People, [AI Center], Alerts, Profile
     const items = [
       { key: 'dashboard', href: '/dashboard', label: 'Home',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>` },
       { key: 'people', href: '/people', label: 'People',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
-      { key: 'messages', href: '/messages', label: 'Messages',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
+      { key: 'ai-center', href: '#', label: 'AI', isCenter: true,
+        icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>` },
       { key: 'notifications', href: '/notifications', label: 'Alerts',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
       { key: 'profile', href: '/profile', label: 'Profile',
@@ -682,6 +682,13 @@ const PHSidebar = (() => {
     nav.setAttribute('aria-label', 'Mobile navigation');
     nav.innerHTML = items.map(item => {
       const isActive = item.key === active;
+      if (item.isCenter) {
+        // Center AI button — elevated, gradient
+        return `<button class="ph-bn-center" id="ph-bn-ai-btn" title="AI Chat" aria-label="Open AI Chat">
+          <div class="ph-bn-center-ring"></div>
+          ${item.icon}
+        </button>`;
+      }
       return `<a href="${item.href}" class="ph-bn-item${isActive ? ' active' : ''}" data-key="${item.key}" title="${item.label}">
         ${item.icon}
         <span>${item.label}</span>
@@ -689,20 +696,27 @@ const PHSidebar = (() => {
     }).join('');
 
     document.body.appendChild(nav);
+
+    // Wire center AI button to toggle AI popup on dashboard
+    const aiBtn = document.getElementById('ph-bn-ai-btn');
+    if (aiBtn) {
+      aiBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        // If toggleAIPopup exists (dashboard), use it
+        if (typeof toggleAIPopup === 'function') {
+          toggleAIPopup();
+        } else {
+          // On other pages, navigate to generator
+          window.location.href = '/generator';
+        }
+      });
+    }
   }
 
-  // ══ Premium Mobile Floating Action Button (FAB) for AI ════════════════════
+  // ══ Mobile FAB removed — AI is now in center of bottom nav ═══════════════
   function buildMobileFAB(base) {
-    if (document.getElementById('ph-mobile-fab')) return; // already injected
-
-    const fab = document.createElement('a');
-    fab.id = 'ph-mobile-fab';
-    fab.href = '/generator';
-    fab.className = 'ph-mobile-fab';
-    fab.title = 'AI Generator';
-    fab.innerHTML = `<span class="material-symbols-outlined">auto_awesome</span>`;
-    
-    document.body.appendChild(fab);
+    // No longer needed — AI button lives in bottom nav center
+    return;
   }
 
   /** Inject a hamburger button into the page topbar/header for mobile */
