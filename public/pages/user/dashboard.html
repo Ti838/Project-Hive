@@ -676,12 +676,15 @@ body, header, aside, main, section, .bg-surface-container-lowest,
       const r=await fetch(API+'/api/ai/chat',{method:'POST',headers:H,body:JSON.stringify(body)});
       const d=await r.json();
       if(r.ok && d.reply) return d.reply;
-      if(r.status===429||d.fallback){
-        /* Rate limited — go to local fallback below */
-      } else if(d.error) {
+      if(r.status===429){
+        return '⏳ **Rate limit reached!**\n\nYou\'ve used too many AI requests this hour. Please wait a few minutes and try again.';
+      }
+      if(d.error) {
         console.warn('AI chat error:',d.error);
       }
-    }catch(e){}
+    }catch(e){
+      console.warn('AI chat fetch failed:', e.message);
+    }
 
     /* ── 2. Try generate-ideas as fallback (extract first idea) ── */
     try{
@@ -692,26 +695,13 @@ body, header, aside, main, section, .bg-surface-container-lowest,
         const d=await r2.json();
         if(d.ideas?.length){
           const i=d.ideas[0];
-          return `**${i.name||i.title||'Project Idea'}**\n\n${i.description||''}\n\n${i.techStack?.length?'<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> Tech: '+i.techStack.join(', '):''}`.trim();
+          return `**${i.name||i.title||'Project Idea'}**\n\n${i.description||''}\n\n${i.techStack?.length?'🔧 Tech: '+i.techStack.join(', '):''}`.trim();
         }
       }
     }catch(e){}
 
-    /* ── 3. Smart local keyword fallback ── */
-    const ql=q.toLowerCase();
-    if(ql.includes('idea')||ql.includes('project')||ql.includes('build'))
-      return '<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></span> **Cool Project Ideas:**\n\n• **StudyBuddy** — AI-powered study group finder\n• **GreenRoute** — Eco-friendly commute tracker\n• **SkillSwap** — Peer-to-peer skill exchange platform\n\nVisit the **AI Generator** page for 5 full ideas with tech stacks!';
-    if(ql.includes('tech')||ql.includes('learn')||ql.includes('stack'))
-      return '<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> **Top Skills for 2025:**\n\n• **Frontend:** React, Next.js, TypeScript\n• **Backend:** Node.js, Python, Go\n• **AI/ML:** PyTorch, LangChain, HuggingFace\n• **Mobile:** Flutter, React Native';
-    if(ql.includes('team')||ql.includes('teammate')||ql.includes('partner'))
-      return '<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> **Finding Teammates:**\n\n• Use the **Find Teams** page to discover open teams\n• Complete your profile with skills & interests\n• Join teams matching your domain\n• Attend hackathons to meet collaborators!';
-    if(ql.includes('trending')||ql.includes('popular')||ql.includes('2025'))
-      return '<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12.9 2.4c.28.6.5 1.5.1 2.6-.5 1.2-1.5 2-2 4.5C12 10.7 13 12 13 12c.1-1.3-.5-2.7-1.5-3.5.5 2.5-1 4.5-2.5 5C11 9 8.5 7.5 8.5 5c0 0-2.5 3-2.5 6 0 3.3 2.7 6 6 6s6-2.7 6-6c0-3.7-2.8-7.2-5.1-8.6z"/></svg></span> **Trending in 2025:**\n\n• LLM-powered web apps\n• Web3 & DeFi tools\n• Health & wellness trackers\n• Sustainability tech\n• Real-time collaboration tools';
-    if(ql.includes('mobile')||ql.includes('app'))
-      return '<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span> **Mobile App Ideas:**\n\n• Campus food ordering app\n• Study timer with Pomodoro + analytics\n• Local event discovery\n• Student expense tracker\n• AR campus navigation';
-    if(ql.includes('ai')||ql.includes('ml')||ql.includes('machine'))
-      return '<span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></span> **AI/ML Beginner Projects:**\n\n• Sentiment analysis tool\n• Plant disease detector (CNN)\n• Chatbot with RAG pipeline\n• Resume parser & scorer\n• Movie recommendation engine';
-    return `I'm your ProjectHive AI assistant! ⭐\n\nAsk me about:\n• 💡 Project ideas\n• 🔧 Tech stacks\n• 👥 Finding teammates\n• 🚀 Trending topics\n\nOr visit **AI Generator** for detailed project ideas!`;
+    /* ── 3. Connection error — no fake responses ── */
+    return '⚠️ **Could not connect to AI**\n\nThe AI server is currently unavailable. This usually means:\n• The backend is waking up (wait ~30 seconds on free tier)\n• You\'re running locally without the backend server\n\nTry again in a moment, or visit the **AI Generator** page for full project ideas!';
   }
 
   window.askAI=async function(q){
