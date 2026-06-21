@@ -1,36 +1,28 @@
-// ── AI Provider Config (Gemini + Groq — both FREE) ─────────────────────────
-// Gemini: 1,500 req/day, 15 req/min — supports Vision
-// Groq:   14,400 req/day, 30 req/min — supports Vision (llama-3.2-90b)
-// Strategy: Try Gemini first, fallback to Groq on rate limit
+// ── Google Gemini AI Client (FREE — 1,500 req/day) ──────────────────────────
+// Model: gemini-2.0-flash (fast, smart, Vision support)
+// Get your key at: https://aistudio.google.com/apikey
 
 let geminiApiKey = null;
-let groqApiKey = null;
 
 export function initializeGemini() {
-  geminiApiKey = process.env.GEMINI_API_KEY || null;
-  groqApiKey = process.env.GROQ_API_KEY || null;
+  const apiKey = process.env.GEMINI_API_KEY;
 
-  if (geminiApiKey) {
-    console.log('[ProjectHive] ✅ Gemini AI ready (gemini-2.0-flash — FREE)');
-  }
-  if (groqApiKey) {
-    console.log('[ProjectHive] ✅ Groq AI ready (llama-3.3-70b — FREE fallback)');
-  }
-  if (!geminiApiKey && !groqApiKey) {
-    console.warn('[ProjectHive] ⚠️  No AI keys set — AI features disabled.');
-    console.warn('[ProjectHive]    Gemini: https://aistudio.google.com/apikey');
-    console.warn('[ProjectHive]    Groq:   https://console.groq.com/keys');
+  if (!apiKey) {
+    console.warn('[ProjectHive] ⚠️  GEMINI_API_KEY not set — AI features disabled.');
+    console.warn('[ProjectHive]    Get free key at: https://aistudio.google.com/apikey');
+    return null;
   }
 
-  return geminiApiKey || groqApiKey;
+  geminiApiKey = apiKey;
+  console.log('[ProjectHive] ✅ Google Gemini AI initialized (gemini-2.0-flash — FREE)');
+  return apiKey;
 }
 
 export function getGeminiKey() { return geminiApiKey; }
-export function getGroqKey() { return groqApiKey; }
-export function isGeminiReady() { return !!(geminiApiKey || groqApiKey); }
+export function isGeminiReady() { return geminiApiKey !== null; }
 
 // Backward compat
 export const initializeNvidiaNIM = initializeGemini;
 export const initializeGroq = initializeGemini;
 export const getNvidiaClient = () => geminiApiKey;
-export const getGroqClient = () => groqApiKey;
+export const getGroqClient = () => geminiApiKey;
