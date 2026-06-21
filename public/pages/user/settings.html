@@ -375,27 +375,42 @@
           </div>
           <div class="p-6 md:p-8">
             <div class="tog-row">
-              <div><div class="text-sm font-bold">Public Profile</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Anyone can view your profile and projects</div></div>
-              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+              <div><div class="text-sm font-bold">Public Profile</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Anyone can view your full profile, skills, and projects</div></div>
+              <button id="priv-public" class="tog on" onclick="this.classList.toggle('on')"></button>
             </div>
             <div class="tog-row">
               <div><div class="text-sm font-bold">Show Email</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Display your email on your public profile</div></div>
-              <button class="tog" onclick="this.classList.toggle('on')"></button>
+              <button id="priv-email" class="tog" onclick="this.classList.toggle('on')"></button>
             </div>
             <div class="tog-row">
-              <div><div class="text-sm font-bold">Show in Find People</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let others discover your profile</div></div>
-              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+              <div><div class="text-sm font-bold">Show in Find People</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let others discover your profile in People search</div></div>
+              <button id="priv-discover" class="tog on" onclick="this.classList.toggle('on')"></button>
             </div>
             <div class="tog-row">
               <div><div class="text-sm font-bold">Allow Friend Requests</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let others send you friend requests</div></div>
-              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+              <button id="priv-friends" class="tog on" onclick="this.classList.toggle('on')"></button>
+            </div>
+            <div class="tog-row">
+              <div><div class="text-sm font-bold">Allow Message Requests</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Non-friends can send you message requests (you can accept/decline)</div></div>
+              <button id="priv-msgreq" class="tog on" onclick="this.classList.toggle('on')"></button>
             </div>
             <div class="tog-row border-b-0">
               <div><div class="text-sm font-bold">Show Online Status</div><div class="text-[11px] text-on-surface-variant dark:text-white/60 mt-1">Let friends see when you are online</div></div>
-              <button class="tog on" onclick="this.classList.toggle('on')"></button>
+              <button id="priv-online" class="tog on" onclick="this.classList.toggle('on')"></button>
             </div>
-            <div class="mt-8">
-              <button class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-primary to-purple-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] transition-all" onclick="PHToast?.success('Privacy settings saved!')">
+            <div class="p-4 rounded-2xl bg-primary/5 border border-primary/15 mt-6 mb-2">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="material-symbols-outlined text-primary text-[18px]">info</span>
+                <span class="text-sm font-bold">How Privacy Works</span>
+              </div>
+              <ul class="text-xs text-on-surface-variant dark:text-white/60 space-y-1.5 pl-1">
+                <li>• <strong>Public</strong> — Anyone can see your full profile, bio, skills, and projects</li>
+                <li>• <strong>Private</strong> — Only friends can see your details. Others see your name and avatar only</li>
+                <li>• <strong>Message Requests</strong> — Non-friends can send messages that go to your Requests tab first</li>
+              </ul>
+            </div>
+            <div class="mt-6">
+              <button id="btn-privacy" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-br from-primary to-purple-500 text-white font-bold text-sm hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(99,102,241,0.4)] transition-all" onclick="savePrivacy()">
                 <span class="material-symbols-outlined text-[18px]">save</span> Save Privacy Settings
               </button>
             </div>
@@ -588,6 +603,37 @@
     if(prompt('Type DELETE to confirm')!=="DELETE"){PHToast?.error("Cancelled");return;}
     try{const r=await fetch(API_BASE+"/api/users/me",{method:"DELETE",headers:H});if(r.ok){localStorage.clear();location.href="/login";}}
     catch(e){PHToast?.error("Server offline");}
+  };
+
+  /* Privacy settings — load from API */
+  fetch(API_BASE+"/api/users/me",{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
+    if(!u) return;
+    const pub = document.getElementById('priv-public');
+    if(pub && u.isPublic !== undefined) pub.classList.toggle('on', u.isPublic);
+  }).catch(()=>{});
+
+  /* Save privacy to API */
+  window.savePrivacy = async function(){
+    const btn = document.getElementById('btn-privacy');
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Saving…';
+    btn.disabled = true;
+    const isPublic = document.getElementById('priv-public')?.classList.contains('on') ?? true;
+    try {
+      const r = await fetch(API_BASE+"/api/users/me",{
+        method:"PATCH", headers:H,
+        body:JSON.stringify({ isPublic })
+      });
+      if(r.ok) {
+        PHToast?.success('Privacy settings saved!');
+      } else {
+        const d = await r.json();
+        PHToast?.error(d.message || 'Failed to save');
+      }
+    } catch(e) {
+      PHToast?.error('Server offline');
+    }
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">save</span> Save Privacy Settings';
+    btn.disabled = false;
   };
 })();
 </script><script src="/assets/js/core/info-modal.js"></script></body></html>

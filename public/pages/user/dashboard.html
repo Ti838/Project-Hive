@@ -1085,7 +1085,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   /* Mark all read */
   document.getElementById('notif-mark-all')?.addEventListener('click', async () => {
     try {
-      await fetch(API_BASE+'/api/notifications/mark-all-read', {method:'PATCH', headers:H});
+      await fetch(API_BASE+'/api/notifications/read-all', {method:'PUT', headers:H});
       document.querySelectorAll('#notif-list .border-l-secondary').forEach(el => el.classList.remove('border-l-2','border-l-secondary'));
       PHToast?.success('All notifications marked as read');
     } catch(e) {}

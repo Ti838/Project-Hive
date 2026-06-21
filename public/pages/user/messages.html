@@ -193,13 +193,13 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     <!-- Call header -->
     <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
       <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-white/80">videocam</span>
+        <span class="material-symbols-outlined text-white/80" id="call-type-icon">videocam</span>
         <span class="text-white font-bold text-sm">ProjectHive Call</span>
         <span id="call-timer" class="text-white/50 text-xs font-mono">00:00</span>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-        <span class="text-green-400 text-xs font-semibold">Connected</span>
+      <div class="flex items-center gap-2" id="call-connection-status">
+        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="call-status-dot"></span>
+        <span class="text-yellow-400 text-xs font-semibold" id="call-status-text">Connecting...</span>
       </div>
     </div>
     <!-- Jitsi container -->
@@ -208,15 +208,39 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     <div id="webrtc-container" class="hidden flex-1 w-full bg-gray-950 relative flex items-center justify-center">
       <!-- Remote Video (Full Screen) -->
       <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+      <!-- Voice-Only Avatar Display -->
+      <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-gray-950 z-5">
+        <div id="voice-avatar" class="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-black shadow-2xl mb-6 relative">
+          <span id="voice-avatar-text">?</span>
+          <div class="absolute inset-0 rounded-full border-4 border-indigo-400/30 animate-ping" style="animation-duration:2s"></div>
+        </div>
+        <div id="voice-caller-name" class="text-white text-xl font-bold mb-2">Calling...</div>
+        <div class="flex items-center gap-1.5">
+          <div class="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.8s"></div>
+          <div class="w-1 h-6 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.6s;animation-delay:0.1s"></div>
+          <div class="w-1 h-3 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.9s;animation-delay:0.2s"></div>
+          <div class="w-1 h-5 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.7s;animation-delay:0.3s"></div>
+          <div class="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.85s;animation-delay:0.15s"></div>
+        </div>
+      </div>
       <!-- Local Video (Floating Bubble) -->
-      <div class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
+      <div id="local-video-bubble" class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
         <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
       </div>
     </div>
     <!-- Call controls bar -->
-    <div class="absolute bottom-0 left-0 right-0 z-10 flex justify-center items-center gap-4 p-5 bg-gradient-to-t from-black/70 to-transparent">
-      <button onclick="endCall()" class="w-14 h-14 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg shadow-red-500/40">
+    <div class="absolute bottom-0 left-0 right-0 z-10 flex justify-center items-center gap-3 p-5 bg-gradient-to-t from-black/80 to-transparent">
+      <button id="btn-mute" onclick="toggleMute()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all hover:scale-110" title="Mute/Unmute">
+        <span class="material-symbols-outlined text-xl" id="mute-icon">mic</span>
+      </button>
+      <button id="btn-camera" onclick="toggleCamera()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all hover:scale-110" title="Camera On/Off">
+        <span class="material-symbols-outlined text-xl" id="camera-icon">videocam</span>
+      </button>
+      <button onclick="endCall()" class="w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg shadow-red-500/40" title="End Call">
         <span class="material-symbols-outlined text-2xl">call_end</span>
+      </button>
+      <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all hover:scale-110" title="Share Screen">
+        <span class="material-symbols-outlined text-xl">screen_share</span>
       </button>
     </div>
   </div>
@@ -1212,14 +1236,114 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     initiateWebRTCCall(friendId, true);
   };
 
+  let isMuted = false;
+  let isCameraOff = false;
+  let currentVoiceOnly = false;
+
+  window.toggleMute = function() {
+    if (!localStream) return;
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+    const muteBtn = document.getElementById('btn-mute');
+    const muteIcon = document.getElementById('mute-icon');
+    if (muteBtn && muteIcon) {
+      muteIcon.textContent = isMuted ? 'mic_off' : 'mic';
+      muteBtn.style.background = isMuted ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.1)';
+    }
+  };
+
+  window.toggleCamera = function() {
+    if (!localStream) return;
+    isCameraOff = !isCameraOff;
+    localStream.getVideoTracks().forEach(t => t.enabled = !isCameraOff);
+    const camBtn = document.getElementById('btn-camera');
+    const camIcon = document.getElementById('camera-icon');
+    if (camBtn && camIcon) {
+      camIcon.textContent = isCameraOff ? 'videocam_off' : 'videocam';
+      camBtn.style.background = isCameraOff ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.1)';
+    }
+  };
+
+  window.toggleScreenShare = async function() {
+    if (!peerConnection || !localStream) return;
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const screenTrack = screenStream.getVideoTracks()[0];
+      const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+      if (sender) {
+        await sender.replaceTrack(screenTrack);
+        document.getElementById('webrtc-local-video').srcObject = screenStream;
+        screenTrack.onended = () => {
+          const localVideoTrack = localStream.getVideoTracks()[0];
+          if (localVideoTrack && sender) {
+            sender.replaceTrack(localVideoTrack);
+            document.getElementById('webrtc-local-video').srcObject = localStream;
+          }
+        };
+      }
+    } catch(e) {
+      showToast('Screen share cancelled or not supported', 'info');
+    }
+  };
+
+  function setCallConnectionStatus(status) {
+    const dot = document.getElementById('call-status-dot');
+    const text = document.getElementById('call-status-text');
+    if (status === 'connected') {
+      if (dot) { dot.className = 'w-2 h-2 rounded-full bg-green-400 animate-pulse'; }
+      if (text) { text.textContent = 'Connected'; text.className = 'text-green-400 text-xs font-semibold'; }
+    } else if (status === 'calling') {
+      if (dot) { dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse'; }
+      if (text) { text.textContent = 'Calling...'; text.className = 'text-yellow-400 text-xs font-semibold'; }
+    } else {
+      if (dot) { dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse'; }
+      if (text) { text.textContent = 'Connecting...'; text.className = 'text-yellow-400 text-xs font-semibold'; }
+    }
+  }
+
+  function setupVoiceOnlyUI(voiceOnly) {
+    currentVoiceOnly = voiceOnly;
+    const voiceDisplay = document.getElementById('voice-only-display');
+    const localBubble = document.getElementById('local-video-bubble');
+    const callTypeIcon = document.getElementById('call-type-icon');
+    const camBtn = document.getElementById('btn-camera');
+
+    if (voiceOnly) {
+      if (voiceDisplay) voiceDisplay.classList.remove('hidden');
+      if (localBubble) localBubble.classList.add('hidden');
+      if (callTypeIcon) callTypeIcon.textContent = 'call';
+      if (camBtn) camBtn.style.display = 'none';
+      // Set avatar from active conv
+      const f = activeConv?.friend || {};
+      const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Friend';
+      const voiceAvText = document.getElementById('voice-avatar-text');
+      const voiceCallerName = document.getElementById('voice-caller-name');
+      if (voiceAvText) voiceAvText.textContent = ini(f.firstName, f.lastName);
+      if (voiceCallerName) voiceCallerName.textContent = name;
+    } else {
+      if (voiceDisplay) voiceDisplay.classList.add('hidden');
+      if (localBubble) localBubble.classList.remove('hidden');
+      if (callTypeIcon) callTypeIcon.textContent = 'videocam';
+      if (camBtn) camBtn.style.display = '';
+    }
+  }
+
   async function initiateWebRTCCall(targetUserId, voiceOnly = false) {
     isWebRTCCall = true;
+    isMuted = false;
+    isCameraOff = false;
     document.getElementById('call-modal').classList.replace('hidden', 'flex');
     document.getElementById('jitsi-container').classList.add('hidden');
     document.getElementById('webrtc-container').classList.remove('hidden');
 
-    const timerEl = document.getElementById('call-timer');
-    if (timerEl) timerEl.textContent = 'Calling...';
+    setCallConnectionStatus('calling');
+    setupVoiceOnlyUI(voiceOnly);
+
+    // Reset mute/camera buttons
+    const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
+    const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
+    const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
+    const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
 
     try {
       localStream = await navigator.mediaDevices.getUserMedia({
@@ -1239,6 +1363,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
       peerConnection.ontrack = event => {
         document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+        setCallConnectionStatus('connected');
         startCallTimer();
       };
 
@@ -1257,12 +1382,20 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
   async function acceptWebRTCCall(targetUserId, voiceOnly = false) {
     isWebRTCCall = true;
+    isMuted = false;
+    isCameraOff = false;
     document.getElementById('call-modal').classList.replace('hidden', 'flex');
     document.getElementById('jitsi-container').classList.add('hidden');
     document.getElementById('webrtc-container').classList.remove('hidden');
 
-    const timerEl = document.getElementById('call-timer');
-    if (timerEl) timerEl.textContent = 'Connecting...';
+    setCallConnectionStatus('connecting');
+    setupVoiceOnlyUI(voiceOnly);
+
+    // Reset buttons
+    const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
+    const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
+    const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
+    const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
 
     try {
       localStream = await navigator.mediaDevices.getUserMedia({
@@ -1282,6 +1415,7 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
 
       peerConnection.ontrack = event => {
         document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+        setCallConnectionStatus('connected');
         startCallTimer();
       };
 
@@ -1391,6 +1525,13 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
     }
     isWebRTCCall = false;
     pendingSdpOffer = null;
+    currentVoiceOnly = false;
+
+    // Reset voice-only UI
+    const voiceDisplay = document.getElementById('voice-only-display');
+    if (voiceDisplay) voiceDisplay.classList.add('hidden');
+    const localBubble = document.getElementById('local-video-bubble');
+    if (localBubble) localBubble.classList.remove('hidden');
 
     document.getElementById('webrtc-container').classList.add('hidden');
     document.getElementById('jitsi-container').classList.remove('hidden');

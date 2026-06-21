@@ -444,6 +444,7 @@ a { color: inherit; text-decoration: none; }
   position: relative; overflow: hidden;
 }
 .dark .ln-cta-box { background: linear-gradient(135deg, #161622 0%, #1e1b4b 50%, #161622 100%); border: 1px solid var(--bd); }
+.ln-cta-box h2 { color: #fff; }
 
 .ln-cta-box h2 {
   font-size: clamp(28px, 4vw, 48px);
@@ -457,9 +458,10 @@ a { color: inherit; text-decoration: none; }
   display: inline-flex; align-items: center; gap: 8px;
   padding: 16px 32px; border-radius: 14px;
   font-size: 15px; font-weight: 700;
-  background: var(--ac); color: #fff; border: none;
+  background: #fff; color: #111; border: none;
   cursor: pointer; transition: all .25s;
 }
+.dark .ln-cta-btn { background: var(--ac); color: #fff; }
 .ln-cta-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(99,102,241,.35); }
 
 /* ═══ FOOTER ═══ */
@@ -513,22 +515,37 @@ a { color: inherit; text-decoration: none; }
 @media(max-width: 768px) {
   .ln-nav-links { display: none; }
   .ln-hamburger { display: flex; }
-  .ln-hero { padding-top: calc(var(--nav-h) + 40px); }
+  .ln-hero { padding-top: calc(var(--nav-h) + 40px); padding-bottom: 48px; }
   .ln-hero-grid { padding: 0 20px; }
-  .ln-hero-stats { flex-wrap: wrap; gap: 20px; }
+  .ln-hero-stats { flex-wrap: wrap; gap: 16px; justify-content: center; }
+  .ln-hero-stats > div { min-width: 60px; text-align: center; }
   .ln-bento { grid-template-columns: 1fr; grid-auto-rows: auto; }
   .ln-bento-card { min-height: auto; padding: 20px; }
+  .ln-bento-card [style*="flex-wrap"] { gap: 8px !important; }
   .ln-spanr2 { grid-row: auto; }
   .ln-how-grid { grid-template-columns: 1fr; gap: 16px; }
-  .ln-cta-box { padding: 56px 24px; border-radius: 22px; }
+  .ln-cta-box { padding: 48px 20px; border-radius: 22px; }
+  .ln-cta-box h2 { font-size: 26px; letter-spacing: -1px; }
+  .ln-cta-box p { font-size: 14px; margin-bottom: 24px; }
   .ln-features, .ln-how { padding-left: 20px; padding-right: 20px; }
   .ln-nav { padding: 0 16px; }
+  .ln-section-title { font-size: 28px; margin-bottom: 36px; }
+  .ln-mobile-nav { padding: 12px 16px; }
+  .ln-mobile-link { padding: 14px 16px; font-size: 16px; min-height: 48px; display: flex; align-items: center; }
+  .ln-footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
 }
 
 @media(max-width: 480px) {
-  .ln-hero h1 { font-size: 36px; letter-spacing: -1px; }
+  .ln-hero h1 { font-size: 32px; letter-spacing: -1px; }
+  .ln-hero-desc { font-size: 15px; }
   .ln-hero-actions { flex-direction: column; width: 100%; }
-  .ln-btn-lg { width: 100%; justify-content: center; }
+  .ln-btn-lg { width: 100%; justify-content: center; padding: 16px; font-size: 15px; }
+  .ln-hero-stats { gap: 12px; }
+  .ln-stat-num { font-size: 22px; }
+  .ln-stat-lbl { font-size: 10px; }
+  .ln-step { padding: 24px; }
+  .ln-cta-btn { width: 100%; justify-content: center; padding: 16px; }
+  .ln-footer { padding: 32px 16px 24px; }
 }
 
 /* Float animation for bento mini-demos */
