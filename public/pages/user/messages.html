@@ -71,6 +71,26 @@
       });
     }
   </script>
+  <style>
+    @keyframes voiceWave {
+      0%, 100% { height: 4px; opacity: 0.5; }
+      50%       { height: 20px; opacity: 1; }
+    }
+    .voice-wave-bar {
+      width: 3px; border-radius: 3px;
+      background: #6366f1;
+      animation: voiceWave 0.7s ease-in-out infinite;
+      min-height: 4px; display: block;
+    }
+    .voice-wave-bar:nth-child(1) { animation-delay: 0.00s; }
+    .voice-wave-bar:nth-child(2) { animation-delay: 0.10s; }
+    .voice-wave-bar:nth-child(3) { animation-delay: 0.20s; }
+    .voice-wave-bar:nth-child(4) { animation-delay: 0.05s; }
+    .voice-wave-bar:nth-child(5) { animation-delay: 0.15s; }
+    .voice-wave-bar:nth-child(6) { animation-delay: 0.25s; }
+    .voice-wave-bar:nth-child(7) { animation-delay: 0.10s; }
+    .voice-wave-bar:nth-child(8) { animation-delay: 0.30s; }
+  </style>
 </head>
 
 <body class="bg-gray-50 dark:bg-darkSurface-bg text-gray-900 dark:text-gray-100 transition-colors duration-300">
@@ -221,11 +241,35 @@
             <span class="material-symbols-outlined text-lg">attach_file</span>
           </button>
           
-          <!-- Voice Record -->
+          <!-- Voice Record Button -->
           <button id="btn-record" onclick="toggleVoiceRecord()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Record Voice Note">
             <span class="material-symbols-outlined text-lg" id="record-icon">mic</span>
           </button>
-          
+
+          <!-- Voice Recording Bar (WhatsApp style) — hidden until recording -->
+          <div id="voice-rec-bar" class="hidden flex-1 items-center gap-3 px-1">
+            <div class="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shrink-0"></div>
+            <span id="voice-rec-timer" class="text-rose-500 font-mono font-bold text-sm min-w-[38px] shrink-0">0:00</span>
+            <div class="flex-1 flex items-center justify-center gap-[3px] h-7 overflow-hidden">
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+              <div class="voice-wave-bar"></div>
+            </div>
+            <!-- Cancel -->
+            <button onclick="cancelVoiceRecord()" class="w-8 h-8 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-rose-50 dark:hover:bg-rose-950/30 text-gray-400 hover:text-rose-500 flex items-center justify-center transition-all shrink-0" title="Cancel">
+              <span class="material-symbols-outlined text-sm">delete</span>
+            </button>
+            <!-- Send -->
+            <button onclick="stopAndSendVoice()" class="w-9 h-9 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all shrink-0 shadow-md shadow-indigo-600/20" title="Send voice message">
+              <span class="material-symbols-outlined text-base">send</span>
+            </button>
+          </div>
+
           <div class="relative hidden md:block">
             <button onclick="toggleEmojiPicker()" id="emoji-btn" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji">
               <span class="material-symbols-outlined text-lg">mood</span>
@@ -653,35 +697,104 @@
 
       let mediaRecorder;
       let audioChunks = [];
-      
-      window.toggleVoiceRecord = async function() {
-        const icon = document.getElementById('record-icon');
-        if (mediaRecorder && mediaRecorder.state === 'recording') {
-          mediaRecorder.stop();
-          icon.innerText = 'mic';
-          icon.classList.remove('text-rose-500', 'animate-pulse');
+      let _voiceRecTimerInt = null;
+      let _voiceRecSeconds = 0;
+      let _voiceCancelled = false;
+
+      function showVoiceBar(show) {
+        const bar = document.getElementById('voice-rec-bar');
+        const btn = document.getElementById('btn-record');
+        const inp = document.getElementById('msg-inp');
+        const sendBtn = inp?.nextElementSibling;
+        const emojiWrap = document.querySelector('#emoji-btn')?.closest('div');
+        if (!bar) return;
+        if (show) {
+          bar.classList.remove('hidden');
+          bar.classList.add('flex', 'recording');
+          if (btn) btn.classList.add('hidden');
+          if (inp) inp.classList.add('hidden');
+          if (sendBtn && sendBtn.tagName === 'BUTTON') sendBtn.classList.add('hidden');
+          if (emojiWrap) emojiWrap.classList.add('hidden');
         } else {
-          try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-              const reader = new FileReader();
-              reader.readAsDataURL(audioBlob);
-              reader.onloadend = () => {
-                const payload = JSON.stringify({ type: 'voice', url: reader.result });
-                document.getElementById('msg-inp').value = payload;
-                sendMsg();
-              };
+          bar.classList.add('hidden');
+          bar.classList.remove('flex', 'recording');
+          if (btn) btn.classList.remove('hidden');
+          if (inp) inp.classList.remove('hidden');
+          if (sendBtn && sendBtn.tagName === 'BUTTON') sendBtn.classList.remove('hidden');
+          if (emojiWrap) emojiWrap.classList.remove('hidden');
+        }
+      }
+
+      function startVoiceTimer() {
+        _voiceRecSeconds = 0;
+        const timerEl = document.getElementById('voice-rec-timer');
+        if (_voiceRecTimerInt) clearInterval(_voiceRecTimerInt);
+        _voiceRecTimerInt = setInterval(() => {
+          _voiceRecSeconds++;
+          const m = Math.floor(_voiceRecSeconds / 60);
+          const s = String(_voiceRecSeconds % 60).padStart(2, '0');
+          if (timerEl) timerEl.textContent = m + ':' + s;
+        }, 1000);
+      }
+
+      function stopVoiceTimer() {
+        if (_voiceRecTimerInt) { clearInterval(_voiceRecTimerInt); _voiceRecTimerInt = null; }
+        const timerEl = document.getElementById('voice-rec-timer');
+        if (timerEl) timerEl.textContent = '0:00';
+      }
+
+      window.toggleVoiceRecord = async function() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          // Already recording — stop via stopAndSendVoice
+          stopAndSendVoice();
+          return;
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          mediaRecorder = new MediaRecorder(stream);
+          audioChunks = [];
+          _voiceCancelled = false;
+
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+          mediaRecorder.onstop = () => {
+            // Stop all mic tracks
+            stream.getTracks().forEach(t => t.stop());
+            stopVoiceTimer();
+            showVoiceBar(false);
+            if (_voiceCancelled) { audioChunks = []; return; }
+            if (audioChunks.length === 0) return;
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = () => {
+              const payload = JSON.stringify({ type: 'voice', url: reader.result });
+              document.getElementById('msg-inp').value = payload;
+              sendMsg();
             };
-            mediaRecorder.start();
-            icon.innerText = 'stop_circle';
-            icon.classList.add('text-rose-500', 'animate-pulse');
-          } catch(err) {
-            PHToast?.error('Microphone access denied or not found.');
-          }
+          };
+
+          mediaRecorder.start(100); // collect in 100ms chunks
+          showVoiceBar(true);
+          startVoiceTimer();
+        } catch(err) {
+          showVoiceBar(false);
+          PHToast?.error('Microphone access denied or not available.');
+        }
+      };
+
+      window.stopAndSendVoice = function() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          _voiceCancelled = false;
+          mediaRecorder.stop();
+        }
+      };
+
+      window.cancelVoiceRecord = function() {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          _voiceCancelled = true;
+          mediaRecorder.stop();
+          showToast('Recording cancelled', 'info');
         }
       };
 
@@ -2665,23 +2778,26 @@
         stopRingtone();
         
         if (socket && activeCallRoom) {
-          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-          socket.emit('call:hangup', { roomId: activeCallRoom, targetId: friendId });
+          var callFriendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          // Save callType BEFORE resetting currentVoiceOnly
+          var _callType = currentVoiceOnly ? 'voice' : 'video';
+          socket.emit('call:hangup', { roomId: activeCallRoom, targetId: callFriendId });
 
           // Save call log as system message in conversation
-          if (activeConv && activeConv.type !== 'team' && activeConv._id) {
+          if (activeConv && activeConv.type !== 'team' && callFriendId) {
             const callDuration = window._callSeconds || 0;
-            const callType = currentVoiceOnly ? 'voice' : 'video';
             const callStatus = callDuration > 3 ? 'ended' : 'cancelled';
             const callLogMsg = JSON.stringify({
               type: 'system',
               action: 'call',
-              callType: callType,
+              callType: _callType,
               duration: callDuration,
               status: callStatus
             });
+            // Use the actual DM room ID, not activeConv._id
+            const dmRoomId = [ME.id, callFriendId].sort().join('_');
             socket.emit('message:send', {
-              roomId: activeConv._id,
+              roomId: dmRoomId,
               content: callLogMsg
             });
           }
