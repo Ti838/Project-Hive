@@ -603,7 +603,6 @@
       let friendIds = new Set();
       let currentReplyMsg = null; // for reply system
       let ctxMsgEl = null;        // for context menu
-      let currentTab = 'chats';   // active tab tracker
 
       // Attachment state
       window.handleRealFileSelect = function(inp) {
@@ -1130,79 +1129,64 @@
       window.openChatInfo = function() {
         if (!activeConv || activeConv.type === 'team') return;
         const f = activeConv.friend || {};
-        const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
+        const name = ((f.firstName||'') + ' ' + (f.lastName||'')).trim() || 'Teammate';
         const color = avC(name);
         const status = getActivityStatus(f);
-        const sharedMedia = allMsgs.filter(m => {
-          try { const o = JSON.parse(m.content); return o.type === 'image' || o.type === 'video'; } catch { return false; }
+        const friendId = f._id || f.id || '';
+
+        // Pre-compute HTML snippets (no nested template literals)
+        const uniHtml = f.university ? '<div class="text-xs text-gray-400 mt-1">' + esc(f.university) + '</div>' : '';
+        const emailHtml = f.email ? '<div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkSurface-card/40 rounded-xl"><span class="material-symbols-outlined text-lg text-gray-400">mail</span><div><div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</div><div class="text-sm font-semibold">' + esc(f.email) + '</div></div></div>' : '';
+
+        const sharedMedia = allMsgs.filter(function(m) {
+          try { var o = JSON.parse(m.content); return o.type === 'image' || o.type === 'video'; } catch(e) { return false; }
         }).slice(-9);
 
-        document.getElementById('chat-info-body').innerHTML = `
-          <!-- Profile Header -->
-          <div class="flex flex-col items-center text-center pb-5 border-b border-gray-100 dark:border-darkSurface-border">
-            <div class="w-20 h-20 rounded-full flex items-center justify-center font-bold text-white text-2xl shadow-lg mb-3" style="background:${color}">${ini(f.firstName, f.lastName)}</div>
-            <div class="font-heading font-bold text-lg text-gray-900 dark:text-white">${esc(name)}</div>
-            <div class="text-xs ${status.cssClass} mt-1 font-semibold">${status.text}</div>
-            ${f.university ? `<div class="text-xs text-gray-400 mt-1">${esc(f.university)}</div>` : ''}
-            <div class="flex gap-3 mt-4">
-              <button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all">
-                <span class="material-symbols-outlined text-xl">call</span>
-                <span class="text-[9px] font-bold">Voice</span>
-              </button>
-              <button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all">
-                <span class="material-symbols-outlined text-xl">videocam</span>
-                <span class="text-[9px] font-bold">Video</span>
-              </button>
-              <a href="/pages/user/profile.html?user=${f._id||f.id}" class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 dark:bg-darkSurface-card rounded-2xl justify-center text-gray-600 hover:bg-gray-200 dark:hover:bg-darkSurface-hover transition-all">
-                <span class="material-symbols-outlined text-xl">person</span>
-                <span class="text-[9px] font-bold">Profile</span>
-              </a>
-            </div>
-          </div>
+        var mediaGridHtml = '';
+        if (sharedMedia.length > 0) {
+          var items = sharedMedia.map(function(m) {
+            try {
+              var o = JSON.parse(m.content);
+              if (o.type === 'image') return '<img src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open(\'' + o.url + '\',\'_blank\')">';
+              return '<video src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl"></video>';
+            } catch(e) { return ''; }
+          }).join('');
+          mediaGridHtml = '<div class="space-y-2"><div class="text-xs font-bold text-gray-500 uppercase tracking-wider">Shared Media</div><div class="grid grid-cols-3 gap-1.5">' + items + '</div></div>';
+        }
 
-          <!-- Info -->
-          <div class="space-y-3">
-            ${f.email ? `<div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkSurface-card/40 rounded-xl"><span class="material-symbols-outlined text-lg text-gray-400">mail</span><div><div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</div><div class="text-sm font-semibold text-gray-800 dark:text-slate-200">${esc(f.email)}</div></div></div>` : ''}
-            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkSurface-card/40 rounded-xl">
-              <span class="material-symbols-outlined text-lg text-gray-400">forum</span>
-              <div>
-                <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Messages</div>
-                <div class="text-sm font-semibold text-gray-800 dark:text-slate-200">${allMsgs.length} total</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Shared Media -->
-          ${sharedMedia.length > 0 ? `
-            <div>
-              <div class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">Shared Media</div>
-              <div class="grid grid-cols-3 gap-1.5">
-                ${sharedMedia.map(m => {
-                  try {
-                    const o = JSON.parse(m.content);
-                    return o.type === 'image' ? `<img src="${o.url}" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open('${o.url}','_blank')">` : `<video src="${o.url}" class="w-full aspect-square object-cover rounded-xl"></video>`;
-                  } catch { return ''; }
-                }).join('')}
-              </div>
-            </div>
-          ` : ''}
-
-          <!-- Danger Zone -->
-          <div class="pt-3 border-t border-gray-100 dark:border-darkSurface-border">
-            <button onclick="deleteConversation('${f._id||f.id}'); closeChatInfo();" class="w-full flex items-center gap-3 p-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all text-sm font-semibold">
-              <span class="material-symbols-outlined text-lg">delete_forever</span>
-              Delete Conversation
-            </button>
-          </div>`;
+        document.getElementById('chat-info-body').innerHTML =
+          '<div class="flex flex-col items-center text-center pb-5 border-b border-gray-100 dark:border-darkSurface-border">' +
+            '<div class="w-20 h-20 rounded-full flex items-center justify-center font-bold text-white text-2xl shadow-lg mb-3" style="background:' + color + '">' + ini(f.firstName, f.lastName) + '</div>' +
+            '<div class="font-heading font-bold text-lg">' + esc(name) + '</div>' +
+            '<div class="text-xs ' + status.cssClass + ' mt-1 font-semibold">' + status.text + '</div>' +
+            uniHtml +
+            '<div class="flex gap-3 mt-4">' +
+              '<button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all"><span class="material-symbols-outlined text-xl">call</span><span class="text-[9px] font-bold">Voice</span></button>' +
+              '<button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all"><span class="material-symbols-outlined text-xl">videocam</span><span class="text-[9px] font-bold">Video</span></button>' +
+              '<a href="/pages/user/profile.html?user=' + friendId + '" class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 rounded-2xl justify-center text-gray-600 hover:bg-gray-200 transition-all"><span class="material-symbols-outlined text-xl">person</span><span class="text-[9px] font-bold">Profile</span></a>' +
+            '</div>' +
+          '</div>' +
+          '<div class="space-y-3">' + emailHtml +
+            '<div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkSurface-card/40 rounded-xl"><span class="material-symbols-outlined text-lg text-gray-400">forum</span><div><div class="text-[10px] text-gray-400 font-bold uppercase">Messages</div><div class="text-sm font-semibold">' + allMsgs.length + ' total</div></div></div>' +
+          '</div>' +
+          mediaGridHtml +
+          '<div class="pt-3 border-t border-gray-100 dark:border-darkSurface-border">' +
+            '<button onclick="deleteConversation(\'' + friendId + '\'); closeChatInfo();" class="w-full flex items-center gap-3 p-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-all text-sm font-semibold"><span class="material-symbols-outlined text-lg">delete_forever</span> Delete Conversation</button>' +
+          '</div>';
 
         document.getElementById('chat-info-panel').classList.remove('translate-x-full');
         document.getElementById('chat-info-backdrop').classList.remove('hidden');
       };
 
+
       window.closeChatInfo = function() {
         document.getElementById('chat-info-panel').classList.add('translate-x-full');
         document.getElementById('chat-info-backdrop').classList.add('hidden');
       };
+
+
+
+
 
       // ─── SEARCH IN CHAT ────────────────────────────────────────
       window.toggleChatSearch = function() {
@@ -2021,6 +2005,7 @@
           activeCallRoom = null;
         });
 
+      } // end if (socket)
       }catch(e){}
 
       // Typing Heartbeat emit
