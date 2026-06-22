@@ -601,6 +601,9 @@
 
       let ME={}, convs=[], allMsgs=[], activeConv=null, allUsers=[], socket=null;
       let friendIds = new Set();
+      let currentReplyMsg = null; // for reply system
+      let ctxMsgEl = null;        // for context menu
+      let currentTab = 'chats';   // active tab tracker
 
       // Attachment state
       window.handleRealFileSelect = function(inp) {
@@ -1030,7 +1033,9 @@
           sender: ME?.id,
           createdAt: new Date().toISOString(),
           _tmp: true,
-          read_by: [ME?.id]
+          read_by: [ME?.id],
+          reply_to_content: currentReplyMsg?.content || null,
+          reply_to_sender: currentReplyMsg?.senderName || null
         });
 
         if (activeConv.type === 'team') {
@@ -1043,6 +1048,7 @@
             headers:H,
             body:JSON.stringify({ roomId: activeConv._id, content })
           }).catch(()=>{});
+          cancelReply();
         } else {
           renderMsgs();
           var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
@@ -1059,7 +1065,6 @@
       };
 
       // ─── REPLY SYSTEM ────────────────────────────────────────
-      let currentReplyMsg = null;
 
       window.replyToMsg = function(el) {
         if (!el) return;
@@ -1082,7 +1087,6 @@
       };
 
       // ─── CONTEXT MENU ────────────────────────────────────────
-      let ctxMsgEl = null;
 
       window.showMsgContextMenu = function(e, el) {
         e.preventDefault();
