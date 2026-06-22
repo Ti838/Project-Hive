@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import {
   getFeed, createPost, deletePost,
-  reactToPost, getComments, addComment, deleteComment, getPostById, scrapeMetadata
+  reactToPost, getComments, addComment, deleteComment, getPostById, scrapeMetadata, getUserPosts
 } from '../controllers/posts.controller.js';
 
 const router = Router();
@@ -18,6 +18,7 @@ router.get('/utils/scrape-metadata', scrapeMetadata);
 
 // Posts
 router.post('/posts', createPost);
+router.get('/posts/user/:userId', getUserPosts); // user profile activity — must be before /:id
 router.get('/posts/:id', getPostById);
 router.delete('/posts/:id', deletePost);
 

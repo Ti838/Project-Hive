@@ -413,4 +413,48 @@ export async function scrapeMetadata(req, res, next) {
   }
 }
 
+// GET /api/posts/user/:userId — get public posts by a specific user (for profile activity)
+export async function getUserPosts(req, res, next) {
+  try {
+    const { userId } = req.params;
+    const { limit = 6 } = req.query;
 
+    const { data: posts, error } = await supabaseAdmin
+      .from('posts')
+      .select(`
+        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university)
+      `)
+      .eq('author_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(+limit);
+
+    if (error) throw error;
+
+    const postIds = (posts || []).map(p => p.id);
+    let reactionsMap = {}, commentsMap = {};
+
+    if (postIds.length > 0) {
+      const [{ data: reactions }, { data: comments }] = await Promise.all([
+        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds),
+        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds),
+      ]);
+      (reactions || []).forEach(r => {
+        if (!reactionsMap[r.post_id]) reactionsMap[r.post_id] = {};
+        reactionsMap[r.post_id][r.type] = (reactionsMap[r.post_id][r.type] || 0) + 1;
+      });
+      (comments || []).forEach(c => {
+        commentsMap[c.post_id] = (commentsMap[c.post_id] || 0) + 1;
+      });
+    }
+
+    const result = (posts || []).map(p => normPost({
+      ...p,
+      reactions: reactionsMap[p.id] || {},
+      comments_count: commentsMap[p.id] || 0,
+      my_reaction: null,
+    }));
+
+    res.json({ posts: result });
+  } catch (err) { next(err); }
+}

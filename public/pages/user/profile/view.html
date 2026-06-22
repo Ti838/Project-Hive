@@ -160,11 +160,13 @@
         if (fr.ok) { const d = await fr.json(); friendCount = (d.friends||[]).length; updateConnections(); }
       }
 
-      const postR = await fetch(API + '/api/posts/feed', { headers: H });
+      // Load user's own posts via dedicated endpoint
+      const postR = await fetch(API + `/api/posts/user/${userId}?limit=4`, { headers: H });
       if (postR.ok) {
         const pd = await postR.json();
-        const myPosts = (pd.posts||[]).filter(p => p.user_id === userId || p.userId === userId);
-        renderActivity(myPosts.slice(0, 4), u);
+        renderActivity(pd.posts || [], u);
+      } else {
+        renderActivity([], u); // show empty state if fails
       }
     } catch(e) { console.error(e); PHToast?.error('Could not load profile'); }
   }
@@ -345,8 +347,8 @@
 
   function renderActivity(posts, user) {
     const el = document.getElementById('pv-activity');
-    if (!posts.length) {
-      el.innerHTML = `<div class="pv-empty"><span class="material-symbols-outlined">article</span><p>No activity yet</p></div>`;
+    if (!posts || !posts.length) {
+      el.innerHTML = `<div class="pv-empty"><span class="material-symbols-outlined">article</span><p>No posts yet</p></div>`;
       return;
     }
     const fn = user.firstName || user.first_name || '';
@@ -356,18 +358,20 @@
     const initials = ((fn[0]||'')+(ln[0]||'')).toUpperCase();
 
     el.innerHTML = posts.map(p => {
-      const date = new Date(p.created_at || p.createdAt);
+      const date = new Date(p.createdAt || p.created_at);
       const ago = timeAgo(date);
-      const content = (p.content||'').substring(0, 180) + ((p.content||'').length > 180 ? '…' : '');
+      const content = (p.content||'').substring(0, 200) + ((p.content||'').length > 200 ? '…' : '');
+      // reaction count
+      const totalReactions = Object.values(p.reactions||{}).reduce((a,b)=>a+b,0);
       return `<div class="pv-activity-item">
         <div class="pv-activity-head">
           <div class="av" style="background:${avColor}">${user.avatar ? '' : initials}</div>
-          <div class="meta"><strong>${name}</strong> posted this · ${ago}</div>
+          <div class="meta"><strong>${name}</strong> posted · ${ago}</div>
         </div>
         <div class="pv-activity-content">${content}</div>
         <div class="pv-activity-stats">
-          ${p.likes_count||p.likesCount ? `<span>${p.likes_count||p.likesCount} likes</span>` : ''}
-          ${p.comments_count||p.commentsCount ? `<span>${p.comments_count||p.commentsCount} comments</span>` : ''}
+          ${totalReactions ? `<span>👍 ${totalReactions}</span>` : ''}
+          ${p.commentsCount ? `<span>💬 ${p.commentsCount}</span>` : ''}
         </div>
       </div>`;
     }).join('');
