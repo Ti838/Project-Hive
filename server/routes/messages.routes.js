@@ -22,6 +22,9 @@ router.get('/team/:teamId',         authMiddleware, mc.getTeamMessages);
 // DM history by friendId  (must come BEFORE POST /)
 router.get('/:friendId',            authMiddleware, mc.getDmHistory);
 
+// Delete message
+router.delete('/:id',               authMiddleware, mc.deleteMessage);
+
 // Save message via REST (socket fallback)
 router.post('/',                    authMiddleware, mc.saveMessage);
 

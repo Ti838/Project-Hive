@@ -402,3 +402,15 @@ export async function declineMessageRequest(req, res, next) {
   } catch (err) { next(err); }
 }
 
+
+export async function deleteMessage(req, res, next) {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { data: msg } = await supabaseAdmin.from('messages').select('sender_id, room_id').eq('id', id).single();
+    if (!msg) return res.status(404).json({ error: 'Not found' });
+    if (msg.sender_id !== userId) return res.status(403).json({ error: 'Unauthorized' });
+    await supabaseAdmin.from('messages').delete().eq('id', id);
+    res.json({ ok: true, roomId: msg.room_id });
+  } catch (err) { next(err); }
+}

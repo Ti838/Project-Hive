@@ -188,29 +188,18 @@
         <div id="chat-input-area" class="hidden p-4 bg-white dark:bg-darkSurface-panel border-t border-gray-200 dark:border-darkSurface-border flex items-center gap-3">
           
           <!-- Attachment Menu Trigger -->
-          <div class="relative">
-            <button id="btn-attach" onclick="toggleAttachmentMenu()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Attach file or media">
-              <span class="material-symbols-outlined text-lg">attach_file</span>
-            </button>
-            
-            <!-- Attachment Dropdown Popover -->
-            <div id="attachment-menu" class="absolute bottom-14 left-0 w-48 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl p-2 hidden z-40">
-              <button onclick="sendMockMedia('image')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-500 transition-colors">
-                <span class="material-symbols-outlined text-base text-emerald-500">image</span>
-                <span>Send Mock Image</span>
-              </button>
-              <button onclick="sendMockMedia('document')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-500 transition-colors">
-                <span class="material-symbols-outlined text-base text-rose-500">picture_as_pdf</span>
-                <span>Send Mock Doc (PDF)</span>
-              </button>
-              <button onclick="sendMockMedia('link')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-500 transition-colors">
-                <span class="material-symbols-outlined text-base text-indigo-500">link</span>
-                <span>Send Rich Link</span>
-              </button>
-            </div>
-          </div>
+          <!-- Real Media Attachment -->
+          <input type="file" id="real-file-inp" class="hidden" accept="image/*,video/*,audio/*,application/pdf" onchange="handleRealFileSelect(this)">
+          <button onclick="document.getElementById('real-file-inp').click()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Attach file or media">
+            <span class="material-symbols-outlined text-lg">attach_file</span>
+          </button>
           
-          <button onclick="insertEmoji('😊')" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji">
+          <!-- Voice Record -->
+          <button id="btn-record" onclick="toggleVoiceRecord()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Record Voice Note">
+            <span class="material-symbols-outlined text-lg" id="record-icon">mic</span>
+          </button>
+          
+          <button onclick="insertEmoji('😊')" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all hidden md:flex" title="Add emoji">
             <span class="material-symbols-outlined text-lg">mood</span>
           </button>
           
@@ -404,7 +393,45 @@
         if (!content) return '';
         const trimmed = content.trim();
         
-        // 1. Image Check
+        // 1. JSON Media check (Real Attachments)
+        try {
+          if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+            const obj = JSON.parse(trimmed);
+            if (obj.type === 'image') {
+              return `
+                <div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
+                  <img src="${obj.url}" alt="Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open('${obj.url}', '_blank')">
+                </div>
+              `;
+            }
+            if (obj.type === 'video') {
+              return `
+                <div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
+                  <video src="${obj.url}" controls class="w-full max-h-60"></video>
+                </div>
+              `;
+            }
+            if (obj.type === 'voice') {
+              return `<audio src="${obj.url}" controls class="h-10 outline-none w-48 sm:w-64 max-w-full rounded-full"></audio>`;
+            }
+            if (obj.type === 'file') {
+              return `
+                <div class="flex items-center gap-3 p-3 bg-black/20 dark:bg-black/40 rounded-xl border border-slate-200/10 max-w-[260px]">
+                  <span class="material-symbols-outlined text-3xl text-blue-500">description</span>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-xs font-bold truncate text-slate-100 dark:text-slate-200">Attachment</div>
+                    <div class="text-[9px] text-slate-400 uppercase font-extrabold tracking-wider">File</div>
+                  </div>
+                  <button onclick="window.open('${obj.url}', '_blank')" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all shrink-0">
+                    <span class="material-symbols-outlined text-sm">download</span>
+                  </button>
+                </div>
+              `;
+            }
+          }
+        } catch(e) {}
+        
+        // 2. Legacy Image Check
         if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)/i) || trimmed.startsWith('data:image/')) {
           return `
             <div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
@@ -485,11 +512,82 @@
       let friendIds = new Set();
 
       // Attachment state
-      window.toggleAttachmentMenu = function() {
-        const menu = document.getElementById('attachment-menu');
-        menu.classList.toggle('hidden');
+      window.handleRealFileSelect = function(inp) {
+        const file = inp.files[0];
+        if (!file) return;
+        if (file.size > 8 * 1024 * 1024) {
+          PHToast?.error('File too large. Max size is 8MB.');
+          inp.value = '';
+          return;
+        }
+        
+        const type = file.type.startsWith('image/') ? 'image' : 
+                     file.type.startsWith('video/') ? 'video' : 
+                     file.type.startsWith('audio/') ? 'voice' : 'file';
+                     
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onloadend = () => {
+          const payload = JSON.stringify({ type, url: reader.result });
+          document.getElementById('msg-inp').value = payload;
+          sendMsg();
+          inp.value = '';
+        };
       };
+
+      let mediaRecorder;
+      let audioChunks = [];
       
+      window.toggleVoiceRecord = async function() {
+        const icon = document.getElementById('record-icon');
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+          mediaRecorder.stop();
+          icon.innerText = 'mic';
+          icon.classList.remove('text-rose-500', 'animate-pulse');
+        } else {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+              const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+              const reader = new FileReader();
+              reader.readAsDataURL(audioBlob);
+              reader.onloadend = () => {
+                const payload = JSON.stringify({ type: 'voice', url: reader.result });
+                document.getElementById('msg-inp').value = payload;
+                sendMsg();
+              };
+            };
+            mediaRecorder.start();
+            icon.innerText = 'stop_circle';
+            icon.classList.add('text-rose-500', 'animate-pulse');
+          } catch(err) {
+            PHToast?.error('Microphone access denied or not found.');
+          }
+        }
+      };
+
+      // Message Deletion
+      window.deleteMsg = async function(id) {
+        if (!confirm('Delete this message for everyone?')) return;
+        try {
+          const res = await fetch(API_BASE + '/api/messages/' + id, {
+            method: 'DELETE',
+            headers: H
+          });
+          if (res.ok) {
+            allMsgs = allMsgs.filter(m => (m.id || m._id) !== id);
+            renderMsgs();
+          } else {
+            PHToast?.error('Failed to delete message');
+          }
+        } catch (e) {
+          PHToast?.error('Error deleting message');
+        }
+      };
+
       window.insertEmoji = function(emoji) {
         const inp = document.getElementById('msg-inp');
         inp.value += emoji;
@@ -497,16 +595,7 @@
       };
       
       window.sendMockMedia = function(type) {
-        document.getElementById('attachment-menu').classList.add('hidden');
-        const inp = document.getElementById('msg-inp');
-        if (type === 'image') {
-          inp.value = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600';
-        } else if (type === 'document') {
-          inp.value = 'https://projecthive-demo.onrender.com/assets/ProjectHive_PitchDeck.pdf';
-        } else if (type === 'link') {
-          inp.value = 'https://projecthive-bd.vercel.app';
-        }
-        sendMsg();
+        // Keeping for backward compatibility or testing if needed
       };
 
       // Mock Call History trigger for Mobile bottom navigation
@@ -727,15 +816,19 @@
             }
           }
 
+          const msgId = m.id || m._id;
+          const deleteHtml = (mine && msgId && !m._tmp) ? `<button onclick="deleteMsg('${msgId}')" class="ml-2 text-gray-400 hover:text-rose-500 transition-colors" title="Delete for everyone"><span class="material-symbols-outlined text-[12px]">delete</span></button>` : '';
+
           return `
             ${dateDividerHtml}
-            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in">
-              <div class="max-w-[70%] md:max-w-[60%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
+            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in group">
+              <div class="max-w-[85%] sm:max-w-[70%] md:max-w-[60%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm relative
                 ${mine?'bg-indigo-600 text-white rounded-br-sm':'bg-white dark:bg-darkSurface-card text-gray-900 dark:text-slate-100 border border-gray-100 dark:border-darkSurface-border/40 rounded-bl-sm'}">
                 <div class="break-words font-medium">${formatMessageContent(m.content)}</div>
-                <div class="text-[9px] mt-1.5 opacity-65 text-right flex items-center justify-end font-semibold">
+                <div class="text-[10px] mt-1.5 opacity-70 text-right flex items-center justify-end font-semibold">
                   <span>${ts}</span>
                   ${ticksHtml}
+                  ${deleteHtml}
                 </div>
               </div>
             </div>`;
