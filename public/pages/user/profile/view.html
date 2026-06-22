@@ -263,25 +263,60 @@
     const acts = document.getElementById('pv-actions');
     if (isOwnProfile) {
       acts.innerHTML = `
-        <button class="pv-btn pv-btn-primary" onclick="location.href='/profile/edit'"><span class="material-symbols-outlined">edit</span>Edit profile</button>
-        <button class="pv-btn pv-btn-ghost" onclick="location.href='/settings'"><span class="material-symbols-outlined">settings</span></button>`;
+        <button class="pv-btn pv-btn-primary" onclick="location.href='/profile/edit'">
+          <span class="material-symbols-outlined">edit</span>Edit profile
+        </button>
+        <button class="pv-btn pv-btn-ghost" onclick="location.href='/settings'">
+          <span class="material-symbols-outlined">settings</span>
+        </button>`;
     } else {
       const fs = u.friendshipStatus;
+      const msgUrl = '/messages?chat=' + u.id;
       if (fs === 'friends') {
         acts.innerHTML = `
-          <button class="pv-btn pv-btn-primary" onclick="location.href='/messages'"><span class="material-symbols-outlined">send</span>Message</button>
-          <button class="pv-btn pv-btn-ghost" disabled style="opacity:.7"><span class="material-symbols-outlined">check</span>Friends</button>`;
+          <button class="pv-btn pv-btn-primary" onclick="location.href='${msgUrl}'">
+            <span class="material-symbols-outlined">send</span>Message
+          </button>
+          <button class="pv-btn pv-btn-ghost" disabled style="opacity:.7">
+            <span class="material-symbols-outlined">check</span>Friends
+          </button>`;
       } else if (fs === 'sent') {
-        acts.innerHTML = `<button class="pv-btn pv-btn-ghost" disabled><span class="material-symbols-outlined">schedule</span>Pending</button>`;
+        acts.innerHTML = `
+          <button class="pv-btn pv-btn-ghost" disabled>
+            <span class="material-symbols-outlined">schedule</span>Request Sent
+          </button>`;
       } else if (fs === 'received') {
         acts.innerHTML = `
-          <button class="pv-btn pv-btn-primary" onclick="acceptReq('${u.pendingReqId}')"><span class="material-symbols-outlined">check</span>Accept</button>
-          <button class="pv-btn pv-btn-ghost" onclick="rejectReq('${u.pendingReqId}')"><span class="material-symbols-outlined">close</span>Ignore</button>`;
+          <button class="pv-btn pv-btn-primary" onclick="acceptReq('${u.pendingReqId}')">
+            <span class="material-symbols-outlined">check</span>Accept
+          </button>
+          <button class="pv-btn pv-btn-ghost" onclick="rejectReq('${u.pendingReqId}')">
+            <span class="material-symbols-outlined">close</span>Ignore
+          </button>`;
       } else {
         acts.innerHTML = `
-          <button class="pv-btn pv-btn-primary" onclick="sendReq('${u.id}')"><span class="material-symbols-outlined">person_add</span>Connect</button>
-          <button class="pv-btn pv-btn-ghost" onclick="location.href='/messages'"><span class="material-symbols-outlined">send</span>Message</button>`;
+          <button class="pv-btn pv-btn-primary" onclick="sendReq('${u.id}')">
+            <span class="material-symbols-outlined">person_add</span>Connect
+          </button>
+          <button class="pv-btn pv-btn-ghost" onclick="location.href='${msgUrl}'">
+            <span class="material-symbols-outlined">send</span>Message
+          </button>`;
       }
+    }
+
+    // Locked profile UI
+    if (u.isLocked) {
+      document.getElementById('sec-about').style.display = 'none';
+      document.getElementById('sec-skills').style.display = 'none';
+      document.getElementById('sec-activity').style.display = 'none';
+      document.getElementById('sec-details').style.display = 'none';
+      document.getElementById('sec-links').style.display = 'none';
+      const lockDiv = document.createElement('div');
+      lockDiv.style.cssText = 'text-align:center;padding:48px 24px;color:var(--sub);';
+      lockDiv.innerHTML = '<span class="material-symbols-outlined" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px">lock</span>' +
+        '<p style="font-weight:700;font-size:15px;color:var(--tx);margin-bottom:6px">Private Profile</p>' +
+        '<p style="font-size:13px;margin-bottom:16px">Connect with ' + name + ' to see their full profile.</p>';
+      document.querySelector('.pv-2col').appendChild(lockDiv);
     }
 
     // Profile strength card (own profile only)
@@ -349,13 +384,25 @@
   }
 
   window.sendReq = async function(id) {
-    try { const r = await fetch(API+'/api/friends/request/'+id,{method:'POST',headers:H}); r.ok?(PHToast?.success('Request sent!'),loadProfile()):PHToast?.error('Failed'); } catch(e){PHToast?.error('Error');}
+    const btn = event.target.closest('button');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined">schedule</span>Sending...'; }
+    try {
+      const r = await fetch(API+'/api/friends/request/'+id, { method:'POST', headers:H });
+      if (r.ok) { PHToast?.success('Friend request sent!'); loadProfile(); }
+      else { const e = await r.json().catch(()=>({})); PHToast?.error(e.error||'Failed to send request'); if(btn){btn.disabled=false;btn.innerHTML='<span class="material-symbols-outlined">person_add</span>Connect';}}
+    } catch(e) { PHToast?.error('Error sending request'); if(btn){btn.disabled=false;} }
   };
   window.acceptReq = async function(id) {
-    try { const r = await fetch(API+'/api/friends/accept/'+id,{method:'POST',headers:H}); r.ok?(PHToast?.success('Connected!'),loadProfile()):PHToast?.error('Failed'); } catch(e){PHToast?.error('Error');}
+    try {
+      const r = await fetch(API+'/api/friends/accept/'+id, { method:'POST', headers:H });
+      r.ok ? (PHToast?.success('Connected! 🎉'), loadProfile()) : PHToast?.error('Failed');
+    } catch(e) { PHToast?.error('Error'); }
   };
   window.rejectReq = async function(id) {
-    try { const r = await fetch(API+'/api/friends/reject/'+id,{method:'POST',headers:H}); r.ok?(PHToast?.success('Ignored'),loadProfile()):PHToast?.error('Failed'); } catch(e){PHToast?.error('Error');}
+    try {
+      const r = await fetch(API+'/api/friends/reject/'+id, { method:'POST', headers:H });
+      r.ok ? (PHToast?.success('Request ignored'), loadProfile()) : PHToast?.error('Failed');
+    } catch(e) { PHToast?.error('Error'); }
   };
 
   loadProfile();
