@@ -796,52 +796,46 @@
         return content;
       }
 
-      /* Conversation selection state */
-      let convSelMode = false;
-      const selectedConvs = new Set(); // Set of friendIds
+      /* Conversation selection state — must be window.* for inline onclick access */
+      window.convSelMode = false;
+      window.selectedConvs = new Set(); // Set of friendIds
 
-      function enterConvSelMode(firstFid) {
-        convSelMode = true;
-        selectedConvs.clear();
-        if (firstFid) selectedConvs.add(firstFid);
+      window.enterConvSelMode = function(firstFid) {
+        window.convSelMode = true;
+        window.selectedConvs.clear();
+        if (firstFid) window.selectedConvs.add(firstFid);
         renderConvs(convs);
-        // Show selection bar in sidebar header
         const selBar = document.getElementById('conv-sel-bar');
         if (selBar) { selBar.classList.remove('hidden'); updateSelBar(); }
-      }
+      };
 
-      function exitConvSelMode() {
-        convSelMode = false;
-        selectedConvs.clear();
+      window.exitConvSelMode = function() {
+        window.convSelMode = false;
+        window.selectedConvs.clear();
         renderConvs(convs);
         const selBar = document.getElementById('conv-sel-bar');
         if (selBar) selBar.classList.add('hidden');
-      }
+      };
 
       function updateSelBar() {
         const cnt = document.getElementById('conv-sel-count');
-        if (cnt) cnt.textContent = selectedConvs.size + ' selected';
+        if (cnt) cnt.textContent = window.selectedConvs.size + ' selected';
       }
 
       window.deleteSelectedConvs = async function() {
-        if (!selectedConvs.size) return;
-        const n = selectedConvs.size;
+        if (!window.selectedConvs.size) return;
+        const n = window.selectedConvs.size;
         if (!confirm('Delete ' + n + ' conversation' + (n>1?'s':'') + '?')) return;
-        for (const fid of selectedConvs) {
+        for (const fid of window.selectedConvs) {
           try {
             await fetch(API_BASE + '/api/messages/conversation/' + fid, { method: 'DELETE', headers: H });
           } catch(_) {}
         }
         convs = convs.filter(c => {
           const fid = c.friend?._id || c.friend?.id || c.friendId || '';
-          return !selectedConvs.has(fid);
+          return !window.selectedConvs.has(fid);
         });
-        exitConvSelMode();
-        if (selectedConvs.has(activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId || '')) {
-          activeConv = null;
-          document.getElementById('msgs').innerHTML = '';
-          document.getElementById('chat-input-area').classList.add('hidden');
-        }
+        window.exitConvSelMode();
         showToast(n + ' conversation' + (n>1?'s':'') + ' deleted', 'success');
         renderConvs(convs);
       };
@@ -864,8 +858,8 @@
           const color = avC(name);
           const fid = f._id || f.id || c.friendId || '';
           const last = formatPreview(c.lastMessage?.content);
-          const isActive = !convSelMode && activeConv && (activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
-          const isSelected = convSelMode && selectedConvs.has(fid);
+          const isActive = !window.convSelMode && activeConv && (activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
+          const isSelected = window.convSelMode && window.selectedConvs.has(fid);
           const status = getActivityStatus(f);
           const timeStr = c.lastMessage ? new Date(c.lastMessage.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
           const cData = JSON.stringify(c).replace(/"/g, '&quot;');
@@ -880,7 +874,7 @@
             ' oncontextmenu="event.preventDefault(); convSelMode ? toggleConvSel(\'' + fid + '\') : enterConvSelMode(\'' + fid + '\')">' +
             // Avatar or Checkbox
             '<div class="relative shrink-0">' +
-              (convSelMode ?
+              (window.convSelMode ?
                 '<div class="w-11 h-11 rounded-full flex items-center justify-center border-2 ' + (isSelected ? 'border-indigo-500 bg-indigo-500' : 'border-gray-300 dark:border-slate-600 bg-gray-100 dark:bg-darkSurface-card') + '">' +
                   (isSelected ? '<span class="material-symbols-outlined text-white text-lg">check</span>' : '') +
                 '</div>' :
@@ -895,7 +889,7 @@
               '</div>' +
               '<div class="flex items-center justify-between mt-0.5">' +
                 '<p class="text-xs text-gray-500 dark:text-slate-400 truncate pr-2 font-medium">' + esc(last) + '</p>' +
-                (c.unreadCount && !convSelMode ? '<span class="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[10px] font-black shrink-0 shadow-sm">' + c.unreadCount + '</span>' : '') +
+                (c.unreadCount && !window.convSelMode ? '<span class="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[10px] font-black shrink-0 shadow-sm">' + c.unreadCount + '</span>' : '') +
               '</div>' +
             '</div>' +
           '</div>';
@@ -903,15 +897,15 @@
       }
 
       window.toggleConvSel = function(fid) {
-        if (selectedConvs.has(fid)) selectedConvs.delete(fid);
-        else selectedConvs.add(fid);
-        if (selectedConvs.size === 0) { exitConvSelMode(); return; }
+        if (window.selectedConvs.has(fid)) window.selectedConvs.delete(fid);
+        else window.selectedConvs.add(fid);
+        if (window.selectedConvs.size === 0) { window.exitConvSelMode(); return; }
         updateSelBar();
         renderConvs(convs);
       };
 
       // Exit selection mode on Escape key
-      document.addEventListener('keydown', e => { if (e.key === 'Escape' && convSelMode) exitConvSelMode(); });
+      document.addEventListener('keydown', e => { if (e.key === 'Escape' && window.convSelMode) window.exitConvSelMode(); });
 
       window.filterConvs = function(q){
         if (currentTab === 'chats') {
