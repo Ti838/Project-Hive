@@ -582,7 +582,7 @@
       window.openConv = function(conv){
         if(!conv) return;
         const f = conv.friend||{};
-        const friendId = f._id||conv.friendId||conv._id;
+        var friendId = f._id||conv.friendId||conv._id;
         if (!friendId || friendId === 'undefined') {
           console.warn('[v0] Cannot open conversation: friendId is undefined');
           return;
@@ -649,7 +649,7 @@
             <p class="font-medium text-xs">Syncing logs...</p>
           </div>`;
 
-        const friendId = f._id||conv.friendId||conv._id;
+        var friendId = f._id||conv.friendId||conv._id;
         
         if (socket) {
           socket.emit('join:room', { roomId: conv._id });
@@ -712,7 +712,7 @@
           let ticksHtml = '';
           if (mine) {
             const friend = activeConv?.friend || {};
-            const friendId = friend._id || friend.id || activeConv?.friendId;
+            var friendId = friend._id || friend.id || activeConv?.friendId;
             const isSeen = m.read_by?.includes(friendId) || m.readBy?.includes(friendId);
             if (isSeen) {
               const fn = friend.firstName || '';
@@ -776,7 +776,7 @@
           }).catch(()=>{});
         } else {
           renderMsgs();
-          const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+          var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
 
           fetch(API_BASE+'/api/messages',{
             method:'POST',
@@ -1296,7 +1296,7 @@
                 renderTeamMsgs();
               } else {
                 renderMsgs();
-                const friendId = activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
+                var friendId = activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
                 fetch(API_BASE+'/api/messages/read', {
                   method: 'POST',
                   headers: H,
