@@ -71,8 +71,8 @@
       });
     }
   </script>
-  <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
 </head>
+
 <body class="bg-gray-50 dark:bg-darkSurface-bg text-gray-900 dark:text-gray-100 transition-colors duration-300">
 
   <!-- Sidebar Mount -->
@@ -227,13 +227,18 @@
           </button>
           
           <div class="relative hidden md:block">
-            <button onclick="toggleEmojiPicker()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji">
+            <button onclick="toggleEmojiPicker()" id="emoji-btn" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji">
               <span class="material-symbols-outlined text-lg">mood</span>
             </button>
-            <div id="emoji-picker-container" class="absolute bottom-14 right-0 hidden z-50 shadow-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-darkSurface-border">
-              <emoji-picker class="dark"></emoji-picker>
+            <div id="emoji-picker-container" class="absolute bottom-14 right-0 hidden z-50 w-72 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-2xl shadow-2xl overflow-hidden">
+              <div class="p-2 border-b border-gray-100 dark:border-darkSurface-border">
+                <input type="text" id="emoji-search" placeholder="Search emoji..." oninput="filterEmojis(this.value)"
+                  class="w-full px-3 py-1.5 text-xs bg-gray-100 dark:bg-darkSurface-hover rounded-lg outline-none text-gray-800 dark:text-slate-200 placeholder-gray-400">
+              </div>
+              <div id="emoji-grid" class="p-2 grid grid-cols-8 gap-0.5 max-h-52 overflow-y-auto"></div>
             </div>
           </div>
+
           
           <input id="msg-inp" type="text" placeholder="Type a message or drop files..."
             onkeydown="if(event.key==='Enter')sendMsg()"
@@ -703,60 +708,151 @@
 
       window.insertEmoji = function(emoji) {
         const inp = document.getElementById('msg-inp');
-        inp.value += emoji;
+        if (!inp) return;
+        const start = inp.selectionStart || inp.value.length;
+        inp.value = inp.value.slice(0, start) + emoji + inp.value.slice(start);
         inp.focus();
+        inp.selectionStart = inp.selectionEnd = start + emoji.length;
+        document.getElementById('emoji-picker-container').classList.add('hidden');
       };
-      
-      window.toggleEmojiPicker = function() {
-        document.getElementById('emoji-picker-container').classList.toggle('hidden');
-      };
-      
-      setTimeout(() => {
-        const picker = document.querySelector('emoji-picker');
-        if (picker) {
-          picker.addEventListener('emoji-click', event => {
-            const inp = document.getElementById('msg-inp');
-            inp.value += event.detail.unicode;
-            inp.focus();
-            document.getElementById('emoji-picker-container').classList.add('hidden');
-          });
-        }
-      }, 1000);
 
+      // Built-in emoji data — no CDN needed
+      const ALL_EMOJIS = [
+        // Smileys
+        '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚',
+        '😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥',
+        '😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐',
+        '😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓',
+        '😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','😺',
+        // Gestures
+        '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍',
+        '👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦵','🦶','👂','🦻',
+        // Hearts & symbols
+        '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️',
+        '✝️','☪️','🕉️','✡️','🔯','🕎','☯️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓',
+        '🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️','✴️','🆚','💮','🉐','㊙️','㊗️','🈴','🈵',
+        // Objects
+        '🎉','🎊','🎈','🎁','🎀','🎗️','🎟️','🎫','🎖️','🏆','🥇','🥈','🥉','⚽','🏀','🏈','⚾','🥎','🎾','🏐',
+        '🏉','🥏','🎱','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹',
+        '🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','⛹️','🤺','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵',
+        '🚴','🏆','🥇','🎯','🎱','🎮','🎲','🧩','🎭','🎨','🖼️','🎪','🎤','🎧','🎼','🎵','🎶','🥁','🪘','🎷',
+        // Food
+        '🍕','🍔','🌮','🌯','🥗','🍜','🍝','🍱','🍣','🍦','🎂','🍰','🧁','🍩','🍪','🍫','🍬','🍭','🥤','☕',
+        '🍺','🥂','🍾','🧃','🥛','🍵','🧋','🍶','🥃','🍷','🍸','🍹','🍻','🥤','🧊','🧂','🥣','🍽️','🥢','🍴',
+        // Nature
+        '🌸','🌺','🌹','🌷','🌻','🌼','💐','🍀','🌿','☘️','🍁','🍂','🍃','🌱','🌲','🌳','🌴','🌵','🎋','🎍',
+        '🌾','🍄','🐚','🌊','🌀','🌈','⭐','🌟','💫','✨','⚡','🔥','❄️','🌙','☀️','🌤️','⛅','🌥️','🌦️','🌧️',
+        // Animals
+        '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧',
+        '🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🕷️','🦂',
+        // Tech & misc
+        '💻','📱','⌨️','🖥️','🖨️','🖱️','💾','💿','📀','📷','📸','📹','🎥','📡','📺','📻','🔋','🔌','💡','🔦',
+        '✅','❌','⚠️','🚫','💯','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🔶','🔷','🔸','🔹','🔺','🔻','💠',
+        '🚀','✈️','🚂','🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🚲',
+      ];
+
+      let filteredEmojis = [...ALL_EMOJIS];
+
+      function renderEmojiGrid(list) {
+        const grid = document.getElementById('emoji-grid');
+        if (!grid) return;
+        grid.innerHTML = list.map(e =>
+          `<button onclick="insertEmoji('${e}')" class="text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover transition-all" title="${e}">${e}</button>`
+        ).join('');
+      }
+
+      window.filterEmojis = function(q) {
+        if (!q) { renderEmojiGrid(ALL_EMOJIS); return; }
+        renderEmojiGrid(ALL_EMOJIS.filter(e => e.includes(q.trim())));
+      };
+
+      window.toggleEmojiPicker = function() {
+        const container = document.getElementById('emoji-picker-container');
+        if (!container) return;
+        const wasHidden = container.classList.contains('hidden');
+        container.classList.toggle('hidden');
+        if (wasHidden) {
+          renderEmojiGrid(ALL_EMOJIS);
+          const search = document.getElementById('emoji-search');
+          if (search) { search.value = ''; search.focus(); }
+        }
+      };
+
+      // Close emoji picker on outside click
+      document.addEventListener('click', function(e) {
+        const btn = document.getElementById('emoji-btn');
+        const container = document.getElementById('emoji-picker-container');
+        if (btn && container && !btn.contains(e.target) && !container.contains(e.target)) {
+          container.classList.add('hidden');
+        }
+      });
+
+      // ─── Message Delete ───────────────────────────────────────────────────────
+      window.deleteMsg = async function(id) {
+        if (!id) { showToast('Cannot delete: message ID missing', 'error'); return; }
+        if (!confirm('Delete this message for everyone?')) return;
+        try {
+          const res = await fetch(API_BASE + '/api/messages/' + id, {
+            method: 'DELETE',
+            headers: H
+          });
+          if (res.ok) {
+            allMsgs = allMsgs.filter(m => (m.id || m._id) !== id);
+            if (activeConv?.type === 'team') renderTeamMsgs(); else renderMsgs();
+            showToast('Message deleted', 'success');
+          } else {
+            const err = await res.json().catch(() => ({}));
+            showToast(err.error || 'Delete failed (' + res.status + ')', 'error');
+          }
+        } catch (e) {
+          showToast('Network error — is server online?', 'error');
+        }
+      };
+
+      // ─── Conversation Delete ──────────────────────────────────────────────────
       window.deleteConversation = async function(friendId) {
-        if (!confirm('এই পুরো conversation delete করতে চান?')) return;
+        if (!friendId || friendId === 'undefined' || friendId === 'null') {
+          showToast('Cannot delete: friend ID missing', 'error');
+          return;
+        }
+        if (!confirm('Delete this entire conversation?')) return;
         try {
           const res = await fetch(API_BASE + '/api/messages/conversation/' + friendId, {
             method: 'DELETE',
             headers: H
           });
           if (res.ok) {
-            convs = convs.filter(c => (c.friendId || c.friend?._id || c.friend?.id) !== friendId);
-            activeConv = null;
-            document.getElementById('chat-hdr').innerHTML = `
-              <div class="msg-back-btn flex items-center gap-2 md:hidden">
-                <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400" onclick="showConvPanel()">
-                  <span class="material-symbols-outlined text-lg">chevron_left</span>
-                </button>
-              </div>
-              <div class="text-sm text-gray-400 dark:text-slate-500 flex items-center gap-2.5 font-medium">
-                <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
-                <span>Select a conversation to start collaborating</span>
-              </div>`;
-            document.getElementById('chat-input-area').classList.add('hidden');
-            document.getElementById('msgs').innerHTML = '';
-            closeChatInfo && closeChatInfo();
+            convs = convs.filter(c => {
+              const fid = c.friendId || c.friend?._id || c.friend?.id || '';
+              return fid !== friendId;
+            });
+            if (activeConv && (
+              activeConv.friendId === friendId ||
+              activeConv.friend?._id === friendId ||
+              activeConv.friend?.id === friendId
+            )) {
+              activeConv = null;
+              document.getElementById('chat-hdr').innerHTML = `
+                <div class="text-sm text-gray-400 dark:text-slate-500 flex items-center gap-2.5 font-medium">
+                  <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
+                  <span>Select a conversation to start collaborating</span>
+                </div>`;
+              document.getElementById('chat-input-area').classList.add('hidden');
+              document.getElementById('msgs').innerHTML = '';
+              closeChatInfo && closeChatInfo();
+            }
             renderConvs(convs);
             showToast('Conversation deleted', 'success');
           } else {
             const err = await res.json().catch(() => ({}));
-            showToast(err.error || 'Failed to delete conversation', 'error');
+            showToast(err.error || 'Delete failed (' + res.status + ')', 'error');
           }
         } catch (e) {
-          showToast('Error deleting conversation', 'error');
+          showToast('Network error — is server online?', 'error');
         }
       };
-      
+
+
       window.sendMockMedia = function(type) {
         // Keeping for backward compatibility or testing if needed
       };
