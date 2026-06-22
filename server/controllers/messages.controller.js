@@ -132,17 +132,33 @@ export async function getDmHistory(req, res, next) {
 
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
-      .select(`
-        *,
-        sender:sender_id(id, first_name, last_name, avatar, avatar_color),
-        reactions:message_reactions(id, emoji, user_id)
-      `)
+      .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
       .eq('room_id', roomId)
       .order('created_at', { ascending: false })
       .range(+skip, +skip + +limit - 1);
 
     if (error) throw error;
-    res.json({ messages: (messages || []).reverse(), roomId });
+
+    // Fetch reactions separately to avoid PostgREST join issues
+    const messageIds = (messages || []).map(m => m.id).filter(Boolean);
+    let reactionsMap = {};
+    if (messageIds.length > 0) {
+      const { data: reactions } = await supabaseAdmin
+        .from('message_reactions')
+        .select('message_id, emoji, user_id')
+        .in('message_id', messageIds);
+      (reactions || []).forEach(r => {
+        if (!reactionsMap[r.message_id]) reactionsMap[r.message_id] = [];
+        reactionsMap[r.message_id].push(r);
+      });
+    }
+
+    const messagesWithReactions = (messages || []).reverse().map(m => ({
+      ...m,
+      reactions: reactionsMap[m.id] || []
+    }));
+
+    res.json({ messages: messagesWithReactions, roomId });
   } catch (err) { next(err); }
 }
 
