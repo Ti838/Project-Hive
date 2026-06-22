@@ -132,7 +132,11 @@ export async function getDmHistory(req, res, next) {
 
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
-      .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
+      .select(`
+        *,
+        sender:sender_id(id, first_name, last_name, avatar, avatar_color),
+        reactions:message_reactions(id, emoji, user_id)
+      `)
       .eq('room_id', roomId)
       .order('created_at', { ascending: false })
       .range(+skip, +skip + +limit - 1);
