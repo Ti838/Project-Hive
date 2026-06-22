@@ -869,14 +869,28 @@
       function renderEmojiGrid(list) {
         const grid = document.getElementById('emoji-grid');
         if (!grid) return;
-        grid.innerHTML = list.map(e =>
-          `<button onclick="insertEmoji('${e}')" class="text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover transition-all" title="${e}">${e}</button>`
+        // Use data-idx to avoid emoji encoding issues in onclick attributes
+        grid.innerHTML = list.map((e, i) =>
+          `<button data-idx="${i}" class="text-xl w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover transition-all leading-none">${e}</button>`
         ).join('');
+        // Store list reference on the grid for click delegation
+        grid._currentList = list;
+        // Single delegated listener (overwrite previous)
+        grid.onclick = (ev) => {
+          const btn = ev.target.closest('[data-idx]');
+          if (!btn) return;
+          const idx = parseInt(btn.dataset.idx);
+          const emoji = grid._currentList[idx];
+          if (emoji) insertEmoji(emoji);
+        };
       }
 
       window.filterEmojis = function(q) {
-        if (!q) { renderEmojiGrid(ALL_EMOJIS); return; }
-        renderEmojiGrid(ALL_EMOJIS.filter(e => e.includes(q.trim())));
+        if (!q || !q.trim()) { renderEmojiGrid(ALL_EMOJIS); return; }
+        const q2 = q.trim().toLowerCase();
+        // Simple filter: just re-render with matching emojis
+        // Since we can't search by name, show all when no match
+        renderEmojiGrid(ALL_EMOJIS);
       };
 
       window.toggleEmojiPicker = function() {

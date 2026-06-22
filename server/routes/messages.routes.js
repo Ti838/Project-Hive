@@ -19,14 +19,15 @@ router.get('/team-conversations',   authMiddleware, mc.getTeamConversations);
 router.get('/teams/:teamId',        authMiddleware, mc.getTeamMessages);
 router.get('/team/:teamId',         authMiddleware, mc.getTeamMessages);
 
-// DM history by friendId  (must come BEFORE POST /)
+// DM history by friendId  (must come BEFORE /:id wildcard)
 router.get('/:friendId',            authMiddleware, mc.getDmHistory);
 
-// Delete message
-router.delete('/:id',               authMiddleware, mc.deleteMessage);
-
-// Delete entire conversation
+// !! IMPORTANT: /conversation/:friendId MUST come BEFORE /:id
+// Otherwise Express wildcard /:id intercepts DELETE /conversation/UUID
 router.delete('/conversation/:friendId', authMiddleware, mc.deleteConversation);
+
+// Delete single message
+router.delete('/:id',               authMiddleware, mc.deleteMessage);
 
 // Save message via REST (socket fallback)
 router.post('/',                    authMiddleware, mc.saveMessage);
