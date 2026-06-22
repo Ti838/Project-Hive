@@ -186,6 +186,7 @@
     document.getElementById("p-po").value=u.portfolio||"";
     if(u.yearOfStudy)document.getElementById("p-year").value=u.yearOfStudy;
     if(u.status)document.getElementById("p-status").value=u.status;
+    if(u.isPublic!==undefined){const t=document.getElementById("tog-public");if(t){if(u.isPublic)t.classList.add("on");else t.classList.remove("on");}}
     skills=u.skills||[];renderSkills();
     if(u.avatar&&u.avatar.startsWith("data:")){avatarB64=u.avatar;const img=document.getElementById("aimg");img.src=u.avatar;img.style.display="block";document.getElementById("aini").style.display="none";document.getElementById("rm-photo").style.display="block";document.getElementById("color-row-wrap").style.display="none";}
     if(u.bannerImage&&u.bannerImage.startsWith("data:")){bannerB64=u.bannerImage;const bi=document.getElementById("bimg");bi.src=u.bannerImage;bi.style.display="block";document.getElementById("bzone").style.background="#000";document.getElementById("rm-banner").style.display="block";}
@@ -207,6 +208,7 @@
     btn.innerHTML=`<span style="font-family:'Material Symbols Outlined';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Saving…`;btn.disabled=true;
     try{
       const payload={firstName:document.getElementById("p-fn").value.trim(),lastName:document.getElementById("p-ln").value.trim(),university:document.getElementById("p-uni").value.trim(),major:document.getElementById("p-major").value.trim(),bio:document.getElementById("p-bio").value.trim(),github:document.getElementById("p-gh").value.trim(),linkedin:document.getElementById("p-li").value.trim(),portfolio:document.getElementById("p-po").value.trim(),yearOfStudy:parseInt(document.getElementById("p-year").value)||null,status:document.getElementById("p-status").value,skills,avatarColor:avColor};
+      payload.isPublic=document.getElementById("tog-public")?document.getElementById("tog-public").classList.contains("on"):true;
       payload.avatar=avatarB64||"";
       payload.bannerImage=bannerB64||"";
       const r=await fetch(API_BASE+"/api/users/me",{method:"PATCH",headers:H,body:JSON.stringify(payload)});
