@@ -662,12 +662,14 @@
           });
           if (res.ok) {
             allMsgs = allMsgs.filter(m => (m.id || m._id) !== id);
-            renderMsgs();
+            if (activeConv?.type === 'team') renderTeamMsgs(); else renderMsgs();
+            showToast('Message deleted', 'success');
           } else {
-            PHToast?.error('Failed to delete message');
+            const err = await res.json().catch(() => ({}));
+            showToast(err.error || 'Failed to delete message', 'error');
           }
         } catch (e) {
-          PHToast?.error('Error deleting message');
+          showToast('Error deleting message', 'error');
         }
       };
 
@@ -1959,13 +1961,16 @@
         });
 
         socket.on('call:accepted', data => {
+          stopOutgoingRing(); // caller ring stops when accepted
           showToast('Call connection established!', 'success');
         });
 
         socket.on('call:declined', data => {
+          stopOutgoingRing(); // caller ring stops when declined
           showToast('Call was declined', 'info');
           endCall();
         });
+
 
         socket.on('call:hungup', data => {
           stopRingtone();
@@ -2061,13 +2066,24 @@
         if (!activeConv) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
-          showToast('You must be friends first to call. Try sending a friend request!', 'error');
+          showToast('You must be friends first to call!', 'error');
           return;
         }
-        const roomId = `ProjectHive-${[ME.id, friendId].sort().join('-')}`;
+        const roomId = 'ProjectHive-' + [ME.id, friendId].sort().join('-');
+        const friendOnline = activeConv.friend?.onlineStatus === 'online';
         
         if (socket) {
           socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: false });
+        }
+        
+        // Start outgoing ring sound for caller
+        startOutgoingRing();
+        
+        // Show offline warning if friend isn't active
+        if (!friendOnline) {
+          setCallConnectionStatus('offline');
+        } else {
+          setCallConnectionStatus('calling');
         }
         
         activeCallRoom = roomId;
@@ -2078,13 +2094,24 @@
         if (!activeConv) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
-          showToast('You must be friends first to call. Try sending a friend request!', 'error');
+          showToast('You must be friends first to call!', 'error');
           return;
         }
-        const roomId = `ProjectHive-voice-${[ME.id, friendId].sort().join('-')}`;
+        const roomId = 'ProjectHive-voice-' + [ME.id, friendId].sort().join('-');
+        const friendOnline = activeConv.friend?.onlineStatus === 'online';
         
         if (socket) {
           socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: true });
+        }
+        
+        // Start outgoing ring sound for caller
+        startOutgoingRing();
+        
+        // Show offline warning if friend isn't active
+        if (!friendOnline) {
+          setCallConnectionStatus('offline');
+        } else {
+          setCallConnectionStatus('calling');
         }
         
         activeCallRoom = roomId;
@@ -2147,9 +2174,13 @@
         if (status === 'connected') {
           if (dot) { dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse'; }
           if (text) { text.textContent = 'Secure Session Live'; text.className = 'text-emerald-400 text-xs font-bold'; }
+          stopOutgoingRing();
         } else if (status === 'calling') {
           if (dot) { dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse'; }
           if (text) { text.textContent = 'Calling teammate...'; text.className = 'text-amber-400 text-xs font-bold'; }
+        } else if (status === 'offline') {
+          if (dot) { dot.className = 'w-2 h-2 rounded-full bg-rose-400 animate-pulse'; }
+          if (text) { text.textContent = 'Calling (may be offline)...'; text.className = 'text-rose-400 text-xs font-bold'; }
         } else {
           if (dot) { dot.className = 'w-2 h-2 rounded-full bg-indigo-400 animate-pulse'; }
           if (text) { text.textContent = 'Negotiating...'; text.className = 'text-indigo-400 text-xs font-bold'; }
@@ -2396,6 +2427,8 @@
 
         const modal = document.getElementById('call-modal');
         if (modal) modal.classList.replace('flex', 'hidden');
+        stopOutgoingRing(); // stop caller ring when ending
+        stopRingtone();
         
         if (socket && activeCallRoom) {
           var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
@@ -2405,7 +2438,10 @@
       };
 
       let ringtoneAudio = null;
+      let outgoingRingtone = null;
+
       function startRingtone() {
+        stopRingtone();
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
           const osc = ctx.createOscillator();
@@ -2430,12 +2466,51 @@
           };
         } catch(_) {}
       }
+
+      // Outgoing call ring (lower tone, slower pulse — like a phone dialing out)
+      function startOutgoingRing() {
+        stopOutgoingRing();
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          let phase = 0;
+          outgoingRingtone = {
+            ctx,
+            interval: setInterval(() => {
+              phase++;
+              // Two beeps then pause: beep-beep...pause
+              if (phase === 1 || phase === 3) {
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.value = 380;
+                gain.gain.setValueAtTime(0.12, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.35);
+              }
+              if (phase >= 8) phase = 0; // reset cycle (8 * 200ms = 1.6s cycle)
+            }, 200),
+            stop() {
+              clearInterval(this.interval);
+              try { ctx.close(); } catch(_){}
+            }
+          };
+        } catch(_) {}
+      }
+
+      function stopOutgoingRing() {
+        if (outgoingRingtone) { outgoingRingtone.stop(); outgoingRingtone = null; }
+      }
+
       function stopRingtone() {
         if (ringtoneAudio) { ringtoneAudio.stop(); ringtoneAudio = null; }
       }
 
       window.acceptCall = async function() {
         stopRingtone();
+        stopOutgoingRing();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
           var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
@@ -2452,6 +2527,7 @@
 
       window.declineCall = function() {
         stopRingtone();
+        stopOutgoingRing();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
           var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
