@@ -83,13 +83,21 @@ export async function handleLeaveRoom(socket) {
 export async function handleSendMessage(socket, io, data) {
   try {
     const roomId = data.roomId || data.teamId;
-    const { content } = data;
+    const { content, reply_to, reply_to_content, reply_to_sender } = data;
     if (!content || !roomId) return socket.emit('error', { message: 'Missing content or roomId' });
 
     // Save to Supabase
     const { data: message, error } = await supabaseAdmin
       .from('messages')
-      .insert({ room_id: roomId, sender_id: socket.userId, content, read_by: [socket.userId] })
+      .insert({ 
+        room_id: roomId, 
+        sender_id: socket.userId, 
+        content, 
+        read_by: [socket.userId],
+        reply_to: reply_to || null,
+        reply_to_content: reply_to_content || null,
+        reply_to_sender: reply_to_sender || null
+      })
       .select('*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)')
       .single();
 
@@ -101,6 +109,9 @@ export async function handleSendMessage(socket, io, data) {
       sender: message.sender,
       roomId: message.room_id,
       createdAt: message.created_at,
+      reply_to: message.reply_to,
+      reply_to_content: message.reply_to_content,
+      reply_to_sender: message.reply_to_sender,
     };
 
     io.to(roomId).emit('message:received', payload);
@@ -109,6 +120,7 @@ export async function handleSendMessage(socket, io, data) {
     socket.emit('error', { message: 'Failed to send message' });
   }
 }
+
 
 export function handleTyping(socket, io, data) {
   const roomId = data.roomId || data.teamId || socket.roomId;
