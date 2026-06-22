@@ -696,7 +696,7 @@
       }, 1000);
 
       window.deleteConversation = async function(friendId) {
-        if (!confirm('Are you sure you want to delete this entire conversation?')) return;
+        if (!confirm('এই পুরো conversation delete করতে চান?')) return;
         try {
           const res = await fetch(API_BASE + '/api/messages/conversation/' + friendId, {
             method: 'DELETE',
@@ -717,13 +717,15 @@
               </div>`;
             document.getElementById('chat-input-area').classList.add('hidden');
             document.getElementById('msgs').innerHTML = '';
+            closeChatInfo && closeChatInfo();
             renderConvs(convs);
-            PHToast?.success('Conversation deleted');
+            showToast('Conversation deleted', 'success');
           } else {
-            PHToast?.error('Failed to delete conversation');
+            const err = await res.json().catch(() => ({}));
+            showToast(err.error || 'Failed to delete conversation', 'error');
           }
         } catch (e) {
-          PHToast?.error('Error deleting conversation');
+          showToast('Error deleting conversation', 'error');
         }
       };
       
@@ -751,6 +753,21 @@
         localStorage.setItem('ph-user-cache', JSON.stringify(u));
       }).catch(()=>{});
 
+      /* Sidebar last-message preview formatter */
+      function formatPreview(content) {
+        if (!content) return 'Start collaborating!';
+        const t = content.trim();
+        try {
+          if (t.startsWith('{')) {
+            if (t.includes('"type":"voice"') || t.includes('"type": "voice"')) return '🎤 Voice message';
+            if (t.includes('"type":"image"') || t.includes('"type": "image"')) return '📷 Photo';
+            if (t.includes('"type":"video"') || t.includes('"type": "video"')) return '🎬 Video';
+            if (t.includes('"type":"file"')  || t.includes('"type": "file"'))  return '📎 File';
+          }
+        } catch(_) {}
+        return content;
+      }
+
       /* Render direct conversations */
       function renderConvs(list){
         const el = document.getElementById('conv-list');
@@ -765,30 +782,36 @@
         }
         el.innerHTML = list.map(c=>{
           const f = c.friend||{};
-          const name = `${f.firstName||''} ${f.lastName||''}`.trim()||'Teammate';
+          const name = ((f.firstName||'') + ' ' + (f.lastName||'')).trim()||'Teammate';
           const color = avC(name);
-          const last = c.lastMessage?.content||'Start collaborating!';
+          const fid = f._id || f.id || c.friendId || '';
+          const last = formatPreview(c.lastMessage?.content);
           const isActive = activeConv && (activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
           const status = getActivityStatus(f);
+          const timeStr = c.lastMessage ? new Date(c.lastMessage.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
           
-          return `
-            <div class="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 dark:hover:bg-darkSurface-hover ${isActive ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-[3px] border-indigo-500 pl-2' : ''}"
-              onclick='openConv(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
-              <div class="relative shrink-0">
-                <div class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
-                <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-[2px] border-white dark:border-darkSurface-panel status-dot ${status.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-dot="${f._id||f.id}"></span>
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center justify-between">
-                  <span class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate">${esc(name)}</span>
-                  <span class="text-[10px] text-gray-400 dark:text-slate-500 font-medium">${c.lastMessage ? new Date(c.lastMessage.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''}</span>
-                </div>
-                <div class="flex items-center justify-between mt-0.5">
-                  <p class="text-xs text-gray-500 dark:text-slate-400 truncate pr-2 font-medium">${esc(last)}</p>
-                  ${c.unreadCount ? `<span class="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[10px] font-black shrink-0 shadow-sm">${c.unreadCount}</span>` : ''}
-                </div>
-              </div>
-            </div>`;
+          return '<div class="group relative flex items-center gap-3.5 p-3 rounded-xl cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 dark:hover:bg-darkSurface-hover ' + (isActive ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-[3px] border-indigo-500 pl-2' : '') + '"' +
+            ' onclick="openConv(' + JSON.stringify(c).replace(/"/g, '&quot;') + ')">' +
+            '<div class="relative shrink-0">' +
+              '<div class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:' + color + '">' + ini(f.firstName, f.lastName) + '</div>' +
+              '<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-[2px] border-white dark:border-darkSurface-panel status-dot ' + (status.isOnline ? 'status-dot-online pulse' : 'hidden') + '" data-user-dot="' + (f._id||f.id) + '"></span>' +
+            '</div>' +
+            '<div class="flex-1 min-w-0">' +
+              '<div class="flex items-center justify-between">' +
+                '<span class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate">' + esc(name) + '</span>' +
+                '<span class="text-[10px] text-gray-400 dark:text-slate-500 font-medium">' + timeStr + '</span>' +
+              '</div>' +
+              '<div class="flex items-center justify-between mt-0.5">' +
+                '<p class="text-xs text-gray-500 dark:text-slate-400 truncate pr-2 font-medium">' + esc(last) + '</p>' +
+                (c.unreadCount ? '<span class="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[10px] font-black shrink-0 shadow-sm">' + c.unreadCount + '</span>' : '') +
+              '</div>' +
+            '</div>' +
+            // Hover delete button
+            '<button title="Delete conversation" onclick="event.stopPropagation(); deleteConversation(\'' + fid + '\')"' +
+              ' class="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border flex items-center justify-center text-gray-400 hover:text-rose-500 hover:border-rose-300 transition-all shadow-sm">' +
+              '<span class="material-symbols-outlined text-[14px]">delete</span>' +
+            '</button>' +
+          '</div>';
         }).join('');
       }
 
@@ -1152,7 +1175,10 @@
             '<div class="flex gap-3 mt-4">' +
               '<button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all"><span class="material-symbols-outlined text-xl">call</span><span class="text-[9px] font-bold">Voice</span></button>' +
               '<button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all"><span class="material-symbols-outlined text-xl">videocam</span><span class="text-[9px] font-bold">Video</span></button>' +
-              '<a href="/pages/user/profile.html?user=' + friendId + '" class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 rounded-2xl justify-center text-gray-600 hover:bg-gray-200 transition-all"><span class="material-symbols-outlined text-xl">person</span><span class="text-[9px] font-bold">Profile</span></a>' +
+              '<a href="/pages/user/profile/view.html?id=' + friendId + '" target="_blank"' +
+               ' class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 dark:bg-darkSurface-card rounded-2xl justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-darkSurface-hover transition-all">' +
+               '<span class="material-symbols-outlined text-xl">person</span>' +
+               '<span class="text-[9px] font-bold">Profile</span></a>' +
             '</div>' +
           '</div>' +
           '<div class="space-y-3">' + emailHtml +
