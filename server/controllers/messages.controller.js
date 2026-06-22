@@ -414,3 +414,14 @@ export async function deleteMessage(req, res, next) {
     res.json({ ok: true, roomId: msg.room_id });
   } catch (err) { next(err); }
 }
+
+export async function deleteConversation(req, res, next) {
+  try {
+    const { friendId } = req.params;
+    const myId = req.user.id;
+    const roomId1 = `_`;
+    const roomId2 = `_`;
+    await supabaseAdmin.from('messages').delete().or(`room_id.eq.,room_id.eq.`);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
+}

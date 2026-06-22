@@ -25,6 +25,9 @@ router.get('/:friendId',            authMiddleware, mc.getDmHistory);
 // Delete message
 router.delete('/:id',               authMiddleware, mc.deleteMessage);
 
+// Delete entire conversation
+router.delete('/conversation/:friendId', authMiddleware, mc.deleteConversation);
+
 // Save message via REST (socket fallback)
 router.post('/',                    authMiddleware, mc.saveMessage);
 
