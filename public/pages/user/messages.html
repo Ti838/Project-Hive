@@ -690,7 +690,7 @@
         let lastDateString = '';
         
         container.innerHTML = allMsgs.map(m=>{
-          const mine = m.sender===ME?.id||m.sender?._id===ME?.id||m._tmp;
+          const mine = m.sender_id===ME?.id||m.sender?.id===ME?.id||m.sender===ME?.id||m._tmp;
           const ts = new Date(m.createdAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
           const msgDate = new Date(m.createdAt || Date.now());
           const dateString = msgDate.toDateString();
