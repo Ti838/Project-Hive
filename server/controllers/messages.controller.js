@@ -100,12 +100,20 @@ export async function getTeamMessages(req, res, next) {
 
 export async function saveMessage(req, res, next) {
   try {
-    const { roomId, content } = req.body;
+    const { roomId, content, reply_to, reply_to_content, reply_to_sender } = req.body;
     const userId = req.user.id;
 
     const { data: message, error } = await supabaseAdmin
       .from('messages')
-      .insert({ room_id: roomId, sender_id: userId, content, read_by: [userId] })
+      .insert({ 
+        room_id: roomId, 
+        sender_id: userId, 
+        content, 
+        read_by: [userId],
+        reply_to: reply_to || null,
+        reply_to_content: reply_to_content || null,
+        reply_to_sender: reply_to_sender || null
+      })
       .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
       .single();
 
@@ -273,7 +281,7 @@ export async function markAsRead(req, res, next) {
 export async function sendDirectMessage(req, res, next) {
   try {
     const senderId = req.user.id;
-    const { receiverId, content, roomId: givenRoomId } = req.body;
+    const { receiverId, content, roomId: givenRoomId, reply_to, reply_to_content, reply_to_sender } = req.body;
     if (!receiverId || !content?.trim()) return res.status(400).json({ error: 'Missing receiverId or content' });
 
     const roomId = givenRoomId || [senderId, receiverId].sort().join('_');
@@ -313,7 +321,15 @@ export async function sendDirectMessage(req, res, next) {
     // Save the message
     const { data: message, error } = await supabaseAdmin
       .from('messages')
-      .insert({ room_id: roomId, sender_id: senderId, content: content.trim(), read_by: [senderId] })
+      .insert({ 
+        room_id: roomId, 
+        sender_id: senderId, 
+        content: content.trim(), 
+        read_by: [senderId],
+        reply_to: reply_to || null,
+        reply_to_content: reply_to_content || null,
+        reply_to_sender: reply_to_sender || null
+      })
       .select('*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)')
       .single();
 
