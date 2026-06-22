@@ -214,10 +214,57 @@
           <button onclick="sendMsg()" class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-[0.95] shadow-md shadow-indigo-600/15">
             <span class="material-symbols-outlined text-lg font-bold">send</span>
           </button>
+
+          <!-- Reply Preview Bar (shown above input when replying) -->
+          <div id="reply-bar" class="hidden absolute bottom-full left-0 right-0 px-4 py-2 bg-indigo-50 dark:bg-indigo-950/60 border-t border-indigo-200 dark:border-indigo-800/60 flex items-center gap-3 z-10">
+            <div class="w-1 h-10 bg-indigo-500 rounded-full shrink-0"></div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400">Replying to</div>
+              <div id="reply-preview-text" class="text-xs text-gray-600 dark:text-slate-400 truncate font-medium"></div>
+            </div>
+            <button onclick="cancelReply()" class="w-7 h-7 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-900 flex items-center justify-center text-gray-500 shrink-0 transition-all">
+              <span class="material-symbols-outlined text-sm">close</span>
+            </button>
+          </div>
         </div>
       </main>
     </div>
   </div>
+
+  <!-- Right-Click Context Menu -->
+  <div id="msg-context-menu" class="fixed hidden z-[999] bg-white dark:bg-darkSurface-card rounded-2xl shadow-2xl border border-gray-200 dark:border-darkSurface-border py-2 min-w-[180px] overflow-hidden">
+    <button onclick="contextReply()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-indigo-500">reply</span> Reply
+    </button>
+    <button onclick="contextCopy()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-gray-500">content_copy</span> Copy
+    </button>
+    <button onclick="contextReact('👍')" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
+      <span class="text-lg">👍</span> React
+    </button>
+    <div id="ctx-delete-wrap">
+      <div class="border-t border-gray-100 dark:border-darkSurface-border my-1"></div>
+      <button onclick="contextDelete()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-sm font-semibold text-rose-500 transition-colors">
+        <span class="material-symbols-outlined text-[18px]">delete</span> Delete
+      </button>
+    </div>
+  </div>
+
+  <!-- Chat Info Side Panel (slide-in) -->
+  <div id="chat-info-panel" class="fixed top-0 right-0 h-full w-[320px] bg-white dark:bg-darkSurface-panel border-l border-gray-200 dark:border-darkSurface-border z-[200] translate-x-full transition-transform duration-300 ease-out flex flex-col shadow-2xl">
+    <div class="h-16 flex items-center justify-between px-5 border-b border-gray-100 dark:border-darkSurface-border shrink-0">
+      <h3 class="font-heading font-bold text-base">Contact Info</h3>
+      <button onclick="closeChatInfo()" class="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-darkSurface-card flex items-center justify-center transition-all">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
+    <div id="chat-info-body" class="flex-1 overflow-y-auto p-5 space-y-5">
+      <!-- Dynamically filled -->
+    </div>
+  </div>
+  <!-- Chat Info Panel backdrop -->
+  <div id="chat-info-backdrop" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[199] hidden" onclick="closeChatInfo()"></div>
+
 
 
   <!-- CALL SYSTEM MODAL OVERLAYS -->
@@ -777,7 +824,7 @@
             <button onclick="deleteConversation('${f._id||f.id}')" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-rose-50 dark:hover:bg-rose-950/40 text-gray-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all" title="Delete Chat">
               <span class="material-symbols-outlined text-lg">delete</span>
             </button>
-            <button onclick="showToast('Secure End-to-End communication powered by supabase.', 'info')" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all" title="Chat Details">
+            <button onclick="openChatInfo()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all" title="Contact Info">
               <span class="material-symbols-outlined text-lg">info</span>
             </button>
           </div>`;
@@ -872,19 +919,50 @@
           }
 
           const msgId = m.id || m._id;
-          const deleteHtml = (mine && msgId && !m._tmp) ? `<button onclick="deleteMsg('${msgId}')" class="ml-2 text-gray-400 hover:text-rose-500 transition-colors" title="Delete for everyone"><span class="material-symbols-outlined text-[12px]">delete</span></button>` : '';
+          const isMine = mine;
+          
+          // Reply quote bubble
+          let replyQuoteHtml = '';
+          if (m.reply_to_content) {
+            replyQuoteHtml = `
+              <div class="mb-1.5 px-3 py-2 rounded-xl border-l-[3px] border-indigo-400 ${ mine ? 'bg-indigo-700/50' : 'bg-gray-100 dark:bg-darkSurface-bg'} opacity-90 text-[11px] truncate">
+                <span class="font-bold block text-indigo-300">${esc(m.reply_to_sender||'Someone')}</span>
+                <span class="${mine?'text-white/80':'text-gray-500 dark:text-slate-400'}">${esc((m.reply_to_content||'').substring(0,80))}</span>
+              </div>`;
+          }
+
+          // Reactions
+          let reactionsHtml = '';
+          if (m.reactions && m.reactions.length > 0) {
+            const rMap = {};
+            m.reactions.forEach(r => { rMap[r.emoji] = (rMap[r.emoji] || 0) + 1; });
+            reactionsHtml = `<div class="flex gap-1 mt-1 flex-wrap">${Object.entries(rMap).map(([e,c])=>`<span class="text-xs bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-full px-2 py-0.5 cursor-default shadow-sm">${e}${c>1?` ${c}`:''}</span>`).join('')}</div>`;
+          }
 
           return `
             ${dateDividerHtml}
-            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in group">
+            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in group relative" 
+              data-msg-id="${msgId||''}"
+              data-content="${(m.content||'').replace(/"/g,'&quot;')}"
+              data-mine="${mine}"
+              data-sender-name="${esc(mine ? 'You' : ((activeConv?.friend?.firstName||'') + ' ' + (activeConv?.friend?.lastName||'')).trim())}"
+              oncontextmenu="showMsgContextMenu(event, this)">
               <div class="max-w-[85%] sm:max-w-[70%] md:max-w-[60%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm relative
                 ${mine?'bg-indigo-600 text-white rounded-br-sm':'bg-white dark:bg-darkSurface-card text-gray-900 dark:text-slate-100 border border-gray-100 dark:border-darkSurface-border/40 rounded-bl-sm'}">
+                ${replyQuoteHtml}
                 <div class="break-words font-medium">${formatMessageContent(m.content)}</div>
+                ${reactionsHtml}
                 <div class="text-[10px] mt-1.5 opacity-70 text-right flex items-center justify-end font-semibold">
                   <span>${ts}</span>
                   ${ticksHtml}
-                  ${deleteHtml}
                 </div>
+              </div>
+              <!-- Hover action buttons -->
+              <div class="${mine?'mr-2 order-first':'ml-2'} opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 self-center">
+                <button onclick="replyToMsg(this.closest('[data-msg-id]'))" class="w-7 h-7 rounded-full bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border flex items-center justify-center shadow-sm hover:bg-gray-100 dark:hover:bg-darkSurface-hover transition-all" title="Reply">
+                  <span class="material-symbols-outlined text-[14px] text-indigo-500">reply</span>
+                </button>
+                ${ mine && msgId && !m._tmp ? `<button onclick="deleteMsg('${msgId}')" class="w-7 h-7 rounded-full bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border flex items-center justify-center shadow-sm hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all" title="Delete"><span class="material-symbols-outlined text-[14px] text-rose-400">delete</span></button>` : '' }
               </div>
             </div>`;
         }).join('');
@@ -929,11 +1007,154 @@
           fetch(API_BASE+'/api/messages',{
             method:'POST',
             headers:H,
-            body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id })
+            body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id, reply_to: currentReplyMsg?.id || null, reply_to_content: currentReplyMsg?.content || null, reply_to_sender: currentReplyMsg?.senderName || null })
           }).then(r => r.json()).then(newMsg => {
             loadConvs();
           }).catch(()=>{});
+          cancelReply();
         }
+      };
+
+      // ─── REPLY SYSTEM ────────────────────────────────────────
+      let currentReplyMsg = null;
+
+      window.replyToMsg = function(el) {
+        if (!el) return;
+        const id = el.dataset.msgId;
+        const content = el.dataset.content;
+        const senderName = el.dataset.senderName || 'Someone';
+        currentReplyMsg = { id, content, senderName };
+        document.getElementById('reply-preview-text').textContent = content.substring(0, 80);
+        const bar = document.getElementById('reply-bar');
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+        document.getElementById('msg-inp').focus();
+      };
+
+      window.cancelReply = function() {
+        currentReplyMsg = null;
+        const bar = document.getElementById('reply-bar');
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+      };
+
+      // ─── CONTEXT MENU ────────────────────────────────────────
+      let ctxMsgEl = null;
+
+      window.showMsgContextMenu = function(e, el) {
+        e.preventDefault();
+        ctxMsgEl = el;
+        const menu = document.getElementById('msg-context-menu');
+        const isMine = el.dataset.mine === 'true';
+        document.getElementById('ctx-delete-wrap').style.display = isMine ? '' : 'none';
+        menu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
+        menu.style.top = Math.min(e.clientY, window.innerHeight - 160) + 'px';
+        menu.classList.remove('hidden');
+      };
+
+      window.contextReply = function() {
+        if (ctxMsgEl) replyToMsg(ctxMsgEl);
+        document.getElementById('msg-context-menu').classList.add('hidden');
+      };
+
+      window.contextCopy = function() {
+        if (ctxMsgEl) navigator.clipboard?.writeText(ctxMsgEl.dataset.content || '');
+        showToast('Copied!', 'success');
+        document.getElementById('msg-context-menu').classList.add('hidden');
+      };
+
+      window.contextDelete = function() {
+        const id = ctxMsgEl?.dataset.msgId;
+        document.getElementById('msg-context-menu').classList.add('hidden');
+        if (id) deleteMsg(id);
+      };
+
+      window.contextReact = function(emoji) {
+        document.getElementById('msg-context-menu').classList.add('hidden');
+        showToast('Reactions coming soon!', 'info');
+      };
+
+      document.addEventListener('click', () => {
+        document.getElementById('msg-context-menu')?.classList.add('hidden');
+        document.getElementById('emoji-picker-container')?.classList.add('hidden');
+      });
+
+      // ─── CHAT INFO PANEL ──────────────────────────────────────
+      window.openChatInfo = function() {
+        if (!activeConv || activeConv.type === 'team') return;
+        const f = activeConv.friend || {};
+        const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
+        const color = avC(name);
+        const status = getActivityStatus(f);
+        const sharedMedia = allMsgs.filter(m => {
+          try { const o = JSON.parse(m.content); return o.type === 'image' || o.type === 'video'; } catch { return false; }
+        }).slice(-9);
+
+        document.getElementById('chat-info-body').innerHTML = `
+          <!-- Profile Header -->
+          <div class="flex flex-col items-center text-center pb-5 border-b border-gray-100 dark:border-darkSurface-border">
+            <div class="w-20 h-20 rounded-full flex items-center justify-center font-bold text-white text-2xl shadow-lg mb-3" style="background:${color}">${ini(f.firstName, f.lastName)}</div>
+            <div class="font-heading font-bold text-lg text-gray-900 dark:text-white">${esc(name)}</div>
+            <div class="text-xs ${status.cssClass} mt-1 font-semibold">${status.text}</div>
+            ${f.university ? `<div class="text-xs text-gray-400 mt-1">${esc(f.university)}</div>` : ''}
+            <div class="flex gap-3 mt-4">
+              <button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all">
+                <span class="material-symbols-outlined text-xl">call</span>
+                <span class="text-[9px] font-bold">Voice</span>
+              </button>
+              <button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 dark:bg-indigo-950/30 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all">
+                <span class="material-symbols-outlined text-xl">videocam</span>
+                <span class="text-[9px] font-bold">Video</span>
+              </button>
+              <a href="/pages/user/profile.html?user=${f._id||f.id}" class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 dark:bg-darkSurface-card rounded-2xl justify-center text-gray-600 hover:bg-gray-200 dark:hover:bg-darkSurface-hover transition-all">
+                <span class="material-symbols-outlined text-xl">person</span>
+                <span class="text-[9px] font-bold">Profile</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="space-y-3">
+            ${f.email ? `<div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkSurface-card/40 rounded-xl"><span class="material-symbols-outlined text-lg text-gray-400">mail</span><div><div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Email</div><div class="text-sm font-semibold text-gray-800 dark:text-slate-200">${esc(f.email)}</div></div></div>` : ''}
+            <div class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-darkSurface-card/40 rounded-xl">
+              <span class="material-symbols-outlined text-lg text-gray-400">forum</span>
+              <div>
+                <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Messages</div>
+                <div class="text-sm font-semibold text-gray-800 dark:text-slate-200">${allMsgs.length} total</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shared Media -->
+          ${sharedMedia.length > 0 ? `
+            <div>
+              <div class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-3">Shared Media</div>
+              <div class="grid grid-cols-3 gap-1.5">
+                ${sharedMedia.map(m => {
+                  try {
+                    const o = JSON.parse(m.content);
+                    return o.type === 'image' ? `<img src="${o.url}" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open('${o.url}','_blank')">` : `<video src="${o.url}" class="w-full aspect-square object-cover rounded-xl"></video>`;
+                  } catch { return ''; }
+                }).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Danger Zone -->
+          <div class="pt-3 border-t border-gray-100 dark:border-darkSurface-border">
+            <button onclick="deleteConversation('${f._id||f.id}'); closeChatInfo();" class="w-full flex items-center gap-3 p-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-all text-sm font-semibold">
+              <span class="material-symbols-outlined text-lg">delete_forever</span>
+              Delete Conversation
+            </button>
+          </div>`;
+
+        document.getElementById('chat-info-panel').classList.remove('translate-x-full');
+        document.getElementById('chat-info-backdrop').classList.remove('hidden');
+      };
+
+      window.closeChatInfo = function() {
+        document.getElementById('chat-info-panel').classList.add('translate-x-full');
+        document.getElementById('chat-info-backdrop').classList.add('hidden');
       };
 
       /* Start Chat Modal handlers */
