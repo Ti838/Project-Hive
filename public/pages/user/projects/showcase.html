@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<link rel="stylesheet" href="/assets/css/ph-design.css">
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
 <style>
@@ -25,27 +26,19 @@ body{font-family:'Inter',sans-serif;}
 .dark .tag{background:rgba(99,102,241,.2);}
 </style>
 <script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"accent":"#6366f1","accent-dark":"#818cf8"}}}}</script>
-<style id="ph-design-vars">
-:root{--bg:#F0F2F9;--surface:#FFFFFF;--surface2:#F5F7FF;--border:#E2E8F0;--text:#0F172A;--sub:#64748B;--accent:#6366F1;--accent-hover:#4F46E5;--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(99,102,241,.06);}
-html.dark{--bg:#0C0D14;--surface:#13141E;--surface2:#1A1B27;--border:#252636;--text:#E4E1EB;--sub:#8884A0;--accent:#818CF8;--accent-hover:#6366F1;--card-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);}
-*,*::before,*::after{box-sizing:border-box;}
-html{transition:color-scheme .2s;}
-body{background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
-.ph-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);transition:all .2s;}
-.ph-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(99,102,241,.12);}
-.ph-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border .2s,box-shadow .2s;}
-.ph-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
-.ph-btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .2s;font-family:inherit;}
-.ph-btn:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.3);}
-.ph-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.ph-btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--sub);font-weight:600;font-size:14px;padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;font-family:inherit;}
-.ph-btn-ghost:hover{background:var(--surface2);color:var(--text);}
-.ph-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(99,102,241,.1);color:var(--accent);}
-.ph-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
-.ph-topbar{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);}
-.ph-page{margin-left:260px;min-height:100vh;}
-@media(max-width:768px){.ph-page{margin-left:0;}}
-.material-symbols-outlined{font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24;display:inline-block;vertical-align:middle;line-height:1;}
+<style>
+/* Mobile showcase responsive */
+@media(max-width:768px){
+  .ml-\[260px\]{margin-left:0!important;padding-bottom:80px!important;}
+  header.sticky{padding:0 14px!important;height:56px!important;}
+  main.p-8{padding:14px!important;}
+  .grid-cols-1.md\:grid-cols-2.xl\:grid-cols-3{grid-template-columns:1fr!important;}
+  #search-inp{width:120px!important;}
+}
+html.dark .bg-white{background:var(--sf,#13141E)!important;}
+html.dark .dark\:bg-gray-900{background:var(--sf,#13141E)!important;}
+html.dark .border-gray-200{border-color:var(--bd,#252636)!important;}
+html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
 </style></head>
 <body class="bg-slate-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen" data-no-float-theme="1">
 <div id="ph-sidebar"></div>
@@ -147,7 +140,9 @@ body{background:var(--bg);color:var(--text);transition:background .25s,color .25
   PHSidebar.init('showcase','../../../');
 
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
-  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
+  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
   const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
 

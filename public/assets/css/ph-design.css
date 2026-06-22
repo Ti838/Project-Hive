@@ -300,15 +300,15 @@ header, aside, main, section, div, a, button, input, textarea, select,
     font-size: 16px !important;
   }
 
-  /* Summary cards in notifications, people, etc. */
-  .sum-card { flex-direction: column !important; gap: 14px !important; }
+  /* Summary cards in notifications, people, etc. — wrap row, not column */
+  .sum-card { flex-wrap: wrap !important; gap: 12px !important; }
 
   /* Wrap rows */
   .top-row { flex-direction: column !important; align-items: stretch !important; }
   .tabs { width: 100% !important; overflow-x: auto; }
 
-  /* People/find page grid */
-  .grid { grid-template-columns: 1fr !important; }
+  /* People/find page grid — 2-col with min-width */
+  .grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important; }
 
   /* Settings layout stack */
   .st-layout { flex-direction: column !important; }
@@ -342,6 +342,85 @@ header, aside, main, section, div, a, button, input, textarea, select,
   /* Generator page */
   .gen-card, .gen-result { padding: 20px 16px !important; }
 }
+
+/* ═══════════════════════════════════════
+   PAGE-SPECIFIC MOBILE FIXES
+   ═══════════════════════════════════════ */
+
+/* ── Generator Page ── */
+@media (max-width: 768px) {
+  .hero { border-radius: 16px !important; padding: 28px 18px !important; }
+  .hero div[style*="right:32px"] { display: none !important; }
+  .hero h2 { font-size: 22px !important; }
+  .hero p { font-size: 13px !important; }
+  .chip { padding: 6px 12px !important; font-size: 12px !important; }
+  .lvl { padding: 10px !important; font-size: 12px !important; }
+  .gen-btn { font-size: 15px !important; padding: 14px !important; }
+  .idea-card { padding: 18px !important; }
+  .idea-card > div { flex-direction: column !important; gap: 12px !important; }
+}
+
+/* ── Saved Page ── */
+@media (max-width: 768px) {
+  .saved-wrap { padding: 16px 12px 80px !important; }
+  .post-card { padding: 16px !important; border-radius: 14px !important; }
+  .post-actions { flex-direction: column !important; gap: 8px !important; }
+  .post-actions button { width: 100% !important; justify-content: center !important; }
+}
+
+/* ── Profile View Page ── */
+@media (max-width: 768px) {
+  .pv-wrap { padding: 0 8px 80px !important; }
+  .pv-banner { height: 140px !important; }
+  .pv-avatar { width: 88px !important; height: 88px !important; font-size: 32px !important; }
+  .pv-name { font-size: 20px !important; }
+  .pv-section-hdr { padding: 14px 16px !important; }
+  .pv-section-body { padding: 0 16px 16px !important; }
+  .pv-2col { grid-template-columns: 1fr !important; }
+  .pv-actions { flex-wrap: wrap !important; gap: 8px !important; }
+  .pv-btn { min-height: 40px !important; }
+}
+
+/* ── Profile Edit Page ── */
+@media (max-width: 768px) {
+  .banner-zone { height: 160px !important; }
+  .av-row { padding: 14px 16px !important; gap: 14px !important; }
+  .av-ring, .av-c { width: 76px !important; height: 76px !important; }
+  .av-c { font-size: 26px !important; }
+  .tabs-wrap { padding: 0 12px !important; overflow-x: auto !important; }
+  .stab { padding: 10px 14px !important; font-size: 12px !important; white-space: nowrap !important; }
+  .main-wrap { padding: 0 12px 80px !important; }
+  .fc-body { padding: 16px !important; }
+  .fc-body div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+  .save-btn { border-radius: 12px !important; }
+}
+
+/* ── Messages Layout ── */
+@media (max-width: 768px) {
+  .ml-\\[260px\\].h-screen { margin-left: 0 !important; height: calc(100vh - 64px) !important; }
+  div[class*="ml-[260px]"].h-screen { margin-left: 0 !important; }
+}
+
+/* ── Teams Create ── */
+@media (max-width: 768px) {
+  .grid.grid-cols-12 { display: flex !important; flex-direction: column !important; }
+  .col-span-8 { width: 100% !important; }
+  .col-span-4 { width: 100% !important; }
+  .grid.grid-cols-2.gap-6 { grid-template-columns: 1fr !important; }
+}
+
+/* ═══ Dark Mode Fixes for Tailwind Gray Classes ═══ */
+html.dark .bg-white, html.dark .bg-gray-50 { background: var(--sf, #13141E) !important; }
+html.dark .bg-slate-50 { background: var(--bg, #0C0D14) !important; }
+html.dark .bg-gray-100, html.dark .bg-slate-100 { background: var(--sf2, #1A1B27) !important; }
+html.dark .bg-gray-800 { background: var(--sf2, #1A1B27) !important; }
+html.dark .bg-gray-900 { background: var(--sf, #13141E) !important; }
+html.dark .bg-gray-950 { background: var(--bg, #0C0D14) !important; }
+html.dark .border-gray-100, html.dark .border-gray-200 { border-color: var(--bd, #252636) !important; }
+html.dark .border-gray-700, html.dark .border-gray-800 { border-color: var(--bd, #252636) !important; }
+html.dark .text-gray-900 { color: var(--tx, #E4E1EB) !important; }
+html.dark .text-gray-700, html.dark .text-gray-600 { color: var(--sub, #8884A0) !important; }
+html.dark .text-gray-500, html.dark .text-gray-400 { color: var(--sub, #8884A0) !important; }
 
 /* ── Safe area for notched phones (iPhone X+) ── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {

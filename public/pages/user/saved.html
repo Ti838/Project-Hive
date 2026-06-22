@@ -48,7 +48,7 @@
 .tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-right:6px;margin-bottom:4px}
 </style>
 </head>
-<body>
+<body data-no-float-theme="1">
 <div id="ph-sidebar"></div>
 <div class="ph-page">
   <div class="ph-topbar">
@@ -73,7 +73,9 @@
 
   PHSidebar.init('', '../../');
 
-  const API = window.location.hostname === 'localhost' ? '' : 'https://projecthive-backend.onrender.com';
+  const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? (window.location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
 
   function getBookmarks() {
     try { return JSON.parse(localStorage.getItem('projecthive_bookmarks') || '[]'); }

@@ -226,7 +226,9 @@ async function handleRegister(e){
   const btn=document.getElementById('submit-btn');const txt=document.getElementById('btn-text');
   btn.disabled=true;txt.innerHTML='<span class="spinner"></span>';
   try{
-    const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')?'/api':'https://projecthive-backend.onrender.com/api';
+    const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
+      ?(window.location.port==='3000'?'http://localhost:5000/api':'/api')
+      :'https://projecthive-backend.onrender.com/api';
     const res=await fetch(`${BACKEND}/auth/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName:fn,lastName:ln,email,university:uni,password:pw})});
     const data=await res.json();
     if(res.ok&&data.requiresVerification){showSuccessState(data.user?.email||email);}

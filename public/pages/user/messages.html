@@ -1,1627 +1,2048 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Messages — ProjectHive</title>
-<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
-<style>
-  html { background-color: #F0F2F9 !important; }
-  html.dark { background-color: #0C0D14 !important; }
-  body { background-color: #F0F2F9 !important; }
-  html.dark body { background-color: #0C0D14 !important; }
-</style>
-<link rel="icon" href="/favicon.png?v=2">
-<!-- Preconnect to CDNs for faster loading -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdn.tailwindcss.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
-<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-<script src="/assets/js/core/ph-toast.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
-<script>
-// Lazy-load Jitsi Meet API — only when user starts a call (saves ~100KB on page load)
-window._jitsiLoaded = false;
-function loadJitsiAPI() {
-  return new Promise((resolve) => {
-    if (window._jitsiLoaded || window.JitsiMeetExternalAPI) { resolve(); return; }
-    const s = document.createElement('script');
-    s.src = 'https://meet.jit.si/external_api.js';
-    s.onload = () => { window._jitsiLoaded = true; resolve(); };
-    s.onerror = () => resolve(); // fail silently
-    document.head.appendChild(s);
-  });
-}
-</script>
-<style>
-body{font-family:'Inter',sans-serif;overflow:hidden;}
-.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;vertical-align:middle;}
-.dark body{background:#0f1117;color:#e4e1eb;}
-.bubble-in{animation:bubbleIn .18s ease;}
-@keyframes bubbleIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.conv-item:hover{background:rgba(99,102,241,.08);}
-.conv-item.active{background:rgba(99,102,241,.15);}
-.dark .conv-item.active{background:rgba(99,102,241,.2);}
-/* Messenger-style activity dot */
-.status-dot-online{background:#31A24C !important;box-shadow:0 0 0 2px var(--surface, #fff);}
-.status-dot-online.pulse{animation:statusPulse 2s ease-in-out infinite;}
-@keyframes statusPulse{0%,100%{box-shadow:0 0 0 2px var(--surface, #fff)}50%{box-shadow:0 0 0 2px var(--surface, #fff), 0 0 0 5px rgba(49,162,76,.25)}}
-.activity-label{font-size:11px;line-height:1.2;white-space:nowrap;}
-.activity-label.active{color:#31A24C;font-weight:600;}
-.activity-label.away{color:var(--sub, #64748B);}
-/* Mobile: show only conv list OR chat, not both */
-@media(max-width:768px){
-  .msg-conv-panel{position:absolute;inset:0;width:100% !important;z-index:20;transition:transform .25s ease;}
-  .msg-conv-panel.hidden-mobile{transform:translateX(-100%);}
-  .msg-chat-area{width:100% !important;}
-  .msg-back-btn{display:flex !important;}
-  .msg-layout{position:relative;}
-}
-@media(min-width:769px){
-  .msg-back-btn{display:none !important;}
-}
-</style>
-<script>tailwind.config={darkMode:"class",theme:{extend:{colors:{"accent":"#6366f1","accent-dark":"#818cf8"}}}}</script>
-<style id="ph-design-vars">
-:root{--bg:#F0F2F9;--surface:#FFFFFF;--surface2:#F5F7FF;--border:#E2E8F0;--text:#0F172A;--sub:#64748B;--accent:#6366F1;--accent-hover:#4F46E5;--card-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(99,102,241,.06);}
-html.dark{--bg:#0C0D14;--surface:#13141E;--surface2:#1A1B27;--border:#252636;--text:#E4E1EB;--sub:#8884A0;--accent:#818CF8;--accent-hover:#6366F1;--card-shadow:0 1px 3px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.2);}
-*,*::before,*::after{box-sizing:border-box;}
-html{transition:color-scheme .2s;}
-body{background:var(--bg);color:var(--text);transition:background .25s,color .25s;}
-.ph-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;box-shadow:var(--card-shadow);transition:all .2s;}
-.ph-card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(99,102,241,.12);}
-.ph-input{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--text);font-family:inherit;outline:none;transition:border .2s,box-shadow .2s;}
-.ph-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(99,102,241,.12);}
-.ph-btn{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-weight:700;font-size:14px;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:all .2s;font-family:inherit;}
-.ph-btn:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.3);}
-.ph-btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.ph-btn-ghost{display:inline-flex;align-items:center;gap:6px;background:transparent;color:var(--sub);font-weight:600;font-size:14px;padding:9px 16px;border-radius:12px;border:1.5px solid var(--border);cursor:pointer;transition:all .2s;font-family:inherit;}
-.ph-btn-ghost:hover{background:var(--surface2);color:var(--text);}
-.ph-tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(99,102,241,.1);color:var(--accent);}
-.ph-badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;}
-.ph-topbar{position:sticky;top:0;z-index:40;background:var(--bg);border-bottom:1.5px solid var(--border);padding:0 32px;height:64px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(12px);}
-.ph-page{margin-left:260px;min-height:100vh;}
-@media(max-width:768px){.ph-page{margin-left:0;}}
-.material-symbols-outlined{font-variation-settings:"FILL" 0,"wght" 400,"GRAD" 0,"opsz" 24;display:inline-block;vertical-align:middle;line-height:1;}
-</style><link rel="stylesheet" href="/assets/css/ph-design.css">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProjectHive — Collaboration & Messages</title>
+  <script>
+    (function(){
+      const t = localStorage.getItem('theme');
+      if(t === 'dark' || (!t && matchMedia('(prefers-color-scheme:dark)').matches)){
+        document.documentElement.classList.add('dark');
+      }
+    })()
+  </script>
+  
+  <!-- CDNs & Fonts -->
+  <link rel="icon" href="/favicon.png?v=2">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            heading: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            hive: {
+              50: '#f0f3ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+              950: '#0f0f1c',
+            },
+            darkSurface: {
+              bg: '#0a0b10',
+              panel: '#11131e',
+              card: '#181a2b',
+              border: '#24273e',
+              hover: '#1d2036',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+  <link rel="stylesheet" href="/assets/css/ph-design.css">
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <script src="/assets/js/core/ph-toast.js"></script>
+  <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+  
+  <script>
+    window._jitsiLoaded = false;
+    function loadJitsiAPI() {
+      return new Promise((resolve) => {
+        if (window._jitsiLoaded || window.JitsiMeetExternalAPI) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = 'https://meet.jit.si/external_api.js';
+        s.onload = () => { window._jitsiLoaded = true; resolve(); };
+        s.onerror = () => resolve();
+        document.head.appendChild(s);
+      });
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow: hidden;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    .dark ::-webkit-scrollbar-thumb { background: #24273e; border-radius: 99px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
+    
+    /* Animation Keyframes */
+    .bubble-in { animation: bubbleIn 0.22s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes bubbleIn {
+      from { opacity: 0; transform: translateY(8px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    .status-dot-online {
+      background: #10b981 !important;
+      box-shadow: 0 0 0 2.5px #11131e;
+    }
+    .status-dot-online.pulse {
+      animation: statusPulse 2s ease-in-out infinite;
+    }
+    @keyframes statusPulse {
+      0%, 100% { box-shadow: 0 0 0 2.5px #11131e }
+      50% { box-shadow: 0 0 0 2.5px #11131e, 0 0 0 6px rgba(16, 185, 129, 0.35) }
+    }
+    
+    /* Mobile Override styles */
+    @media (max-width: 768px) {
+      .msg-conv-panel {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        z-index: 20;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .msg-conv-panel.hidden-mobile {
+        transform: translateX(-100%);
+      }
+      .msg-chat-area {
+        width: 100% !important;
+      }
+      #ph-bottom-nav {
+        display: none !important;
+      }
+    }
+    
+    /* Ringing vibrate animation */
+    .ringing-vibrate {
+      animation: vibrate 0.5s linear infinite;
+    }
+    @keyframes vibrate {
+      0% { transform: translate(0, 0) rotate(0deg); }
+      20% { transform: translate(-2px, 2px) rotate(-1deg); }
+      40% { transform: translate(-2px, -2px) rotate(1deg); }
+      60% { transform: translate(2px, 2px) rotate(0deg); }
+      80% { transform: translate(2px, -2px) rotate(-1deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+    
+    /* Glassmorphism Classes */
+    .glass-card {
+      background: rgba(24, 26, 43, 0.45);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .glass-input {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+    .glass-input:focus {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+  </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100" data-no-float-theme="1">
-<div id="ph-sidebar"></div>
+<body class="bg-gray-50 dark:bg-darkSurface-bg text-gray-900 dark:text-gray-100 transition-colors duration-300">
 
-<!-- Full-height layout after sidebar -->
-<div class="ml-[260px] h-screen flex flex-col max-md:ml-0">
+  <!-- Sidebar Mount -->
+  <div id="ph-sidebar"></div>
 
-  <!-- Top bar -->
-  <header class="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center px-5 gap-3 shrink-0 z-30">
-    <div id="ph-hamburger-slot"></div>
-    <button onclick="history.back()" class="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors shrink-0 text-gray-700 dark:text-gray-300" title="Go Back">
-      <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-    </button>
-    <span class="material-symbols-outlined text-indigo-500 hidden md:block">chat</span>
-    <h1 class="font-bold text-base">Messages</h1>
-    <button onclick="openNewConv()" class="ml-auto flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-1.5 rounded-full transition-colors">
-      <span class="material-symbols-outlined text-base">edit</span> New
-    </button>
-  </header>
-
-  <!-- Chat layout -->
-  <div class="msg-layout flex flex-1 overflow-hidden">
-
-    <!-- Conversations panel -->
-    <aside class="msg-conv-panel w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col overflow-hidden">
-      <div class="p-3">
-        <input id="conv-search" type="text" placeholder="Search conversations…"
-          oninput="filterConvs(this.value)"
-          class="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
-      </div>
-      <!-- Tabs: Chats | Teams | Requests -->
-      <div class="flex border-b border-gray-200 dark:border-gray-800 px-2 gap-1 shrink-0">
-        <button id="tab-chats" onclick="switchTab('chats')" class="flex-1 py-2 text-xs font-semibold text-indigo-500 border-b-2 border-indigo-500 transition-colors">Chats</button>
-        <button id="tab-teams" onclick="switchTab('teams')" class="flex-1 py-2 text-xs font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors flex items-center justify-center gap-1">
-          Teams <span id="team-badge" class="hidden bg-purple-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-bold">0</span>
-        </button>
-        <button id="tab-requests" onclick="switchTab('requests')" class="flex-1 py-2 text-xs font-semibold text-gray-400 border-b-2 border-transparent hover:text-gray-600 transition-colors flex items-center justify-center gap-1">
-          Requests <span id="req-badge" class="hidden bg-red-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-bold">0</span>
-        </button>
-      </div>
-      <div id="conv-list" class="flex-1 overflow-y-auto px-2 pb-2">
-        <div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
-          <span class="material-symbols-outlined text-3xl">chat_bubble_outline</span>Loading…
-        </div>
-      </div>
-    </aside>
-
-
-    <!-- Chat area -->
-    <main class="msg-chat-area flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-950">
-      <!-- Chat header -->
-      <div id="chat-hdr" class="h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-5 flex items-center gap-3">
-        <button class="msg-back-btn items-center gap-1 text-indigo-500 text-sm font-semibold" style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;" onclick="showConvPanel()">
-          <span class="material-symbols-outlined text-base">arrow_back</span>
-        </button>
-        <div class="text-sm text-gray-400 flex items-center gap-2">
-          Select a conversation to start chatting
-        </div>
-      </div>
-
-      <!-- Messages -->
-      <div id="msgs" class="flex-1 overflow-y-auto p-5 flex flex-col gap-2">
-        <div class="flex flex-col items-center justify-center h-full text-gray-400 text-sm gap-3">
-          <span class="material-symbols-outlined text-5xl">waving_hand</span>
-          <p>Pick a conversation or start a new one</p>
-        </div>
-      </div>
-
-      <!-- Typing Indicator -->
-      <div id="typing-indicator" class="hidden text-[11px] text-indigo-500 dark:text-indigo-400 italic px-5 py-1 bg-gray-50 dark:bg-gray-950 shrink-0"></div>
-
-      <!-- Input -->
-      <div class="p-3 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 flex gap-2">
-        <input id="msg-inp" type="text" placeholder="Type a message… (Enter to send)"
-          onkeydown="if(event.key==='Enter')sendMsg()"
-          class="flex-1 bg-gray-100 dark:bg-gray-800 border-none rounded-full px-5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
-        <button onclick="sendMsg()" class="w-10 h-10 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full flex items-center justify-center transition-colors shrink-0">
-          <span class="material-symbols-outlined text-base">send</span>
-        </button>
-      </div>
-    </main>
-  </div>
-</div>
-
-<!-- New Conversation Modal -->
-<div id="nc-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center">
-  <div class="bg-white dark:bg-gray-900 rounded-2xl w-[420px] max-h-[80vh] flex flex-col shadow-2xl overflow-hidden">
-    <div class="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
-      <h3 class="font-bold">New Message</h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-    <div class="p-3 border-b border-gray-200 dark:border-gray-800">
-      <input id="nc-inp" type="text" placeholder="Search people…" oninput="searchUsers(this.value)"
-        class="w-full bg-gray-100 dark:bg-gray-800 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition-all">
-    </div>
-    <div id="user-list" class="flex-1 overflow-y-auto max-h-80 p-2"></div>
-  </div>
-</div>
-
-<!-- Video/Voice Call Modal (Google Meet style) -->
-<div id="call-modal" class="fixed inset-0 bg-black z-50 hidden flex-col">
-  <div class="flex-1 flex flex-col h-full">
-    <!-- Call header -->
-    <div class="absolute top-0 left-0 right-0 z-10 flex justify-between items-center p-4 bg-gradient-to-b from-black/60 to-transparent">
-      <div class="flex items-center gap-3">
-        <span class="material-symbols-outlined text-white/80" id="call-type-icon">videocam</span>
-        <span class="text-white font-bold text-sm">ProjectHive Call</span>
-        <span id="call-timer" class="text-white/50 text-xs font-mono">00:00</span>
-      </div>
-      <div class="flex items-center gap-2" id="call-connection-status">
-        <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="call-status-dot"></span>
-        <span class="text-yellow-400 text-xs font-semibold" id="call-status-text">Connecting...</span>
-      </div>
-    </div>
-    <!-- Jitsi container -->
-    <div id="jitsi-container" class="flex-1 w-full bg-gray-950"></div>
-    <!-- WebRTC Video container -->
-    <div id="webrtc-container" class="hidden flex-1 w-full bg-gray-950 relative flex items-center justify-center">
-      <!-- Remote Video (Full Screen) -->
-      <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-      <!-- Voice-Only Avatar Display -->
-      <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-gray-950 z-5">
-        <div id="voice-avatar" class="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-black shadow-2xl mb-6 relative">
-          <span id="voice-avatar-text">?</span>
-          <div class="absolute inset-0 rounded-full border-4 border-indigo-400/30 animate-ping" style="animation-duration:2s"></div>
-        </div>
-        <div id="voice-caller-name" class="text-white text-xl font-bold mb-2">Calling...</div>
-        <div class="flex items-center gap-1.5">
-          <div class="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.8s"></div>
-          <div class="w-1 h-6 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.6s;animation-delay:0.1s"></div>
-          <div class="w-1 h-3 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.9s;animation-delay:0.2s"></div>
-          <div class="w-1 h-5 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.7s;animation-delay:0.3s"></div>
-          <div class="w-1 h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.85s;animation-delay:0.15s"></div>
-        </div>
-      </div>
-      <!-- Local Video (Floating Bubble) -->
-      <div id="local-video-bubble" class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
-        <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
-      </div>
-    </div>
-    <!-- Call controls bar -->
-    <div class="absolute bottom-0 left-0 right-0 z-10 flex justify-center items-center gap-3 p-5 bg-gradient-to-t from-black/80 to-transparent">
-      <button id="btn-mute" onclick="toggleMute()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all hover:scale-110" title="Mute/Unmute">
-        <span class="material-symbols-outlined text-xl" id="mute-icon">mic</span>
-      </button>
-      <button id="btn-camera" onclick="toggleCamera()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all hover:scale-110" title="Camera On/Off">
-        <span class="material-symbols-outlined text-xl" id="camera-icon">videocam</span>
-      </button>
-      <button onclick="endCall()" class="w-16 h-16 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center transition-all hover:scale-110 shadow-lg shadow-red-500/40" title="End Call">
-        <span class="material-symbols-outlined text-2xl">call_end</span>
-      </button>
-      <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all hover:scale-110" title="Share Screen">
-        <span class="material-symbols-outlined text-xl">screen_share</span>
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Incoming Call Modal -->
-<div id="incoming-call-modal" class="fixed inset-0 bg-black/70 backdrop-blur-md z-50 hidden items-center justify-center">
-  <div class="bg-white dark:bg-gray-900 rounded-3xl p-8 w-[380px] max-w-[92vw] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-gray-800 text-center relative overflow-hidden">
-    <!-- Pulsing ring animation -->
-    <div class="relative mb-6">
-      <div class="absolute inset-0 w-20 h-20 rounded-full bg-green-400/20 animate-ping" style="animation-duration:1.5s"></div>
-      <div class="absolute inset-0 w-20 h-20 rounded-full bg-green-400/10 animate-ping" style="animation-duration:2s;animation-delay:.3s"></div>
-      <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-500/30">
-        <span class="material-symbols-outlined text-white text-4xl" style="animation: ring-shake 0.5s ease-in-out infinite alternate">phone_in_talk</span>
-      </div>
-    </div>
-    <h3 class="font-bold text-xl mb-1 text-gray-900 dark:text-white" id="caller-name">Incoming Call...</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400 mb-8">Your teammate wants to connect</p>
-    <div class="flex gap-4 w-full">
-      <button onclick="declineCall()" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-red-500/25">
-        <span class="material-symbols-outlined text-lg">call_end</span> Decline
-      </button>
-      <button onclick="acceptCall()" class="flex-1 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-2xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 shadow-lg shadow-green-500/25">
-        <span class="material-symbols-outlined text-lg">call</span> Accept
-      </button>
-    </div>
-  </div>
-</div>
-<style>
-@keyframes ring-shake {
-  0% { transform: rotate(-8deg); }
-  100% { transform: rotate(8deg); }
-}
-</style>
-
-<script>
-(function(){
-  /* Auth */
-  const TK = localStorage.getItem('access_token');
-  if(!TK){window.location.href='/login';return;}
-  try{
-    const p=JSON.parse(atob(TK.split('.')[1]));
-    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');window.location.href='/login';return;}
-  }catch(e){window.location.href='/login';return;}
-
-  PHSidebar.init('messages','../../');
-
-  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
-  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
-  const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
-  function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
-  function ini(f,l){return((f?.[0]||'')+(l?.[0]||'')).toUpperCase()||'?';}
-  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-  function showToast(msg, type='info') {
-    if (typeof PHToast !== 'undefined') {
-      if (type === 'error') PHToast.error(msg);
-      else if (type === 'success') PHToast.success(msg);
-      else PHToast.info ? PHToast.info(msg) : PHToast.success(msg);
-    }
-  }
-
-  // ── Messenger-style time-ago for activity status ──
-  function activityTimeAgo(dateStr) {
-    if (!dateStr) return { text: 'Offline', isOnline: false, cssClass: 'away' };
-    const now = Date.now();
-    const then = new Date(dateStr).getTime();
-    if (isNaN(then)) return { text: 'Offline', isOnline: false, cssClass: 'away' };
-    const diffMs = now - then;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHr = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHr / 24);
-
-    if (diffMin < 1) return { text: 'Active now', isOnline: true, cssClass: 'active' };
-    if (diffMin < 60) return { text: `Active ${diffMin}m ago`, isOnline: false, cssClass: 'away' };
-    if (diffHr < 24) return { text: `Active ${diffHr}h ago`, isOnline: false, cssClass: 'away' };
-    if (diffDay === 1) return { text: 'Active yesterday', isOnline: false, cssClass: 'away' };
-    if (diffDay < 7) return { text: `Active ${diffDay}d ago`, isOnline: false, cssClass: 'away' };
-    return { text: 'Offline', isOnline: false, cssClass: 'away' };
-  }
-
-  function getActivityStatus(friend) {
-    if (!friend) return { text: 'Offline', isOnline: false, cssClass: 'away' };
-    if (friend.onlineStatus === 'online') return { text: 'Active now', isOnline: true, cssClass: 'active' };
-    return activityTimeAgo(friend.lastSeen);
-  }
-
-  let ME={},convs=[],allMsgs=[],activeConv=null,allUsers=[],socket=null;
-  let friendIds = new Set(); // Track friend IDs for call gating
-
-  /* Load self */
-  try {
-    const cache = localStorage.getItem('ph-user-cache');
-    if (cache) {
-      const u = JSON.parse(cache);
-      ME = { id: u._id || u.id || u.user?._id || u.user?.id };
-    }
-  } catch(e) {}
-
-  fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
-    if(!u)return;
-    ME={id:u._id||u.id};
-    localStorage.setItem('ph-user-cache', JSON.stringify(u));
-  }).catch(()=>{});
-
-  /* Render conversations */
-  function renderConvs(list){
-    const el=document.getElementById('conv-list');
-    if(!list.length){
-      el.innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
-        <span class="material-symbols-outlined text-3xl">chat_bubble_outline</span>
-        <p>No conversations yet</p>
-        <button onclick="openNewConv()" class="mt-1 text-indigo-500 text-xs font-semibold hover:underline">Start one</button>
-      </div>`;
-      return;
-    }
-    el.innerHTML=list.map(c=>{
-      const f=c.friend||{};
-      const name=`${f.firstName||''} ${f.lastName||''}`.trim()||'User';
-      const color=avC(name);
-      const last=c.lastMessage?.content||'Say hello!';
-      const isActive=activeConv&&(activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
-      const status = getActivityStatus(f);
-      return `<div class="conv-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-0.5${isActive?' active':''}"
-        onclick='openConv(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
-        <div class="relative shrink-0">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
-          <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-[2.5px] border-white dark:border-gray-900 status-dot ${status.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-dot="${f._id||f.id}"></span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-semibold text-sm truncate">${esc(name)}</span>
-            ${status.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full shrink-0 md:hidden"></span>' : ''}
-          </div>
-          <div class="text-xs text-gray-400 truncate flex items-center gap-1">
-            <span class="truncate">${esc(last.substring(0,35))}</span>
-            <span class="shrink-0 text-[10px] activity-label ${status.cssClass}" data-user-activity="${f._id||f.id}">${status.isOnline ? '' : ' · ' + status.text}</span>
-          </div>
-        </div>
-        ${c.unreadCount?`<span class="bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-[10px] font-bold shrink-0">${c.unreadCount}</span>`:''}
-      </div>`;
-    }).join('');
-  }
-
-  window.filterConvs=function(q){
-    renderConvs(q?convs.filter(c=>{const n=`${c.friend?.firstName||''} ${c.friend?.lastName||''}`.toLowerCase();return n.includes(q.toLowerCase());}):convs);
-  };
-
-  /* Open conversation */
-  window.openConv=function(conv){
-    if (activeConv && socket) {
-      socket.emit('leave:room');
-    }
-
-    activeConv=conv;
-    conv.unreadCount = 0;
-    renderConvs(convs);
-
-    const f=conv.friend||{};
-    const name=`${f.firstName||''} ${f.lastName||''}`.trim()||'User';
-    const color=avC(name);
+  <!-- Primary 3-Column Container -->
+  <div class="ml-[260px] h-screen flex flex-col max-md:ml-0 overflow-hidden">
     
-    const hdrStatus = getActivityStatus(f);
-    document.getElementById('chat-hdr').innerHTML=`
-      <button class="msg-back-btn items-center gap-1 text-indigo-500 text-sm font-semibold" style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;" onclick="showConvPanel()">
-        <span class="material-symbols-outlined text-base">arrow_back</span>
-      </button>
-      <div class="flex items-center gap-3">
-        <div class="relative">
-          <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
-          <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${hdrStatus.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-hdr-dot="${f._id||f.id}"></span>
-        </div>
-        <div>
-          <div class="font-bold text-sm">${esc(name)}</div>
-          <div id="chat-hdr-status" class="activity-label ${hdrStatus.cssClass} flex items-center gap-1.5" data-user-hdr-activity="${f._id||f.id}" data-last-seen="${f.lastSeen||''}">
-            ${hdrStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>' : ''}
-            ${hdrStatus.text}
-          </div>
-        </div>
-      </div>
-      </div>
-      <div class="ml-auto flex items-center gap-2">
-        ${!friendIds.has(f._id||f.id) ? `
-          <button onclick="addFriendFromChat('${f._id||f.id}')" class="flex items-center gap-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full transition-colors" title="Add as friend to unlock calls">
-            <span class="material-symbols-outlined text-sm">person_add</span> Add Friend
-          </button>
-        ` : ''}
-        <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 ${friendIds.has(f._id||f.id) ? 'text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} rounded-full flex items-center justify-center transition-colors" title="${friendIds.has(f._id||f.id) ? 'Voice Call' : 'Add as friend first to call'}">
-          <span class="material-symbols-outlined">call</span>
-        </button>
-        <button id="video-call-btn" onclick="startCall()" class="w-9 h-9 ${friendIds.has(f._id||f.id) ? 'text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800' : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'} rounded-full flex items-center justify-center transition-colors" title="${friendIds.has(f._id||f.id) ? 'Video Call' : 'Add as friend first to call'}">
-          <span class="material-symbols-outlined">video_call</span>
-        </button>
-      </div>`;
-
-    
-    const tipEl = document.getElementById('typing-indicator');
-    if (tipEl) tipEl.classList.add('hidden');
-
-    document.getElementById('msgs').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Loading…</div>`;
-
-    const friendId=f._id||conv.friendId||conv._id;
-    
-    if (socket) {
-      socket.emit('join:room', { roomId: conv._id });
-    }
-
-    // Call read API
-    fetch(API_BASE+'/api/messages/read', {
-      method: 'POST',
-      headers: H,
-      body: JSON.stringify({ friendId })
-    }).catch(()=>{});
-
-    fetch(API_BASE+`/api/friends/dm/${friendId}`,{headers:H})
-      .then(r=>r.ok?r.json():[])
-      .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
-      .catch(()=>{
-        fetch(API_BASE+`/api/messages/${friendId}`,{headers:H})
-          .then(r=>r.ok?r.json():[])
-          .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
-          .catch(()=>{allMsgs=[];renderMsgs();});
-      });
-  };
-
-  /* Render messages */
-  function renderMsgs(){
-    if(!allMsgs.length){
-      document.getElementById('msgs').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
-        <span class="material-symbols-outlined text-4xl">waving_hand</span><p>No messages yet. Say hello! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c1.33-4 4-6 9-6 5 0 7.67 2 9 6-1.33 4-4 6-9 6-5 0-7.67-2-9-6z"/></svg></span></p></div>`;
-      return;
-    }
-    document.getElementById('msgs').innerHTML=allMsgs.map(m=>{
-      const mine=m.sender===ME?.id||m.sender?._id===ME?.id||m._tmp;
-      const ts=new Date(m.createdAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    <!-- Topbar/Header -->
+    <header class="h-16 bg-white dark:bg-darkSurface-panel border-b border-gray-200 dark:border-darkSurface-border flex items-center px-6 gap-4 shrink-0 z-30 shadow-sm">
+      <div id="ph-hamburger-slot" class="md:hidden"></div>
       
-      let ticksHtml = '';
-      if (mine) {
-        const friend = activeConv?.friend || {};
-        const friendId = friend._id || friend.id || activeConv?.friendId;
-        const isSeen = m.read_by?.includes(friendId) || m.readBy?.includes(friendId);
-        if (isSeen) {
-          const fn = friend.firstName || '';
-          const ln = friend.lastName || '';
-          const c = friend.avatarColor || avC(`${fn} ${ln}`);
-          const photo = friend.avatar 
-            ? `<img src="${friend.avatar}" class="w-full h-full object-cover rounded-full">`
-            : `<span class="text-[7px] font-bold text-white">${((fn[0]||'') + (ln[0]||'')).toUpperCase()}</span>`;
-          ticksHtml = `<div class="w-4 h-4 rounded-full flex items-center justify-center shrink-0 ml-1 border border-white dark:border-gray-900" style="background:${friend.avatar ? 'transparent' : c};" title="Seen">${photo}</div>`;
-        } else {
-          ticksHtml = `<span class="material-symbols-outlined text-[11px] text-indigo-300/80 ml-1" title="Sent">check_circle</span>`;
-        }
-      }
+      <button onclick="history.back()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card transition-all shrink-0 text-gray-600 dark:text-gray-400 hover:text-indigo-500" title="Go Back">
+        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+      </button>
+      
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-indigo-500 text-2xl font-bold">hub</span>
+        <h1 class="font-heading font-bold text-lg tracking-wide hidden sm:block">ProjectHive Collaboration</h1>
+        <h1 class="font-heading font-bold text-base tracking-wide sm:hidden">Hive Space</h1>
+      </div>
+      
+      <!-- Quick Info Stats -->
+      <div class="hidden lg:flex items-center gap-5 ml-8 pl-8 border-l border-gray-200 dark:border-darkSurface-border">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Real-Time Connected</span>
+        </div>
+      </div>
+      
+      <button onclick="openNewConv()" class="ml-auto flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20">
+        <span class="material-symbols-outlined text-sm font-bold">add_comment</span>
+        <span>New Chat</span>
+      </button>
+    </header>
 
-      return `<div class="flex ${mine?'justify-end':'justify-start'} bubble-in">
-        <div class="max-w-[65%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
-          ${mine?'bg-indigo-500 text-white rounded-br-sm':'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm'}">
-          ${esc(m.content)}
-          <div class="text-[10px] mt-1 opacity-60 text-right flex items-center justify-end gap-1">
-            <span>${ts}</span>
-            ${ticksHtml}
+    <!-- Chat workspace layout -->
+    <div class="msg-layout flex flex-1 overflow-hidden relative">
+
+      <!-- COLUMN 2: MIDDLE PANEL (Chat List) -->
+      <aside class="msg-conv-panel w-[340px] shrink-0 bg-white dark:bg-darkSurface-panel border-r border-gray-200 dark:border-darkSurface-border flex flex-col overflow-hidden">
+        
+        <!-- Search bar -->
+        <div class="p-4 border-b border-gray-100 dark:border-darkSurface-border/50">
+          <div class="relative flex items-center">
+            <span class="material-symbols-outlined absolute left-3.5 text-gray-400 dark:text-slate-500 text-lg">search</span>
+            <input id="conv-search" type="text" placeholder="Search direct or group chats..."
+              oninput="filterConvs(this.value)"
+              class="w-full bg-gray-100 dark:bg-darkSurface-card/60 border-none rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 transition-all font-medium">
           </div>
         </div>
-      </div>`;
-    }).join('');
-    const box=document.getElementById('msgs');box.scrollTop=box.scrollHeight;
-  }
 
-  /* Send message — works for both DM and Team chats */
-  window.sendMsg=function(){
-    const inp=document.getElementById('msg-inp');
-    const content=inp.value.trim();
-    if(!content||!activeConv)return;
-    inp.value='';
-
-    if (socket) {
-      socket.emit('typing:stop', { roomId: activeConv._id });
-    }
-
-    // Optimistic UI — show message immediately
-    allMsgs.push({
-      content,
-      sender: ME?.id,
-      createdAt: new Date().toISOString(),
-      _tmp: true,
-      read_by: [ME?.id]
-    });
-
-    if (activeConv.type === 'team') {
-      renderTeamMsgs();
-      // Send via socket for real-time + save via API
-      if (socket) {
-        socket.emit('message:send', { roomId: activeConv._id, content });
-      }
-      fetch(API_BASE+'/api/messages', {
-        method:'POST',
-        headers:H,
-        body:JSON.stringify({ roomId: activeConv._id, content })
-      }).catch(()=>{});
-    } else {
-      renderMsgs();
-      const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
-
-      fetch(API_BASE+'/api/messages',{
-        method:'POST',
-        headers:H,
-        body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id })
-      }).then(r => r.json()).then(newMsg => {
-        loadConvs();
-      }).catch(()=>{});
-    }
-  };
-
-  /* New conv modal */
-  window.openNewConv=function(){
-    document.getElementById('nc-modal').classList.replace('hidden','flex');
-    document.getElementById('nc-inp').value='';
-    loadAllUsers();
-  };
-  window.closeModal=function(){document.getElementById('nc-modal').classList.replace('flex','hidden');};
-  document.getElementById('nc-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal();});
-
-  async function loadAllUsers(){
-    if(allUsers.length){renderUserList(allUsers);return;}
-    document.getElementById('user-list').innerHTML=`<div class="text-center p-5 text-gray-400 text-sm">Loading…</div>`;
-    try{
-      const r=await fetch(API_BASE+'/api/users?limit=50',{headers:H});
-      const d=await r.json();
-      allUsers=(d.users||d||[]).filter(u=>u._id!==ME?.id);
-      renderUserList(allUsers);
-    }catch(e){document.getElementById('user-list').innerHTML=`<div class="text-center p-5 text-red-400 text-sm">Server offline</div>`;}
-  }
-
-  function renderUserList(users){
-    document.getElementById('user-list').innerHTML=users.slice(0,30).map(u=>{
-      const name=`${u.firstName||''} ${u.lastName||''}`.trim()||'User';
-      return `<div class="flex items-center gap-3 p-3 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        onclick="startWith('${u._id}','${u.firstName||''}','${u.lastName||''}')">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${avC(name)}">${ini(u.firstName,u.lastName)}</div>
-        <div>
-          <div class="font-semibold text-sm">${esc(name)}</div>
-          <div class="text-xs text-gray-400">${esc(u.university||u.email||'')}</div>
+        <!-- Section Switcher Tabs -->
+        <div class="flex border-b border-gray-100 dark:border-darkSurface-border/40 px-3 py-1 gap-1 shrink-0 bg-gray-50/50 dark:bg-darkSurface-bg/20">
+          <button id="tab-chats" onclick="switchTab('chats')" class="flex-1 py-2.5 text-xs font-bold text-indigo-500 border-b-2 border-indigo-500 transition-all focus:outline-none flex items-center justify-center gap-1.5 rounded-t-lg">
+            <span class="material-symbols-outlined text-[15px]">chat_bubble</span>
+            <span>Direct</span>
+          </button>
+          <button id="tab-teams" onclick="switchTab('teams')" class="flex-1 py-2.5 text-xs font-bold text-gray-400 dark:text-slate-500 border-b-2 border-transparent hover:text-gray-600 dark:hover:text-slate-300 transition-all focus:outline-none flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">groups</span>
+            <span>Teams</span>
+            <span id="team-badge" class="hidden bg-indigo-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-extrabold shadow-sm">0</span>
+          </button>
+          <button id="tab-requests" onclick="switchTab('requests')" class="flex-1 py-2.5 text-xs font-bold text-gray-400 dark:text-slate-500 border-b-2 border-transparent hover:text-gray-600 dark:hover:text-slate-300 transition-all focus:outline-none flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">mark_email_unread</span>
+            <span>Requests</span>
+            <span id="req-badge" class="hidden bg-rose-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-extrabold shadow-sm">0</span>
+          </button>
         </div>
-      </div>`;
-    }).join('');
-  }
 
-  window.searchUsers=function(q){
-    const f=q?allUsers.filter(u=>`${u.firstName||''} ${u.lastName||''} ${u.email||''}`.toLowerCase().includes(q.toLowerCase())):allUsers;
-    renderUserList(f);
-  };
+        <!-- Chats list -->
+        <div id="conv-list" class="flex-1 overflow-y-auto px-2 py-3 space-y-1">
+          <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-3">
+            <span class="material-symbols-outlined text-4xl animate-pulse text-indigo-400/40">sync</span>
+            <p class="font-medium text-xs">Loading conversations...</p>
+          </div>
+        </div>
+      </aside>
 
-  window.startWith=function(uid,fn,ln){
-    closeModal();
-    const roomId = [ME.id, uid].sort().join('_');
-    openConv({_id:roomId,friendId:uid,friend:{_id:uid,firstName:fn,lastName:ln},lastMessage:null,unreadCount:0});
-  };
+      <!-- COLUMN 3: RIGHT PANEL (Conversation area) -->
+      <main class="msg-chat-area flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-darkSurface-bg">
+        
+        <!-- Active Chat Header -->
+        <div id="chat-hdr" class="h-16 bg-white dark:bg-darkSurface-panel border-b border-gray-200 dark:border-darkSurface-border px-6 flex items-center justify-between shrink-0 shadow-sm z-10">
+          <div class="msg-back-btn flex items-center gap-2 md:hidden">
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400" onclick="showConvPanel()">
+              <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+          </div>
+          <div class="text-sm text-gray-400 dark:text-slate-500 flex items-center gap-2.5 font-medium">
+            <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
+            <span>Select a conversation to start collaborating in ProjectHive</span>
+          </div>
+        </div>
 
-  // Add friend directly from chat header
-  window.addFriendFromChat = async function(userId) {
-    try {
-      const r = await fetch(API_BASE + `/api/friends/request/${userId}`, { method: 'POST', headers: H });
-      const d = await r.json();
-      if (r.ok) {
-        showToast('Friend request sent! They can accept to unlock calls.', 'success');
-      } else {
-        showToast(d.error || d.message || 'Could not send request', 'error');
-      }
-    } catch(e) {
-      showToast('Failed to send friend request', 'error');
-    }
-  };
+        <!-- Chat messages view area -->
+        <div id="msgs" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3.5">
+          <!-- Empty View -->
+          <div class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-slate-500 text-center px-4 max-w-md mx-auto">
+            <div class="w-18 h-18 rounded-full bg-indigo-50/50 dark:bg-darkSurface-card/50 flex items-center justify-center mb-5 border border-indigo-100/30">
+              <span class="material-symbols-outlined text-4xl text-indigo-500 animate-bounce">waving_hand</span>
+            </div>
+            <h3 class="font-heading font-bold text-lg text-gray-800 dark:text-slate-200 mb-1.5">Welcome to ProjectHive Chat!</h3>
+            <p class="text-xs leading-relaxed text-gray-500 dark:text-slate-400">Select a teammate or project team from the list, or start a new message to initiate secure, high-fidelity chat and calling.</p>
+          </div>
+        </div>
 
-  /* Load conversations */
-  async function loadConvs(){
-    // Read cache
-    try {
-      const cache = localStorage.getItem('ph-convs-cache');
-      if (cache) {
-        convs = JSON.parse(cache);
-        renderConvs(convs);
-      }
-    } catch(e) {}
+        <!-- Typing status bar -->
+        <div id="typing-indicator" class="hidden text-xs text-indigo-500 dark:text-indigo-400 font-semibold px-6 py-2 bg-white/50 dark:bg-darkSurface-panel/50 border-t border-gray-100 dark:border-darkSurface-border/40 shrink-0 italic"></div>
 
-    try{
-      const r=await fetch(API_BASE+'/api/messages/conversations',{headers:H});
-      const d=await r.json();
-      convs=d.conversations||d||[];
-      // Build friend set for call gating
-      friendIds.clear();
-      convs.forEach(c => {
-        if (c.friend && (c.friend._id || c.friend.id)) {
-          friendIds.add(c.friend._id || c.friend.id);
+        <!-- Message composer area -->
+        <div id="chat-input-area" class="hidden p-4 bg-white dark:bg-darkSurface-panel border-t border-gray-200 dark:border-darkSurface-border flex items-center gap-3">
+          
+          <!-- Attachment Menu Trigger -->
+          <div class="relative">
+            <button id="btn-attach" onclick="toggleAttachmentMenu()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Attach file or media">
+              <span class="material-symbols-outlined text-lg">attach_file</span>
+            </button>
+            
+            <!-- Attachment Dropdown Popover -->
+            <div id="attachment-menu" class="absolute bottom-14 left-0 w-48 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl p-2 hidden z-40">
+              <button onclick="sendMockMedia('image')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-500 transition-colors">
+                <span class="material-symbols-outlined text-base text-emerald-500">image</span>
+                <span>Send Mock Image</span>
+              </button>
+              <button onclick="sendMockMedia('document')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-500 transition-colors">
+                <span class="material-symbols-outlined text-base text-rose-500">picture_as_pdf</span>
+                <span>Send Mock Doc (PDF)</span>
+              </button>
+              <button onclick="sendMockMedia('link')" class="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-lg text-gray-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 hover:text-indigo-500 transition-colors">
+                <span class="material-symbols-outlined text-base text-indigo-500">link</span>
+                <span>Send Rich Link</span>
+              </button>
+            </div>
+          </div>
+          
+          <button onclick="insertEmoji('😊')" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji">
+            <span class="material-symbols-outlined text-lg">mood</span>
+          </button>
+          
+          <input id="msg-inp" type="text" placeholder="Type a message or drop files..."
+            onkeydown="if(event.key==='Enter')sendMsg()"
+            class="flex-1 bg-gray-100 dark:bg-darkSurface-card/80 border-none rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 transition-all font-medium">
+          
+          <button onclick="sendMsg()" class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-[0.95] shadow-md shadow-indigo-600/15">
+            <span class="material-symbols-outlined text-lg font-bold">send</span>
+          </button>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- CUSTOM MOBILE BOTTOM NAV BAR (Ensure WhatsApp + Slack hybrid standard) -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-darkSurface-panel border-t border-gray-200 dark:border-darkSurface-border flex items-center justify-around z-40 px-2 pb-safe shadow-lg">
+    <a href="/dashboard" class="flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 hover:text-indigo-500 flex-1 min-h-[44px]">
+      <span class="material-symbols-outlined text-xl">grid_view</span>
+      <span class="text-[9px] font-bold mt-0.5">Home</span>
+    </a>
+    <a href="/teams" class="flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 hover:text-indigo-500 flex-1 min-h-[44px]">
+      <span class="material-symbols-outlined text-xl">groups</span>
+      <span class="text-[9px] font-bold mt-0.5">Teams</span>
+    </a>
+    <a href="/messages" class="flex flex-col items-center justify-center text-indigo-500 flex-1 min-h-[44px]">
+      <span class="material-symbols-outlined text-xl fill-current">forum</span>
+      <span class="text-[9px] font-bold mt-0.5">Messages</span>
+    </a>
+    <a onclick="showCallsHistoryMock()" href="#" class="flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 hover:text-indigo-500 flex-1 min-h-[44px]">
+      <span class="material-symbols-outlined text-xl">call</span>
+      <span class="text-[9px] font-bold mt-0.5">Calls</span>
+    </a>
+    <a href="/profile" class="flex flex-col items-center justify-center text-gray-400 dark:text-slate-500 hover:text-indigo-500 flex-1 min-h-[44px]">
+      <span class="material-symbols-outlined text-xl">person</span>
+      <span class="text-[9px] font-bold mt-0.5">Profile</span>
+    </a>
+  </div>
+
+  <!-- CALL SYSTEM MODAL OVERLAYS -->
+
+  <!-- Voice/Video Calling Screen (Google Meet / Discord Style) -->
+  <div id="call-modal" class="fixed inset-0 bg-[#07080d] z-50 hidden flex-col transition-all duration-300">
+    <div class="flex-1 flex flex-col h-full relative">
+      
+      <!-- Top header bar -->
+      <div class="absolute top-0 left-0 right-0 z-20 flex justify-between items-center p-5 bg-gradient-to-b from-black/80 to-transparent">
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-white/90 text-2xl" id="call-type-icon">videocam</span>
+          <div>
+            <span class="text-white font-bold text-sm block font-heading">ProjectHive Call room</span>
+            <span id="call-timer" class="text-white/50 text-xs font-mono">00:00</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/5" id="call-connection-status">
+          <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="call-status-dot"></span>
+          <span class="text-yellow-400 text-xs font-bold" id="call-status-text">Connecting...</span>
+        </div>
+      </div>
+      
+      <!-- Active Call Display Main Box -->
+      <div class="flex-1 w-full flex items-center justify-center relative bg-slate-950">
+        
+        <!-- Jitsi container -->
+        <div id="jitsi-container" class="w-full h-full"></div>
+        
+        <!-- WebRTC Video container -->
+        <div id="webrtc-container" class="hidden absolute inset-0 w-full h-full relative flex items-center justify-center">
+          
+          <!-- Remote Video (Full Screen) -->
+          <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+          
+          <!-- Voice-Only Avatar Display -->
+          <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d] z-10">
+            <div id="voice-avatar" class="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-extrabold shadow-2xl mb-6 relative">
+              <span id="voice-avatar-text">?</span>
+              <div class="absolute inset-0 rounded-full border-4 border-indigo-400/30 animate-ping" style="animation-duration:2s"></div>
+            </div>
+            <div id="voice-caller-name" class="text-white text-xl font-heading font-bold mb-2">Connecting Voice...</div>
+            <div class="flex items-center gap-1.5 bg-indigo-950/40 px-4 py-2 rounded-full border border-indigo-500/20">
+              <div class="w-1.5 h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.8s"></div>
+              <div class="w-1.5 h-6 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.6s;animation-delay:0.1s"></div>
+              <div class="w-1.5 h-3 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.9s;animation-delay:0.2s"></div>
+              <div class="w-1.5 h-5 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.7s;animation-delay:0.3s"></div>
+              <span class="text-[10px] font-bold text-indigo-300 ml-1 uppercase tracking-widest">Voice Active</span>
+            </div>
+          </div>
+          
+          <!-- Local Video (Floating Bubble) -->
+          <div id="local-video-bubble" class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
+            <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Call Control Bar -->
+      <div class="absolute bottom-0 left-0 right-0 z-20 flex justify-center items-center gap-4 p-6 bg-gradient-to-t from-black/90 to-transparent">
+        <button id="btn-mute" onclick="toggleMute()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Mute Microphone">
+          <span class="material-symbols-outlined text-xl" id="mute-icon">mic</span>
+        </button>
+        
+        <button id="btn-camera" onclick="toggleCamera()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Toggle Camera">
+          <span class="material-symbols-outlined text-xl" id="camera-icon">videocam</span>
+        </button>
+        
+        <button onclick="endCall()" class="w-16 h-16 bg-rose-600 hover:bg-rose-500 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] shadow-lg shadow-rose-600/35 border border-rose-500/30" title="End Call">
+          <span class="material-symbols-outlined text-2xl font-bold">call_end</span>
+        </button>
+        
+        <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Share Screen">
+          <span class="material-symbols-outlined text-xl">screen_share</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Incoming Call Modal Overlay -->
+  <div id="incoming-call-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center">
+    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl p-8 w-[380px] max-w-[92vw] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-darkSurface-border text-center relative overflow-hidden">
+      
+      <!-- Ringing Ring Pulsing waves -->
+      <div class="relative mb-6">
+        <div class="absolute inset-0 w-24 h-24 -m-2 rounded-full bg-emerald-400/20 animate-ping" style="animation-duration:1.5s"></div>
+        <div class="absolute inset-0 w-24 h-24 -m-2 rounded-full bg-emerald-400/10 animate-ping" style="animation-duration:2s;animation-delay:.3s"></div>
+        <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/35 ringing-vibrate">
+          <span class="material-symbols-outlined text-white text-3xl">phone_in_talk</span>
+        </div>
+      </div>
+      
+      <h3 class="font-heading font-bold text-xl mb-1 text-gray-900 dark:text-white" id="caller-name">Incoming Call...</h3>
+      <p class="text-xs text-gray-500 dark:text-slate-400 mb-8 font-medium">Your ProjectHive teammate wants to connect</p>
+      
+      <div class="flex gap-4 w-full">
+        <button onclick="declineCall()" class="flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-rose-600/20">
+          <span class="material-symbols-outlined text-lg font-bold">call_end</span>
+          <span>Decline</span>
+        </button>
+        <button onclick="acceptCall()" class="flex-1 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20">
+          <span class="material-symbols-outlined text-lg font-bold">call</span>
+          <span>Accept</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Conversation/Chat Search Modal -->
+  <div id="nc-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center">
+    <div class="bg-white dark:bg-darkSurface-panel rounded-2xl w-[440px] max-h-[80vh] flex flex-col shadow-2xl border border-gray-200 dark:border-darkSurface-border overflow-hidden">
+      
+      <div class="p-4 border-b border-gray-100 dark:border-darkSurface-border flex justify-between items-center">
+        <h3 class="font-heading font-bold text-base text-gray-800 dark:text-white">Start New Collaboration</h3>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-darkSurface-card transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      
+      <div class="p-4 border-b border-gray-100 dark:border-darkSurface-border">
+        <div class="relative flex items-center">
+          <span class="material-symbols-outlined absolute left-3.5 text-gray-400 text-lg">search</span>
+          <input id="nc-inp" type="text" placeholder="Search teammate names or emails..." oninput="searchUsers(this.value)"
+            class="w-full bg-gray-100 dark:bg-darkSurface-card border-none rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white">
+        </div>
+      </div>
+      
+      <div id="user-list" class="flex-1 overflow-y-auto max-h-[360px] p-2 space-y-1"></div>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      /* Auth Guards */
+      const TK = localStorage.getItem('access_token');
+      if(!TK){window.location.href='/login';return;}
+      try{
+        const p = JSON.parse(atob(TK.split('.')[1]));
+        if(p.exp && Date.now() >= p.exp*1000){
+          localStorage.removeItem('access_token');
+          window.location.href='/login';
+          return;
         }
-      });
-      // Also fetch actual friends list for accuracy
+      }catch(e){window.location.href='/login';return;}
+
+      // Init Shared Sidebar
+      PHSidebar.init('messages','../../');
+
+      const H = {Authorization:'Bearer ' + TK,'Content-Type':'application/json'};
+      const API_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+        ? (location.port === '3000' ? 'http://localhost:5000' : '')
+        : 'https://projecthive-backend.onrender.com';
+      const COLS = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+      
+      function avC(s){
+        let h = 0;
+        for(const c of s||'') h = c.charCodeAt(0) + ((h<<5)-h);
+        return COLS[Math.abs(h)%COLS.length];
+      }
+      function ini(f,l){return((f?.[0]||'')+(l?.[0]||'')).toUpperCase()||'?';}
+      function esc(s){
+        const d = document.createElement('div');
+        d.textContent = s||'';
+        return d.innerHTML;
+      }
+      function showToast(msg, type='info') {
+        if (typeof PHToast !== 'undefined') {
+          if (type === 'error') PHToast.error(msg);
+          else if (type === 'success') PHToast.success(msg);
+          else PHToast.info ? PHToast.info(msg) : PHToast.success(msg);
+        }
+      }
+
+      // Rich Formatting for Images, Documents, and Links
+      function formatMessageContent(content) {
+        if (!content) return '';
+        const trimmed = content.trim();
+        
+        // 1. Image Check
+        if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)/i) || trimmed.startsWith('data:image/')) {
+          return `
+            <div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
+              <img src="${esc(trimmed)}" alt="Sent Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open('${esc(trimmed)}', '_blank')">
+            </div>
+          `;
+        }
+        
+        // 2. File Check
+        if (trimmed.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar)/i)) {
+          const ext = trimmed.split('.').pop().toUpperCase();
+          let icon = 'description';
+          let iconColor = 'text-blue-500';
+          if (ext === 'PDF') { icon = 'picture_as_pdf'; iconColor = 'text-rose-500'; }
+          else if (ext === 'ZIP' || ext === 'RAR') { icon = 'folder_zip'; iconColor = 'text-amber-500'; }
+          
+          const fileName = trimmed.split('/').pop().split('\\').pop();
+          return `
+            <div class="flex items-center gap-3 p-3 bg-black/20 dark:bg-black/40 rounded-xl border border-slate-200/10 max-w-[260px]">
+              <span class="material-symbols-outlined text-3xl ${iconColor}">${icon}</span>
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold truncate text-slate-100 dark:text-slate-200">${esc(fileName)}</div>
+                <div class="text-[9px] text-slate-400 uppercase font-extrabold tracking-wider">${ext} Document</div>
+              </div>
+              <button onclick="window.open('${esc(trimmed)}', '_blank')" class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all shrink-0">
+                <span class="material-symbols-outlined text-sm">download</span>
+              </button>
+            </div>
+          `;
+        }
+        
+        // 3. Link Check
+        if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+          const displayUrl = trimmed.replace(/https?:\/\/(www\.)?/, '').split('/')[0];
+          return `
+            <a href="${esc(trimmed)}" target="_blank" class="block underline break-all text-indigo-400 hover:text-indigo-300 font-medium mb-1">${esc(trimmed)}</a>
+            <div class="p-2.5 bg-black/10 dark:bg-black/30 rounded-xl border border-slate-700/20 max-w-[260px] mt-1 text-[11px] leading-snug">
+              <div class="font-bold text-slate-200 truncate flex items-center gap-1">
+                <span class="material-symbols-outlined text-xs text-indigo-400">link</span>
+                <span>${esc(displayUrl)}</span>
+              </div>
+              <div class="text-slate-400 mt-1 line-clamp-2">Visit external website and resources shared in ProjectHive workspace.</div>
+            </div>
+          `;
+        }
+        
+        // 4. Default Text
+        return esc(content);
+      }
+
+      // Messenger-style activity tracking
+      function activityTimeAgo(dateStr) {
+        if (!dateStr) return { text: 'Offline', isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        const now = Date.now();
+        const then = new Date(dateStr).getTime();
+        if (isNaN(then)) return { text: 'Offline', isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        const diffMs = now - then;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHr = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHr / 24);
+
+        if (diffMin < 1) return { text: 'Active now', isOnline: true, cssClass: 'text-emerald-500 font-bold' };
+        if (diffMin < 60) return { text: `${diffMin}m ago`, isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        if (diffHr < 24) return { text: `${diffHr}h ago`, isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        if (diffDay === 1) return { text: 'Yesterday', isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        if (diffDay < 7) return { text: `${diffDay}d ago`, isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        return { text: 'Offline', isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+      }
+
+      function getActivityStatus(friend) {
+        if (!friend) return { text: 'Offline', isOnline: false, cssClass: 'text-gray-400 dark:text-slate-500' };
+        if (friend.onlineStatus === 'online') return { text: 'Active now', isOnline: true, cssClass: 'text-emerald-500 font-bold' };
+        return activityTimeAgo(friend.lastSeen);
+      }
+
+      let ME={}, convs=[], allMsgs=[], activeConv=null, allUsers=[], socket=null;
+      let friendIds = new Set();
+
+      // Attachment state
+      window.toggleAttachmentMenu = function() {
+        const menu = document.getElementById('attachment-menu');
+        menu.classList.toggle('hidden');
+      };
+      
+      window.insertEmoji = function(emoji) {
+        const inp = document.getElementById('msg-inp');
+        inp.value += emoji;
+        inp.focus();
+      };
+      
+      window.sendMockMedia = function(type) {
+        document.getElementById('attachment-menu').classList.add('hidden');
+        const inp = document.getElementById('msg-inp');
+        if (type === 'image') {
+          inp.value = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600';
+        } else if (type === 'document') {
+          inp.value = 'https://projecthive-demo.onrender.com/assets/ProjectHive_PitchDeck.pdf';
+        } else if (type === 'link') {
+          inp.value = 'https://projecthive-bd.vercel.app';
+        }
+        sendMsg();
+      };
+
+      // Mock Call History trigger for Mobile bottom navigation
+      window.showCallsHistoryMock = function() {
+        showToast('All your calls are initiated directly from inside chat conversation headers for privacy.', 'info');
+      };
+
+      /* Load Profile cache */
       try {
-        const fr = await fetch(API_BASE+'/api/friends', { headers: H });
-        if (fr.ok) {
-          const fd = await fr.json();
-          (fd.friends||[]).forEach(f => friendIds.add(f.id || f._id));
+        const cache = localStorage.getItem('ph-user-cache');
+        if (cache) {
+          const u = JSON.parse(cache);
+          ME = { id: u._id || u.id || u.user?._id || u.user?.id };
         }
       } catch(e) {}
-      localStorage.setItem('ph-convs-cache', JSON.stringify(convs));
-      renderConvs(convs);
 
-      // Check URL query parameters for direct chat trigger
-      const params = new URLSearchParams(window.location.search);
-      const chatUserId = params.get('chat') || params.get('uid');
-      if (chatUserId && ME) {
-        // Find existing conversation first
-        const existing = convs.find(c => c.friendId === chatUserId || (c.friend && c.friend.id === chatUserId));
-        if (existing) {
-          openConv(existing);
-        } else {
-          // Fetch user details and open conversation dynamically
-          const ur = await fetch(API_BASE + `/api/users/${chatUserId}`, { headers: H });
-          if (ur.ok) {
-            const user = await ur.json();
-            const roomId = [ME.id, user.id || user._id].sort().join('_');
-            const fn = user.first_name || user.firstName || '';
-            const ln = user.last_name || user.lastName || '';
-            openConv({
-              _id: roomId,
-              friendId: user.id || user._id,
-              friend: {
-                _id: user.id || user._id,
-                id: user.id || user._id,
-                firstName: fn,
-                lastName: ln,
-                onlineStatus: user.online_status || user.onlineStatus || 'offline',
-                avatar: user.avatar,
-                avatarColor: user.avatar_color
-              },
-              lastMessage: null,
-              unreadCount: 0
-            });
-          }
+      fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{
+        if(!u)return;
+        ME={id:u._id||u.id};
+        localStorage.setItem('ph-user-cache', JSON.stringify(u));
+      }).catch(()=>{});
+
+      /* Render direct conversations */
+      function renderConvs(list){
+        const el = document.getElementById('conv-list');
+        if(!list.length){
+          el.innerHTML=`
+            <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-3 p-4 text-center">
+              <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-slate-700">chat_bubble</span>
+              <p class="font-medium text-xs">No active chats yet</p>
+              <button onclick="openNewConv()" class="text-indigo-500 hover:text-indigo-400 text-xs font-bold mt-1 bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all">Start Chat</button>
+            </div>`;
+          return;
         }
+        el.innerHTML = list.map(c=>{
+          const f = c.friend||{};
+          const name = `${f.firstName||''} ${f.lastName||''}`.trim()||'Teammate';
+          const color = avC(name);
+          const last = c.lastMessage?.content||'Start collaborating!';
+          const isActive = activeConv && (activeConv._id===c._id||activeConv.friendId===(f._id||c.friendId));
+          const status = getActivityStatus(f);
+          
+          return `
+            <div class="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 dark:hover:bg-darkSurface-hover ${isActive ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-[3px] border-indigo-500 pl-2' : ''}"
+              onclick='openConv(${JSON.stringify(c).replace(/'/g,"&#39;")})'>
+              <div class="relative shrink-0">
+                <div class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+                <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-[2px] border-white dark:border-darkSurface-panel status-dot ${status.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-dot="${f._id||f.id}"></span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate">${esc(name)}</span>
+                  <span class="text-[10px] text-gray-400 dark:text-slate-500 font-medium">${c.lastMessage ? new Date(c.lastMessage.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''}</span>
+                </div>
+                <div class="flex items-center justify-between mt-0.5">
+                  <p class="text-xs text-gray-500 dark:text-slate-400 truncate pr-2 font-medium">${esc(last)}</p>
+                  ${c.unreadCount ? `<span class="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[10px] font-black shrink-0 shadow-sm">${c.unreadCount}</span>` : ''}
+                </div>
+              </div>
+            </div>`;
+        }).join('');
       }
-    }catch(e){
-      if (!convs.length) {
-        document.getElementById('conv-list').innerHTML=`<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
-           <span class="material-symbols-outlined text-3xl">cloud_off</span><p>Server offline</p></div>`;
-      }
-    }
-  }
 
-  let currentTab = 'chats';
-  let pendingRequests = [];
-  let teamConvs = [];
-
-  // Switch between Chats, Teams, and Requests tabs
-  window.switchTab = function(tab) {
-    currentTab = tab;
-    const chatsBtn  = document.getElementById('tab-chats');
-    const teamsBtn  = document.getElementById('tab-teams');
-    const reqBtn    = document.getElementById('tab-requests');
-    const active    = 'text-indigo-500 border-b-2 border-indigo-500';
-    const inactive  = 'text-gray-400 border-b-2 border-transparent';
-
-    chatsBtn.className = `flex-1 py-2 text-xs font-semibold ${tab==='chats'?active:inactive} transition-colors`;
-    teamsBtn.className = `flex-1 py-2 text-xs font-semibold ${tab==='teams'?active:inactive} hover:text-gray-600 transition-colors flex items-center justify-center gap-1`;
-    reqBtn.className   = `flex-1 py-2 text-xs font-semibold ${tab==='requests'?active:inactive} hover:text-gray-600 transition-colors flex items-center justify-center gap-1`;
-
-    if (tab === 'chats') {
-      renderConvs(convs);
-    } else if (tab === 'teams') {
-      renderTeamConvs(teamConvs);
-    } else {
-      renderRequests(pendingRequests);
-    }
-  };
-
-  // ── Team Conversations ──────────────────────────────────────────────────────
-  async function loadTeamConvs() {
-    try {
-      const r = await fetch(API_BASE + '/api/messages/team-conversations', { headers: H });
-      if (r.ok) {
-        const d = await r.json();
-        teamConvs = d.teams || [];
-        // Show badge
-        const badge = document.getElementById('team-badge');
-        if (badge && teamConvs.length > 0) {
-          badge.textContent = teamConvs.length;
-          badge.classList.remove('hidden');
+      window.filterConvs = function(q){
+        if (currentTab === 'chats') {
+          renderConvs(q?convs.filter(c=>{const n=`${c.friend?.firstName||''} ${c.friend?.lastName||''}`.toLowerCase();return n.includes(q.toLowerCase());}):convs);
+        } else if (currentTab === 'teams') {
+          renderTeamConvs(q?teamConvs.filter(t=>t.name.toLowerCase().includes(q.toLowerCase())):teamConvs);
         }
-      }
-    } catch(e) {}
-  }
+      };
 
-  function renderTeamConvs(list) {
-    const el = document.getElementById('conv-list');
-    if (!list.length) {
-      el.innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
-        <span class="material-symbols-outlined text-3xl">groups</span>
-        <p>No team chats yet</p>
-        <a href="/teams" class="mt-1 text-indigo-500 text-xs font-semibold hover:underline">Join a team</a>
-      </div>`;
-      return;
-    }
-    const TEAM_COLORS = ['#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6','#6366f1'];
-    el.innerHTML = list.map((t, i) => {
-      const color = TEAM_COLORS[i % TEAM_COLORS.length];
-      const last = t.lastMessage ? `${t.lastMessage.senderName}: ${t.lastMessage.content}` : 'No messages yet';
-      const isActive = activeConv && activeConv._id === t._id;
-      return `<div class="conv-item flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all mb-0.5${isActive?' active':''}"
-        onclick='openTeamConv(${JSON.stringify(t).replace(/'/g,"&#39;")})'>
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${color}">
-          <span class="material-symbols-outlined text-base">groups</span>
-        </div>
-        <div class="flex-1 min-w-0">
-          <div class="font-semibold text-sm truncate">${esc(t.name)}</div>
-          <div class="text-xs text-gray-400 truncate">${esc(last.substring(0,40))}</div>
-        </div>
-        <span class="text-[9px] text-gray-400 shrink-0">${t.memberCount} <span class="material-symbols-outlined text-[10px]">person</span></span>
-      </div>`;
-    }).join('');
-  }
-
-  // ── Open Team Conversation ──────────────────────────────────────────────────
-  window.openTeamConv = function(team) {
-    if (activeConv && socket) {
-      socket.emit('leave:room');
-    }
-
-    // Mark as team conversation
-    activeConv = { _id: team._id, type: 'team', name: team.name, memberCount: team.memberCount };
-    renderTeamConvs(teamConvs);
-
-    // Hide mobile conv panel
-    if (typeof hideConvPanel === 'function') hideConvPanel();
-
-    // Build team chat header with group call buttons
-    document.getElementById('chat-hdr').innerHTML = `
-      <button class="msg-back-btn items-center gap-1 text-indigo-500 text-sm font-semibold" style="display:none;background:none;border:none;cursor:pointer;padding:4px 8px;" onclick="showConvPanel()">
-        <span class="material-symbols-outlined text-base">arrow_back</span>
-      </button>
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-purple-500 flex items-center justify-center">
-          <span class="material-symbols-outlined text-white text-base">groups</span>
-        </div>
-        <div>
-          <div class="font-bold text-sm">${esc(team.name)}</div>
-          <div class="text-xs text-gray-400">${team.memberCount} members</div>
-        </div>
-      </div>
-      <div class="ml-auto flex items-center gap-2">
-        <button onclick="startGroupVoiceCall()" class="w-9 h-9 text-green-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Group Voice Call">
-          <span class="material-symbols-outlined">call</span>
-        </button>
-        <button onclick="startGroupVideoCall()" class="w-9 h-9 text-indigo-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full flex items-center justify-center transition-colors" title="Group Video Call">
-          <span class="material-symbols-outlined">video_call</span>
-        </button>
-      </div>`;
-
-    // Load team messages
-    document.getElementById('msgs').innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2"><span class="material-symbols-outlined animate-spin">progress_activity</span>Loading…</div>`;
-
-    if (socket) {
-      socket.emit('join:room', { roomId: team._id });
-    }
-
-    fetch(API_BASE + `/api/messages/teams/${team._id}`, { headers: H })
-      .then(r => r.ok ? r.json() : { messages: [] })
-      .then(d => {
-        allMsgs = (d.messages || []).map(m => ({
-          content: m.content,
-          sender: m.sender,
-          createdAt: m.created_at || m.createdAt,
-          read_by: m.read_by
-        }));
-        renderTeamMsgs();
-      })
-      .catch(() => { allMsgs = []; renderTeamMsgs(); });
-  };
-
-  // Render team messages (shows sender name for each message)
-  function renderTeamMsgs() {
-    if (!allMsgs.length) {
-      document.getElementById('msgs').innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
-        <span class="material-symbols-outlined text-4xl">groups</span><p>No messages yet. Start the conversation!</p></div>`;
-      return;
-    }
-    document.getElementById('msgs').innerHTML = allMsgs.map(m => {
-      const sender = m.sender || {};
-      const sId = sender.id || sender._id || m.sender;
-      const mine = sId === ME?.id;
-      const senderName = mine ? '' : `${sender.first_name || sender.firstName || 'Unknown'}`;
-      const ts = new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const color = avC(senderName || 'X');
-
-      return `<div class="flex ${mine ? 'justify-end' : 'justify-start'} bubble-in">
-        ${!mine ? `<div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold shrink-0 mt-auto mr-1.5" style="background:${color}">${(senderName[0] || '?').toUpperCase()}</div>` : ''}
-        <div class="max-w-[60%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed
-          ${mine ? 'bg-indigo-500 text-white rounded-br-sm' : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-bl-sm'}">
-          ${!mine ? `<div class="text-[10px] font-bold mb-0.5" style="color:${color}">${esc(senderName)}</div>` : ''}
-          ${esc(m.content)}
-          <div class="text-[10px] mt-1 opacity-60 text-right">${ts}</div>
-        </div>
-      </div>`;
-    }).join('');
-    const box = document.getElementById('msgs'); box.scrollTop = box.scrollHeight;
-  }
-
-  // ── Group Call Functions ──────────────────────────────────────────────────────
-  window.startGroupVideoCall = function() {
-    if (!activeConv || activeConv.type !== 'team') return;
-    const roomId = `ProjectHive-team-${activeConv._id}`;
-    const callerName = localStorage.getItem('ph-sb-name') || 'Your teammate';
-
-    if (socket) {
-      socket.emit('call:group', { roomId, teamId: activeConv._id, callerName });
-    }
-
-    activeCallRoom = roomId;
-    openJitsiFrame(roomId, false);
-  };
-
-  window.startGroupVoiceCall = function() {
-    if (!activeConv || activeConv.type !== 'team') return;
-    const roomId = `ProjectHive-team-voice-${activeConv._id}`;
-    const callerName = localStorage.getItem('ph-sb-name') || 'Your teammate';
-
-    if (socket) {
-      socket.emit('call:group', { roomId, teamId: activeConv._id, callerName });
-    }
-
-    activeCallRoom = roomId;
-    openJitsiFrame(roomId, true);
-  };
-
-  // Load team conversations on init
-  loadTeamConvs();
-
-  // Load Message Requests
-  async function loadRequests() {
-    try {
-      const r = await fetch(API_BASE + '/api/messages/requests', { headers: H });
-      if (r.ok) {
-        const d = await r.json();
-        pendingRequests = d.requests || [];
-        const badge = document.getElementById('req-badge');
-        if (badge) {
-          if (pendingRequests.length > 0) {
-            badge.textContent = pendingRequests.length;
-            badge.classList.remove('hidden');
-          } else {
-            badge.classList.add('hidden');
-          }
+      /* Open Direct conversation */
+      window.openConv = function(conv){
+        if(!conv) return;
+        const f = conv.friend||{};
+        const friendId = f._id||conv.friendId||conv._id;
+        if (!friendId || friendId === 'undefined') {
+          console.warn('[v0] Cannot open conversation: friendId is undefined');
+          return;
         }
-        if (currentTab === 'requests') renderRequests(pendingRequests);
-      }
-    } catch(e) {}
-  }
 
-  // Render requests list
-  function renderRequests(list) {
-    const el = document.getElementById('conv-list');
-    if (!list.length) {
-      el.innerHTML = `<div class="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2 p-4">
-        <span class="material-symbols-outlined text-3xl">mark_email_read</span>
-        <p>No pending requests</p>
-      </div>`;
-      return;
-    }
-    el.innerHTML = list.map(req => {
-      const f = req.sender || {};
-      const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'User';
-      const color = avC(name);
-      return `<div class="conv-item p-3 rounded-xl mb-0.5">
-        <div class="flex items-center gap-3 mb-2">
-          <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
-          <div class="flex-1 min-w-0">
-            <div class="font-semibold text-sm truncate">${esc(name)}</div>
-            <div class="text-xs text-gray-400 truncate">${esc(f.university||'')}</div>
+        if (activeConv && socket) {
+          socket.emit('leave:room');
+        }
+
+        activeConv = conv;
+        conv.unreadCount = 0;
+        renderConvs(convs);
+
+        const name = `${f.firstName||''} ${f.lastName||''}`.trim()||'Teammate';
+        const color = avC(name);
+        const hdrStatus = getActivityStatus(f);
+        
+        // Render Chat Header with Glass Buttons
+        document.getElementById('chat-hdr').innerHTML=`
+          <div class="flex items-center gap-3">
+            <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="showConvPanel()">
+              <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+            <div class="relative">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+              <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-darkSurface-panel ${hdrStatus.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-hdr-dot="${f._id||f.id}"></span>
+            </div>
+            <div>
+              <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight">${esc(name)}</div>
+              <div id="chat-hdr-status" class="text-[11px] ${hdrStatus.cssClass} flex items-center gap-1.5 mt-0.5" data-user-hdr-activity="${f._id||f.id}" data-last-seen="${f.lastSeen||''}">
+                ${hdrStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>' : ''}
+                <span>${hdrStatus.text}</span>
+              </div>
+            </div>
           </div>
-        </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 mb-3 line-clamp-2">"${esc((req.preview||'').substring(0,80))}"</p>
-        <div class="flex gap-2">
-          <button onclick="acceptReq('${req.id}','${f.id||''}','${f.firstName||''}','${f.lastName||''}')" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white text-xs font-semibold py-1.5 rounded-full transition-colors">Accept</button>
-          <button onclick="declineReq('${req.id}')" class="flex-1 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 text-red-500 text-xs font-semibold py-1.5 rounded-full transition-colors">Decline</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
+          
+          <div class="flex items-center gap-2">
+            ${!friendIds.has(f._id||f.id) ? `
+              <button onclick="addFriendFromChat('${f._id||f.id}')" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-sm">
+                <span class="material-symbols-outlined text-sm font-bold">person_add</span>
+                <span>Add Friend</span>
+              </button>
+            ` : ''}
+            
+            <button id="voice-call-btn" onclick="startVoiceCall()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9]" title="Voice Call">
+              <span class="material-symbols-outlined text-lg">call</span>
+            </button>
+            <button id="video-call-btn" onclick="startCall()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9]" title="Video Call">
+              <span class="material-symbols-outlined text-lg">video_call</span>
+            </button>
+            <button onclick="showToast('Secure End-to-End communication powered by supabase.', 'info')" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all" title="Chat Details">
+              <span class="material-symbols-outlined text-lg">info</span>
+            </button>
+          </div>`;
 
-  window.acceptReq = async function(reqId, senderId, fn, ln) {
-    try {
-      const r = await fetch(API_BASE + `/api/messages/requests/${reqId}/accept`, { method: 'POST', headers: H });
-      if (r.ok) {
-        showToast('Request accepted!', 'success');
-        loadRequests();
-        loadConvs();
-        // Open the conversation
-        const roomId = [ME.id, senderId].sort().join('_');
-        openConv({ _id: roomId, friendId: senderId, friend: { _id: senderId, id: senderId, firstName: fn, lastName: ln }, unreadCount: 0 });
-        switchTab('chats');
-      }
-    } catch(e) {}
-  };
+        document.getElementById('chat-input-area').classList.remove('hidden');
+        
+        const tipEl = document.getElementById('typing-indicator');
+        if (tipEl) tipEl.classList.add('hidden');
 
-  window.declineReq = async function(reqId) {
-    try {
-      const r = await fetch(API_BASE + `/api/messages/requests/${reqId}/decline`, { method: 'POST', headers: H });
-      if (r.ok) { showToast('Request declined', 'info'); loadRequests(); }
-    } catch(e) {}
-  };
+        document.getElementById('msgs').innerHTML=`
+          <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2">
+            <span class="material-symbols-outlined animate-spin text-indigo-500 text-3xl">sync</span>
+            <p class="font-medium text-xs">Syncing logs...</p>
+          </div>`;
 
-  loadConvs();
-  loadRequests();
+        const friendId = f._id||conv.friendId||conv._id;
+        
+        if (socket) {
+          socket.emit('join:room', { roomId: conv._id });
+        }
 
+        fetch(API_BASE+'/api/messages/read', {
+          method: 'POST',
+          headers: H,
+          body: JSON.stringify({ friendId })
+        }).catch(()=>{});
 
-  /* Socket.IO real-time */
-  try{
-    const SOCKET_URL = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
-      ? '/' : 'https://projecthive-backend.onrender.com';
-    socket=io(SOCKET_URL,{auth:{token:TK},transports:['websocket','polling']});
-    
-    socket.on('connect', () => {
-      if (activeConv) {
-        socket.emit('join:room', { roomId: activeConv._id });
-      }
-    });
-
-    socket.on('message:received',data=>{
-      const senderId=data.sender?.id||data.sender?._id||data.sender;
-      const isSelf=senderId===ME?.id;
-      if(activeConv&&(data.roomId===activeConv._id || data.roomId===[ME.id, activeConv.friendId].sort().join('_'))){
-        if(!isSelf){
-          allMsgs.push({
-            content:data.content,
-            sender:data.sender || senderId,
-            createdAt:data.createdAt||new Date().toISOString(),
-            read_by: data.read_by || [senderId]
+        // Load DMs
+        fetch(API_BASE+`/api/friends/dm/${friendId}`,{headers:H})
+          .then(r=>r.ok?r.json():[])
+          .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
+          .catch(()=>{
+            fetch(API_BASE+`/api/messages/${friendId}`,{headers:H})
+              .then(r=>r.ok?r.json():[])
+              .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
+              .catch(()=>{allMsgs=[];renderMsgs();});
           });
-          // Use correct renderer based on conversation type
-          if (activeConv.type === 'team') {
-            renderTeamMsgs();
-          } else {
-            renderMsgs();
-            const friendId=activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
-            fetch(API_BASE+'/api/messages/read', {
-              method: 'POST',
-              headers: H,
-              body: JSON.stringify({ friendId })
-            }).catch(()=>{});
+          
+        hideConvPanel();
+      };
+
+      /* Render Direct Messages */
+      function renderMsgs(){
+        const container = document.getElementById('msgs');
+        if(!allMsgs.length){
+          container.innerHTML=`
+            <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2 text-center">
+              <span class="material-symbols-outlined text-4xl text-indigo-500/30">waving_hand</span>
+              <p class="font-medium text-xs">No previous communication. Say Hi!</p>
+            </div>`;
+          return;
+        }
+        
+        let lastDateString = '';
+        
+        container.innerHTML = allMsgs.map(m=>{
+          const mine = m.sender===ME?.id||m.sender?._id===ME?.id||m._tmp;
+          const ts = new Date(m.createdAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+          const msgDate = new Date(m.createdAt || Date.now());
+          const dateString = msgDate.toDateString();
+          
+          let dateDividerHtml = '';
+          if (dateString !== lastDateString) {
+            lastDateString = dateString;
+            let displayDate = msgDate.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
+            if(dateString === new Date().toDateString()) displayDate = 'Today';
+            else if(dateString === new Date(Date.now() - 86400000).toDateString()) displayDate = 'Yesterday';
+            
+            dateDividerHtml = `
+              <div class="flex items-center justify-center my-4 shrink-0">
+                <span class="bg-gray-200/60 dark:bg-darkSurface-card text-gray-500 dark:text-slate-400 text-[10px] px-3.5 py-1 rounded-full font-bold tracking-wider uppercase border border-gray-300/10">${displayDate}</span>
+              </div>
+            `;
           }
-        }
-      }
-      if (currentTab === 'chats') loadConvs();
-      if (currentTab === 'teams') loadTeamConvs();
-    });
-
-    socket.on('user:typing', data => {
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      if (activeConv && data.userId === friendId) {
-        const friendName = `${activeConv.friend?.firstName || ''} ${activeConv.friend?.lastName || ''}`.trim() || 'Friend';
-        const tipEl = document.getElementById('typing-indicator');
-        if (tipEl) {
-          tipEl.textContent = `${friendName} is typing...`;
-          tipEl.classList.remove('hidden');
-        }
-      }
-    });
-
-    socket.on('user:stop-typing', data => {
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      if (activeConv && data.userId === friendId) {
-        const tipEl = document.getElementById('typing-indicator');
-        if (tipEl) {
-          tipEl.classList.add('hidden');
-        }
-      }
-    });
-
-    socket.on('status:update', data => {
-      const { userId, status, lastSeen } = data;
-
-      // Update conversation data model
-      convs.forEach(c => {
-        if (c.friend && (c.friend._id === userId || c.friend.id === userId)) {
-          c.friend.onlineStatus = status;
-          if (lastSeen) c.friend.lastSeen = lastSeen;
-        }
-      });
-
-      // Update green dots in conv list
-      document.querySelectorAll(`[data-user-dot="${userId}"]`).forEach(dot => {
-        if (status === 'online') {
-          dot.classList.remove('hidden');
-          dot.classList.add('status-dot-online', 'pulse');
-        } else {
-          dot.classList.add('hidden');
-          dot.classList.remove('status-dot-online', 'pulse');
-        }
-      });
-
-      // Update activity labels in conv list
-      const convFriend = convs.find(c => c.friend && (c.friend._id === userId || c.friend.id === userId))?.friend;
-      const actStatus = getActivityStatus(convFriend || { onlineStatus: status, lastSeen });
-      document.querySelectorAll(`[data-user-activity="${userId}"]`).forEach(el => {
-        el.className = `shrink-0 text-[10px] activity-label ${actStatus.cssClass}`;
-        el.textContent = actStatus.isOnline ? '' : ' · ' + actStatus.text;
-      });
-
-      // Update chat header if this is the active conversation
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      if (activeConv && userId === friendId) {
-        // Update header status label
-        const hdrStatus = document.getElementById('chat-hdr-status');
-        if (hdrStatus) {
-          hdrStatus.className = `activity-label ${actStatus.cssClass} flex items-center gap-1.5`;
-          if (lastSeen) hdrStatus.setAttribute('data-last-seen', lastSeen);
-          hdrStatus.innerHTML = `${actStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>' : ''}${actStatus.text}`;
-        }
-        // Update header green dot
-        document.querySelectorAll(`[data-user-hdr-dot="${userId}"]`).forEach(dot => {
-          if (status === 'online') {
-            dot.classList.remove('hidden');
-            dot.classList.add('status-dot-online', 'pulse');
-          } else {
-            dot.classList.add('hidden');
-            dot.classList.remove('status-dot-online', 'pulse');
+          
+          let ticksHtml = '';
+          if (mine) {
+            const friend = activeConv?.friend || {};
+            const friendId = friend._id || friend.id || activeConv?.friendId;
+            const isSeen = m.read_by?.includes(friendId) || m.readBy?.includes(friendId);
+            if (isSeen) {
+              const fn = friend.firstName || '';
+              const ln = friend.lastName || '';
+              const c = friend.avatarColor || avC(`${fn} ${ln}`);
+              const photo = friend.avatar 
+                ? `<img src="${friend.avatar}" class="w-full h-full object-cover rounded-full">`
+                : `<span class="text-[7px] font-black text-white">${((fn[0]||'') + (ln[0]||'')).toUpperCase()}</span>`;
+              ticksHtml = `<div class="w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ml-1.5 border border-white dark:border-darkSurface-bg shadow-sm" style="background:${friend.avatar ? 'transparent' : c};" title="Read">${photo}</div>`;
+            } else {
+              ticksHtml = `<span class="material-symbols-outlined text-[12px] text-gray-400 dark:text-slate-600 ml-1.5 font-bold" title="Delivered">done_all</span>`;
+            }
           }
+
+          return `
+            ${dateDividerHtml}
+            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in">
+              <div class="max-w-[70%] md:max-w-[60%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
+                ${mine?'bg-indigo-600 text-white rounded-br-sm':'bg-white dark:bg-darkSurface-card text-gray-900 dark:text-slate-100 border border-gray-100 dark:border-darkSurface-border/40 rounded-bl-sm'}">
+                <div class="break-words font-medium">${formatMessageContent(m.content)}</div>
+                <div class="text-[9px] mt-1.5 opacity-65 text-right flex items-center justify-end font-semibold">
+                  <span>${ts}</span>
+                  ${ticksHtml}
+                </div>
+              </div>
+            </div>`;
+        }).join('');
+        
+        container.scrollTop = container.scrollHeight;
+      }
+
+      /* Send Message */
+      window.sendMsg = function(){
+        const inp = document.getElementById('msg-inp');
+        const content = inp.value.trim();
+        if(!content||!activeConv)return;
+        inp.value = '';
+
+        if (socket) {
+          socket.emit('typing:stop', { roomId: activeConv._id });
+        }
+
+        // Add to Optimistic List
+        allMsgs.push({
+          content,
+          sender: ME?.id,
+          createdAt: new Date().toISOString(),
+          _tmp: true,
+          read_by: [ME?.id]
         });
-      }
-    });
 
-    socket.on('call:incoming', data => {
-      activeCallRoom = data.roomId;
-      incomingCallIsWebRTC = !!data.isWebRTC;
-      incomingCallIsVoiceOnly = !!data.isVoiceOnly;
-      const callerNameEl = document.getElementById('caller-name');
-      if (callerNameEl) {
-        callerNameEl.textContent = `${data.callerName || 'Teammate'} is calling...`;
-      }
-      document.getElementById('incoming-call-modal').classList.replace('hidden', 'flex');
-      // Play ringtone
-      startRingtone();
-      // Auto-decline after 30 seconds if not answered
-      setTimeout(() => {
-        const modal = document.getElementById('incoming-call-modal');
-        if (modal && !modal.classList.contains('hidden')) {
-          declineCall();
-          showToast('Missed call', 'error');
-        }
-      }, 30000);
-    });
-
-    socket.on('webrtc:signal', data => {
-      handleWebRTCSignal(data);
-    });
-
-    socket.on('call:error', data => {
-      showToast(data.message || 'Cannot start call', 'error');
-      endCall();
-    });
-
-    socket.on('call:accepted', data => {
-      showToast('Call accepted!', 'success');
-    });
-
-    socket.on('call:declined', data => {
-      showToast('Call declined', 'error');
-      endCall();
-    });
-
-    socket.on('call:hungup', data => {
-      stopRingtone();
-      showToast('Call ended', 'info');
-      // WebRTC cleanup
-      if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-      }
-      if (peerConnection) {
-        peerConnection.close();
-        peerConnection = null;
-      }
-      isWebRTCCall = false;
-      pendingSdpOffer = null;
-      document.getElementById('webrtc-container').classList.add('hidden');
-      document.getElementById('jitsi-container').classList.remove('hidden');
-
-      if (jitsiApiInstance) {
-        jitsiApiInstance.dispose();
-        jitsiApiInstance = null;
-      }
-      document.getElementById('call-modal').classList.replace('flex', 'hidden');
-      activeCallRoom = null;
-    });
-
-  }catch(e){}
-
-  // Handle typing state
-  let typingTimeout = null;
-  const inpEl = document.getElementById('msg-inp');
-  if (inpEl) {
-    inpEl.addEventListener('input', () => {
-      if (!activeConv || !socket) return;
-      socket.emit('typing:start', { roomId: activeConv._id });
-      
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        socket.emit('typing:stop', { roomId: activeConv._id });
-      }, 1500);
-    });
-  }
-
-  // ── Heartbeat: keep server-side activity tracking accurate ──
-  setInterval(() => {
-    if (socket && socket.connected) {
-      socket.emit('heartbeat');
-    }
-  }, 30000); // every 30 seconds
-
-  // ── Auto-refresh "Active Xm ago" labels every 60s ──
-  setInterval(() => {
-    // Refresh conv list activity labels
-    convs.forEach(c => {
-      const f = c.friend;
-      if (!f) return;
-      const uid = f._id || f.id;
-      const status = getActivityStatus(f);
-      document.querySelectorAll(`[data-user-activity="${uid}"]`).forEach(el => {
-        el.className = `shrink-0 text-[10px] activity-label ${status.cssClass}`;
-        el.textContent = status.isOnline ? '' : ' · ' + status.text;
-      });
-    });
-    // Refresh chat header activity label
-    const hdrEl = document.getElementById('chat-hdr-status');
-    if (hdrEl && activeConv) {
-      const f = activeConv.friend;
-      if (f) {
-        const status = getActivityStatus(f);
-        hdrEl.className = `activity-label ${status.cssClass} flex items-center gap-1.5`;
-        hdrEl.innerHTML = `${status.isOnline ? '<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>' : ''}${status.text}`;
-      }
-    }
-  }, 60000); // every 60 seconds
-
-  let jitsiApiInstance = null;
-  let activeCallRoom = null;
-  
-  // WebRTC Calling System
-  let localStream = null;
-  let peerConnection = null;
-  let isWebRTCCall = false;
-  let incomingCallIsWebRTC = false;
-  let incomingCallIsVoiceOnly = false;
-  let pendingSdpOffer = null;
-
-  const rtcConfig = {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      { urls: 'stun:stun2.l.google.com:19302' }
-    ]
-  };
-
-  window.startCall = function() {
-    if (!activeConv) return;
-    const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
-    if (!friendIds.has(friendId)) {
-      showToast('You need to be friends first to start a video call. Send a friend request!', 'error');
-      return;
-    }
-    const roomId = `ProjectHive-${[ME.id, friendId].sort().join('-')}`;
-    
-    if (socket) {
-      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate', isWebRTC: true, isVoiceOnly: false });
-    }
-    
-    activeCallRoom = roomId;
-    initiateWebRTCCall(friendId, false);
-  };
-
-  window.startVoiceCall = function() {
-    if (!activeConv) return;
-    const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
-    if (!friendIds.has(friendId)) {
-      showToast('You need to be friends first to start a voice call. Send a friend request!', 'error');
-      return;
-    }
-    const roomId = `ProjectHive-voice-${[ME.id, friendId].sort().join('-')}`;
-    
-    if (socket) {
-      socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Your teammate', isWebRTC: true, isVoiceOnly: true });
-    }
-    
-    activeCallRoom = roomId;
-    initiateWebRTCCall(friendId, true);
-  };
-
-  let isMuted = false;
-  let isCameraOff = false;
-  let currentVoiceOnly = false;
-
-  window.toggleMute = function() {
-    if (!localStream) return;
-    isMuted = !isMuted;
-    localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
-    const muteBtn = document.getElementById('btn-mute');
-    const muteIcon = document.getElementById('mute-icon');
-    if (muteBtn && muteIcon) {
-      muteIcon.textContent = isMuted ? 'mic_off' : 'mic';
-      muteBtn.style.background = isMuted ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.1)';
-    }
-  };
-
-  window.toggleCamera = function() {
-    if (!localStream) return;
-    isCameraOff = !isCameraOff;
-    localStream.getVideoTracks().forEach(t => t.enabled = !isCameraOff);
-    const camBtn = document.getElementById('btn-camera');
-    const camIcon = document.getElementById('camera-icon');
-    if (camBtn && camIcon) {
-      camIcon.textContent = isCameraOff ? 'videocam_off' : 'videocam';
-      camBtn.style.background = isCameraOff ? 'rgba(239,68,68,0.6)' : 'rgba(255,255,255,0.1)';
-    }
-  };
-
-  window.toggleScreenShare = async function() {
-    if (!peerConnection || !localStream) return;
-    try {
-      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-      const screenTrack = screenStream.getVideoTracks()[0];
-      const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-      if (sender) {
-        await sender.replaceTrack(screenTrack);
-        document.getElementById('webrtc-local-video').srcObject = screenStream;
-        screenTrack.onended = () => {
-          const localVideoTrack = localStream.getVideoTracks()[0];
-          if (localVideoTrack && sender) {
-            sender.replaceTrack(localVideoTrack);
-            document.getElementById('webrtc-local-video').srcObject = localStream;
+        if (activeConv.type === 'team') {
+          renderTeamMsgs();
+          if (socket) {
+            socket.emit('message:send', { roomId: activeConv._id, content });
           }
-        };
-      }
-    } catch(e) {
-      showToast('Screen share cancelled or not supported', 'info');
-    }
-  };
+          fetch(API_BASE+'/api/messages', {
+            method:'POST',
+            headers:H,
+            body:JSON.stringify({ roomId: activeConv._id, content })
+          }).catch(()=>{});
+        } else {
+          renderMsgs();
+          const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
 
-  function setCallConnectionStatus(status) {
-    const dot = document.getElementById('call-status-dot');
-    const text = document.getElementById('call-status-text');
-    if (status === 'connected') {
-      if (dot) { dot.className = 'w-2 h-2 rounded-full bg-green-400 animate-pulse'; }
-      if (text) { text.textContent = 'Connected'; text.className = 'text-green-400 text-xs font-semibold'; }
-    } else if (status === 'calling') {
-      if (dot) { dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse'; }
-      if (text) { text.textContent = 'Calling...'; text.className = 'text-yellow-400 text-xs font-semibold'; }
-    } else {
-      if (dot) { dot.className = 'w-2 h-2 rounded-full bg-yellow-400 animate-pulse'; }
-      if (text) { text.textContent = 'Connecting...'; text.className = 'text-yellow-400 text-xs font-semibold'; }
-    }
-  }
-
-  function setupVoiceOnlyUI(voiceOnly) {
-    currentVoiceOnly = voiceOnly;
-    const voiceDisplay = document.getElementById('voice-only-display');
-    const localBubble = document.getElementById('local-video-bubble');
-    const callTypeIcon = document.getElementById('call-type-icon');
-    const camBtn = document.getElementById('btn-camera');
-
-    if (voiceOnly) {
-      if (voiceDisplay) voiceDisplay.classList.remove('hidden');
-      if (localBubble) localBubble.classList.add('hidden');
-      if (callTypeIcon) callTypeIcon.textContent = 'call';
-      if (camBtn) camBtn.style.display = 'none';
-      // Set avatar from active conv
-      const f = activeConv?.friend || {};
-      const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Friend';
-      const voiceAvText = document.getElementById('voice-avatar-text');
-      const voiceCallerName = document.getElementById('voice-caller-name');
-      if (voiceAvText) voiceAvText.textContent = ini(f.firstName, f.lastName);
-      if (voiceCallerName) voiceCallerName.textContent = name;
-    } else {
-      if (voiceDisplay) voiceDisplay.classList.add('hidden');
-      if (localBubble) localBubble.classList.remove('hidden');
-      if (callTypeIcon) callTypeIcon.textContent = 'videocam';
-      if (camBtn) camBtn.style.display = '';
-    }
-  }
-
-  async function initiateWebRTCCall(targetUserId, voiceOnly = false) {
-    isWebRTCCall = true;
-    isMuted = false;
-    isCameraOff = false;
-    document.getElementById('call-modal').classList.replace('hidden', 'flex');
-    document.getElementById('jitsi-container').classList.add('hidden');
-    document.getElementById('webrtc-container').classList.remove('hidden');
-
-    setCallConnectionStatus('calling');
-    setupVoiceOnlyUI(voiceOnly);
-
-    // Reset mute/camera buttons
-    const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
-    const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
-    const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
-    const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
-
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({
-        video: !voiceOnly,
-        audio: true
-      });
-      document.getElementById('webrtc-local-video').srcObject = localStream;
-
-      peerConnection = new RTCPeerConnection(rtcConfig);
-      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-      peerConnection.onicecandidate = event => {
-        if (event.candidate && socket) {
-          socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
+          fetch(API_BASE+'/api/messages',{
+            method:'POST',
+            headers:H,
+            body:JSON.stringify({ receiverId: friendId, content, roomId: activeConv._id })
+          }).then(r => r.json()).then(newMsg => {
+            loadConvs();
+          }).catch(()=>{});
         }
       };
 
-      peerConnection.ontrack = event => {
-        document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
-        setCallConnectionStatus('connected');
-        startCallTimer();
+      /* Start Chat Modal handlers */
+      window.openNewConv = function(){
+        document.getElementById('nc-modal').classList.replace('hidden','flex');
+        document.getElementById('nc-inp').value='';
+        loadAllUsers();
+      };
+      window.closeModal = function(){
+        document.getElementById('nc-modal').classList.replace('flex','hidden');
+      };
+      document.getElementById('nc-modal').addEventListener('click',e=>{
+        if(e.target===e.currentTarget) closeModal();
+      });
+
+      async function loadAllUsers(){
+        const listContainer = document.getElementById('user-list');
+        listContainer.innerHTML=`
+          <div class="flex items-center justify-center p-8 gap-2">
+            <span class="material-symbols-outlined animate-spin text-indigo-500">sync</span>
+            <span class="text-xs text-gray-500 font-bold">Scanning workspace...</span>
+          </div>`;
+        try{
+          const r = await fetch(API_BASE+'/api/users?limit=50',{headers:H});
+          const d = await r.json();
+          allUsers = (d.users||d||[]).filter(u=>u._id!==ME?.id);
+          renderUserList(allUsers);
+        }catch(e){
+          listContainer.innerHTML=`<div class="text-center p-5 text-rose-500 font-bold text-xs">Error querying server</div>`;
+        }
+      }
+
+      function renderUserList(users){
+        const listContainer = document.getElementById('user-list');
+        if(!users.length) {
+          listContainer.innerHTML = `<div class="text-center p-8 text-gray-400 font-medium text-xs">No users found</div>`;
+          return;
+        }
+        listContainer.innerHTML = users.map(u=>{
+          const name = `${u.firstName||''} ${u.lastName||''}`.trim()||'User';
+          return `
+            <div class="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-darkSurface-hover transition-all"
+              onclick="startWith('${u._id}','${u.firstName||''}','${u.lastName||''}')">
+              <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-sm" style="background:${avC(name)}">${ini(u.firstName,u.lastName)}</div>
+              <div class="min-w-0 flex-1">
+                <div class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate">${esc(name)}</div>
+                <div class="text-xs text-gray-400 dark:text-slate-500 truncate">${esc(u.university||u.email||'')}</div>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      window.searchUsers = function(q){
+        const f = q?allUsers.filter(u=>`${u.firstName||''} ${u.lastName||''} ${u.email||''}`.toLowerCase().includes(q.toLowerCase())):allUsers;
+        renderUserList(f);
       };
 
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
+      window.startWith = function(uid,fn,ln){
+        closeModal();
+        const roomId = [ME.id, uid].sort().join('_');
+        openConv({_id:roomId,friendId:uid,friend:{_id:uid,firstName:fn,lastName:ln},lastMessage:null,unreadCount:0});
+      };
 
-      if (socket) {
-        socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
-      }
-    } catch (err) {
-      console.error('[WebRTC] Error initiating call:', err);
-      showToast('Could not access camera/microphone', 'error');
-      endCall();
-    }
-  }
-
-  async function acceptWebRTCCall(targetUserId, voiceOnly = false) {
-    isWebRTCCall = true;
-    isMuted = false;
-    isCameraOff = false;
-    document.getElementById('call-modal').classList.replace('hidden', 'flex');
-    document.getElementById('jitsi-container').classList.add('hidden');
-    document.getElementById('webrtc-container').classList.remove('hidden');
-
-    setCallConnectionStatus('connecting');
-    setupVoiceOnlyUI(voiceOnly);
-
-    // Reset buttons
-    const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
-    const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
-    const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
-    const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
-
-    try {
-      localStream = await navigator.mediaDevices.getUserMedia({
-        video: !voiceOnly,
-        audio: true
-      });
-      document.getElementById('webrtc-local-video').srcObject = localStream;
-
-      peerConnection = new RTCPeerConnection(rtcConfig);
-      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-      peerConnection.onicecandidate = event => {
-        if (event.candidate && socket) {
-          socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
+      window.addFriendFromChat = async function(userId) {
+        try {
+          const r = await fetch(API_BASE + `/api/friends/request/${userId}`, { method: 'POST', headers: H });
+          const d = await r.json();
+          if (r.ok) {
+            showToast('Friend request sent! They can accept to unlock calls.', 'success');
+          } else {
+            showToast(d.error || d.message || 'Could not send request', 'error');
+          }
+        } catch(e) {
+          showToast('Failed to send friend request', 'error');
         }
       };
 
-      peerConnection.ontrack = event => {
-        document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
-        setCallConnectionStatus('connected');
-        startCallTimer();
-      };
+      /* Load all conversations */
+      async function loadConvs(){
+        try {
+          const cache = localStorage.getItem('ph-convs-cache');
+          if (cache) {
+            convs = JSON.parse(cache);
+            renderConvs(convs);
+          }
+        } catch(e) {}
 
-      if (pendingSdpOffer) {
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(pendingSdpOffer));
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
-        pendingSdpOffer = null;
-      }
-    } catch (err) {
-      console.error('[WebRTC] Error accepting call:', err);
-      showToast('Could not access camera/microphone', 'error');
-      endCall();
-    }
-  }
-
-  function handleWebRTCSignal(data) {
-    const { signal } = data;
-    if (!signal) return;
-
-    if (signal.sdp) {
-      if (peerConnection) {
-        peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp))
-          .then(async () => {
-            if (signal.sdp.type === 'offer') {
-              const answer = await peerConnection.createAnswer();
-              await peerConnection.setLocalDescription(answer);
-              socket.emit('webrtc:signal', { targetId: data.senderId, signal: { sdp: peerConnection.localDescription } });
+        try{
+          const r = await fetch(API_BASE+'/api/messages/conversations',{headers:H});
+          const d = await r.json();
+          convs = d.conversations||d||[];
+          friendIds.clear();
+          convs.forEach(c => {
+            if (c.friend && (c.friend._id || c.friend.id)) {
+              friendIds.add(c.friend._id || c.friend.id);
             }
           });
-      } else {
-        pendingSdpOffer = signal.sdp;
+          
+          try {
+            const fr = await fetch(API_BASE+'/api/friends', { headers: H });
+            if (fr.ok) {
+              const fd = await fr.json();
+              (fd.friends||[]).forEach(f => friendIds.add(f.id || f._id));
+            }
+          } catch(e) {}
+          
+          localStorage.setItem('ph-convs-cache', JSON.stringify(convs));
+          renderConvs(convs);
+
+          // Deep Link direct chats
+          const params = new URLSearchParams(window.location.search);
+          const chatUserId = params.get('chat') || params.get('uid');
+          if (chatUserId && ME) {
+            const existing = convs.find(c => c.friendId === chatUserId || (c.friend && c.friend.id === chatUserId));
+            if (existing) {
+              openConv(existing);
+            } else {
+              const ur = await fetch(API_BASE + `/api/users/${chatUserId}`, { headers: H });
+              if (ur.ok) {
+                const user = await ur.json();
+                const roomId = [ME.id, user.id || user._id].sort().join('_');
+                const fn = user.first_name || user.firstName || '';
+                const ln = user.last_name || user.lastName || '';
+                openConv({
+                  _id: roomId,
+                  friendId: user.id || user._id,
+                  friend: {
+                    _id: user.id || user._id,
+                    id: user.id || user._id,
+                    firstName: fn,
+                    lastName: ln,
+                    onlineStatus: user.online_status || user.onlineStatus || 'offline',
+                    avatar: user.avatar,
+                    avatarColor: user.avatar_color
+                  },
+                  lastMessage: null,
+                  unreadCount: 0
+                });
+              }
+            }
+          }
+        }catch(e){
+          if (!convs.length) {
+            document.getElementById('conv-list').innerHTML=`
+              <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2 p-4 text-center">
+                <span class="material-symbols-outlined text-4xl text-rose-500/50">cloud_off</span>
+                <p class="font-medium text-xs">Offline Workspace</p>
+              </div>`;
+          }
+        }
       }
-    } else if (signal.candidate) {
-      if (peerConnection) {
-        peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
-          .catch(e => console.error('[WebRTC] Error adding ICE candidate:', e));
-      }
-    }
-  }
 
-  function startCallTimer() {
-    if (window._callTimerInterval) return;
-    let callSeconds = 0;
-    const timerEl = document.getElementById('call-timer');
-    if (timerEl) timerEl.textContent = '00:00';
-    window._callTimerInterval = setInterval(() => {
-      callSeconds++;
-      const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
-      const s = String(callSeconds % 60).padStart(2, '0');
-      if (timerEl) timerEl.textContent = m + ':' + s;
-    }, 1000);
-  }
+      let currentTab = 'chats';
+      let pendingRequests = [];
+      let teamConvs = [];
 
-  async function openJitsiFrame(roomId, voiceOnly = false) {
-    document.getElementById('call-modal').classList.replace('hidden', 'flex');
-    document.getElementById('jitsi-container').classList.remove('hidden');
-    document.getElementById('webrtc-container').classList.add('hidden');
-    const container = document.getElementById('jitsi-container');
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#fff;font-size:14px;">Loading call...</div>';
-    
-    await loadJitsiAPI();
-    if (!window.JitsiMeetExternalAPI) {
-      container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#ff6b6b;font-size:14px;">Failed to load call service. Please refresh.</div>';
-      return;
-    }
-    container.innerHTML = '';
+      window.switchTab = function(tab) {
+        currentTab = tab;
+        const chatsBtn  = document.getElementById('tab-chats');
+        const teamsBtn  = document.getElementById('tab-teams');
+        const reqBtn    = document.getElementById('tab-requests');
+        const active    = 'text-indigo-500 border-b-2 border-indigo-500';
+        const inactive  = 'text-gray-400 dark:text-slate-500 border-b-2 border-transparent';
 
-    const domain = "meet.jit.si";
-    const options = {
-      roomName: roomId,
-      width: "100%",
-      height: "100%",
-      parentNode: container,
-      interfaceConfigOverwrite: {
-        SHOW_JITSI_WATERMARK: false,
-        SHOW_WATERMARK_FOR_GUESTS: false,
-      },
-      configOverwrite: {
-        prejoinPageEnabled: false,
-        startWithVideoMuted: voiceOnly,
-        startWithAudioMuted: false,
-      }
-    };
-    jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
-    startCallTimer();
-  }
+        chatsBtn.className = `flex-1 py-2.5 text-xs font-bold ${tab==='chats'?active:inactive} transition-colors focus:outline-none flex items-center justify-center gap-1.5`;
+        teamsBtn.className = `flex-1 py-2.5 text-xs font-bold ${tab==='teams'?active:inactive} hover:text-gray-600 dark:hover:text-slate-300 transition-colors focus:outline-none flex items-center justify-center gap-1.5`;
+        reqBtn.className   = `flex-1 py-2.5 text-xs font-bold ${tab==='requests'?active:inactive} hover:text-gray-600 dark:hover:text-slate-300 transition-colors focus:outline-none flex items-center justify-center gap-1.5`;
 
-  window.endCall = function() {
-    if (window._callTimerInterval) { clearInterval(window._callTimerInterval); window._callTimerInterval = null; }
-    const timerEl = document.getElementById('call-timer');
-    if (timerEl) timerEl.textContent = '00:00';
+        // Clear active conversation on tab switch to avoid mismatching view
+        if (activeConv) {
+          if (socket) {
+            socket.emit('leave:room');
+          }
+          activeConv = null;
+        }
+        
+        // Reset chat header and message list to empty state
+        document.getElementById('chat-hdr').innerHTML = `
+          <div class="msg-back-btn flex items-center gap-2 md:hidden">
+            <button class="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400" onclick="showConvPanel()">
+              <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+          </div>
+          <div class="text-sm text-gray-400 dark:text-slate-500 flex items-center gap-2.5 font-medium">
+            <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
+            <span>Select a conversation to start collaborating in ProjectHive</span>
+          </div>`;
+          
+        document.getElementById('msgs').innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full text-gray-400 dark:text-slate-500 text-center px-4 max-w-md mx-auto">
+            <div class="w-18 h-18 rounded-full bg-indigo-50/50 dark:bg-darkSurface-card/50 flex items-center justify-center mb-5 border border-indigo-100/30">
+              <span class="material-symbols-outlined text-4xl text-indigo-500 animate-bounce">waving_hand</span>
+            </div>
+            <h3 class="font-heading font-bold text-lg text-gray-800 dark:text-slate-200 mb-1.5">Welcome to ProjectHive Chat!</h3>
+            <p class="text-xs leading-relaxed text-gray-500 dark:text-slate-400">Select a teammate or project team from the list, or start a new message to initiate secure, high-fidelity chat and calling.</p>
+          </div>`;
+          
+        document.getElementById('chat-input-area').classList.add('hidden');
+        document.getElementById('typing-indicator').classList.add('hidden');
 
-    if (jitsiApiInstance) {
-      jitsiApiInstance.dispose();
-      jitsiApiInstance = null;
-    }
-
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
-      localStream = null;
-    }
-    if (peerConnection) {
-      peerConnection.close();
-      peerConnection = null;
-    }
-    isWebRTCCall = false;
-    pendingSdpOffer = null;
-    currentVoiceOnly = false;
-
-    // Reset voice-only UI
-    const voiceDisplay = document.getElementById('voice-only-display');
-    if (voiceDisplay) voiceDisplay.classList.add('hidden');
-    const localBubble = document.getElementById('local-video-bubble');
-    if (localBubble) localBubble.classList.remove('hidden');
-
-    document.getElementById('webrtc-container').classList.add('hidden');
-    document.getElementById('jitsi-container').classList.remove('hidden');
-
-    const modal = document.getElementById('call-modal');
-    if (modal) modal.classList.replace('flex', 'hidden');
-    
-    if (socket && activeCallRoom) {
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      socket.emit('call:hangup', { roomId: activeCallRoom, targetId: friendId });
-    }
-    activeCallRoom = null;
-  };
-
-  let ringtoneAudio = null;
-  function startRingtone() {
-    try {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.value = 440;
-      gain.gain.value = 0.15;
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      let on = true;
-      ringtoneAudio = {
-        ctx, osc, gain,
-        interval: setInterval(() => {
-          on = !on;
-          gain.gain.value = on ? 0.15 : 0;
-        }, 600),
-        stop() {
-          clearInterval(this.interval);
-          try { osc.stop(); ctx.close(); } catch(_){}
+        if (tab === 'chats') {
+          renderConvs(convs);
+        } else if (tab === 'teams') {
+          renderTeamConvs(teamConvs);
+        } else {
+          renderRequests(pendingRequests);
         }
       };
-    } catch(_) {}
-  }
-  function stopRingtone() {
-    if (ringtoneAudio) { ringtoneAudio.stop(); ringtoneAudio = null; }
-  }
 
-  window.acceptCall = async function() {
-    stopRingtone();
-    document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
-    if (activeCallRoom) {
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      if (socket) {
-        socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
+      // ── Team Collaboration Groups ──
+      async function loadTeamConvs() {
+        try {
+          const r = await fetch(API_BASE + '/api/messages/team-conversations', { headers: H });
+          if (r.ok) {
+            const d = await r.json();
+            teamConvs = d.teams || [];
+            const badge = document.getElementById('team-badge');
+            if (badge && teamConvs.length > 0) {
+              badge.textContent = teamConvs.length;
+              badge.classList.remove('hidden');
+            }
+          }
+        } catch(e) {}
       }
-      if (incomingCallIsWebRTC) {
-        await acceptWebRTCCall(friendId, incomingCallIsVoiceOnly);
-      } else {
-        await openJitsiFrame(activeCallRoom, incomingCallIsVoiceOnly);
-      }
-    }
-  };
 
-  window.declineCall = function() {
-    stopRingtone();
-    document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
-    if (activeCallRoom) {
-      const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-      if (socket) {
-        socket.emit('call:decline', { roomId: activeCallRoom, targetId: friendId });
+      function renderTeamConvs(list) {
+        const el = document.getElementById('conv-list');
+        if (!list.length) {
+          el.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2 p-4 text-center">
+              <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-slate-700">groups</span>
+              <p class="font-medium text-xs">No project teams yet</p>
+              <a href="/teams" class="mt-2 text-indigo-500 hover:text-indigo-400 text-xs font-bold bg-indigo-500/10 px-3 py-1.5 rounded-lg">Join Team</a>
+            </div>`;
+          return;
+        }
+        const TEAM_COLORS = ['#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6','#6366f1'];
+        el.innerHTML = list.map((t, i) => {
+          const color = TEAM_COLORS[i % TEAM_COLORS.length];
+          const last = t.lastMessage ? `${t.lastMessage.senderName}: ${t.lastMessage.content}` : 'No announcements yet';
+          const isActive = activeConv && activeConv._id === t._id;
+          return `
+            <div class="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 dark:hover:bg-darkSurface-hover ${isActive ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-[3px] border-indigo-500 pl-2' : ''}"
+              onclick='openTeamConv(${JSON.stringify(t).replace(/'/g,"&#39;")})'>
+              <div class="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-xs shrink-0 shadow-sm" style="background:${color}">
+                <span class="material-symbols-outlined text-lg">groups</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate">${esc(t.name)}</span>
+                  <span class="text-[9px] text-gray-400 dark:text-slate-500 font-extrabold bg-indigo-500/10 px-2 py-0.5 rounded-md">${t.memberCount} MBRS</span>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5 font-medium">${esc(last)}</div>
+              </div>
+            </div>`;
+        }).join('');
       }
+
+      /* Open Team Chat Room */
+      window.openTeamConv = function(team) {
+        if (activeConv && socket) {
+          socket.emit('leave:room');
+        }
+
+        activeConv = { _id: team._id, type: 'team', name: team.name, memberCount: team.memberCount };
+        renderTeamConvs(teamConvs);
+
+        // Build Team Header with call shortcuts
+        document.getElementById('chat-hdr').innerHTML = `
+          <div class="flex items-center gap-3">
+            <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="showConvPanel()">
+              <span class="material-symbols-outlined text-lg">chevron_left</span>
+            </button>
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shrink-0">
+              <span class="material-symbols-outlined text-lg">groups</span>
+            </div>
+            <div>
+              <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight">${esc(team.name)}</div>
+              <div class="text-[11px] text-gray-400 dark:text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
+                <span>Team Space • ${team.memberCount} members</span>
+              </div>
+            </div>
+          </div>
+          <div class="ml-auto flex items-center gap-2">
+            <button onclick="startGroupVoiceCall()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9]" title="Group Voice Conference">
+              <span class="material-symbols-outlined text-lg">call</span>
+            </button>
+            <button onclick="startGroupVideoCall()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9]" title="Group Video Conference">
+              <span class="material-symbols-outlined text-lg">video_call</span>
+            </button>
+          </div>`;
+
+        document.getElementById('chat-input-area').classList.remove('hidden');
+
+        document.getElementById('msgs').innerHTML = `
+          <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2">
+            <span class="material-symbols-outlined animate-spin text-indigo-500 text-3xl">sync</span>
+            <p class="font-medium text-xs">Pulling logs...</p>
+          </div>`;
+
+        if (socket) {
+          socket.emit('join:room', { roomId: team._id });
+        }
+
+        fetch(API_BASE + `/api/messages/teams/${team._id}`, { headers: H })
+          .then(r => r.ok ? r.json() : { messages: [] })
+          .then(d => {
+            allMsgs = (d.messages || []).map(m => ({
+              content: m.content,
+              sender: m.sender,
+              createdAt: m.created_at || m.createdAt,
+              read_by: m.read_by
+            }));
+            renderTeamMsgs();
+          })
+          .catch(() => { allMsgs = []; renderTeamMsgs(); });
+          
+        hideConvPanel();
+      };
+
+      function renderTeamMsgs() {
+        const container = document.getElementById('msgs');
+        if (!allMsgs.length) {
+          container.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2 text-center">
+              <span class="material-symbols-outlined text-4xl text-indigo-500/20">hub</span>
+              <p class="font-medium text-xs">This is the start of your Team Workspace chat.</p>
+            </div>`;
+          return;
+        }
+        
+        let lastDateString = '';
+        
+        container.innerHTML = allMsgs.map(m => {
+          const sender = m.sender || {};
+          const sId = sender.id || sender._id || m.sender;
+          const mine = sId === ME?.id;
+          const senderName = mine ? '' : `${sender.first_name || sender.firstName || 'Teammate'}`;
+          const ts = new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const color = avC(senderName || 'X');
+          
+          const msgDate = new Date(m.createdAt || Date.now());
+          const dateString = msgDate.toDateString();
+          
+          let dateDividerHtml = '';
+          if (dateString !== lastDateString) {
+            lastDateString = dateString;
+            let displayDate = msgDate.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
+            if(dateString === new Date().toDateString()) displayDate = 'Today';
+            else if(dateString === new Date(Date.now() - 86400000).toDateString()) displayDate = 'Yesterday';
+            
+            dateDividerHtml = `
+              <div class="flex items-center justify-center my-4 shrink-0">
+                <span class="bg-gray-200/60 dark:bg-darkSurface-card text-gray-500 dark:text-slate-400 text-[10px] px-3.5 py-1 rounded-full font-bold tracking-wider uppercase border border-gray-300/10">${displayDate}</span>
+              </div>
+            `;
+          }
+
+          return `
+            ${dateDividerHtml}
+            <div class="flex ${mine ? 'justify-end' : 'justify-start'} bubble-in gap-2.5">
+              ${!mine ? `<div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-[10px] font-black shrink-0 mt-auto mr-0.5 shadow-sm" style="background:${color}">${(senderName[0] || '?').toUpperCase()}</div>` : ''}
+              <div class="max-w-[70%] md:max-w-[60%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm
+                ${mine ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-white dark:bg-darkSurface-card text-gray-900 dark:text-slate-100 border border-gray-150 dark:border-darkSurface-border/40 rounded-bl-sm'}">
+                ${!mine ? `<div class="text-[10px] font-extrabold mb-1 tracking-wide" style="color:${color}">${esc(senderName)}</div>` : ''}
+                <div class="break-words font-medium">${formatMessageContent(m.content)}</div>
+                <div class="text-[9px] mt-1.5 opacity-65 text-right font-semibold">${ts}</div>
+              </div>
+            </div>`;
+        }).join('');
+        
+        container.scrollTop = container.scrollHeight;
+      }
+
+      // Group calling room creator via Jitsi Meet
+      window.startGroupVideoCall = function() {
+        if (!activeConv || activeConv.type !== 'team') return;
+        const roomId = `ProjectHive-team-${activeConv._id}`;
+        const callerName = localStorage.getItem('ph-sb-name') || 'Teammate';
+
+        if (socket) {
+          socket.emit('call:group', { roomId, teamId: activeConv._id, callerName });
+        }
+
+        activeCallRoom = roomId;
+        openJitsiFrame(roomId, false);
+      };
+
+      window.startGroupVoiceCall = function() {
+        if (!activeConv || activeConv.type !== 'team') return;
+        const roomId = `ProjectHive-team-voice-${activeConv._id}`;
+        const callerName = localStorage.getItem('ph-sb-name') || 'Teammate';
+
+        if (socket) {
+          socket.emit('call:group', { roomId, teamId: activeConv._id, callerName });
+        }
+
+        activeCallRoom = roomId;
+        openJitsiFrame(roomId, true);
+      };
+
+      // Load Team Chats
+      loadTeamConvs();
+
+      // Message Requests
+      async function loadRequests() {
+        try {
+          const r = await fetch(API_BASE + '/api/messages/requests', { headers: H });
+          if (r.ok) {
+            const d = await r.json();
+            pendingRequests = d.requests || [];
+            const badge = document.getElementById('req-badge');
+            if (badge) {
+              if (pendingRequests.length > 0) {
+                badge.textContent = pendingRequests.length;
+                badge.classList.remove('hidden');
+              } else {
+                badge.classList.add('hidden');
+              }
+            }
+            if (currentTab === 'requests') renderRequests(pendingRequests);
+          }
+        } catch(e) {}
+      }
+
+      function renderRequests(list) {
+        const el = document.getElementById('conv-list');
+        if (!list.length) {
+          el.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2 p-4 text-center">
+              <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-slate-700">mark_email_read</span>
+              <p class="font-medium text-xs">No pending requests</p>
+            </div>`;
+          return;
+        }
+        el.innerHTML = list.map(req => {
+          const f = req.sender || {};
+          const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'User';
+          const color = avC(name);
+          return `
+            <div class="p-3.5 bg-gray-50/50 dark:bg-darkSurface-card/30 rounded-xl mb-2 border border-gray-100 dark:border-darkSurface-border/40">
+              <div class="flex items-center gap-3 mb-2.5">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+                <div class="flex-1 min-w-0">
+                  <div class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate leading-tight">${esc(name)}</div>
+                  <div class="text-[11px] text-gray-400 dark:text-slate-500 truncate mt-0.5 font-medium">${esc(f.university||'')}</div>
+                </div>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-slate-400 bg-white dark:bg-darkSurface-panel rounded-xl px-3 py-2.5 mb-3 line-clamp-2 border border-gray-100 dark:border-darkSurface-border/40 font-medium italic">"${esc((req.preview||'').substring(0,80))}"</p>
+              <div class="flex gap-2">
+                <button onclick="acceptReq('${req.id}','${f.id||''}','${f.firstName||''}','${f.lastName||''}')" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold py-2 rounded-xl transition-all shadow-sm">Accept</button>
+                <button onclick="declineReq('${req.id}')" class="flex-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 text-xs font-bold py-2 rounded-xl transition-all">Decline</button>
+              </div>
+            </div>`;
+        }).join('');
+      }
+
+      window.acceptReq = async function(reqId, senderId, fn, ln) {
+        try {
+          const r = await fetch(API_BASE + `/api/messages/requests/${reqId}/accept`, { method: 'POST', headers: H });
+          if (r.ok) {
+            showToast('Workspace request accepted!', 'success');
+            loadRequests();
+            loadConvs();
+            const roomId = [ME.id, senderId].sort().join('_');
+            openConv({ _id: roomId, friendId: senderId, friend: { _id: senderId, id: senderId, firstName: fn, lastName: ln }, unreadCount: 0 });
+            switchTab('chats');
+          }
+        } catch(e) {}
+      };
+
+      window.declineReq = async function(reqId) {
+        try {
+          const r = await fetch(API_BASE + `/api/messages/requests/${reqId}/decline`, { method: 'POST', headers: H });
+          if (r.ok) { showToast('Request declined', 'info'); loadRequests(); }
+        } catch(e) {}
+      };
+
+      loadConvs();
+      loadRequests();
+
+      /* Real-Time Socket Connection */
+      try{
+        const SOCKET_URL = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+          ? (location.port === '3000' ? 'http://localhost:5000' : '/')
+          : 'https://projecthive-backend.onrender.com';
+        socket = io(SOCKET_URL,{auth:{token:TK},transports:['websocket','polling']});
+        
+        socket.on('connect', () => {
+          if (activeConv) {
+            socket.emit('join:room', { roomId: activeConv._id });
+          }
+        });
+
+        socket.on('message:received', data=>{
+          const senderId = data.sender?.id||data.sender?._id||data.sender;
+          const isSelf = senderId===ME?.id;
+          if(activeConv && (data.roomId===activeConv._id || data.roomId===[ME.id, activeConv.friendId].sort().join('_'))){
+            if(!isSelf){
+              allMsgs.push({
+                content: data.content,
+                sender: data.sender || senderId,
+                createdAt: data.createdAt||new Date().toISOString(),
+                read_by: data.read_by || [senderId]
+              });
+              if (activeConv.type === 'team') {
+                renderTeamMsgs();
+              } else {
+                renderMsgs();
+                const friendId = activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
+                fetch(API_BASE+'/api/messages/read', {
+                  method: 'POST',
+                  headers: H,
+                  body: JSON.stringify({ friendId })
+                }).catch(()=>{});
+              }
+            }
+          }
+          if (currentTab === 'chats') loadConvs();
+          if (currentTab === 'teams') loadTeamConvs();
+        });
+
+        socket.on('user:typing', data => {
+          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          if (activeConv && data.userId === friendId) {
+            const friendName = `${activeConv.friend?.firstName || ''} ${activeConv.friend?.lastName || ''}`.trim() || 'Friend';
+            const tipEl = document.getElementById('typing-indicator');
+            if (tipEl) {
+              tipEl.textContent = `${friendName} is typing...`;
+              tipEl.classList.remove('hidden');
+            }
+          }
+        });
+
+        socket.on('user:stop-typing', data => {
+          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          if (activeConv && data.userId === friendId) {
+            const tipEl = document.getElementById('typing-indicator');
+            if (tipEl) {
+              tipEl.classList.add('hidden');
+            }
+          }
+        });
+
+        socket.on('status:update', data => {
+          const { userId, status, lastSeen } = data;
+
+          convs.forEach(c => {
+            if (c.friend && (c.friend._id === userId || c.friend.id === userId)) {
+              c.friend.onlineStatus = status;
+              if (lastSeen) c.friend.lastSeen = lastSeen;
+            }
+          });
+
+          // Green status dots
+          document.querySelectorAll(`[data-user-dot="${userId}"]`).forEach(dot => {
+            if (status === 'online') {
+              dot.classList.remove('hidden');
+              dot.classList.add('status-dot-online', 'pulse');
+            } else {
+              dot.classList.add('hidden');
+              dot.classList.remove('status-dot-online', 'pulse');
+            }
+          });
+
+          // Text activity status
+          const convFriend = convs.find(c => c.friend && (c.friend._id === userId || c.friend.id === userId))?.friend;
+          const actStatus = getActivityStatus(convFriend || { onlineStatus: status, lastSeen });
+          document.querySelectorAll(`[data-user-activity="${userId}"]`).forEach(el => {
+            el.className = `shrink-0 text-[10px] activity-label ${actStatus.cssClass}`;
+            el.textContent = actStatus.isOnline ? '' : ' · ' + actStatus.text;
+          });
+
+          // Update header
+          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          if (activeConv && userId === friendId) {
+            const hdrStatus = document.getElementById('chat-hdr-status');
+            if (hdrStatus) {
+              hdrStatus.className = `text-[11px] ${actStatus.cssClass} flex items-center gap-1.5 mt-0.5`;
+              if (lastSeen) hdrStatus.setAttribute('data-last-seen', lastSeen);
+              hdrStatus.innerHTML = `${actStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>' : ''}<span>${actStatus.text}</span>`;
+            }
+            document.querySelectorAll(`[data-user-hdr-dot="${userId}"]`).forEach(dot => {
+              if (status === 'online') {
+                dot.classList.remove('hidden');
+                dot.classList.add('status-dot-online', 'pulse');
+              } else {
+                dot.classList.add('hidden');
+                dot.classList.remove('status-dot-online', 'pulse');
+              }
+            });
+          }
+        });
+
+        socket.on('call:incoming', data => {
+          activeCallRoom = data.roomId;
+          incomingCallIsWebRTC = !!data.isWebRTC;
+          incomingCallIsVoiceOnly = !!data.isVoiceOnly;
+          const callerNameEl = document.getElementById('caller-name');
+          if (callerNameEl) {
+            callerNameEl.textContent = `${data.callerName || 'Teammate'}`;
+          }
+          document.getElementById('incoming-call-modal').classList.replace('hidden', 'flex');
+          startRingtone();
+          
+          // Auto Ring Timeout
+          setTimeout(() => {
+            const modal = document.getElementById('incoming-call-modal');
+            if (modal && !modal.classList.contains('hidden')) {
+              declineCall();
+              showToast('Missed call from workspace', 'info');
+            }
+          }, 30000);
+        });
+
+        socket.on('webrtc:signal', data => {
+          handleWebRTCSignal(data);
+        });
+
+        socket.on('call:error', data => {
+          showToast(data.message || 'Call failed to establish', 'error');
+          endCall();
+        });
+
+        socket.on('call:accepted', data => {
+          showToast('Call connection established!', 'success');
+        });
+
+        socket.on('call:declined', data => {
+          showToast('Call was declined', 'info');
+          endCall();
+        });
+
+        socket.on('call:hungup', data => {
+          stopRingtone();
+          showToast('Communication ended', 'info');
+          
+          if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+          }
+          if (peerConnection) {
+            peerConnection.close();
+            peerConnection = null;
+          }
+          isWebRTCCall = false;
+          pendingSdpOffer = null;
+          document.getElementById('webrtc-container').classList.add('hidden');
+          document.getElementById('jitsi-container').classList.remove('hidden');
+
+          if (jitsiApiInstance) {
+            jitsiApiInstance.dispose();
+            jitsiApiInstance = null;
+          }
+          document.getElementById('call-modal').classList.replace('flex', 'hidden');
+          activeCallRoom = null;
+        });
+
+      }catch(e){}
+
+      // Typing Heartbeat emit
+      let typingTimeout = null;
+      const inpEl = document.getElementById('msg-inp');
+      if (inpEl) {
+        inpEl.addEventListener('input', () => {
+          if (!activeConv || !socket) return;
+          socket.emit('typing:start', { roomId: activeConv._id });
+          
+          clearTimeout(typingTimeout);
+          typingTimeout = setTimeout(() => {
+            socket.emit('typing:stop', { roomId: activeConv._id });
+          }, 1500);
+        });
+      }
+
+      setInterval(() => {
+        if (socket && socket.connected) {
+          socket.emit('heartbeat');
+        }
+      }, 30000);
+
+      setInterval(() => {
+        convs.forEach(c => {
+          const f = c.friend;
+          if (!f) return;
+          const uid = f._id || f.id;
+          const status = getActivityStatus(f);
+          document.querySelectorAll(`[data-user-activity="${uid}"]`).forEach(el => {
+            el.className = `shrink-0 text-[10px] activity-label ${status.cssClass}`;
+            el.textContent = status.isOnline ? '' : ' · ' + status.text;
+          });
+        });
+        const hdrEl = document.getElementById('chat-hdr-status');
+        if (hdrEl && activeConv) {
+          const f = activeConv.friend;
+          if (f) {
+            const status = getActivityStatus(f);
+            hdrEl.className = `text-[11px] ${status.cssClass} flex items-center gap-1.5 mt-0.5`;
+            hdrEl.innerHTML = `${status.isOnline ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>' : ''}<span>${status.text}</span>`;
+          }
+        }
+      }, 60000);
+
+      let jitsiApiInstance = null;
+      let activeCallRoom = null;
+      
+      // WebRTC Engine Configuration
+      let localStream = null;
+      let peerConnection = null;
+      let isWebRTCCall = false;
+      let incomingCallIsWebRTC = false;
+      let incomingCallIsVoiceOnly = false;
+      let pendingSdpOffer = null;
+
+      const rtcConfig = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' }
+        ]
+      };
+
+      window.startCall = function() {
+        if (!activeConv) return;
+        const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+        if (!friendIds.has(friendId)) {
+          showToast('You must be friends first to call. Try sending a friend request!', 'error');
+          return;
+        }
+        const roomId = `ProjectHive-${[ME.id, friendId].sort().join('-')}`;
+        
+        if (socket) {
+          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: false });
+        }
+        
+        activeCallRoom = roomId;
+        initiateWebRTCCall(friendId, false);
+      };
+
+      window.startVoiceCall = function() {
+        if (!activeConv) return;
+        const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+        if (!friendIds.has(friendId)) {
+          showToast('You must be friends first to call. Try sending a friend request!', 'error');
+          return;
+        }
+        const roomId = `ProjectHive-voice-${[ME.id, friendId].sort().join('-')}`;
+        
+        if (socket) {
+          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: true });
+        }
+        
+        activeCallRoom = roomId;
+        initiateWebRTCCall(friendId, true);
+      };
+
+      let isMuted = false;
+      let isCameraOff = false;
+      let currentVoiceOnly = false;
+
+      window.toggleMute = function() {
+        if (!localStream) return;
+        isMuted = !isMuted;
+        localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+        const muteBtn = document.getElementById('btn-mute');
+        const muteIcon = document.getElementById('mute-icon');
+        if (muteBtn && muteIcon) {
+          muteIcon.textContent = isMuted ? 'mic_off' : 'mic';
+          muteBtn.style.background = isMuted ? 'rgba(244,63,94,0.3)' : 'rgba(255,255,255,0.1)';
+        }
+      };
+
+      window.toggleCamera = function() {
+        if (!localStream) return;
+        isCameraOff = !isCameraOff;
+        localStream.getVideoTracks().forEach(t => t.enabled = !isCameraOff);
+        const camBtn = document.getElementById('btn-camera');
+        const camIcon = document.getElementById('camera-icon');
+        if (camBtn && camIcon) {
+          camIcon.textContent = isCameraOff ? 'videocam_off' : 'videocam';
+          camBtn.style.background = isCameraOff ? 'rgba(244,63,94,0.3)' : 'rgba(255,255,255,0.1)';
+        }
+      };
+
+      window.toggleScreenShare = async function() {
+        if (!peerConnection || !localStream) return;
+        try {
+          const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+          const screenTrack = screenStream.getVideoTracks()[0];
+          const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+          if (sender) {
+            await sender.replaceTrack(screenTrack);
+            document.getElementById('webrtc-local-video').srcObject = screenStream;
+            screenTrack.onended = () => {
+              const localVideoTrack = localStream.getVideoTracks()[0];
+              if (localVideoTrack && sender) {
+                sender.replaceTrack(localVideoTrack);
+                document.getElementById('webrtc-local-video').srcObject = localStream;
+              }
+            };
+          }
+        } catch(e) {
+          showToast('Screen sharing not active or cancelled', 'info');
+        }
+      };
+
+      function setCallConnectionStatus(status) {
+        const dot = document.getElementById('call-status-dot');
+        const text = document.getElementById('call-status-text');
+        if (status === 'connected') {
+          if (dot) { dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse'; }
+          if (text) { text.textContent = 'Secure Session Live'; text.className = 'text-emerald-400 text-xs font-bold'; }
+        } else if (status === 'calling') {
+          if (dot) { dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse'; }
+          if (text) { text.textContent = 'Calling teammate...'; text.className = 'text-amber-400 text-xs font-bold'; }
+        } else {
+          if (dot) { dot.className = 'w-2 h-2 rounded-full bg-indigo-400 animate-pulse'; }
+          if (text) { text.textContent = 'Negotiating...'; text.className = 'text-indigo-400 text-xs font-bold'; }
+        }
+      }
+
+      function setupVoiceOnlyUI(voiceOnly) {
+        currentVoiceOnly = voiceOnly;
+        const voiceDisplay = document.getElementById('voice-only-display');
+        const localBubble = document.getElementById('local-video-bubble');
+        const callTypeIcon = document.getElementById('call-type-icon');
+        const camBtn = document.getElementById('btn-camera');
+
+        if (voiceOnly) {
+          if (voiceDisplay) voiceDisplay.classList.remove('hidden');
+          if (localBubble) localBubble.classList.add('hidden');
+          if (callTypeIcon) callTypeIcon.textContent = 'call';
+          if (camBtn) camBtn.style.display = 'none';
+          
+          const f = activeConv?.friend || {};
+          const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
+          const voiceAvText = document.getElementById('voice-avatar-text');
+          const voiceCallerName = document.getElementById('voice-caller-name');
+          if (voiceAvText) voiceAvText.textContent = ini(f.firstName, f.lastName);
+          if (voiceCallerName) voiceCallerName.textContent = name;
+        } else {
+          if (voiceDisplay) voiceDisplay.classList.add('hidden');
+          if (localBubble) localBubble.classList.remove('hidden');
+          if (callTypeIcon) callTypeIcon.textContent = 'videocam';
+          if (camBtn) camBtn.style.display = '';
+        }
+      }
+
+      async function initiateWebRTCCall(targetUserId, voiceOnly = false) {
+        isWebRTCCall = true;
+        isMuted = false;
+        isCameraOff = false;
+        document.getElementById('call-modal').classList.replace('hidden', 'flex');
+        document.getElementById('jitsi-container').classList.add('hidden');
+        document.getElementById('webrtc-container').classList.remove('hidden');
+
+        setCallConnectionStatus('calling');
+        setupVoiceOnlyUI(voiceOnly);
+
+        // Reset toggles style
+        const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
+        const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
+        const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
+        const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
+
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: !voiceOnly,
+            audio: true
+          });
+          document.getElementById('webrtc-local-video').srcObject = localStream;
+
+          peerConnection = new RTCPeerConnection(rtcConfig);
+          localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+          peerConnection.onicecandidate = event => {
+            if (event.candidate && socket) {
+              socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
+            }
+          };
+
+          peerConnection.ontrack = event => {
+            document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+            setCallConnectionStatus('connected');
+            startCallTimer();
+          };
+
+          const offer = await peerConnection.createOffer();
+          await peerConnection.setLocalDescription(offer);
+
+          if (socket) {
+            socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
+          }
+        } catch (err) {
+          console.error('[WebRTC] Media grab failure:', err);
+          showToast('Required hardware permissions denied', 'error');
+          endCall();
+        }
+      }
+
+      async function acceptWebRTCCall(targetUserId, voiceOnly = false) {
+        isWebRTCCall = true;
+        isMuted = false;
+        isCameraOff = false;
+        document.getElementById('call-modal').classList.replace('hidden', 'flex');
+        document.getElementById('jitsi-container').classList.add('hidden');
+        document.getElementById('webrtc-container').classList.remove('hidden');
+
+        setCallConnectionStatus('connecting');
+        setupVoiceOnlyUI(voiceOnly);
+
+        const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
+        const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
+        const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
+        const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
+
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({
+            video: !voiceOnly,
+            audio: true
+          });
+          document.getElementById('webrtc-local-video').srcObject = localStream;
+
+          peerConnection = new RTCPeerConnection(rtcConfig);
+          localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+          peerConnection.onicecandidate = event => {
+            if (event.candidate && socket) {
+              socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
+            }
+          };
+
+          peerConnection.ontrack = event => {
+            document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+            setCallConnectionStatus('connected');
+            startCallTimer();
+          };
+
+          if (pendingSdpOffer) {
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(pendingSdpOffer));
+            const answer = await peerConnection.createAnswer();
+            await peerConnection.setLocalDescription(answer);
+            socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
+            pendingSdpOffer = null;
+          }
+        } catch (err) {
+          console.error('[WebRTC] Accept track error:', err);
+          showToast('Required hardware permissions denied', 'error');
+          endCall();
+        }
+      }
+
+      function handleWebRTCSignal(data) {
+        const { signal } = data;
+        if (!signal) return;
+
+        if (signal.sdp) {
+          if (peerConnection) {
+            peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp))
+              .then(async () => {
+                if (signal.sdp.type === 'offer') {
+                  const answer = await peerConnection.createAnswer();
+                  await peerConnection.setLocalDescription(answer);
+                  socket.emit('webrtc:signal', { targetId: data.senderId, signal: { sdp: peerConnection.localDescription } });
+                }
+              });
+          } else {
+            pendingSdpOffer = signal.sdp;
+          }
+        } else if (signal.candidate) {
+          if (peerConnection) {
+            peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
+              .catch(e => console.error('[WebRTC] ICE placement error:', e));
+          }
+        }
+      }
+
+      function startCallTimer() {
+        if (window._callTimerInterval) return;
+        let callSeconds = 0;
+        const timerEl = document.getElementById('call-timer');
+        if (timerEl) timerEl.textContent = '00:00';
+        window._callTimerInterval = setInterval(() => {
+          callSeconds++;
+          const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
+          const s = String(callSeconds % 60).padStart(2, '0');
+          if (timerEl) timerEl.textContent = m + ':' + s;
+        }, 1000);
+      }
+
+      // Join embedded Jitsi call container
+      async function openJitsiFrame(roomId, voiceOnly = false) {
+        document.getElementById('call-modal').classList.replace('hidden', 'flex');
+        document.getElementById('jitsi-container').classList.remove('hidden');
+        document.getElementById('webrtc-container').classList.add('hidden');
+        const container = document.getElementById('jitsi-container');
+        container.innerHTML = `
+          <div class="flex flex-col items-center justify-center h-full text-slate-400 gap-2">
+            <span class="material-symbols-outlined text-4xl animate-spin text-indigo-500">sync</span>
+            <span class="text-xs font-bold">Mounting media container...</span>
+          </div>`;
+        
+        await loadJitsiAPI();
+        if (!window.JitsiMeetExternalAPI) {
+          container.innerHTML = `<div class="flex items-center justify-center h-full text-rose-500 font-bold text-sm">Failed to join streaming instance. Refresh page.</div>`;
+          return;
+        }
+        container.innerHTML = '';
+
+        const domain = "meet.jit.si";
+        const options = {
+          roomName: roomId,
+          width: "100%",
+          height: "100%",
+          parentNode: container,
+          interfaceConfigOverwrite: {
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
+          },
+          configOverwrite: {
+            prejoinPageEnabled: false,
+            startWithVideoMuted: voiceOnly,
+            startWithAudioMuted: false,
+          }
+        };
+        jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
+        startCallTimer();
+      }
+
+      window.endCall = function() {
+        if (window._callTimerInterval) { clearInterval(window._callTimerInterval); window._callTimerInterval = null; }
+        const timerEl = document.getElementById('call-timer');
+        if (timerEl) timerEl.textContent = '00:00';
+
+        if (jitsiApiInstance) {
+          jitsiApiInstance.dispose();
+          jitsiApiInstance = null;
+        }
+
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
+        }
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+        }
+        isWebRTCCall = false;
+        pendingSdpOffer = null;
+        currentVoiceOnly = false;
+
+        const voiceDisplay = document.getElementById('voice-only-display');
+        if (voiceDisplay) voiceDisplay.classList.add('hidden');
+        const localBubble = document.getElementById('local-video-bubble');
+        if (localBubble) localBubble.classList.remove('hidden');
+
+        document.getElementById('webrtc-container').classList.add('hidden');
+        document.getElementById('jitsi-container').classList.remove('hidden');
+
+        const modal = document.getElementById('call-modal');
+        if (modal) modal.classList.replace('flex', 'hidden');
+        
+        if (socket && activeCallRoom) {
+          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          socket.emit('call:hangup', { roomId: activeCallRoom, targetId: friendId });
+        }
+        activeCallRoom = null;
+      };
+
+      let ringtoneAudio = null;
+      function startRingtone() {
+        try {
+          const ctx = new (window.AudioContext || window.webkitAudioContext)();
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = 440;
+          gain.gain.value = 0.15;
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start();
+          let on = true;
+          ringtoneAudio = {
+            ctx, osc, gain,
+            interval: setInterval(() => {
+              on = !on;
+              gain.gain.value = on ? 0.15 : 0;
+            }, 600),
+            stop() {
+              clearInterval(this.interval);
+              try { osc.stop(); ctx.close(); } catch(_){}
+            }
+          };
+        } catch(_) {}
+      }
+      function stopRingtone() {
+        if (ringtoneAudio) { ringtoneAudio.stop(); ringtoneAudio = null; }
+      }
+
+      window.acceptCall = async function() {
+        stopRingtone();
+        document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
+        if (activeCallRoom) {
+          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          if (socket) {
+            socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
+          }
+          if (incomingCallIsWebRTC) {
+            await acceptWebRTCCall(friendId, incomingCallIsVoiceOnly);
+          } else {
+            await openJitsiFrame(activeCallRoom, incomingCallIsVoiceOnly);
+          }
+        }
+      };
+
+      window.declineCall = function() {
+        stopRingtone();
+        document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
+        if (activeCallRoom) {
+          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          if (socket) {
+            socket.emit('call:decline', { roomId: activeCallRoom, targetId: friendId });
+          }
+        }
+        activeCallRoom = null;
+      };
+    })();
+  </script>
+  
+  <script>
+    function showConvPanel() {
+      document.querySelector('.msg-conv-panel')?.classList.remove('hidden-mobile');
     }
-    activeCallRoom = null;
-  };
-})();
-</script>
-<script>
-// Mobile responsive: toggle between conversation list and chat
-function showConvPanel() {
-  document.querySelector('.msg-conv-panel')?.classList.remove('hidden-mobile');
-}
-function hideConvPanel() {
-  document.querySelector('.msg-conv-panel')?.classList.add('hidden-mobile');
-}
-// When a conversation is clicked on mobile, hide the panel
-const origConvList = document.getElementById('conv-list');
-if (origConvList) {
-  origConvList.addEventListener('click', function(e) {
-    const convItem = e.target.closest('.conv-item');
-    if (convItem && window.innerWidth <= 768) {
-      hideConvPanel();
+    function hideConvPanel() {
+      document.querySelector('.msg-conv-panel')?.classList.add('hidden-mobile');
     }
-  });
-}
-</script>
-<script src="/assets/js/core/info-modal.js"></script></body></html>
+    
+    // Bind click handlers to hide conversation list panel on small mobile devices
+    const list = document.getElementById('conv-list');
+    if (list) {
+      list.addEventListener('click', function(e) {
+        const item = e.target.closest('.conv-item') || e.target.closest('[onclick^="openConv"]') || e.target.closest('[onclick^="openTeamConv"]');
+        if (item && window.innerWidth <= 768) {
+          hideConvPanel();
+        }
+      });
+    }
+  </script>
+  <script src="/assets/js/core/info-modal.js"></script>
+</body>
+</html>

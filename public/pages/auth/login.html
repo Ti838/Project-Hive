@@ -151,7 +151,8 @@ async function resendVerification(){
   if(!lastEmail)return;
   try{
     const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
-      ?'/api':'https://projecthive-backend.onrender.com/api';
+      ?(window.location.port==='3000'?'http://localhost:5000/api':'/api')
+      :'https://projecthive-backend.onrender.com/api';
     const res=await fetch(`${BACKEND}/auth/resend-verification`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -178,7 +179,8 @@ async function handleLogin(e){
 
   try{
     const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
-      ?'/api':'https://projecthive-backend.onrender.com/api';
+      ?(window.location.port==='3000'?'http://localhost:5000/api':'/api')
+      :'https://projecthive-backend.onrender.com/api';
     const res=await fetch(`${BACKEND}/auth/login`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},

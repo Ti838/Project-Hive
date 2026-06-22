@@ -131,6 +131,20 @@
     </style>
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
 <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<style>
+/* Teams Create — Mobile Responsive */
+@media(max-width:768px){
+  main.ml-\[260px\]{margin-left:0!important;padding:16px!important;padding-bottom:80px!important;}
+  .grid-cols-12{display:flex!important;flex-direction:column!important;}
+  section.col-span-8{width:100%!important;}
+  aside.col-span-4{width:100%!important;position:static!important;}
+  .grid.grid-cols-2{grid-template-columns:1fr!important;}
+  header.mb-stack-lg{flex-direction:column!important;align-items:flex-start!important;gap:12px!important;}
+  header .flex.items-center.gap-4:last-child{display:none!important;}
+}
+html.dark .bg-white{background:var(--tw-surf,#12131D)!important;border-color:var(--tw-bd,#242538)!important;}
+html.dark .bg-secondary-container{background:linear-gradient(135deg,#4338ca,#7c3aed)!important;}
+</style>
 <style id="ph-dark-override">
 /* ProjectHive — Dark mode override for Tailwind custom colors */
 :root{--tw-bg:#F8FAFC;--tw-surf:#FFFFFF;--tw-surf2:#F1F5F9;--tw-surf3:#E8EDF5;--tw-bd:#E2E8F0;--tw-tx:#0F172A;--tw-sub:#64748B;}
@@ -161,10 +175,8 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 
 
 <!-- Main Content Canvas -->
-<main class="ml-[260px] p-margin-desktop min-h-screen">
+<main class="ml-[260px] p-margin-desktop min-h-screen max-md:ml-0 max-md:p-4 max-md:pb-20">
 <header class="mb-stack-lg flex justify-between items-center">
-<script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
-<link rel="icon" href="/favicon.png?v=2">
 <div class="flex items-start gap-4">
 <button onclick="history.back()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors shrink-0 text-on-surface" title="Go Back">
   <span class="material-symbols-outlined text-[20px]">arrow_back</span>
@@ -177,9 +189,7 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 <button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all">
 <span class="material-symbols-outlined">notifications</span>
 </button>
-<div class="h-10 w-10 rounded-full bg-secondary-fixed overflow-hidden border-2 border-surface-container">
-<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYm7DCJ_mXYqWdMJsZx9TkvaHstMescaYORNrfXcn8TMpaYWf9qMy-Y7NF4rwyZU5vyMHAfxgbQau6DrKUocTACd5NCi2hfJtVqRcdPJTWbzTLA3PzfqzmyrFEfv_fNJKZNBJ3kxRYuNSN7ee3hiji4fHlp4hdmqUYEgo-ZaCTyzEomsw92yLCswc7XecedBFMUkfND2BBySmQnNTObOu_puKUJvdLK8cY6jw9NryVT5MA4zzGVmEGxLI7mAkmOGMgqVfCT1OElIk"/>
-</div>
+<div id="tc-avatar" class="h-10 w-10 rounded-full bg-primary/10 overflow-hidden border-2 border-surface-container flex items-center justify-center font-bold text-primary text-sm">?</div>
 </div>
 </header>
 <div class="grid grid-cols-12 gap-gutter">
@@ -424,7 +434,9 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Creating...';
 
-    const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://projecthive-backend.onrender.com';
+    const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? (location.port === '3000' ? 'http://localhost:5000' : '')
+      : 'https://projecthive-backend.onrender.com';
 
     try {
       const res = await fetch(API_BASE + '/api/teams', {

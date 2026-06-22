@@ -619,11 +619,11 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
   }
   #ph-sidebar.open { transform: translateX(0); }
   .ph-sb-close-btn { display: flex !important; }
-  .ph-hamburger { display: none !important; }  /* bottom nav replaces hamburger */
+  .ph-hamburger { display: none !important; }
 
   /* Page layout — add bottom padding for the nav bar */
-  .ph-main { margin-left: 0 !important; padding-bottom: 72px; }
-  .ph-page { margin-left: 0 !important; padding-bottom: 72px; }
+  .ph-main { margin-left: 0 !important; padding-bottom: 80px; }
+  .ph-page { margin-left: 0 !important; padding-bottom: 80px; }
   .ph-content { padding: 16px; }
 
   /* Topbar — cleaner on mobile (LinkedIn Style) */
@@ -632,9 +632,9 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
     height: 56px;
     background: var(--ph-bg) !important;
     border-bottom: 1px solid var(--ph-border);
-    gap: 12px !important;
+    gap: 10px !important;
   }
-  header.fixed > div:first-child { flex: 1; gap: 12px !important; }
+  header.fixed > div:first-child { flex: 1; gap: 10px !important; }
   #feed-search { width: 100% !important; max-width: none !important; }
   .border-r.border-outline-variant, 
   header .hidden.sm\:block, 
@@ -659,22 +659,90 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
     border-right: none !important;
     margin-bottom: 8px !important;
   }
-  header[class*="left-"] { left: 0 !important; width: 100% !important; }
 
   /* Make tailwind pages also get bottom padding */
-  div[class*="ml-[260px]"] { padding-bottom: 72px; }
+  div[class*="ml-[260px]"] { padding-bottom: 80px; }
 
-  /* Stat cards — 2 column grid */
+  /* ── Dashboard Stats Grid: 2-col on mobile ── */
   .ph-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
   .ph-stat-card { padding: 16px 14px; }
   .ph-stat-num { font-size: 24px; }
   .ph-stat-icon { width: 40px; height: 40px; font-size: 18px; }
 
-  /* Buttons — large touch targets */
+  /* Dashboard Tailwind stats grid — force 2-col */
+  section.grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+  section.grid.grid-cols-1.md\:grid-cols-4 > div {
+    padding: 16px !important;
+  }
+  section.grid.grid-cols-1.md\:grid-cols-4 .font-headline-xl.text-headline-xl {
+    font-size: 24px !important;
+    line-height: 1.1 !important;
+  }
+
+  /* ── Dashboard Welcome Banner ── */
+  section.accent-gradient {
+    padding: 24px 20px !important;
+    border-radius: 16px !important;
+  }
+  section.accent-gradient .font-headline-xl {
+    font-size: 22px !important;
+    line-height: 1.25 !important;
+  }
+  section.accent-gradient .font-body-lg {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+  }
+  /* Hide huge hive icon on mobile */
+  section.accent-gradient .absolute.-right-10.-bottom-10 {
+    display: none !important;
+  }
+
+  /* ── Dashboard Header ── */
+  header.mb-stack-lg .font-headline-lg {
+    font-size: 22px !important;
+    line-height: 1.3 !important;
+  }
+
+  /* ── Right Sidebar: Hidden on mobile ── */
+  aside.max-lg\:hidden {
+    display: none !important;
+  }
+
+  /* ── Profile + Quick Actions Grid ── */
+  .grid.grid-cols-1.lg\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+  /* Quick Actions — 2 columns on mobile */
+  .qa-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .qa-card { padding: 16px 10px !important; }
+  .qa-ic { width: 42px !important; height: 42px !important; font-size: 20px !important; }
+  .qa-lbl { font-size: 11px !important; }
+
+  /* ── Dashboard main content padding ── */
+  main .flex-1.p-10 {
+    padding: 16px !important;
+    max-width: 100% !important;
+  }
+
+  /* ── Dashboard header — reduce height on mobile ── */
+  header.fixed.h-20 {
+    height: 56px !important;
+  }
+  main.pt-20 {
+    padding-top: 56px !important;
+  }
+
+  /* ── Buttons — large touch targets (44px minimum) ── */
   .ph-btn { min-height: 46px; border-radius: 12px; }
   .ph-btn-sm { min-height: 40px; }
 
-  /* Cards — full-width, proper padding */
+  /* ── Cards — clean mobile spacing ── */
   .ph-card, .ph-card-static {
     border-radius: 16px;
     margin-bottom: 12px;
@@ -687,34 +755,194 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
     max-width: 100%;
   }
 
-  /* Inputs — larger on mobile */
+  /* ── Inputs — prevent iOS zoom with 16px min ── */
+  .ph-input, input, textarea, select {
+    font-size: 16px !important;
+  }
   .ph-input {
     padding: 13px 14px;
-    font-size: 16px; /* prevents iOS zoom */
     border-radius: 14px;
   }
 
-  /* Page header */
+  /* ── Page header ── */
   .ph-page-header { flex-direction: column; align-items: flex-start; gap: 10px; }
   .ph-page-title { font-size: 20px; }
 
-  /* Tables — make scrollable */
-  .ph-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* ── Tables — scrollable with gradient hint ── */
+  .ph-table-wrap,
+  div[style*="overflow-x:auto"],
+  div[style*="overflow-x: auto"] { 
+    overflow-x: auto; 
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
   .ph-table { min-width: 500px; }
 
-  /* Banner — compact on mobile */
+  /* ── Hero sections (notifications, people, etc.) ── */
+  .hero {
+    padding: 24px 18px 60px !important;
+  }
+  .hero div[style*="font-size:26px"],
+  .hero div[style*="font-size:28px"] {
+    font-size: 22px !important;
+  }
+
+  /* ── Notification page wrap ── */
+  .nt-wrap {
+    padding: 0 16px 80px !important;
+    margin-top: -40px !important;
+  }
+
+  /* ── Notification summary card ── */
+  .sum-card {
+    padding: 14px 16px !important;
+    gap: 14px !important;
+    flex-wrap: wrap !important;
+  }
+  .sum-item {
+    min-width: 80px !important;
+    flex: 1 1 40% !important;
+  }
+
+  /* ── Notification tabs ── */
+  .top-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .tabs {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
+  }
+  .tab {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+  .mark-btn {
+    align-self: flex-end !important;
+  }
+
+  /* ── People page ── */
+  .fp-wrap {
+    padding: 0 16px 80px !important;
+    margin-top: -40px !important;
+  }
+  .search-card {
+    padding: 14px 16px !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .s-wrap {
+    min-width: 100% !important;
+  }
+  .stats {
+    gap: 10px !important;
+  }
+  .stat {
+    padding: 12px 14px !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+    gap: 12px !important;
+  }
+  .ucard-body { padding: 24px 12px 12px !important; }
+  .ucard-av { width: 48px !important; height: 48px !important; font-size: 16px !important; }
+  .req-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+  .req-card > div[style*="display:flex;gap:8px"] {
+    width: 100% !important;
+  }
+  .req-card .btn-add {
+    flex: 1 !important;
+  }
+
+  /* ── Settings page mobile ── */
+  aside.sticky.top-24 {
+    position: static !important;
+    width: 100% !important;
+  }
+
+  /* ── Banner — compact on mobile ── */
   .ph-banner { padding: 20px; border-radius: 18px; }
+
+  /* ── AI Popup mobile positioning ── */
+  #ai-popup, [id*="ai-popup"] {
+    position: fixed !important;
+    bottom: 80px !important;
+    right: 16px !important;
+    left: 16px !important;
+    width: auto !important;
+    max-height: 60vh !important;
+    border-radius: 20px !important;
+    z-index: 999 !important;
+  }
 }
 
-/* Very small phones */
+/* ── Tablet breakpoint (769-1024px) ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  /* Stats grid still 2-col on tablets */
+  section.grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+  /* Right sidebar hidden on tablet too */
+  aside.max-lg\:hidden {
+    display: none !important;
+  }
+  /* Quick actions 3-col is fine on tablet */
+  .qa-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ── Very small phones (≤380px) ── */
 @media (max-width: 380px) {
-  .ph-topbar { padding: 0 12px; }
+  .ph-topbar { padding: 0 12px !important; }
   .ph-content { padding: 12px; }
   .ph-stats { grid-template-columns: 1fr 1fr !important; gap: 10px; }
   .ph-stat-num { font-size: 20px; }
   .ph-auth-card { padding: 24px 16px; }
   #ph-bottom-nav { height: 60px; }
   .ph-bn-item span { font-size: 8px; }
+
+  /* Stats grid → 1 column on very small phones */
+  section.grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Quick actions → 2 columns */
+  .qa-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* People grid → 1 column */
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Notification sum → 2 columns */
+  .sum-card {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+  }
+  .sum-item {
+    flex: 1 1 40% !important;
+  }
+
+  /* Hero text smaller */
+  section.accent-gradient .font-headline-xl {
+    font-size: 18px !important;
+  }
+  section.accent-gradient .font-body-lg {
+    font-size: 13px !important;
+  }
 }
 
 
@@ -1023,8 +1251,8 @@ html.dark #ph-transition-overlay {
   .ph-topbar h1 {
     font-size: 14px !important;
   }
-  /* Hero sections */
-  .ph-hero, [class*="hero"] {
+  /* Hero sections — careful not to override page-specific heroes */
+  .ph-hero {
     padding: 18px 14px !important;
     margin-left: 14px !important;
     margin-right: 14px !important;
@@ -1034,21 +1262,31 @@ html.dark #ph-transition-overlay {
   .ph-card, .sc {
     border-radius: 14px !important;
   }
-  /* Grid stacking */
+  /* Grid stacking — 4-col → 2-col */
   .ph-grid-2, .ph-grid-3, .ph-grid-4,
   [style*="grid-template-columns: 1fr 1fr 1fr 1fr"],
   [style*="grid-template-columns:1fr 1fr 1fr 1fr"] {
     grid-template-columns: 1fr 1fr !important;
   }
-  /* Table scroll */
+  /* Table scroll — force horizontal scroll */
   .ph-table-wrap, table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  /* Forms */
+  /* Keep thead/tbody/tfoot as block for proper scrolling */
+  thead, tbody, tfoot {
+    display: table;
+    width: 100%;
+    table-layout: auto;
+  }
+  /* Forms — stack vertically */
   .ph-form-row {
     flex-direction: column !important;
+  }
+  /* Safe area for modern devices with notches */
+  body {
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }
 
@@ -1059,3 +1297,4 @@ html.dark #ph-transition-overlay {
     grid-template-columns: 1fr !important;
   }
 }
+

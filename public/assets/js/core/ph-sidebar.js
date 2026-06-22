@@ -104,7 +104,7 @@ const PHSidebar = (() => {
       const tk = localStorage.getItem('access_token');
       if (!tk) return;
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-        ? '' : 'https://projecthive-backend.onrender.com';
+        ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
       const r = await fetch(apiBase + '/api/users/me', {
         headers: { Authorization: 'Bearer ' + tk }
       });
@@ -121,7 +121,7 @@ const PHSidebar = (() => {
       const tk = localStorage.getItem('access_token');
       if (!tk) return;
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-        ? '' : 'https://projecthive-backend.onrender.com';
+        ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
       const r = await fetch(apiBase + '/api/messages/conversations', {
         headers: { Authorization: 'Bearer ' + tk }
       });
@@ -1063,7 +1063,7 @@ const PHSidebar = (() => {
     try {
       const tk = localStorage.getItem('access_token');
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-        ? '' : 'https://projecthive-backend.onrender.com';
+        ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
 
       const r = await fetch(`${apiBase}/api/users/${userId}`, {
         headers: { Authorization: 'Bearer ' + tk }
@@ -1246,7 +1246,7 @@ const PHSidebar = (() => {
     try {
       const tk = localStorage.getItem('access_token');
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-        ? '' : 'https://projecthive-backend.onrender.com';
+        ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
       const r = await fetch(`${apiBase}/api/friends/request`, {
         method: 'POST',
         headers: { 
@@ -1278,7 +1278,7 @@ const PHSidebar = (() => {
     try {
       const tk = localStorage.getItem('access_token');
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-        ? '' : 'https://projecthive-backend.onrender.com';
+        ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
       
       const endpoint = action === 'accept' ? `/api/friends/accept` : `/api/friends/decline`;
       const r = await fetch(apiBase + endpoint, {

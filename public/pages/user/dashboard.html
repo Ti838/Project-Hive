@@ -667,7 +667,9 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   async function callAI(q, img){
     const TK=localStorage.getItem('access_token');
     const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
-    const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':  'https://projecthive-backend.onrender.com';
+    const API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')
+      ? (location.port === '3000' ? 'http://localhost:5000' : '')
+      : 'https://projecthive-backend.onrender.com';
 
     /* ── 1. Try real Gemini chat endpoint (with optional image) ── */
     try{
@@ -751,7 +753,9 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   } catch(e) { window.location.href = '/login'; return; }
 
   const H = { Authorization: 'Bearer ' + TK };
-  const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1') ? '' : 'https://projecthive-backend.onrender.com';
+  const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
 
   /* Sidebar */
   PHSidebar.init('dashboard', '../../');

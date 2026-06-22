@@ -552,7 +552,8 @@
 
       const H = { Authorization: 'Bearer ' + TK, 'Content-Type': 'application/json' };
       const API_BASE = ['localhost','127.0.0.1'].includes(location.hostname)
-        ? '' : 'https://projecthive-backend.onrender.com';
+        ? (location.port === '3000' ? 'http://localhost:5000' : '')
+        : 'https://projecthive-backend.onrender.com';
 
       // Init Sidebar
       PHSidebar.init('feed', '../../');
@@ -1604,7 +1605,8 @@
       function initSocket() {
         try {
           const SOCKET_URL = ['localhost','127.0.0.1'].includes(location.hostname)
-            ? '/' : 'https://projecthive-backend.onrender.com';
+            ? (location.port === '3000' ? 'http://localhost:5000' : '/')
+            : 'https://projecthive-backend.onrender.com';
           const socket = io(SOCKET_URL, { auth: { token: TK }, transports: ['websocket', 'polling'] });
           socket.on('status:update', data => {
             const { userId, status } = data;

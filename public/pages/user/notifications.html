@@ -100,7 +100,9 @@ body{background:var(--bg);color:var(--tx);margin:0}
   if(!TK){location.href='/login';return;}
   PHSidebar.init('notifications','../../');
   const H={Authorization:'Bearer '+TK};
-  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
+  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
 
   const ICONS={team:'group',project:'folder_special',message:'chat',friend:'person_add',system:'info',default:'circle_notifications'};
   const COLORS={team:'#3b82f6',project:'#8b5cf6',message:'#10b981',friend:'#f59e0b',system:'#6366f1',default:'#6366f1'};

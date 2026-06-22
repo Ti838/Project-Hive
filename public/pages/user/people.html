@@ -131,7 +131,9 @@ body{background:var(--bg);color:var(--tx);margin:0}
   if(!TK){location.href='/login';return;}
   PHSidebar.init('people','../../');
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
-  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'':'https://projecthive-backend.onrender.com';
+  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
   const COLS=['#6366F1','#7C3AED','#EC4899','#10B981','#F59E0B','#3B82F6','#EF4444','#14B8A6'];
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
   let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],recList=[],tab='discover',filter='all',sTimer=null;

@@ -117,18 +117,80 @@ tr:hover td{background:rgba(99,102,241,.03)}
   .sb{position:fixed;z-index:100;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
   .sb.mob-open,.sb.open{transform:translateX(0)}
   .main{margin-left:0!important}
+
+  /* Stat grid — 2 columns on mobile */
   .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .analytics-grid{grid-template-columns:repeat(2,1fr)}
-  .sys-grid{grid-template-columns:1fr}
-  .topbar{padding:0 16px;padding-left:52px}
-  .content{padding:16px}
-  .card-hdr{flex-direction:column;align-items:flex-start;gap:8px}
-  .tabs{overflow-x:auto}
+  .stat-card{padding:16px 14px}
+  .stat-n{font-size:22px}
+  .stat-l{font-size:10px}
+  .stat-delta{font-size:9px}
+
+  /* Analytics grid — 2 columns */
+  .analytics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+
+  /* System grid — single column */
+  .sys-grid{grid-template-columns:1fr;gap:12px}
+
+  /* Topbar — space for hamburger button */
+  .topbar{padding:0 16px;padding-left:52px;height:50px}
+  .topbar h1{font-size:13px}
+  .topbar-right .btn{padding:5px 10px;font-size:11px}
+  .topbar-right .btn svg{width:11px;height:11px}
+
+  /* Content area */
+  .content{padding:16px;padding-bottom:32px}
+
+  /* Card headers — stack on mobile */
+  .card-hdr{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+    padding:12px 16px;
+  }
+  .card-title{font-size:12px}
+
+  /* Tabs — horizontally scrollable */
+  .tabs{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    white-space:nowrap;
+    flex-wrap:nowrap;
+    width:100%;
+  }
+  .tab{flex-shrink:0;padding:5px 10px;font-size:10px}
+
+  /* Tables — proper mobile sizing */
   td,th{padding:8px 10px;font-size:11px}
-  .srch{width:100%;min-width:0}
+  th{font-size:8px;letter-spacing:.05em}
+  
+  /* Search inputs — full width */
+  .srch{width:100%;min-width:0;font-size:16px}
+
+  /* Action buttons — larger touch targets */
+  .act{padding:6px 10px;font-size:10px;min-height:32px}
+  .act-row{flex-wrap:wrap;gap:4px}
+  
+  /* User avatar in tables */
+  .u-av{width:28px;height:28px;font-size:10px}
+  
+  /* Badges */
+  .badge{font-size:9px;padding:2px 6px}
+
+  /* Maintenance banner */
+  .maint-banner{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 14px}
+  .maint-banner .btn{margin-left:0;width:100%}
+
+  /* Sidebar footer */
+  .sb-footer .sb-item{padding:8px 14px;font-size:12px}
 }
 @media(max-width:480px){
   .stat-grid,.analytics-grid{grid-template-columns:1fr}
+  .stat-card{padding:14px 12px}
+  .topbar{padding-left:48px}
+  .content{padding:12px}
+  .card-hdr{padding:10px 12px}
+  td,th{padding:6px 8px;font-size:10px}
+  .act{padding:4px 6px;font-size:9px}
 }
 /* ── Admin Collapsible Sidebar Styles ── */
 .sb {
@@ -322,7 +384,7 @@ tr:hover td{background:rgba(99,102,241,.03)}
 const TK=localStorage.getItem("admin_token")||localStorage.getItem("access_token");
 if(!TK){location.href="/pages/admin/login.html"}
 try{const p=JSON.parse(atob(TK.split(".")[1]));if(p.exp&&Date.now()>=p.exp*1000||p.role!=="admin")location.href="/pages/admin/login.html"}catch(e){location.href="/pages/admin/login.html"}
-const API=["localhost","127.0.0.1"].includes(location.hostname)?"":"https://projecthive-backend.onrender.com";
+const API=["localhost","127.0.0.1"].includes(location.hostname)?(location.port==="3000"?"http://localhost:5000":""):"https://projecthive-backend.onrender.com";
 const H={"Authorization":"Bearer "+TK,"Content-Type":"application/json"};
 const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6","#ef4444","#14b8a6"];
 function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
