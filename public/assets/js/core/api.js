@@ -4,7 +4,7 @@ const API = (() => {
     // In development (localhost), use relative path
     const RENDER_URL = 'https://projecthive-backend.onrender.com';
     const BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-        ? (window.location.port === '3000' ? 'http://localhost:5000/api' : '/api')
+        ? 'http://localhost:5000/api'
         : `${RENDER_URL}/api`;
 
     let access = localStorage.getItem('access_token');

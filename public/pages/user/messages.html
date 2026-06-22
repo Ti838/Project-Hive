@@ -1310,7 +1310,7 @@
         });
 
         socket.on('user:typing', data => {
-          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (activeConv && data.userId === friendId) {
             const friendName = `${activeConv.friend?.firstName || ''} ${activeConv.friend?.lastName || ''}`.trim() || 'Friend';
             const tipEl = document.getElementById('typing-indicator');
@@ -1322,7 +1322,7 @@
         });
 
         socket.on('user:stop-typing', data => {
-          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (activeConv && data.userId === friendId) {
             const tipEl = document.getElementById('typing-indicator');
             if (tipEl) {
@@ -1361,7 +1361,7 @@
           });
 
           // Update header
-          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (activeConv && userId === friendId) {
             const hdrStatus = document.getElementById('chat-hdr-status');
             if (hdrStatus) {
@@ -1511,7 +1511,7 @@
 
       window.startCall = function() {
         if (!activeConv) return;
-        const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+        var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call. Try sending a friend request!', 'error');
           return;
@@ -1528,7 +1528,7 @@
 
       window.startVoiceCall = function() {
         if (!activeConv) return;
-        const friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
+        var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call. Try sending a friend request!', 'error');
           return;
@@ -1850,7 +1850,7 @@
         if (modal) modal.classList.replace('flex', 'hidden');
         
         if (socket && activeCallRoom) {
-          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           socket.emit('call:hangup', { roomId: activeCallRoom, targetId: friendId });
         }
         activeCallRoom = null;
@@ -1890,7 +1890,7 @@
         stopRingtone();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
-          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (socket) {
             socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
           }
@@ -1906,7 +1906,7 @@
         stopRingtone();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
-          const friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (socket) {
             socket.emit('call:decline', { roomId: activeCallRoom, targetId: friendId });
           }

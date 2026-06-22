@@ -552,7 +552,7 @@
 
       const H = { Authorization: 'Bearer ' + TK, 'Content-Type': 'application/json' };
       const API_BASE = ['localhost','127.0.0.1'].includes(location.hostname)
-        ? (location.port === '3000' ? 'http://localhost:5000' : '')
+        ? 'http://localhost:5000'
         : 'https://projecthive-backend.onrender.com';
 
       // Init Sidebar

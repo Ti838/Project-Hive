@@ -95,9 +95,9 @@ app.use(cors(corsOptions));
 // Logging
 app.use(morgan('combined'));
 
-// Body parsing (2MB default — large enough for normal requests, prevents DoS)
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ limit: '2mb', extended: true }));
+// Body parsing (15MB default — to match frontend image upload limits)
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
 // XSS sanitization — strip dangerous HTML/scripts from all inputs
 app.use(sanitizeInputMiddleware);

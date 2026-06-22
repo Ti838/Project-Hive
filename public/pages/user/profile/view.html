@@ -8,6 +8,25 @@
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['"Inter"', 'sans-serif'],
+          heading: ['"Outfit"', 'sans-serif'],
+        },
+        colors: {
+          "surface": "#f7f9fb",
+          "inverse-surface": "#0C0D14",
+          "primary": "#6366f1"
+        }
+      }
+    }
+  }
+</script>
 
 </head>
 <body class="ph-page-bg" data-no-float-theme="1">
