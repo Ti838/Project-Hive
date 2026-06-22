@@ -496,6 +496,19 @@
             }
             if (trimmed.endsWith('}')) {
               const obj = JSON.parse(trimmed);
+              // System: call log messages
+              if (obj.type === 'system' && obj.action === 'call') {
+                const icon = obj.callType === 'voice' ? '\uD83D\uDCDE' : '\uD83D\uDCF9';
+                const label = obj.callType === 'voice' ? 'Voice Call' : 'Video Call';
+                const mins = Math.floor((obj.duration||0)/60);
+                const secs = String((obj.duration||0)%60).padStart(2,'0');
+                const durStr = (obj.duration > 0) ? ' \u00B7 ' + mins + ':' + secs : '';
+                const statusStr = obj.status === 'missed' ? ' (missed)' : obj.status === 'cancelled' ? ' (cancelled)' : '';
+                return '<div class="flex items-center gap-2 py-1.5 px-4 bg-gray-100 dark:bg-darkSurface-card/60 rounded-full text-xs text-gray-600 dark:text-slate-300 mx-auto max-w-fit border border-gray-200 dark:border-darkSurface-border/50 shadow-sm">' +
+                  '<span>' + icon + '</span>' +
+                  '<span class="font-semibold">' + label + durStr + statusStr + '</span>' +
+                  '</div>';
+              }
               if (obj.type === 'image') {
                 return '<div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><img src="' + obj.url + '" alt="Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open(\'' + obj.url + '\', \'_blank\')"></div>';
               }
@@ -1867,10 +1880,27 @@
                 reply_to_content: data.reply_to_content,
                 reply_to_sender: data.reply_to_sender
               });
-              if (activeConv.type === 'team') {
-                renderTeamMsgs();
-              } else {
-                renderMsgs();
+            } else {
+              // Replace _tmp optimistic message with real message (gives it a proper id for delete)
+              const tmpIdx = allMsgs.findIndex(m => m._tmp && m.content === data.content);
+              if (tmpIdx > -1) {
+                allMsgs[tmpIdx] = {
+                  id: data.id,
+                  content: data.content,
+                  sender: data.sender || senderId,
+                  createdAt: data.createdAt || new Date().toISOString(),
+                  read_by: data.read_by || [senderId],
+                  reply_to: data.reply_to,
+                  reply_to_content: data.reply_to_content,
+                  reply_to_sender: data.reply_to_sender
+                };
+              }
+            }
+            if (activeConv.type === 'team') {
+              renderTeamMsgs();
+            } else {
+              renderMsgs();
+              if (!isSelf) {
                 var friendId = activeConv.friend?._id||activeConv.friend?.id||activeConv.friendId;
                 fetch(API_BASE+'/api/messages/read', {
                   method: 'POST',
@@ -2372,15 +2402,18 @@
       function startCallTimer() {
         if (window._callTimerInterval) return;
         let callSeconds = 0;
+        window._callSeconds = 0;
         const timerEl = document.getElementById('call-timer');
         if (timerEl) timerEl.textContent = '00:00';
         window._callTimerInterval = setInterval(() => {
           callSeconds++;
+          window._callSeconds = callSeconds; // track for call log
           const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
           const s = String(callSeconds % 60).padStart(2, '0');
           if (timerEl) timerEl.textContent = m + ':' + s;
         }, 1000);
       }
+
 
       // Join embedded Jitsi call container
       async function openJitsiFrame(roomId, voiceOnly = false) {
@@ -2459,9 +2492,29 @@
         if (socket && activeCallRoom) {
           var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           socket.emit('call:hangup', { roomId: activeCallRoom, targetId: friendId });
+
+          // Save call log as system message in conversation
+          if (activeConv && activeConv.type !== 'team' && activeConv._id) {
+            const callDuration = window._callSeconds || 0;
+            const callType = currentVoiceOnly ? 'voice' : 'video';
+            const callStatus = callDuration > 3 ? 'ended' : 'cancelled';
+            const callLogMsg = JSON.stringify({
+              type: 'system',
+              action: 'call',
+              callType: callType,
+              duration: callDuration,
+              status: callStatus
+            });
+            socket.emit('message:send', {
+              roomId: activeConv._id,
+              content: callLogMsg
+            });
+          }
         }
+        window._callSeconds = 0;
         activeCallRoom = null;
       };
+
 
       let ringtoneAudio = null;
       let outgoingRingtone = null;
