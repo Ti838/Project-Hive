@@ -419,9 +419,10 @@ export async function deleteConversation(req, res, next) {
   try {
     const { friendId } = req.params;
     const myId = req.user.id;
-    const roomId1 = `_`;
-    const roomId2 = `_`;
-    await supabaseAdmin.from('messages').delete().or(`room_id.eq.,room_id.eq.`);
+    const ids = [myId, friendId].sort();
+    const roomId1 = `${ids[0]}_${ids[1]}`;
+    const roomId2 = `${ids[1]}_${ids[0]}`;
+    await supabaseAdmin.from('messages').delete().or(`room_id.eq.${roomId1},room_id.eq.${roomId2}`);
     res.json({ ok: true });
   } catch (err) { next(err); }
 }
