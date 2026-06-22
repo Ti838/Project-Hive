@@ -747,12 +747,12 @@
             <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="showConvPanel()">
               <span class="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <div class="relative">
+            <div class="relative cursor-pointer" onclick="window.location.href='/pages/user/profile.html?user=${f._id||f.id}'" title="View Profile">
               <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
               <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-darkSurface-panel ${hdrStatus.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-hdr-dot="${f._id||f.id}"></span>
             </div>
-            <div>
-              <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight">${esc(name)}</div>
+            <div class="cursor-pointer" onclick="window.location.href='/pages/user/profile.html?user=${f._id||f.id}'" title="View Profile">
+              <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight hover:underline">${esc(name)}</div>
               <div id="chat-hdr-status" class="text-[11px] ${hdrStatus.cssClass} flex items-center gap-1.5 mt-0.5" data-user-hdr-activity="${f._id||f.id}" data-last-seen="${f.lastSeen||''}">
                 ${hdrStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>' : ''}
                 <span>${hdrStatus.text}</span>
@@ -835,8 +835,8 @@
         
         container.innerHTML = allMsgs.map(m=>{
           const mine = m.sender_id===ME?.id||m.sender?.id===ME?.id||m.sender===ME?.id||m._tmp;
-          const ts = new Date(m.createdAt||Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-          const msgDate = new Date(m.createdAt || Date.now());
+          const ts = new Date(m.createdAt || m.created_at || Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+          const msgDate = new Date(m.createdAt || m.created_at || Date.now());
           const dateString = msgDate.toDateString();
           
           let dateDividerHtml = '';
