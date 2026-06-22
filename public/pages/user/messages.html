@@ -168,6 +168,19 @@
           </div>
         </div>
 
+        <!-- In-Chat Search Bar (hidden by default, toggled by search button) -->
+        <div id="chat-search-bar" class="hidden px-4 py-2 bg-gray-50 dark:bg-darkSurface-bg/80 border-b border-gray-200 dark:border-darkSurface-border">
+          <div class="relative flex items-center gap-2">
+            <span class="material-symbols-outlined absolute left-3 text-gray-400 text-lg">search</span>
+            <input id="chat-search-inp" type="text" placeholder="Search in this conversation..." oninput="searchInChat(this.value)"
+              class="w-full bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl pl-10 pr-10 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+            <button onclick="closeChatSearch()" class="absolute right-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+          <div id="chat-search-results" class="text-xs text-gray-400 mt-1 text-center hidden"></div>
+        </div>
+
         <!-- Chat messages view area -->
         <div id="msgs" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3.5">
           <!-- Empty View -->
@@ -232,21 +245,48 @@
   </div>
 
   <!-- Right-Click Context Menu -->
-  <div id="msg-context-menu" class="fixed hidden z-[999] bg-white dark:bg-darkSurface-card rounded-2xl shadow-2xl border border-gray-200 dark:border-darkSurface-border py-2 min-w-[180px] overflow-hidden">
+  <div id="msg-context-menu" class="fixed hidden z-[999] bg-white dark:bg-darkSurface-card rounded-2xl shadow-2xl border border-gray-200 dark:border-darkSurface-border py-2 min-w-[200px] overflow-hidden">
+    <!-- Quick Reaction Bar -->
+    <div class="flex items-center gap-1 px-3 pb-2 pt-1 border-b border-gray-100 dark:border-darkSurface-border">
+      <button onclick="contextReact('👍')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="👍">👍</button>
+      <button onclick="contextReact('❤️')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="❤️">❤️</button>
+      <button onclick="contextReact('😂')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="😂">😂</button>
+      <button onclick="contextReact('😮')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="😮">😮</button>
+      <button onclick="contextReact('😢')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="😢">😢</button>
+      <button onclick="contextReact('🔥')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="🔥">🔥</button>
+    </div>
     <button onclick="contextReply()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-indigo-500">reply</span> Reply
     </button>
+    <button onclick="contextForward()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-indigo-400">forward</span> Forward
+    </button>
     <button onclick="contextCopy()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-gray-500">content_copy</span> Copy
-    </button>
-    <button onclick="contextReact('👍')" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
-      <span class="text-lg">👍</span> React
     </button>
     <div id="ctx-delete-wrap">
       <div class="border-t border-gray-100 dark:border-darkSurface-border my-1"></div>
       <button onclick="contextDelete()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-sm font-semibold text-rose-500 transition-colors">
         <span class="material-symbols-outlined text-[18px]">delete</span> Delete
       </button>
+    </div>
+  </div>
+
+  <!-- Forward Message Modal -->
+  <div id="forward-modal" class="fixed inset-0 z-[500] hidden items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-darkSurface-panel rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-darkSurface-border">
+        <h3 class="font-heading font-bold text-base">Forward Message</h3>
+        <button onclick="closeForwardModal()" class="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-darkSurface-card flex items-center justify-center">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+      <div class="p-3 border-b border-gray-100 dark:border-darkSurface-border">
+        <div class="bg-gray-50 dark:bg-darkSurface-card/60 rounded-xl px-3 py-2 text-xs text-gray-500 italic line-clamp-2" id="forward-preview"></div>
+      </div>
+      <div id="forward-contacts-list" class="max-h-64 overflow-y-auto p-2 space-y-1">
+        <div class="text-center text-xs text-gray-400 p-4">Loading contacts...</div>
+      </div>
     </div>
   </div>
 
@@ -824,6 +864,9 @@
             <button onclick="deleteConversation('${f._id||f.id}')" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-rose-50 dark:hover:bg-rose-950/40 text-gray-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all" title="Delete Chat">
               <span class="material-symbols-outlined text-lg">delete</span>
             </button>
+            <button onclick="toggleChatSearch()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all" title="Search in chat">
+              <span class="material-symbols-outlined text-lg">search</span>
+            </button>
             <button onclick="openChatInfo()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all" title="Contact Info">
               <span class="material-symbols-outlined text-lg">info</span>
             </button>
@@ -1157,7 +1200,134 @@
         document.getElementById('chat-info-backdrop').classList.add('hidden');
       };
 
-      /* Start Chat Modal handlers */
+      // ─── SEARCH IN CHAT ────────────────────────────────────────
+      window.toggleChatSearch = function() {
+        const bar = document.getElementById('chat-search-bar');
+        bar.classList.toggle('hidden');
+        if (!bar.classList.contains('hidden')) {
+          document.getElementById('chat-search-inp').focus();
+        } else {
+          searchInChat('');
+        }
+      };
+
+      window.closeChatSearch = function() {
+        document.getElementById('chat-search-bar').classList.add('hidden');
+        document.getElementById('chat-search-inp').value = '';
+        searchInChat('');
+      };
+
+      window.searchInChat = function(q) {
+        const term = q.trim().toLowerCase();
+        const bubbles = document.querySelectorAll('#msgs [data-msg-id]');
+        const resultsEl = document.getElementById('chat-search-results');
+        let matchCount = 0;
+        bubbles.forEach(el => {
+          const content = (el.dataset.content || '').toLowerCase();
+          if (!term || content.includes(term)) {
+            el.classList.remove('opacity-20');
+            if (term && content.includes(term)) {
+              matchCount++;
+              if (matchCount === 1) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          } else {
+            el.classList.add('opacity-20');
+          }
+        });
+        if (term && resultsEl) {
+          resultsEl.textContent = matchCount > 0 ? `${matchCount} result(s) found` : 'No results';
+          resultsEl.classList.remove('hidden');
+        } else if (resultsEl) {
+          resultsEl.classList.add('hidden');
+        }
+      };
+
+      // ─── FORWARD MESSAGE ──────────────────────────────────────
+      window.contextForward = function() {
+        document.getElementById('msg-context-menu').classList.add('hidden');
+        const content = ctxMsgEl?.dataset.content || '';
+        document.getElementById('forward-preview').textContent = content.substring(0, 120);
+        const modal = document.getElementById('forward-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        // Load contacts
+        const list = document.getElementById('forward-contacts-list');
+        list.innerHTML = convs.map(c => {
+          const f = c.friend || {};
+          const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
+          const color = avC(name);
+          return `<button onclick="forwardTo('${f._id||f.id}','${name.replace(/'/g,'')}')" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-darkSurface-hover transition-all">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
+            <span class="text-sm font-semibold text-gray-800 dark:text-slate-200 truncate">${esc(name)}</span>
+          </button>`;
+        }).join('') || '<div class="text-center text-xs text-gray-400 p-4">No contacts found</div>';
+      };
+
+      window.forwardTo = async function(toId, toName) {
+        const content = ctxMsgEl?.dataset.content || '';
+        closeForwardModal();
+        // Open that conversation and send
+        const conv = convs.find(c => (c.friend?._id || c.friend?.id) === toId);
+        if (conv) { openConv(conv); }
+        // small delay for UI
+        setTimeout(() => {
+          document.getElementById('msg-inp').value = content;
+          sendMsg();
+        }, 600);
+      };
+
+      window.closeForwardModal = function() {
+        const modal = document.getElementById('forward-modal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+
+      // ─── REACTIONS ──────────────────────────────────────────
+      window.contextReact = async function(emoji) {
+        document.getElementById('msg-context-menu').classList.add('hidden');
+        const msgId = ctxMsgEl?.dataset.msgId;
+        if (!msgId) return;
+        try {
+          const res = await fetch(`${API_BASE}/api/messages/${msgId}/react`, {
+            method: 'POST',
+            headers: H,
+            body: JSON.stringify({ emoji })
+          });
+          if (res.ok) {
+            const msg = allMsgs.find(m => (m.id || m._id) === msgId);
+            if (msg) {
+              if (!msg.reactions) msg.reactions = [];
+              const existing = msg.reactions.findIndex(r => r.emoji === emoji && r.user_id === ME.id);
+              if (existing > -1) {
+                msg.reactions.splice(existing, 1); // toggle off
+              } else {
+                msg.reactions.push({ emoji, user_id: ME.id });
+              }
+              if (activeConv?.type === 'team') renderTeamMsgs(); else renderMsgs();
+            }
+          }
+        } catch(e) { showToast('Failed to react', 'error'); }
+      };
+
+      // ─── BROWSER PUSH NOTIFICATIONS ──────────────────────────
+      (function initNotifications() {
+        if (!('Notification' in window)) return;
+        if (Notification.permission === 'default') {
+          // Ask after a slight delay (better UX)
+          setTimeout(() => Notification.requestPermission(), 3000);
+        }
+      })();
+
+      function showBrowserNotification(title, body, icon) {
+        if (!('Notification' in window) || Notification.permission !== 'granted' || !document.hidden) return;
+        try {
+          const n = new Notification(title, { body: body.substring(0, 100), icon: icon || '/favicon.png', badge: '/favicon.png' });
+          n.onclick = () => { window.focus(); n.close(); };
+          setTimeout(() => n.close(), 5000);
+        } catch(e) {}
+      }
+
+
       window.openNewConv = function(){
         document.getElementById('nc-modal').classList.replace('hidden','flex');
         document.getElementById('nc-inp').value='';
@@ -1673,17 +1843,26 @@
           const senderId = data.sender?.id||data.sender?._id||data.sender;
           const isSelf = senderId===ME?.id;
           
-          if (!isSelf && !document.hidden) {
+          if (!isSelf) {
             playMessageSound();
+            // Browser Push Notification
+            const senderName = data.sender?.firstName 
+              ? `${data.sender.firstName} ${data.sender.lastName||''}`.trim() 
+              : 'New Message';
+            showBrowserNotification(senderName, data.content || '📎 Attachment', data.sender?.avatar || null);
           }
 
           if(activeConv && (data.roomId===activeConv._id || data.roomId===[ME.id, activeConv.friendId].sort().join('_'))){
             if(!isSelf){
               allMsgs.push({
+                id: data.id,
                 content: data.content,
                 sender: data.sender || senderId,
                 createdAt: data.createdAt||new Date().toISOString(),
-                read_by: data.read_by || [senderId]
+                read_by: data.read_by || [senderId],
+                reply_to: data.reply_to,
+                reply_to_content: data.reply_to_content,
+                reply_to_sender: data.reply_to_sender
               });
               if (activeConv.type === 'team') {
                 renderTeamMsgs();

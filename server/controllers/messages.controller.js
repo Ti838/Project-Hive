@@ -442,3 +442,37 @@ export async function deleteConversation(req, res, next) {
     res.json({ ok: true });
   } catch (err) { next(err); }
 }
+
+export async function reactToMessage(req, res, next) {
+  try {
+    const { id: messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user.id;
+
+    if (!emoji) return res.status(400).json({ error: 'Missing emoji' });
+
+    // Check if reaction already exists (toggle)
+    const { data: existing } = await supabaseAdmin
+      .from('message_reactions')
+      .select('id')
+      .eq('message_id', messageId)
+      .eq('user_id', userId)
+      .eq('emoji', emoji)
+      .maybeSingle();
+
+    if (existing) {
+      // Remove reaction (toggle off)
+      await supabaseAdmin.from('message_reactions').delete().eq('id', existing.id);
+      return res.json({ ok: true, action: 'removed' });
+    }
+
+    // Add reaction
+    await supabaseAdmin.from('message_reactions').insert({
+      message_id: messageId,
+      user_id: userId,
+      emoji
+    });
+
+    res.json({ ok: true, action: 'added' });
+  } catch (err) { next(err); }
+}

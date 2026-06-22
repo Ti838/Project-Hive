@@ -31,4 +31,7 @@ router.delete('/conversation/:friendId', authMiddleware, mc.deleteConversation);
 // Save message via REST (socket fallback)
 router.post('/',                    authMiddleware, mc.saveMessage);
 
+// React to a message (toggle)
+router.post('/:id/react',           authMiddleware, mc.reactToMessage);
+
 export default router;
