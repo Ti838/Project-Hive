@@ -129,6 +129,12 @@ export async function getUserProfile(req, res, next) {
 
     const showDetails = user.is_public || friendshipStatus === 'self' || isFriend;
 
+    // Fetch the target user's friend count (always, regardless of privacy)
+    const { count: friendCount } = await supabaseAdmin
+      .from('friends')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', id);
+
     if (!showDetails) {
       // Return redacted profile with isLocked: true
       return res.json({
@@ -141,6 +147,7 @@ export async function getUserProfile(req, res, next) {
         major: user.major,
         isPublic: user.is_public,
         isLocked: true,
+        friendCount: friendCount || 0,
         friendshipStatus,
         pendingReqId,
       });
@@ -151,6 +158,7 @@ export async function getUserProfile(req, res, next) {
     clientUser.friendshipStatus = friendshipStatus;
     clientUser.pendingReqId = pendingReqId;
     clientUser.isLocked = false;
+    clientUser.friendCount = friendCount || 0;
     res.json(clientUser);
   } catch (err) { next(err); }
 }

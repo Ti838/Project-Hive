@@ -146,6 +146,7 @@
   const userId = viewId || myData.id;
 
   let friendCount = 0;
+  let profileFriendCount = 0; // the viewed user's friend count
 
   async function loadProfile() {
     try {
@@ -155,10 +156,13 @@
       const u = await r.json();
       renderProfile(u);
 
+      // Use the friendCount from the API (now included for all profiles)
+      profileFriendCount = u.friendCount || 0;
       if (isOwnProfile) {
         const fr = await fetch(API + '/api/friends', { headers: H });
-        if (fr.ok) { const d = await fr.json(); friendCount = (d.friends||[]).length; updateConnections(); }
+        if (fr.ok) { const d = await fr.json(); profileFriendCount = (d.friends||[]).length; }
       }
+      updateConnections();
 
       // Load user's own posts via dedicated endpoint
       const postR = await fetch(API + `/api/posts/user/${userId}?limit=4`, { headers: H });
@@ -166,13 +170,14 @@
         const pd = await postR.json();
         renderActivity(pd.posts || [], u);
       } else {
-        renderActivity([], u); // show empty state if fails
+        renderActivity([], u);
       }
     } catch(e) { console.error(e); PHToast?.error('Could not load profile'); }
   }
 
   function updateConnections() {
-    document.getElementById('pv-connections').innerHTML = `<span class="pv-conn-link">${friendCount} friend${friendCount!==1?'s':''}</span>`;
+    const cnt = profileFriendCount;
+    document.getElementById('pv-connections').innerHTML = `<span class="pv-conn-link">${cnt} friend${cnt!==1?'s':''}</span>`;
   }
 
   function renderProfile(u) {
@@ -279,9 +284,17 @@
           <button class="pv-btn pv-btn-primary" onclick="location.href='${msgUrl}'">
             <span class="material-symbols-outlined">send</span>Message
           </button>
-          <button class="pv-btn pv-btn-ghost" disabled style="opacity:.7">
-            <span class="material-symbols-outlined">check</span>Friends
-          </button>`;
+          <div class="relative" id="friends-btn-wrap">
+            <button class="pv-btn pv-btn-ghost" onclick="toggleFriendsMenu()">
+              <span class="material-symbols-outlined">check</span>Friends
+              <span class="material-symbols-outlined text-sm ml-0.5">expand_more</span>
+            </button>
+            <div id="friends-menu" class="hidden absolute right-0 top-full mt-1 w-44 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl py-1 z-50">
+              <button onclick="unfriend('${u.id}')" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">person_remove</span>Unfriend
+              </button>
+            </div>
+          </div>`;
       } else if (fs === 'sent') {
         acts.innerHTML = `
           <button class="pv-btn pv-btn-ghost" disabled>
@@ -402,11 +415,38 @@
       r.ok ? (PHToast?.success('Connected! 🎉'), loadProfile()) : PHToast?.error('Failed');
     } catch(e) { PHToast?.error('Error'); }
   };
+
   window.rejectReq = async function(id) {
     try {
       const r = await fetch(API+'/api/friends/reject/'+id, { method:'POST', headers:H });
       r.ok ? (PHToast?.success('Request ignored'), loadProfile()) : PHToast?.error('Failed');
     } catch(e) { PHToast?.error('Error'); }
+  };
+
+  window.toggleFriendsMenu = function() {
+    const menu = document.getElementById('friends-menu');
+    if (menu) menu.classList.toggle('hidden');
+  };
+
+  // Close friends dropdown on outside click
+  document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('friends-btn-wrap');
+    const menu = document.getElementById('friends-menu');
+    if (wrap && menu && !wrap.contains(e.target)) menu.classList.add('hidden');
+  });
+
+  window.unfriend = async function(targetId) {
+    if (!confirm('Remove this person from your friends list?')) return;
+    try {
+      const r = await fetch(API + '/api/friends/' + targetId, { method: 'DELETE', headers: H });
+      if (r.ok) {
+        PHToast?.success('Removed from friends');
+        loadProfile(); // reload to update button state
+      } else {
+        const err = await r.json().catch(()=>({}));
+        PHToast?.error(err.error || 'Failed to unfriend');
+      }
+    } catch(e) { PHToast?.error('Network error'); }
   };
 
   loadProfile();

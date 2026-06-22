@@ -243,3 +243,20 @@ export async function getRecommendedFriends(req, res, next) {
     res.json({ recommendations: recommendations.slice(0, 15) });
   } catch (err) { next(err); }
 }
+
+// DELETE /api/friends/:userId — remove friend (both directions)
+export async function unfriendUser(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const { userId } = req.params;
+    if (!userId) return res.status(400).json({ error: 'User ID required' });
+
+    // Remove both sides of the mutual friendship in parallel
+    await Promise.all([
+      supabaseAdmin.from('friends').delete().eq('user_id', myId).eq('friend_id', userId),
+      supabaseAdmin.from('friends').delete().eq('user_id', userId).eq('friend_id', myId),
+    ]);
+
+    res.json({ ok: true, message: 'Unfriended successfully' });
+  } catch (err) { next(err); }
+}
