@@ -86,22 +86,29 @@ export async function handleSendMessage(socket, io, data) {
     const { content, reply_to, reply_to_content, reply_to_sender } = data;
     if (!content || !roomId) return socket.emit('error', { message: 'Missing content or roomId' });
 
+    // Only include optional columns when they have actual values
+    // Avoids "column does not exist" if DB schema hasn't been patched yet
+    const insertData = {
+      room_id: roomId,
+      sender_id: socket.userId,
+      content,
+      read_by: [socket.userId],
+    };
+    if (reply_to)         insertData.reply_to         = reply_to;
+    if (reply_to_content) insertData.reply_to_content = reply_to_content;
+    if (reply_to_sender)  insertData.reply_to_sender  = reply_to_sender;
+
     // Save to Supabase
     const { data: message, error } = await supabaseAdmin
       .from('messages')
-      .insert({ 
-        room_id: roomId, 
-        sender_id: socket.userId, 
-        content, 
-        read_by: [socket.userId],
-        reply_to: reply_to || null,
-        reply_to_content: reply_to_content || null,
-        reply_to_sender: reply_to_sender || null
-      })
+      .insert(insertData)
       .select('*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)')
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[ProjectHive] DB insert error:', error.message, error.details);
+      return socket.emit('error', { message: 'Failed to save message: ' + error.message });
+    }
 
     const payload = {
       id: message.id,
@@ -109,9 +116,9 @@ export async function handleSendMessage(socket, io, data) {
       sender: message.sender,
       roomId: message.room_id,
       createdAt: message.created_at,
-      reply_to: message.reply_to,
-      reply_to_content: message.reply_to_content,
-      reply_to_sender: message.reply_to_sender,
+      reply_to: message.reply_to || null,
+      reply_to_content: message.reply_to_content || null,
+      reply_to_sender: message.reply_to_sender || null,
     };
 
     io.to(roomId).emit('message:received', payload);

@@ -700,6 +700,9 @@
       let _voiceRecTimerInt = null;
       let _voiceRecSeconds = 0;
       let _voiceCancelled = false;
+      let _audioCtx = null;
+      let _analyser = null;
+      let _waveAnimFrame = null;
 
       function showVoiceBar(show) {
         const bar = document.getElementById('voice-rec-bar');
@@ -743,9 +746,52 @@
         if (timerEl) timerEl.textContent = '0:00';
       }
 
+      // ─── Real-time waveform using Web Audio API ───────────────────────────────
+      function startWaveform(stream) {
+        try {
+          _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          _analyser = _audioCtx.createAnalyser();
+          _analyser.fftSize = 32; // 16 frequency bins
+          _analyser.smoothingTimeConstant = 0.5;
+          const source = _audioCtx.createMediaStreamSource(stream);
+          source.connect(_analyser);
+
+          const bars = document.querySelectorAll('#voice-rec-bar .voice-wave-bar');
+          const dataArray = new Uint8Array(_analyser.frequencyBinCount); // 16 values
+
+          function draw() {
+            _waveAnimFrame = requestAnimationFrame(draw);
+            _analyser.getByteFrequencyData(dataArray);
+            bars.forEach((bar, i) => {
+              // Map 16 bins to 8 bars
+              const val = (dataArray[i * 2] + (dataArray[i * 2 + 1] || 0)) / 2;
+              const pct = val / 255; // 0.0 → 1.0
+              const h = Math.max(3, Math.min(24, Math.round(pct * 24)));
+              bar.style.height = h + 'px';
+              bar.style.opacity = 0.4 + pct * 0.6;
+              bar.style.animation = 'none'; // stop CSS animation when real data available
+            });
+          }
+          draw();
+        } catch(e) {
+          // Web Audio not supported — CSS animation stays
+        }
+      }
+
+      function stopWaveform() {
+        if (_waveAnimFrame) { cancelAnimationFrame(_waveAnimFrame); _waveAnimFrame = null; }
+        if (_audioCtx) { _audioCtx.close().catch(()=>{}); _audioCtx = null; }
+        _analyser = null;
+        // Reset bars back to CSS animation
+        document.querySelectorAll('#voice-rec-bar .voice-wave-bar').forEach(b => {
+          b.style.height = '';
+          b.style.opacity = '';
+          b.style.animation = '';
+        });
+      }
+
       window.toggleVoiceRecord = async function() {
         if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          // Already recording — stop via stopAndSendVoice
           stopAndSendVoice();
           return;
         }
@@ -758,7 +804,7 @@
           mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
 
           mediaRecorder.onstop = () => {
-            // Stop all mic tracks
+            stopWaveform();
             stream.getTracks().forEach(t => t.stop());
             stopVoiceTimer();
             showVoiceBar(false);
@@ -774,9 +820,10 @@
             };
           };
 
-          mediaRecorder.start(100); // collect in 100ms chunks
+          mediaRecorder.start(100);
           showVoiceBar(true);
           startVoiceTimer();
+          startWaveform(stream); // Start real-time waveform
         } catch(err) {
           showVoiceBar(false);
           PHToast?.error('Microphone access denied or not available.');
@@ -2814,6 +2861,23 @@
               roomId: dmRoomId,
               content: callLogMsg
             });
+
+            // ── Optimistic local update so call log appears instantly in chat ──
+            // Don't wait for socket broadcast — add it now if this is the active conv
+            const activeDmRoom = activeConv &&
+              [ME.id, (activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId)].sort().join('_');
+            if (activeDmRoom === dmRoomId) {
+              const tmpMsg = {
+                id: 'call-log-' + Date.now(),
+                content: callLogMsg,
+                sender: { id: ME.id },
+                roomId: dmRoomId,
+                createdAt: new Date().toISOString(),
+                _tmp: true
+              };
+              allMsgs.push(tmpMsg);
+              renderMsgs();
+            }
           }
         }
         window._callSeconds = 0;
