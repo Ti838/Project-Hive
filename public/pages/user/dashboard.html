@@ -453,7 +453,37 @@ body, header, aside, main, section, .bg-surface-container-lowest,
     </div>
   </div>
 
-  <!-- ⑤ AI Promo Card -->
+  <!-- ⑤ Recent Feed -->
+  <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-surface-variant">
+      <span class="font-bold text-[13px] text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-[18px]">feed</span>Recent Feed
+      </span>
+    </div>
+    <div id="recent-feed-list" class="divide-y divide-surface-variant max-h-[180px] overflow-y-auto">
+      <div class="text-center text-on-surface-variant text-[12px] py-6">Loading…</div>
+    </div>
+    <a href="/feed" class="flex items-center justify-center gap-1 text-primary text-[12px] font-semibold py-2.5 hover:bg-primary/5 transition-colors">
+      View all <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+    </a>
+  </div>
+
+  <!-- ⑥ Suggested Teams -->
+  <div class="bg-surface-container-lowest rounded-2xl border border-surface-variant overflow-hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-surface-variant">
+      <span class="font-bold text-[13px] text-on-surface flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary text-[18px]">diversity_3</span>Suggested Teams
+      </span>
+    </div>
+    <div id="suggested-teams-list" class="p-3 flex flex-col gap-2 max-h-[180px] overflow-y-auto">
+      <div class="text-center text-on-surface-variant text-[12px] py-4">Loading…</div>
+    </div>
+    <a href="/teams" class="flex items-center justify-center gap-1 text-primary text-[12px] font-semibold py-2.5 hover:bg-primary/5 transition-colors">
+      Browse teams <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+    </a>
+  </div>
+
+  <!-- ⑦ AI Promo Card -->
   <div class="rounded-2xl overflow-hidden relative" style="background:linear-gradient(135deg,#6366f1,#7c3aed,#ec4899)">
     <div class="absolute -right-6 -top-6 w-24 h-24 bg-white/10 rounded-full"></div>
     <div class="relative p-5">
@@ -1054,12 +1084,77 @@ body, header, aside, main, section, .bg-surface-container-lowest,
       }
     }
 
+    /* 5b. Recent Feed Widget */
+    async function fetchRecentFeed() {
+      try {
+        const r = await fetch(API_BASE + '/api/feed?limit=3', { headers: H });
+        if (!r.ok) throw new Error();
+        const d = await r.json();
+        const posts = d.posts || d || [];
+        const el = document.getElementById('recent-feed-list');
+        if (!posts.length) {
+          el.innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">No recent posts</div>';
+          return;
+        }
+        el.innerHTML = posts.slice(0, 3).map(p => {
+          const author = p.author || {};
+          const name = (author.firstName || '') + ' ' + (author.lastName || '');
+          const snippet = (p.content || '').substring(0, 60) + ((p.content || '').length > 60 ? '…' : '');
+          const typeIcon = p.postType === 'poll' ? 'ballot' : p.postType === 'achievement' ? 'emoji_events' : 'article';
+          return `<a href="/feed" class="flex items-start gap-2.5 px-4 py-3 hover:bg-primary/5 transition-colors cursor-pointer" style="text-decoration:none">
+            <span class="material-symbols-outlined text-primary text-[18px] mt-0.5 shrink-0">${typeIcon}</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[12px] font-bold text-on-surface truncate">${name.trim()}</p>
+              <p class="text-[11px] text-on-surface-variant truncate">${snippet}</p>
+            </div>
+          </a>`;
+        }).join('');
+      } catch(e) {
+        const el = document.getElementById('recent-feed-list');
+        if (el) el.innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">Could not load feed</div>';
+      }
+    }
+
+    /* 5c. Suggested Teams Widget */
+    async function fetchSuggestedTeams() {
+      try {
+        const r = await fetch(API_BASE + '/api/teams?limit=5', { headers: H });
+        if (!r.ok) throw new Error();
+        const d = await r.json();
+        const teams = (d.teams || d || []).slice(0, 3);
+        const el = document.getElementById('suggested-teams-list');
+        if (!teams.length) {
+          el.innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-4">No teams to suggest</div>';
+          return;
+        }
+        const cols = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+        el.innerHTML = teams.map(t => {
+          const nm = t.name || t.team_name || 'Team';
+          let h = 0; for (const c of nm) h = c.charCodeAt(0) + ((h << 5) - h);
+          const col = cols[Math.abs(h) % cols.length];
+          const count = t.member_count || t.memberCount || t.members?.length || '?';
+          return `<a href="/teams" class="flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-colors" style="text-decoration:none">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:${col}">${nm[0].toUpperCase()}</div>
+            <div class="min-w-0 flex-1">
+              <p class="text-[12px] font-bold text-on-surface truncate">${nm}</p>
+              <p class="text-[10px] text-on-surface-variant">${count} member${count !== 1 ? 's' : ''}</p>
+            </div>
+          </a>`;
+        }).join('');
+      } catch(e) {
+        const el = document.getElementById('suggested-teams-list');
+        if (el) el.innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-4">Could not load teams</div>';
+      }
+    }
+
     /* 5. Parallelized background fetches */
     await Promise.allSettled([
       fetchUserProfile(),
       fetchStats(),
       fetchNotifications(),
-      fetchOnlineFriends()
+      fetchOnlineFriends(),
+      fetchRecentFeed(),
+      fetchSuggestedTeams()
     ]);
   }
 

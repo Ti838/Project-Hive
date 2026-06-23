@@ -1,193 +1,577 @@
-# ProjectHive — Database Design & Schema Reference 🗄️
+# ProjectHive — Database Architecture
 
-This document describes the database design, tables, relations, and Row Level Security (RLS) policies implemented in ProjectHive. The project uses **Supabase PostgreSQL** as its primary relational database.
+> **Database:** Supabase PostgreSQL | **Tables:** 13 | **Relations:** 18 Foreign Keys  
+> **Security:** Row Level Security (RLS) on all tables | **Last Updated:** June 23, 2026
 
 ---
 
-## 📊 Entity Relationship Diagram (ERD)
+## System Architecture Overview
 
-The diagram below shows the relationships between the main tables in ProjectHive:
+```mermaid
+graph TB
+    subgraph CLIENT["🖥️ Frontend - Vercel"]
+        UI["Vanilla JS + TailwindCSS"]
+        WS["Socket.IO Client"]
+    end
+
+    subgraph SERVER["⚡ Backend - Render"]
+        API["Express.js API"]
+        AUTH["JWT Auth Middleware"]
+        SOCK["Socket.IO Server"]
+        AI["Gemini AI Service"]
+    end
+
+    subgraph DATABASE["🗄️ Database - Supabase"]
+        PG["PostgreSQL"]
+        RLS["Row Level Security"]
+        SUPA["Supabase Client"]
+    end
+
+    UI -->|"REST API"| API
+    WS <-->|"WebSocket"| SOCK
+    API --> AUTH
+    AUTH --> SUPA
+    SUPA --> RLS
+    RLS --> PG
+    API --> AI
+
+    style CLIENT fill:#1e1b4b,stroke:#6366f1,color:#e2e8f0
+    style SERVER fill:#0c1222,stroke:#10b981,color:#e2e8f0
+    style DATABASE fill:#1a0d2e,stroke:#a855f7,color:#e2e8f0
+```
+
+---
+
+## Entity Relationship Diagram
+
+### Core Entities
 
 ```mermaid
 erDiagram
-    users ||--o{ skills : "has"
+    users {
+        uuid id PK
+        varchar first_name
+        varchar last_name
+        varchar email UK
+        varchar password_hash
+        text avatar
+        text banner_image
+        varchar avatar_color
+        text bio
+        varchar university
+        varchar major
+        integer year_of_study
+        varchar status
+        varchar role
+        boolean is_verified
+        boolean is_banned
+        varchar online_status
+        timestamptz last_seen
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    skills {
+        uuid id PK
+        uuid user_id FK
+        varchar name
+        varchar level
+        integer endorsements
+    }
+
+    teams {
+        uuid id PK
+        varchar name
+        text description
+        varchar category
+        text_arr tags
+        integer max_size
+        boolean is_open
+        uuid leader_id FK
+        timestamptz created_at
+    }
+
+    team_members {
+        uuid id PK
+        uuid team_id FK
+        uuid user_id FK
+        varchar role
+        timestamptz joined_at
+    }
+
+    users ||--o{ skills : "has skills"
     users ||--o{ teams : "leads"
     users ||--o{ team_members : "joins"
-    users ||--o{ projects : "owns"
-    users ||--o{ project_likes : "likes"
-    users ||--o{ messages : "sends"
-    users ||--o{ notifications : "receives"
-    users ||--o{ friends : "has"
-    users ||--o{ friend_requests : "sends/receives"
-    users ||--o{ join_requests : "sends"
+    teams ||--o{ team_members : "contains"
+```
+
+### Social & Content
+
+```mermaid
+erDiagram
+    posts {
+        uuid id PK
+        uuid author_id FK
+        text content
+        varchar post_type
+        text image_url
+        jsonb link_metadata
+        boolean is_edited
+        timestamptz created_at
+    }
+
+    post_reactions {
+        uuid id PK
+        uuid post_id FK
+        uuid user_id FK
+        varchar type
+    }
+
+    post_comments {
+        uuid id PK
+        uuid post_id FK
+        uuid author_id FK
+        text content
+        timestamptz created_at
+    }
+
     users ||--o{ posts : "writes"
     users ||--o{ post_reactions : "reacts"
     users ||--o{ post_comments : "comments"
-
-    teams ||--o{ team_members : "contains"
-    teams ||--o{ join_requests : "receives"
-    teams ||--o{ projects : "manages"
-
     posts ||--o{ post_reactions : "has"
     posts ||--o{ post_comments : "has"
-    
+```
+
+### Messaging System
+
+```mermaid
+erDiagram
+    messages {
+        uuid id PK
+        varchar room_id
+        uuid sender_id FK
+        text content
+        varchar message_type
+        text file_url
+        text voice_url
+        uuid reply_to FK
+        jsonb reactions
+        boolean is_edited
+        timestamptz edited_at
+        uuid_arr read_by
+        timestamptz created_at
+    }
+
+    users ||--o{ messages : "sends"
+    messages ||--o| messages : "replies to"
+```
+
+### Projects & Showcase
+
+```mermaid
+erDiagram
+    projects {
+        uuid id PK
+        varchar title
+        text description
+        varchar category
+        text_arr tech_stack
+        varchar github_url
+        varchar demo_url
+        uuid owner_id FK
+        uuid team_id FK
+        integer likes
+        integer views
+        boolean is_featured
+    }
+
+    project_likes {
+        uuid id PK
+        uuid project_id FK
+        uuid user_id FK
+    }
+
+    users ||--o{ projects : "owns"
+    teams ||--o{ projects : "manages"
     projects ||--o{ project_likes : "receives"
+    users ||--o{ project_likes : "likes"
+```
+
+### Networking & Notifications
+
+```mermaid
+erDiagram
+    friends {
+        uuid id PK
+        uuid user_id FK
+        uuid friend_id FK
+        timestamptz created_at
+    }
+
+    friend_requests {
+        uuid id PK
+        uuid from_user_id FK
+        uuid to_user_id FK
+        varchar status
+        timestamptz created_at
+    }
+
+    join_requests {
+        uuid id PK
+        uuid team_id FK
+        uuid user_id FK
+        varchar status
+        timestamptz created_at
+    }
+
+    notifications {
+        uuid id PK
+        uuid user_id FK
+        varchar type
+        text message
+        jsonb metadata
+        boolean is_read
+        timestamptz created_at
+    }
+
+    users ||--o{ friends : "connects"
+    users ||--o{ friend_requests : "sends"
+    users ||--o{ join_requests : "requests"
+    users ||--o{ notifications : "receives"
 ```
 
 ---
 
-## 🔑 Table Schemas
+## Data Flow Diagrams
 
-### 1. `users`
-Stores student profile info, authentication records (hashes, verification tokens), and activity tracking statistics.
-* **Fields:**
-  * `id` (UUID, PK, Default: `gen_random_uuid()`)
-  * `first_name` (VARCHAR(100), NOT NULL)
-  * `last_name` (VARCHAR(100), NOT NULL)
-  * `email` (VARCHAR(255), UNIQUE, NOT NULL)
-  * `password_hash` (VARCHAR(255), NOT NULL)
-  * `avatar` (TEXT)
-  * `banner_image` (TEXT)
-  * `avatar_color` (VARCHAR(20), Default: `#6366F1`)
-  * `bio` (TEXT, Default: `''`)
-  * `university` (VARCHAR(255), Default: `''`)
-  * `major` (VARCHAR(255), Default: `''`)
-  * `year_of_study` (INTEGER)
-  * `status` (VARCHAR(20), Default: `'available'`)
-  * `role` (VARCHAR(20), Default: `'student'`)
-  * `is_verified` (BOOLEAN, Default: `FALSE`)
-  * `is_banned` (BOOLEAN, Default: `FALSE`)
-  * `online_status` (VARCHAR(20), Default: `'offline'`)
-  * `last_seen` (TIMESTAMPTZ, Default: `now()`)
-  * `created_at` (TIMESTAMPTZ, Default: `now()`)
-  * `updated_at` (TIMESTAMPTZ, Default: `now()`)
+### Authentication Flow
 
-### 2. `skills`
-User professional skills used in search & recommendation.
-* **Fields:**
-  * `id` (UUID, PK)
-  * `user_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `name` (VARCHAR(100), NOT NULL)
-  * `level` (VARCHAR(20), Default: `'intermediate'`)
-  * `endorsements` (INTEGER, Default: `0`)
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant S as Express API
+    participant DB as Supabase
+    participant G as Google OAuth
 
-### 3. `teams`
-Project/study groups formed by students.
-* **Fields:**
-  * `id` (UUID, PK)
-  * `name` (VARCHAR(255), NOT NULL)
-  * `description` (TEXT)
-  * `category` (VARCHAR(100))
-  * `tags` (TEXT[] array)
-  * `max_size` (INTEGER, Default: `5`)
-  * `is_open` (BOOLEAN, Default: `TRUE`)
-  * `leader_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `created_at` (TIMESTAMPTZ, Default: `now()`)
+    rect rgb(30, 27, 75)
+        Note over C,DB: Email/Password Login
+        C->>S: POST /api/auth/login
+        S->>DB: Query users by email
+        DB-->>S: User record
+        S->>S: bcrypt.compare(password)
+        S-->>C: { accessToken, refreshToken }
+    end
 
-### 4. `team_members`
-Junction table mapping users to teams.
-* **Fields:**
-  * `id` (UUID, PK)
-  * `team_id` (UUID, FK -> `teams.id` ON DELETE CASCADE)
-  * `user_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `role` (VARCHAR(20), Default: `'member'`)
-  * `joined_at` (TIMESTAMPTZ, Default: `now()`)
-  * *Constraint:* Unique `(team_id, user_id)`
+    rect rgb(12, 18, 34)
+        Note over C,G: Google OAuth Login
+        C->>G: Supabase OAuth redirect
+        G-->>C: Authorization code
+        C->>S: POST /api/auth/google/callback
+        S->>DB: Upsert user by email
+        S-->>C: { accessToken, refreshToken }
+    end
+```
 
-### 5. `projects`
-Showcase of finished or active student projects.
-* **Fields:**
-  * `id` (UUID, PK)
-  * `title` (VARCHAR(255), NOT NULL)
-  * `description` (TEXT)
-  * `category` (VARCHAR(100))
-  * `tech_stack` (TEXT[] array)
-  * `github_url` (VARCHAR(500))
-  * `demo_url` (VARCHAR(500))
-  * `owner_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `team_id` (UUID, FK -> `teams.id` ON DELETE SET NULL)
-  * `likes` (INTEGER, Default: `0`)
-  * `views` (INTEGER, Default: `0`)
+### Message Delivery Flow
 
-### 6. `messages`
-Stores direct messages (DMs) between users and team group messages.
-* **Fields:**
-  * `id` (UUID, PK)
-  * `room_id` (VARCHAR(255), NOT NULL) — direct chats format: `[userAId]_[userBId]` sorted; team format: `[teamId]`.
-  * `sender_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `content` (TEXT, NOT NULL)
-  * `read_by` (UUID[] array)
-  * `created_at` (TIMESTAMPTZ, Default: `now()`)
+```mermaid
+sequenceDiagram
+    participant A as User A
+    participant WS as Socket.IO
+    participant API as Express
+    participant DB as Supabase
+    participant B as User B
 
-### 7. `friends` & `friend_requests`
-Maintains network connections between students.
-* **`friends` Fields:**
-  * `id` (UUID, PK)
-  * `user_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `friend_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `created_at` (TIMESTAMPTZ, Default: `now()`)
+    A->>WS: emit("message:send", payload)
+    WS->>DB: INSERT into messages
+    DB-->>WS: Saved message
+    WS->>B: emit("message:new", message)
+    WS->>A: emit("message:new", message)
 
-* **`friend_requests` Fields:**
-  * `id` (UUID, PK)
-  * `from_user_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `to_user_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `status` (VARCHAR(20), Default: `'pending'`)
+    Note over A,B: Real-time delivery via WebSocket
 
-### 8. `posts`, `post_reactions`, & `post_comments` (Feed System)
-Supports the student social networking feed.
-* **`posts` Fields:**
-  * `id` (UUID, PK)
-  * `author_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `content` (TEXT, NOT NULL)
-  * `post_type` (VARCHAR(30) check `('general','achievement','project_update','looking_for_team')`)
-  * `created_at` (TIMESTAMPTZ, Default: `now()`)
+    A->>WS: emit("typing:start")
+    WS->>B: emit("typing:start")
+```
 
-* **`post_reactions` Fields:**
-  * `id` (UUID, PK)
-  * `post_id` (UUID, FK -> `posts.id` ON DELETE CASCADE)
-  * `user_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `type` (VARCHAR(20) check `('like','celebrate','insightful','support')`)
-  * *Constraint:* Unique `(post_id, user_id)` (one reaction type per user per post)
+### Feed & Poll Voting Flow
 
-* **`post_comments` Fields:**
-  * `id` (UUID, PK)
-  * `post_id` (UUID, FK -> `posts.id` ON DELETE CASCADE)
-  * `author_id` (UUID, FK -> `users.id` ON DELETE CASCADE)
-  * `content` (TEXT, NOT NULL)
-  * `created_at` (TIMESTAMPTZ, Default: `now()`)
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant API as Express
+    participant DB as Supabase
+
+    rect rgb(30, 27, 75)
+        Note over U,DB: Create Poll Post
+        U->>API: POST /api/posts { type: "poll", link_metadata: { options } }
+        API->>DB: INSERT into posts
+        DB-->>API: Post with poll data
+        API-->>U: 201 Created
+    end
+
+    rect rgb(12, 18, 34)
+        Note over U,DB: Vote on Poll
+        U->>API: POST /api/posts/:id/vote { option: "Option A" }
+        API->>DB: SELECT link_metadata FROM posts
+        API->>API: Toggle vote in JSONB options array
+        API->>DB: UPDATE posts SET link_metadata
+        DB-->>API: Updated post
+        API-->>U: { updatedPoll }
+    end
+```
 
 ---
 
-## 🛡️ Row Level Security (RLS)
+## Table Schemas
 
-All tables in the project have **Row Level Security (RLS)** enabled to prevent direct unauthorized queries.
-Because our NodeJS Backend acts as a secure controller utilizing the `service_role` client (which bypasses RLS), we have configured a central bypass policy for all tables:
+### 1. `users` — Core Identity
+
+The central table. All other entities reference users.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK, Default: `gen_random_uuid()` | Unique identifier |
+| `first_name` | VARCHAR(100) | NOT NULL | First name |
+| `last_name` | VARCHAR(100) | NOT NULL | Last name |
+| `email` | VARCHAR(255) | UNIQUE, NOT NULL | Login email |
+| `password_hash` | VARCHAR(255) | NOT NULL | bcrypt hash |
+| `avatar` | TEXT | — | Base64 profile image (≤150KB) |
+| `banner_image` | TEXT | — | Base64 banner (≤150KB) |
+| `avatar_color` | VARCHAR(20) | Default: `#6366F1` | Fallback avatar background |
+| `bio` | TEXT | Default: `''` | User biography |
+| `university` | VARCHAR(255) | Default: `''` | University name |
+| `major` | VARCHAR(255) | Default: `''` | Field of study |
+| `year_of_study` | INTEGER | — | Academic year |
+| `status` | VARCHAR(20) | Default: `'available'` | `available`, `busy`, `away` |
+| `role` | VARCHAR(20) | Default: `'student'` | `student` or `admin` |
+| `is_verified` | BOOLEAN | Default: `FALSE` | Email verified |
+| `is_banned` | BOOLEAN | Default: `FALSE` | Account banned |
+| `online_status` | VARCHAR(20) | Default: `'offline'` | `online`, `offline` |
+| `last_seen` | TIMESTAMPTZ | Default: `now()` | Last active time |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | Registration date |
+| `updated_at` | TIMESTAMPTZ | Default: `now()` | Last profile update |
+
+### 2. `skills` — User Expertise
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `user_id` | UUID | FK → `users.id` CASCADE | Skill owner |
+| `name` | VARCHAR(100) | NOT NULL | Skill name (e.g. "React") |
+| `level` | VARCHAR(20) | Default: `'intermediate'` | `beginner`, `intermediate`, `advanced` |
+| `endorsements` | INTEGER | Default: `0` | Times endorsed by others |
+
+### 3. `teams` — Collaboration Groups
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `name` | VARCHAR(255) | NOT NULL | Team name |
+| `description` | TEXT | — | Team description |
+| `category` | VARCHAR(100) | — | e.g. "Web Dev", "AI/ML" |
+| `tags` | TEXT[] | — | Skill/topic tags |
+| `max_size` | INTEGER | Default: `5` | Maximum members |
+| `is_open` | BOOLEAN | Default: `TRUE` | Open for joining |
+| `leader_id` | UUID | FK → `users.id` CASCADE | Team creator/leader |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+### 4. `team_members` — Junction Table
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `team_id` | UUID | FK → `teams.id` CASCADE | — |
+| `user_id` | UUID | FK → `users.id` CASCADE | — |
+| `role` | VARCHAR(20) | Default: `'member'` | `leader` or `member` |
+| `joined_at` | TIMESTAMPTZ | Default: `now()` | — |
+| — | — | UNIQUE(`team_id`, `user_id`) | No duplicate memberships |
+
+### 5. `projects` — Showcase Portfolio
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `title` | VARCHAR(255) | NOT NULL | Project title |
+| `description` | TEXT | — | Full description |
+| `category` | VARCHAR(100) | — | Project category |
+| `tech_stack` | TEXT[] | — | Technologies used |
+| `github_url` | VARCHAR(500) | — | GitHub repository link |
+| `demo_url` | VARCHAR(500) | — | Live demo link |
+| `owner_id` | UUID | FK → `users.id` CASCADE | Project owner |
+| `team_id` | UUID | FK → `teams.id` SET NULL | Associated team |
+| `likes` | INTEGER | Default: `0` | Upvote count |
+| `views` | INTEGER | Default: `0` | View count |
+| `is_featured` | BOOLEAN | Default: `FALSE` | Admin-featured flag |
+
+### 6. `messages` — Real-time Messaging
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `room_id` | VARCHAR(255) | NOT NULL | DM: `userA_userB` (sorted), Team: `teamId` |
+| `sender_id` | UUID | FK → `users.id` CASCADE | Message author |
+| `content` | TEXT | NOT NULL | Message body |
+| `message_type` | VARCHAR(20) | Default: `'text'` | `text`, `voice`, `image` |
+| `file_url` | TEXT | — | Image attachment URL |
+| `voice_url` | TEXT | — | Base64 voice data |
+| `reply_to` | UUID | FK → `messages.id` | Quoted message reference |
+| `reactions` | JSONB | Default: `'{}'` | `{ "👍": ["uid1"], "❤️": ["uid2"] }` |
+| `is_edited` | BOOLEAN | Default: `FALSE` | Edited flag |
+| `edited_at` | TIMESTAMPTZ | — | Last edit timestamp |
+| `read_by` | UUID[] | — | Array of user IDs who read |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+### 7. `friends` — Mutual Connections
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `user_id` | UUID | FK → `users.id` CASCADE | User A |
+| `friend_id` | UUID | FK → `users.id` CASCADE | User B |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+### 8. `friend_requests` — Pending Connections
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `from_user_id` | UUID | FK → `users.id` CASCADE | Sender |
+| `to_user_id` | UUID | FK → `users.id` CASCADE | Recipient |
+| `status` | VARCHAR(20) | Default: `'pending'` | `pending`, `accepted`, `rejected` |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+### 9. `posts` — Social Feed
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `author_id` | UUID | FK → `users.id` CASCADE | Post author |
+| `content` | TEXT | NOT NULL | Post body |
+| `post_type` | VARCHAR(30) | CHECK constraint | `general`, `achievement`, `project_update`, `looking_for_team`, `poll` |
+| `image_url` | TEXT | — | Attached image |
+| `link_metadata` | JSONB | — | URL previews or poll data |
+| `is_edited` | BOOLEAN | Default: `FALSE` | Edited flag |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+> **Poll JSONB Structure:**
+> ```json
+> {
+>   "type": "poll",
+>   "options": [
+>     { "text": "React", "votes": ["user-uuid-1", "user-uuid-3"] },
+>     { "text": "Vue", "votes": ["user-uuid-2"] },
+>     { "text": "Svelte", "votes": [] }
+>   ]
+> }
+> ```
+
+### 10. `post_reactions` — Feed Reactions
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `post_id` | UUID | FK → `posts.id` CASCADE | — |
+| `user_id` | UUID | FK → `users.id` CASCADE | — |
+| `type` | VARCHAR(20) | CHECK constraint | `like`, `celebrate`, `insightful`, `support` |
+| — | — | UNIQUE(`post_id`, `user_id`) | One reaction per user |
+
+### 11. `post_comments` — Feed Comments
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `post_id` | UUID | FK → `posts.id` CASCADE | — |
+| `author_id` | UUID | FK → `users.id` CASCADE | — |
+| `content` | TEXT | NOT NULL | Comment body |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+### 12. `notifications` — User Alerts
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `user_id` | UUID | FK → `users.id` CASCADE | Recipient |
+| `type` | VARCHAR(50) | — | `friend_request`, `team_invite`, `reaction`, etc. |
+| `message` | TEXT | — | Display text |
+| `metadata` | JSONB | — | Extra context (sender info, links) |
+| `is_read` | BOOLEAN | Default: `FALSE` | Read status |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+### 13. `join_requests` — Team Join Flow
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | — |
+| `team_id` | UUID | FK → `teams.id` CASCADE | Target team |
+| `user_id` | UUID | FK → `users.id` CASCADE | Requesting user |
+| `status` | VARCHAR(20) | Default: `'pending'` | `pending`, `accepted`, `rejected` |
+| `created_at` | TIMESTAMPTZ | Default: `now()` | — |
+
+---
+
+## Row Level Security (RLS)
+
+All tables have **RLS enabled**. The backend uses the `service_role` client which bypasses RLS:
 
 ```sql
-CREATE POLICY "service_role_all_[table_name]" ON [table_name] 
-FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "service_role_all_[table]" ON [table]
+  FOR ALL TO service_role
+  USING (true) WITH CHECK (true);
 ```
 
-For client-side anonymous queries (read-only feeds/search), the following public select policies are active:
-* **Posts:** `CREATE POLICY "read posts" ON posts FOR SELECT USING (true);`
-* **Reactions:** `CREATE POLICY "read reactions" ON post_reactions FOR SELECT USING (true);`
-* **Comments:** `CREATE POLICY "read comments" ON post_comments FOR SELECT USING (true);`
+Public read-only policies for unauthenticated feed browsing:
+
+| Table | Policy | Access |
+|-------|--------|--------|
+| `posts` | `read posts` | SELECT for all |
+| `post_reactions` | `read reactions` | SELECT for all |
+| `post_comments` | `read comments` | SELECT for all |
 
 ---
 
-## ⚡ Performance & Data Payload Optimization
+## Performance Optimization
 
-Storing binary assets (like images) directly in a relational database as Base64 strings can cause performance degradation if payloads are too large. ProjectHive handles this using a client-side preprocessing strategy:
+### Image Compression Pipeline
 
-### 1. Client-Side Image Pre-processing
-Rather than sending raw 5MB-10MB camera files to the Express server, the frontend intercepts image selection:
-* **Avatars** are processed on an HTML5 Canvas down to `400x400` pixels.
-* **Banners** are downscaled to `1200x675` pixels.
-* Export is executed as `image/jpeg` with `0.85` quality, compressing the final Base64 string to **under 150KB**.
+```mermaid
+graph LR
+    A["📷 Raw Image<br/>5-10 MB"] --> B["🖼️ HTML5 Canvas<br/>Resize"]
+    B --> C["📐 Crop<br/>Avatar: 400×400<br/>Banner: 1200×675"]
+    C --> D["🗜️ JPEG Export<br/>Quality: 0.85"]
+    D --> E["💾 Base64 String<br/>&lt; 150 KB"]
+    E --> F["🗄️ PostgreSQL<br/>TEXT column"]
 
-### 2. Database Footprint Benefits
-* **Fast Query Execution:** Users fetch profiles instantly since the Base64 payloads are tiny, keeping DB buffer pool usage optimized.
-* **No Supabase Payload Timeout:** Avoids HTTP gateway timeouts on slow connections.
-* **Storage Economy:** Eliminates the need for expensive third-party object buckets for basic profile custom media.
+    style A fill:#ef4444,stroke:#dc2626,color:#fff
+    style B fill:#f59e0b,stroke:#d97706,color:#fff
+    style C fill:#3b82f6,stroke:#2563eb,color:#fff
+    style D fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style E fill:#10b981,stroke:#059669,color:#fff
+    style F fill:#6366f1,stroke:#4f46e5,color:#fff
+```
+
+**Benefits:**
+- **Fast queries** — Base64 payloads under 150KB keep buffer pool lean
+- **No external storage** — No S3/Cloudflare buckets needed
+- **No timeouts** — Small payloads avoid Supabase gateway limits
+- **Instant load** — Profile images render without additional HTTP requests
 
 ---
+
+## Index Strategy
+
+| Table | Index | Type | Purpose |
+|-------|-------|------|---------|
+| `users` | `email` | UNIQUE B-tree | Login lookup |
+| `users` | `role` | B-tree | Admin filtering |
+| `messages` | `room_id` | B-tree | Conversation queries |
+| `messages` | `created_at` | B-tree DESC | Message ordering |
+| `posts` | `author_id` | B-tree | User's posts |
+| `posts` | `created_at` | B-tree DESC | Feed ordering |
+| `friends` | `(user_id, friend_id)` | Composite | Friendship lookup |
+| `team_members` | `(team_id, user_id)` | UNIQUE Composite | No duplicates |
+| `post_reactions` | `(post_id, user_id)` | UNIQUE Composite | One reaction per user |
+
+---
+
+*Generated for ProjectHive — Student Collaboration Platform*

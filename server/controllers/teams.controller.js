@@ -31,11 +31,6 @@ export async function createTeam(req, res, next) {
     await supabaseAdmin.from('team_members').insert({ team_id: team.id, user_id: userId, role: 'leader' });
 
     // Update user stat
-    await supabaseAdmin.from('users')
-      .update({ teams_created: supabaseAdmin.rpc ? undefined : undefined })
-      .eq('id', userId);
-
-    // Simpler increment
     const { data: u } = await supabaseAdmin.from('users').select('teams_created').eq('id', userId).single();
     await supabaseAdmin.from('users').update({ teams_created: (u?.teams_created || 0) + 1 }).eq('id', userId);
 
@@ -243,5 +238,80 @@ export async function getMyTeams(req, res, next) {
     if (error) throw error;
     const teams = (memberships || []).map(m => ({ ...m.team, myRole: m.role, joinedAt: m.joined_at }));
     res.json({ teams, total: teams.length });
+  } catch (err) { next(err); }
+}
+
+// ─── LEAVE TEAM ───────────────────────────────────────────────────────────────
+export async function leaveTeam(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { id: teamId } = req.params;
+
+    // Check membership
+    const { data: mem } = await supabaseAdmin
+      .from('team_members').select('role').eq('team_id', teamId).eq('user_id', userId).single();
+    if (!mem) return res.status(404).json({ error: 'You are not a member of this team' });
+    if (mem.role === 'leader') return res.status(400).json({ error: 'Team leader cannot leave. Transfer leadership or delete the team first.' });
+
+    await supabaseAdmin.from('team_members').delete().eq('team_id', teamId).eq('user_id', userId);
+
+    // Update user stats
+    const { data: u } = await supabaseAdmin.from('users').select('teams_joined').eq('id', userId).single();
+    await supabaseAdmin.from('users').update({ teams_joined: Math.max(0, (u?.teams_joined || 1) - 1) }).eq('id', userId);
+
+    res.json({ ok: true, message: 'You have left the team' });
+  } catch (err) { next(err); }
+}
+
+// ─── KICK MEMBER ──────────────────────────────────────────────────────────────
+export async function kickMember(req, res, next) {
+  try {
+    const leaderId = req.user.id;
+    const { id: teamId, memberId } = req.params;
+
+    // Verify requester is leader
+    const { data: leaderMem } = await supabaseAdmin
+      .from('team_members').select('role').eq('team_id', teamId).eq('user_id', leaderId).single();
+    if (!leaderMem || leaderMem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can kick members' });
+
+    if (memberId === leaderId) return res.status(400).json({ error: 'Leader cannot kick themselves' });
+
+    // Check target is a member
+    const { data: targetMem } = await supabaseAdmin
+      .from('team_members').select('role').eq('team_id', teamId).eq('user_id', memberId).single();
+    if (!targetMem) return res.status(404).json({ error: 'User is not a member of this team' });
+
+    await supabaseAdmin.from('team_members').delete().eq('team_id', teamId).eq('user_id', memberId);
+
+    // Notify kicked user
+    const { data: team } = await supabaseAdmin.from('teams').select('name').eq('id', teamId).single();
+    await supabaseAdmin.from('notifications').insert({
+      user_id: memberId,
+      type: 'team_update',
+      title: 'Removed from Team',
+      message: `You have been removed from ${team?.name || 'a team'}`,
+      data: { teamId },
+    });
+
+    // Update member stats
+    const { data: u } = await supabaseAdmin.from('users').select('teams_joined').eq('id', memberId).single();
+    await supabaseAdmin.from('users').update({ teams_joined: Math.max(0, (u?.teams_joined || 1) - 1) }).eq('id', memberId);
+
+    res.json({ ok: true, message: 'Member removed from team' });
+  } catch (err) { next(err); }
+}
+
+// ─── DELETE TEAM (by leader) ──────────────────────────────────────────────────
+export async function deleteTeam(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { id: teamId } = req.params;
+
+    const { data: mem } = await supabaseAdmin
+      .from('team_members').select('role').eq('team_id', teamId).eq('user_id', userId).single();
+    if (!mem || mem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can delete the team' });
+
+    await supabaseAdmin.from('teams').delete().eq('id', teamId);
+    res.json({ ok: true, message: 'Team deleted successfully' });
   } catch (err) { next(err); }
 }

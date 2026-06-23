@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import { broadcastNotification } from '../services/socket.service.js';
+import { broadcastNotification, getIo } from '../services/socket.service.js';
 
 export async function sendFriendRequest(req, res, next) {
   try {
@@ -30,8 +30,9 @@ export async function sendFriendRequest(req, res, next) {
     if (error) throw error;
 
     const { data: sender } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', senderId).single();
-    broadcastNotification(null, receiverId, {
+    broadcastNotification(getIo(), receiverId, {
       type: 'friend_request',
+      title: 'New Friend Request',
       message: `${sender?.first_name} ${sender?.last_name} sent you a friend request`,
       requestId: request.id,
     });
@@ -59,8 +60,9 @@ export async function acceptFriendRequest(req, res, next) {
     ]);
 
     const { data: accepter } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
-    broadcastNotification(null, request.from_user_id, {
+    broadcastNotification(getIo(), request.from_user_id, {
       type: 'friend_accepted',
+      title: 'Friend Request Accepted',
       message: `${accepter?.first_name} ${accepter?.last_name} accepted your friend request`,
     });
 

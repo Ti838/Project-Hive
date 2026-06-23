@@ -23,7 +23,7 @@ import friendsRoutes from './routes/friends.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { adminDevRouter } from './routes/admin.routes.js';
 import { adminLogin } from './controllers/admin.auth.controller.js';
-import { getFlags } from './controllers/admin.controller.js';
+import { getFlags, loadFlagsFromDB } from './controllers/admin.controller.js';
 import postsRoutes from './routes/posts.routes.js';
 
 const app = express();
@@ -37,11 +37,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.socket.io", "https://cdn.jsdelivr.net", "https://unpkg.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.socket.io", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://esm.sh"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
-      connectSrc: ["'self'", "https://projecthive-backend.onrender.com", "wss://projecthive-backend.onrender.com", "https://generativelanguage.googleapis.com", "https://api.brevo.com"],
+      connectSrc: ["'self'", "https://projecthive-backend.onrender.com", "wss://projecthive-backend.onrender.com", "https://generativelanguage.googleapis.com", "https://api.brevo.com", "https://iekfvgjxkmgduxdvkuxf.supabase.co"],
       frameSrc: ["'none'"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
@@ -209,6 +209,7 @@ app.use((req, res) => {
     '/forgot-password':    'pages/auth/forgot-password.html',
     '/reset-password':     'pages/auth/reset-password.html',
     '/verify-email':       'pages/auth/verify-email.html',
+    '/auth/callback':      'pages/auth/callback.html',
     '/admin':              'pages/admin/login.html',
     '/admin/login':        'pages/admin/login.html',
     '/admin/dashboard':    'pages/admin/dashboard.html',

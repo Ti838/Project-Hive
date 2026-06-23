@@ -116,6 +116,11 @@ body{background:var(--bg);color:var(--tx);margin:0}
       <button class="chip" onclick="setFilter('ai',this)"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg></span> AI/ML</button>
       <button class="chip" onclick="setFilter('mobile',this)"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span> Mobile</button>
     </div>
+    <div style="margin-top:8px">
+      <select id="uni-filter" onchange="applyUniFilter(this.value)" style="padding:7px 14px;border-radius:20px;font-size:12px;font-weight:600;border:1.5px solid var(--bd);background:var(--sf);color:var(--tx);outline:none;cursor:pointer;min-width:150px">
+        <option value="">All Universities</option>
+      </select>
+    </div>
   </div>
 
   <div id="fp-grid" class="grid">
@@ -178,6 +183,12 @@ body{background:var(--bg);color:var(--tx);margin:0}
     document.getElementById('st-pending').textContent=inReqs.length;
     if(inReqs.length){document.getElementById('req-badge').style.display='flex';document.getElementById('req-cnt').textContent=inReqs.length;}
     render();
+
+    // Populate university filter dropdown
+    const unis = [...new Set(allUsers.map(u => u.university).filter(Boolean))].sort();
+    const sel = document.getElementById('uni-filter');
+    if (sel) { unis.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; sel.appendChild(o); }); }
+
     const params = new URLSearchParams(window.location.search);
     const uid = params.get('uid');
     if (uid) {
@@ -248,6 +259,9 @@ body{background:var(--bg);color:var(--tx);margin:0}
     if(filter==='web')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/react|vue|html|css|javascript|web|next/)));
     if(filter==='ai')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/python|ml|ai|machine|tensor|pytorch/)));
     if(filter==='mobile')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/flutter|react native|android|ios|mobile/)));
+    // University filter
+    const uniSel = document.getElementById('uni-filter');
+    if (uniSel && uniSel.value) list = list.filter(u => (u.university || '') === uniSel.value);
     g.innerHTML=list.length?list.map(u=>{const id=u._id||u.id;return card(u,myFriends.has(id)?'friends':sentReqs.has(id)?'sent':'none');}).join(''):empty('search_off','No one found','Try different search or filter');
   }
 
@@ -260,7 +274,18 @@ body{background:var(--bg);color:var(--tx);margin:0}
     const sd=u.status==='available'?'#10b981':u.status==='busy'?'#f59e0b':'#94a3b8';
     const sl=u.status==='available'?'Available':u.status==='busy'?'Busy':'Not looking';
     const photoEl=u.avatar?`<img src="${u.avatar}" style="display:block;width:100%;height:100%;object-fit:cover;border-radius:11px;">`:ini;
-    const btn=state==='friends'?`<button class="btn-add friends" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">check</span>Friends</button>`:state==='sent'?`<button class="btn-add sent" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">schedule</span>Sent</button>`:`<button class="btn-add" onclick="addFriend('${id}',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_add</span>Add Friend</button>`;
+    let btn;
+    if(state==='friends'){
+      if(tab==='friends'){
+        btn=`<button class="btn-add" onclick="unfriend('${id}',this)" style="background:rgba(239,68,68,.1);color:#ef4444;border:1.5px solid rgba(239,68,68,.2)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_remove</span>Unfriend</button>`;
+      } else {
+        btn=`<button class="btn-add friends" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">check</span>Friends</button>`;
+      }
+    } else if(state==='sent'){
+      btn=`<button class="btn-add sent" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">schedule</span>Sent</button>`;
+    } else {
+      btn=`<button class="btn-add" onclick="addFriend('${id}',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_add</span>Add Friend</button>`;
+    }
     const isOnline = u.onlineStatus === 'online' || u.online_status === 'online';
     return `<div class="ucard">
       <div class="ucard-banner" style="background:linear-gradient(135deg,${c}cc,${c}55)">
@@ -284,6 +309,37 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
   function empty(ic,t,s){return `<div class="empty"><div class="empty-ic">${ic}</div><div style="font-size:17px;font-weight:800;color:var(--tx);margin:10px 0 6px">${t}</div><div style="font-size:13px;color:var(--sub)">${s}</div></div>`;}
 
+  // ─── Navigate to profile page ──────────────────────────────────────────────
+  window.showUserProfile = function(uid) {
+    if (!uid) return;
+    window.location.href = `/profile/view?id=${uid}`;
+  };
+
+  // ─── Unfriend ──────────────────────────────────────────────────────────────
+  window.unfriend = async function(uid, btn) {
+    if (!confirm('Remove this friend?')) return;
+    btn.disabled = true;
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:14px">progress_activity</span>';
+    try {
+      const r = await fetch(API_BASE + `/api/friends/remove/${uid}`, { method: 'DELETE', headers: H });
+      if (r.ok) {
+        myFriends.delete(uid);
+        document.getElementById('st-friends').textContent = myFriends.size;
+        PHToast?.success('Friend removed');
+        render();
+      } else {
+        const d = await r.json();
+        PHToast?.error(d.error || 'Could not unfriend');
+        btn.disabled = false;
+        btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:14px">person_remove</span>Unfriend';
+      }
+    } catch(e) {
+      PHToast?.error('Server offline');
+      btn.disabled = false;
+      btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:14px">person_remove</span>Unfriend';
+    }
+  };
+
   window.addFriend=async function(uid,btn){
     btn.disabled=true;btn.innerHTML='<span style="font-family:\'Material Symbols Outlined\';font-size:14px">progress_activity</span>';
     try{
@@ -306,6 +362,8 @@ body{background:var(--bg);color:var(--tx);margin:0}
       }
     }catch(e){PHToast?.error('Server offline');}
   };
+
+  window.applyUniFilter = function(val) { render(); };
 
   init();
 })();

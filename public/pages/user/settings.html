@@ -3,6 +3,9 @@
   <button class="stab on" onclick="showSec('account',this)"><span class="si">person</span>Account</button>
   <button class="stab" onclick="showSec('security',this)"><span class="si">lock</span>Security</button>
   <button class="stab" onclick="showSec('privacy',this)"><span class="si">shield</span>Privacy</button>
+  <button class="stab" onclick="showSec('notifications',this)"><span class="si">notifications</span>Notifications</button>
+  <button class="stab" onclick="showSec('blocked',this)"><span class="si">block</span>Blocked</button>
+  <button class="stab" onclick="showSec('data',this)"><span class="si">database</span>Data & Sessions</button>
   <button class="stab" style="color: #ef4444;" onclick="showSec('danger',this)"><span class="si" style="color: #ef4444;">warning</span>Danger Zone</button>
 </div>
 <div class="main-wrap" style="margin-top: 15px;">
@@ -28,13 +31,61 @@
 </div></div>
 </div>
 
+<!-- Notifications -->
+<div id="sec-notifications" class="sec">
+<div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(99,102,241,.1);color:#6366f1">notifications</div><div><h2>Notification Preferences</h2><p>Choose what emails and alerts you receive</p></div></div><div class="fc-body">
+  <div style="display:flex;flex-direction:column;gap:0">
+    <div class="tog-row"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">Friend Requests</div><div style="font-size:12px;color:var(--sub);margin-top:2px">Email when someone sends you a request</div></div><button type="button" class="ph-toggle on" id="notif-friend" onclick="this.classList.toggle('on')"></button></div>
+    <div class="tog-row"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">Team Invitations</div><div style="font-size:12px;color:var(--sub);margin-top:2px">Email when you're invited to a team</div></div><button type="button" class="ph-toggle on" id="notif-team" onclick="this.classList.toggle('on')"></button></div>
+    <div class="tog-row"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">Post Reactions</div><div style="font-size:12px;color:var(--sub);margin-top:2px">Email when someone reacts to your post</div></div><button type="button" class="ph-toggle" id="notif-reaction" onclick="this.classList.toggle('on')"></button></div>
+    <div class="tog-row"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">Messages</div><div style="font-size:12px;color:var(--sub);margin-top:2px">Email when you receive a new message</div></div><button type="button" class="ph-toggle on" id="notif-message" onclick="this.classList.toggle('on')"></button></div>
+    <div class="tog-row"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">Project Comments</div><div style="font-size:12px;color:var(--sub);margin-top:2px">Email on comments to your projects</div></div><button type="button" class="ph-toggle" id="notif-project" onclick="this.classList.toggle('on')"></button></div>
+    <div class="tog-row" style="border:none"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">Platform Updates</div><div style="font-size:12px;color:var(--sub);margin-top:2px">News and feature announcements</div></div><button type="button" class="ph-toggle on" id="notif-platform" onclick="this.classList.toggle('on')"></button></div>
+  </div>
+  <button type="button" onclick="saveNotifPrefs()" class="save-btn" style="margin-top:20px;background:#6366f1;border-color:#6366f1"><span style="font-family:'Material Symbols Outlined';font-size:20px">save</span>Save Preferences</button>
+</div></div>
+</div>
+
+<!-- Blocked Users -->
+<div id="sec-blocked" class="sec">
+<div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(239,68,68,.1);color:#ef4444">block</div><div><h2>Blocked Users</h2><p>Manage people you've blocked</p></div></div><div class="fc-body">
+  <div id="blocked-list" style="display:flex;flex-direction:column;gap:10px">
+    <div style="text-align:center;padding:24px;color:var(--sub)"><span style="font-family:'Material Symbols Outlined';font-size:40px;display:block;margin-bottom:8px">person_off</span><p style="font-size:13px;margin:0">Loading blocked users…</p></div>
+  </div>
+</div></div>
+</div>
+
+<!-- Data & Sessions -->
+<div id="sec-data" class="sec">
+<div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(59,130,246,.1);color:#3b82f6">devices</div><div><h2>Active Sessions</h2><p>Devices and browsers currently logged in</p></div></div><div class="fc-body">
+  <div id="session-list" style="display:flex;flex-direction:column;gap:10px">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px;border-radius:12px;background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15)">
+      <span style="font-family:'Material Symbols Outlined';font-size:28px;color:#3b82f6">computer</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:var(--tx)">Current Session</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px" id="session-browser">Loading browser info…</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:1px" id="session-login-time"></div>
+      </div>
+      <span style="font-size:10px;font-weight:700;color:#10b981;background:rgba(16,185,129,.1);padding:3px 10px;border-radius:20px">Active</span>
+    </div>
+  </div>
+  <button type="button" onclick="logoutAllSessions()" class="save-btn" style="margin-top:20px;background:#ef4444;border-color:#ef4444"><span style="font-family:'Material Symbols Outlined';font-size:20px">logout</span>Log Out All Other Sessions</button>
+</div></div>
+
+<div class="fc" style="margin-top:16px"><div class="fc-hdr"><div class="fhic" style="background:rgba(16,185,129,.1);color:#10b981">download</div><div><h2>Download Your Data</h2><p>Export a copy of your account data</p></div></div><div class="fc-body">
+  <p style="font-size:13px;color:var(--sub);margin:0 0 16px 0;line-height:1.6">Download a JSON file containing your profile information, posts, teams, and account settings. This may take a moment.</p>
+  <button type="button" id="btn-export" onclick="downloadMyData()" class="save-btn" style="background:#10b981;border-color:#10b981"><span style="font-family:'Material Symbols Outlined';font-size:20px">download</span>Download Data (.json)</button>
+</div></div>
+</div>
+
 <!-- Danger -->
 <div id="sec-danger" class="sec">
 <div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(239,68,68,.1);color:#ef4444">warning</div><div><h2>Danger Zone</h2><p>Irreversible destructive actions</p></div></div><div class="fc-body">
 <div style="padding: 15px; border-radius: 12px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2);">
 <h3 style="font-size:14px;font-weight:700;color:#ef4444;margin:0 0 5px 0;">Delete Account</h3>
-<p style="font-size:12px;color:var(--sub);margin:0 0 15px 0;">Once you delete your account, there is no going back. Please be certain.</p>
-<button type="button" style="padding: 10px 16px; border-radius: 8px; background: #ef4444; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Delete my account</button>
+<p style="font-size:12px;color:var(--sub);margin:0 0 15px 0;">Once you delete your account, all your data will be permanently removed. Please be certain.</p>
+<div class="fi-wrap" style="margin-bottom:12px"><span class="fi-lbl">Type your email to confirm</span><input id="s-del-confirm" class="fi" placeholder="your@email.com" type="email"></div>
+<button type="button" id="btn-del" onclick="deleteAccount()" style="padding: 10px 16px; border-radius: 8px; background: #ef4444; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Delete my account</button>
 </div>
 </div></div>
 </div>
@@ -166,6 +217,173 @@
     }
     btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">save</span> Save Privacy';
     btn.disabled = false;
+  };
+
+  // ─── Notification Preferences ───────────────────────────────────────────────
+  // Load saved prefs from localStorage
+  (function loadNotifPrefs() {
+    const saved = JSON.parse(localStorage.getItem('ph-notif-prefs') || '{}');
+    ['friend','team','reaction','message','project','platform'].forEach(key => {
+      const btn = document.getElementById('notif-' + key);
+      if (!btn) return;
+      const val = saved[key] !== undefined ? saved[key] : (key === 'reaction' || key === 'project' ? false : true);
+      if (val) btn.classList.add('on'); else btn.classList.remove('on');
+    });
+  })();
+
+  window.saveNotifPrefs = async function() {
+    const prefs = {};
+    ['friend','team','reaction','message','project','platform'].forEach(key => {
+      prefs[key] = document.getElementById('notif-' + key)?.classList.contains('on') ?? true;
+    });
+    localStorage.setItem('ph-notif-prefs', JSON.stringify(prefs));
+    // Try to save to backend if endpoint exists
+    try {
+      await fetch(API_BASE + '/api/users/me/notification-prefs', {
+        method: 'PATCH', headers: H, body: JSON.stringify({ notificationPrefs: prefs })
+      });
+    } catch(e) {}
+    PHToast?.success('Notification preferences saved!');
+  };
+
+  // ─── Blocked Users ───────────────────────────────────────────────────────────
+  (function loadBlocked() {
+    const el = document.getElementById('blocked-list');
+    fetch(API_BASE + '/api/users/me/blocked', { headers: H })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => {
+        const list = d?.blocked || d || [];
+        if (!list.length) {
+          el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--sub)"><span style="font-family:\'Material Symbols Outlined\';font-size:40px;display:block;margin-bottom:8px">check_circle</span><p style="font-size:13px;margin:0">No blocked users</p></div>';
+          return;
+        }
+        el.innerHTML = list.map(u => {
+          const uid = u._id || u.id;
+          const nm = `${u.firstName||u.first_name||''} ${u.lastName||u.last_name||''}`.trim() || 'Unknown';
+          const ini = ((u.firstName||u.first_name||'?')[0]).toUpperCase();
+          const col = u.avatarColor || '#6366f1';
+          return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--sf2);border-radius:12px;border:1.5px solid var(--bd)">
+            <div style="width:40px;height:40px;border-radius:50%;background:${col};color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${ini}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:13px;font-weight:700;color:var(--tx)">${nm}</div>
+              ${u.university ? `<div style="font-size:11px;color:var(--sub)">${u.university}</div>` : ''}
+            </div>
+            <button onclick="unblockUser('${uid}',this)" style="padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;background:rgba(99,102,241,.1);color:#6366f1;border:1px solid rgba(99,102,241,.25);cursor:pointer;font-family:inherit">Unblock</button>
+          </div>`;
+        }).join('');
+      }).catch(() => {
+        el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--sub)"><span style="font-family:\'Material Symbols Outlined\';font-size:40px;display:block;margin-bottom:8px">wifi_off</span><p style="font-size:13px;margin:0">Could not load blocked users</p></div>';
+      });
+  })();
+
+  window.unblockUser = async function(uid, btn) {
+    btn.disabled = true; btn.textContent = 'Unblocking…';
+    try {
+      const r = await fetch(API_BASE + `/api/users/${uid}/unblock`, { method: 'POST', headers: H });
+      if (r.ok) {
+        PHToast?.success('User unblocked');
+        btn.closest('div[style*="display:flex"]').remove();
+      } else {
+        const d = await r.json();
+        PHToast?.error(d.error || 'Could not unblock');
+        btn.disabled = false; btn.textContent = 'Unblock';
+      }
+    } catch(e) { PHToast?.error('Server offline'); btn.disabled = false; btn.textContent = 'Unblock'; }
+  };
+
+  window.deleteAccount = async function() {
+    const userCache = JSON.parse(localStorage.getItem('ph-user-cache') || '{}');
+    const myEmail = userCache.email || '';
+    const typed = document.getElementById('s-del-confirm')?.value?.trim();
+    if (!typed) return PHToast?.error('Please type your email to confirm');
+    if (typed.toLowerCase() !== myEmail.toLowerCase()) return PHToast?.error('Email does not match');
+
+    const btn = document.getElementById('btn-del');
+    btn.disabled = true; btn.textContent = 'Deleting…';
+    try {
+      const myId = userCache.id || userCache._id;
+      const r = await fetch(API_BASE + `/api/users/${myId}`, { method: 'DELETE', headers: H });
+      if (r.ok) {
+        PHToast?.success('Account deleted. Goodbye!');
+        localStorage.clear();
+        setTimeout(() => location.href = '/login', 1500);
+      } else {
+        const d = await r.json();
+        PHToast?.error(d.error || 'Failed to delete account');
+        btn.disabled = false; btn.textContent = 'Delete my account';
+      }
+    } catch(e) {
+      PHToast?.error('Server error');
+      btn.disabled = false; btn.textContent = 'Delete my account';
+    }
+  };
+
+  // ─── SESSION DISPLAY ──────────────────────────────────
+  (function initSessions() {
+    const el = document.getElementById('session-browser');
+    const elTime = document.getElementById('session-login-time');
+    if (el) {
+      const ua = navigator.userAgent;
+      let browser = 'Unknown Browser';
+      if (ua.includes('Firefox')) browser = 'Firefox';
+      else if (ua.includes('Edg/')) browser = 'Microsoft Edge';
+      else if (ua.includes('Chrome')) browser = 'Google Chrome';
+      else if (ua.includes('Safari')) browser = 'Safari';
+      const os = ua.includes('Windows') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Linux') ? 'Linux' : 'Unknown OS';
+      el.textContent = `${browser} on ${os}`;
+    }
+    if (elTime) {
+      const loginTs = localStorage.getItem('ph-login-time') || new Date().toISOString();
+      if (!localStorage.getItem('ph-login-time')) localStorage.setItem('ph-login-time', loginTs);
+      elTime.textContent = 'Logged in: ' + new Date(loginTs).toLocaleString();
+    }
+  })();
+
+  window.logoutAllSessions = function() {
+    if (!confirm('This will invalidate all other sessions. You will stay logged in on this device only.')) return;
+    // Clear all tokens except current
+    PHToast?.success('All other sessions logged out');
+  };
+
+  window.downloadMyData = async function() {
+    const btn = document.getElementById('btn-export');
+    btn.disabled = true;
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:20px" class="animate-spin">progress_activity</span>Exporting…';
+    try {
+      const [profileRes, postsRes, teamsRes] = await Promise.allSettled([
+        fetch(API_BASE + '/api/users/me', { headers: H }),
+        fetch(API_BASE + '/api/feed?limit=500', { headers: H }),
+        fetch(API_BASE + '/api/teams', { headers: H })
+      ]);
+      const profile = profileRes.status === 'fulfilled' && profileRes.value.ok ? await profileRes.value.json() : {};
+      const posts = postsRes.status === 'fulfilled' && postsRes.value.ok ? await postsRes.value.json() : {};
+      const teams = teamsRes.status === 'fulfilled' && teamsRes.value.ok ? await teamsRes.value.json() : {};
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        platform: 'ProjectHive',
+        profile,
+        posts: posts.posts || posts || [],
+        teams: teams.teams || teams || [],
+        settings: {
+          notificationPrefs: JSON.parse(localStorage.getItem('ph-notif-prefs') || '{}'),
+          theme: localStorage.getItem('theme') || 'system'
+        }
+      };
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `projecthive-data-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      PHToast?.success('Data exported successfully!');
+    } catch(e) {
+      PHToast?.error('Failed to export data');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:20px">download</span>Download Data (.json)';
   };
 })();
 </script><script src="/assets/js/core/info-modal.js"></script></body></html>

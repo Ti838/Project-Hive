@@ -15,6 +15,7 @@
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
 body{background:var(--bg);color:var(--tx);margin:0}
 .hero{background:linear-gradient(135deg,#6366f1 0%,#7c3aed 60%,#a855f7 100%);padding:36px 32px 78px;position:relative;overflow:hidden}
@@ -123,21 +124,35 @@ body{background:var(--bg);color:var(--tx);margin:0}
     ub.textContent=uc?`Unread (${uc})`:'Unread';
   }
 
+  // ─── Get redirect link per notification type ──────────────────────────────
+  function getNotifLink(n) {
+    const meta = n.metadata || n.data || {};
+    switch(n.type) {
+      case 'friend':  return meta.senderId   ? `/people?uid=${meta.senderId}`    : '/people';
+      case 'team':    return meta.teamId     ? `/teams?tid=${meta.teamId}`        : '/teams';
+      case 'project': return meta.projectId  ? `/showcase?pid=${meta.projectId}` : '/showcase';
+      case 'message': return meta.senderId   ? `/messages?chat=${meta.senderId}` : '/messages';
+      default: return '';
+    }
+  }
+
   function render(list){
     const el=document.getElementById('n-list');
-    if(!list.length){el.innerHTML=`<div class="empty"><span class="empty-ic">notifications_none</span><div style="font-size:17px;font-weight:800;color:var(--tx);margin-bottom:6px">${currentTab==='unread'?'All caught up! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2z"/></svg></span>':'Nothing here yet'}</div><div style="font-size:13px;color:var(--sub)">${currentTab==='unread'?'No unread notifications':'Notifications will appear here'}</div></div>`;return;}
+    if(!list.length){el.innerHTML=`<div class="empty"><span class="empty-ic">notifications_none</span><div style="font-size:17px;font-weight:800;color:var(--tx);margin-bottom:6px">${currentTab==='unread'?'All caught up!':'Nothing here yet'}</div><div style="font-size:13px;color:var(--sub)">${currentTab==='unread'?'No unread notifications':'Notifications will appear here'}</div></div>`;return;}
     el.innerHTML=list.map(n=>{
       const t=n.type||'default';
       const ic=ICONS[t]||ICONS.default;
       const co=COLORS[t]||COLORS.default;
       const ur=!n.read;
-      return `<div class="n-card${ur?' unread':''}" id="nc-${n._id}" onclick="readN('${n._id}',this)" style="${ur?'border-left-color:'+co:''}" title="${ur?'Click to mark as read':''}">
+      const link=getNotifLink(n);
+      return `<div class="n-card${ur?' unread':''}" id="nc-${n._id}" onclick="handleNotifClick('${n._id}','${link}',this)" style="${ur?'border-left-color:'+co:''}" title="${link?'Click to open':''}">
         <div class="n-ic" style="background:${co}18;color:${co}">${ic}</div>
         <div style="flex:1;min-width:0">
           <div class="n-msg${ur?' fw':''}">${n.message||n.title||'New notification'}</div>
           <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
             <span class="n-time">${ago(n.createdAt)}</span>
             ${n.type?`<span style="padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;background:${co}18;color:${co}">${n.type}</span>`:''}
+            ${link?`<span style="font-size:10px;color:${co};font-weight:600">&#8594; Open</span>`:''}
           </div>
         </div>
         ${ur?`<div class="n-dot" style="background:${co}"></div>`:'<span style="font-family:\'Material Symbols Outlined\';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0">check_circle</span>'}
@@ -152,40 +167,56 @@ body{background:var(--bg);color:var(--tx);margin:0}
     render(t==='all'?all:t==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===t));
   };
 
-  window.readN=async function(id,el){
+  window.handleNotifClick=async function(id, link, el){
     const n=all.find(x=>x._id===id);
-    if(!n||n.read)return;
-    try{await fetch(API_BASE+`/api/notifications/${id}/read`,{method:'PUT',headers:H});}catch(e){}
-    n.read=true;
-    el.classList.remove('unread');
-    el.querySelector('.n-msg')?.classList.remove('fw');
-    el.querySelector('.n-dot')?.remove();
-    const ic=document.createElement('span');
-    ic.style.cssText="font-family:'Material Symbols Outlined';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0";
-    ic.textContent='check_circle';
-    el.appendChild(ic);
-    stats();
-    if(currentTab==='unread')render(all.filter(n=>!n.read));
+    if(n&&!n.read){
+      try{await fetch(API_BASE+`/api/notifications/${id}/read`,{method:'PUT',headers:H});}catch(e){}
+      n.read=true;
+      el.classList.remove('unread');
+      el.querySelector('.n-msg')?.classList.remove('fw');
+      el.querySelector('.n-dot')?.remove();
+      const ic=document.createElement('span');
+      ic.style.cssText="font-family:'Material Symbols Outlined';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0";
+      ic.textContent='check_circle';
+      el.appendChild(ic);
+      stats();
+      if(currentTab==='unread')render(all.filter(n=>!n.read));
+    }
+    if(link) setTimeout(()=>window.location.href=link, 150);
   };
+
+  // Legacy alias
+  window.readN=function(id,el){window.handleNotifClick(id,'',el);};
 
   window.markAll=async function(){
     try{await fetch(API_BASE+'/api/notifications/read-all',{method:'PUT',headers:H});}catch(e){}
     all.forEach(n=>n.read=true);
     stats();
     render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
-    PHToast?.success('All marked as read <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>');
+    PHToast?.success('All marked as read');
   };
 
-  // Fetch real notifications from API — NO fake/demo data
+  // ─── Load from API ─────────────────────────────────────────────────────────
   fetch(API_BASE+'/api/notifications?limit=60',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
-    if(d){
-      all=d.notifications||d||[];
-    }
+    if(d){ all=d.notifications||d||[]; }
     stats();render(all);
-  }).catch(()=>{
-    all=[];
-    stats();render(all);
-  });
+  }).catch(()=>{ all=[];stats();render(all); });
+
+  // ─── Socket.io: real-time notification:new ─────────────────────────────────
+  try {
+    const socket = io(API_BASE, { auth:{token:TK}, transports:['websocket','polling'] });
+    socket.on('notification:new', (notif) => {
+      if(!notif||!notif._id) return;
+      if(all.find(n=>n._id===notif._id)) return; // dedup
+      all.unshift(notif);
+      stats();
+      const list = currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab);
+      render(list);
+      PHToast?.success('\uD83D\uDD14 ' + (notif.message||'New notification').substring(0,60));
+    });
+  } catch(e) {
+    console.warn('[Notifications] Socket error:', e.message);
+  }
 })();
 </script>
 <script src="/assets/js/core/info-modal.js"></script></body></html>

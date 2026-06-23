@@ -322,6 +322,9 @@
     <button onclick="contextReply()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-indigo-500">reply</span> Reply
     </button>
+    <button id="ctx-edit-btn" onclick="contextEdit()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
+      <span class="material-symbols-outlined text-[18px] text-teal-500">edit</span> Edit Message
+    </button>
     <button onclick="contextForward()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-indigo-400">forward</span> Forward
     </button>
@@ -669,6 +672,7 @@
       let ME={}, convs=[], allMsgs=[], activeConv=null, allUsers=[], socket=null;
       let friendIds = new Set();
       let currentReplyMsg = null; // for reply system
+      let currentEditMsg = null;  // for edit system
       let ctxMsgEl = null;        // for context menu
 
       // Attachment state
@@ -1403,6 +1407,33 @@
           socket.emit('typing:stop', { roomId: activeConv._id });
         }
 
+        // Handle edit flow
+        if (currentEditMsg) {
+          const editId = currentEditMsg.id;
+          const localMsg = allMsgs.find(m => (m.id || m._id) === editId);
+          if (localMsg) {
+            localMsg.content = content;
+            if (activeConv.type === 'team') renderTeamMsgs(); else renderMsgs();
+          }
+
+          fetch(API_BASE + '/api/messages/' + editId, {
+            method: 'PUT',
+            headers: H,
+            body: JSON.stringify({ content })
+          }).then(res => {
+            if (res.ok) {
+              showToast('Message updated', 'success');
+            } else {
+              showToast('Failed to update message', 'error');
+            }
+          }).catch(() => {
+            showToast('Network error updating message', 'error');
+          });
+
+          cancelEdit();
+          return;
+        }
+
         // Add to Optimistic List
         allMsgs.push({
           content,
@@ -1478,6 +1509,49 @@
       window.contextReply = function() {
         if (ctxMsgEl) replyToMsg(ctxMsgEl);
         document.getElementById('msg-context-menu').classList.add('hidden');
+      };
+
+      window.contextEdit = function() {
+        if (!ctxMsgEl) return;
+        const id = ctxMsgEl.dataset.msgId;
+        const content = ctxMsgEl.dataset.content;
+        
+        // Disable editing media/attachments payloads
+        if (content.startsWith('{') && (content.includes('"type":') || content.includes('"url":'))) {
+          showToast('Cannot edit file attachments or voice notes', 'error');
+          document.getElementById('msg-context-menu').classList.add('hidden');
+          return;
+        }
+
+        currentEditMsg = { id, content };
+        cancelReply(); // Close replies if open
+
+        const inp = document.getElementById('msg-inp');
+        inp.value = content;
+        inp.focus();
+
+        // Show edit bar indicator (re-use reply-bar structure or styling)
+        document.getElementById('reply-preview-text').textContent = 'Editing: ' + content.substring(0, 80);
+        document.getElementById('reply-bar').classList.remove('hidden');
+        document.getElementById('reply-bar').classList.add('flex');
+        
+        // Customize close icon click behavior to cancel edit instead of reply
+        const closeBtn = document.querySelector('#reply-bar button');
+        closeBtn.onclick = function() { cancelEdit(); };
+
+        document.getElementById('msg-context-menu').classList.add('hidden');
+      };
+
+      window.cancelEdit = function() {
+        currentEditMsg = null;
+        document.getElementById('msg-inp').value = '';
+        const bar = document.getElementById('reply-bar');
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+        
+        // Reset close button logic back to default cancelReply
+        const closeBtn = document.querySelector('#reply-bar button');
+        closeBtn.onclick = function() { cancelReply(); };
       };
 
       window.contextCopy = function() {

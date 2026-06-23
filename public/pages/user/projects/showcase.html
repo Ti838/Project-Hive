@@ -122,12 +122,36 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Live Demo URL</label>
         <input id="f-demo" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://…">
       </div>
+      <div class="flex items-center gap-2 mt-2">
+        <input id="f-hiring" type="checkbox" class="w-4 h-4 cursor-pointer accent-indigo-500 rounded border-gray-300">
+        <label for="f-hiring" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Looking for team members / Hiring</label>
+      </div>
       <button type="submit" id="submit-btn" class="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2">
         <span class="material-symbols-outlined">upload</span> Submit Project
       </button>
     </form>
   </div>
 </div>
+
+<!-- Project Details Modal -->
+<div id="detail-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[92vh] overflow-y-auto border border-gray-200 dark:border-gray-800">
+    <div class="p-6 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-900 z-10">
+      <h3 class="font-extrabold text-xl text-gray-900 dark:text-gray-100" id="det-title">Project Details</h3>
+      <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-slate-100 dark:hover:bg-gray-850 transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6 md:p-8 flex flex-col gap-6" id="det-content">
+      <!-- Dynamic loading state -->
+      <div class="flex flex-col items-center justify-center py-12 text-gray-400 gap-3">
+        <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+        <p class="text-sm">Fetching project details…</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
 (function(){
@@ -150,6 +174,13 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
 
   fetch(API_BASE+'/api/users/me',{headers:H}).then(r=>r.ok?r.json():null).then(u=>{if(u)myId=u._id||u.id;}).catch(()=>{});
 
+  let savedIds = new Set();
+
+  // Load saved project IDs
+  fetch(API_BASE+'/api/saved?type=project',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
+    if(d){ (d.items||d||[]).forEach(s=>{ const id=s.project_id||s.projectId||(s.project?._id||s.project?.id); if(id) savedIds.add(id); }); }
+  }).catch(()=>{});
+
   function render(list){
     const el=document.getElementById('projects-grid');
     if(!list.length){
@@ -161,35 +192,61 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
     }
     el.innerHTML=list.map(p=>{
       const col=avC(p.title||'P');
-      const tech=(p.techStack||p.tags||[]).slice(0,4);
-      const isMine=(p.author?._id||p.author)===myId;
-      return `<div id="project-card-${p._id||p.id}" class="project-card bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
-        <!-- Header banner -->
-        <div class="h-20 flex items-center justify-center relative" style="background:linear-gradient(135deg,${col}22,${col}44)">
-          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg" style="background:${col}">${(p.title||'P')[0].toUpperCase()}</div>
-          ${isMine?'<span class="absolute top-2 right-2 bg-indigo-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Mine</span>':''}
-          ${p.category?`<span class="absolute top-2 left-2 bg-black/30 text-white text-xs font-semibold px-2 py-0.5 rounded-full capitalize">${p.category}</span>`:''}
-        </div>
-        <div class="p-5">
-          <h3 class="font-bold text-base mb-1 truncate">${p.title||'Untitled'}</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">${p.description||'No description.'}</p>
-          ${tech.length?`<div class="flex flex-wrap gap-1.5 mb-3">${tech.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
-          <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800">
-            <div class="flex items-center gap-2 text-xs text-gray-400">
-              <div class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold" style="background:${avC((p.author?.firstName||'?'))}">
-                ${(p.author?.firstName||'?')[0]}
-              </div>
-              ${p.author?.firstName||'Anonymous'}
+      const tech=(p.tech_stack||p.techStack||p.tags||[]).slice(0,4);
+      const isMine=(p.owner?.id||p.owner_id||p.author?._id||p.author)===myId;
+      const pid=p._id||p.id;
+      const isSaved=savedIds.has(pid);
+      const isLiked=p.isLiked || false; // Checked during render / load
+      const likesCount=p.likes || 0;
+      const lookingForMembers = p.looking_for_members || p.lookingForMembers || false;
+
+      return `<div id="project-card-${pid}" class="project-card bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden flex flex-col justify-between">
+        <div onclick="openDetailModal('${pid}')" class="cursor-pointer">
+          <!-- Header banner -->
+          <div class="h-20 flex items-center justify-center relative" style="background:linear-gradient(135deg,${col}22,${col}44)">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg" style="background:${col}">${(p.title||'P')[0].toUpperCase()}</div>
+            ${isMine?'<span class="absolute top-2 right-2 bg-indigo-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">Mine</span>':''}
+            <div class="absolute top-2 left-2 flex gap-1">
+              ${p.featured?'<span class="bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px] fill-current">star</span>Featured</span>':''}
+              ${p.category?`<span class="bg-black/30 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize">${p.category}</span>`:''}
+              ${lookingForMembers?`<span class="bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">group</span>Hiring</span>`:''}
             </div>
-            <div class="flex gap-1">
-              ${p.github?`<a href="${p.github}" target="_blank" class="p-1.5 text-gray-400 hover:text-indigo-500 transition-colors"><span class="material-symbols-outlined text-base">code</span></a>`:''}
-              ${p.demoUrl||p.liveUrl?`<a href="${p.demoUrl||p.liveUrl}" target="_blank" class="p-1.5 text-gray-400 hover:text-green-500 transition-colors"><span class="material-symbols-outlined text-base">open_in_new</span></a>`:''}
+          </div>
+          <div class="p-5 pb-2">
+            <h3 class="font-bold text-base mb-1 truncate text-gray-900 dark:text-gray-100">${p.title||'Untitled'}</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3 line-clamp-2">${p.description||'No description.'}</p>
+            ${tech.length?`<div class="flex flex-wrap gap-1.5 mb-3">${tech.map(t=>`<span class="tag">${t}</span>`).join('')}</div>`:''}
+          </div>
+        </div>
+        <div class="p-5 pt-0">
+          <div class="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <div class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold" style="background:${avC((p.owner?.first_name || p.author?.firstName||'?'))}">
+                ${(p.owner?.first_name || p.author?.firstName||'?')[0]}
+              </div>
+              ${p.owner?.first_name || p.author?.firstName || 'Anonymous'}
+            </div>
+            <div class="flex gap-1 items-center">
+              <button onclick="toggleLike('${pid}',this)" class="p-1.5 flex items-center gap-0.5 text-xs transition-colors ${isLiked?'text-pink-500':'text-gray-400 hover:text-pink-500'}" title="${isLiked?'Unlike':'Like project'}">
+                <span class="material-symbols-outlined text-base" style="${isLiked?'font-variation-settings:\'FILL\' 1':''}">${isLiked?'favorite':'favorite_border'}</span>
+                <span class="like-count">${likesCount}</span>
+              </button>
+              ${p.github_url||p.github?`<a href="${p.github_url||p.github}" target="_blank" class="p-1.5 text-gray-400 hover:text-indigo-500 transition-colors" title="GitHub"><span class="material-symbols-outlined text-base">code</span></a>`:''}
+              ${p.demo_url||p.demoUrl||p.liveUrl?`<a href="${p.demo_url||p.demoUrl||p.liveUrl}" target="_blank" class="p-1.5 text-gray-400 hover:text-green-500 transition-colors" title="Live Demo"><span class="material-symbols-outlined text-base">open_in_new</span></a>`:''}
+              <button onclick="toggleSave('${pid}',this)" class="p-1.5 transition-colors ${isSaved?'text-indigo-500':'text-gray-400 hover:text-indigo-500'}" title="${isSaved?'Unsave':'Save project'}">
+                <span class="material-symbols-outlined text-base" style="${isSaved?'font-variation-settings:\'FILL\' 1':''}">${isSaved?'bookmark':'bookmark_border'}</span>
+              </button>
+              ${isMine?`
+              <button onclick="deleteProject('${pid}',this)" class="p-1.5 text-gray-400 hover:text-rose-500 transition-colors" title="Delete">
+                <span class="material-symbols-outlined text-base">delete</span>
+              </button>`:''}
             </div>
           </div>
         </div>
       </div>`;
     }).join('');
   }
+
 
   window.doSearch=function(q){
     const f=q?allProjects.filter(p=>(p.title||'').toLowerCase().includes(q.toLowerCase())||(p.description||'').toLowerCase().includes(q.toLowerCase())):allProjects;
@@ -226,16 +283,190 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
         description:document.getElementById('f-desc').value.trim(),
         category:document.getElementById('f-cat').value,
         techStack:document.getElementById('f-tech').value.split(',').map(s=>s.trim()).filter(Boolean),
-        github:document.getElementById('f-github').value.trim(),
-        demoUrl:document.getElementById('f-demo').value.trim(),
+        githubURL:document.getElementById('f-github').value.trim(),
+        demoURL:document.getElementById('f-demo').value.trim(),
+        looking_for_members:document.getElementById('f-hiring').checked,
       })});
       if(r.ok){PHToast?.success('Project submitted!');closeModal();this.reset();load();}
-      else{const d=await r.json();PHToast?.error(d.message||'Failed');}
+      else{const d=await r.json();PHToast?.error(d.message||d.error||'Failed');}
     }catch(e){PHToast?.error('Server offline');}
     btn.innerHTML='<span class="material-symbols-outlined">upload</span> Submit Project';btn.disabled=false;
   };
 
+  /* Upvote / Like toggle */
+  window.toggleLike = async function(pid, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(API_BASE + `/api/projects/${pid}/like`, { method: 'POST', headers: H });
+      const data = await res.json();
+      if (res.ok) {
+        const isLiked = data.isLiked;
+        const icon = btn.querySelector('.material-symbols-outlined');
+        const countSpan = btn.querySelector('.like-count');
+        let count = parseInt(countSpan.textContent) || 0;
+
+        if (isLiked) {
+          btn.className = 'p-1.5 flex items-center gap-0.5 text-xs transition-colors text-pink-500';
+          icon.textContent = 'favorite';
+          icon.style.fontVariationSettings = "'FILL' 1";
+          countSpan.textContent = count + 1;
+          PHToast?.success('Project upvoted!');
+        } else {
+          btn.className = 'p-1.5 flex items-center gap-0.5 text-xs transition-colors text-gray-400 hover:text-pink-500';
+          icon.textContent = 'favorite_border';
+          icon.style.fontVariationSettings = '';
+          countSpan.textContent = Math.max(0, count - 1);
+        }
+        
+        // Update local object count
+        const local = allProjects.find(p => (p._id || p.id) === pid);
+        if (local) {
+          local.isLiked = isLiked;
+          local.likes = isLiked ? (local.likes || 0) + 1 : Math.max(0, (local.likes || 0) - 1);
+        }
+      } else {
+        PHToast?.error(data.error || 'Could not update vote');
+      }
+    } catch(e) {
+      PHToast?.error('Server error');
+    }
+    btn.disabled = false;
+  };
+
+  /* Detail modal logic */
+  window.openDetailModal = async function(pid) {
+    const modal = document.getElementById('detail-modal');
+    const content = document.getElementById('det-content');
+    modal.classList.replace('hidden', 'flex');
+    content.innerHTML = `
+      <div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
+        <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
+        <p class="text-sm">Fetching project details…</p>
+      </div>`;
+
+    try {
+      const res = await fetch(API_BASE + `/api/projects/${pid}`, { headers: H });
+      if (!res.ok) throw new Error('Could not load details');
+      const p = await res.json();
+
+      document.getElementById('det-title').textContent = p.title || 'Project Details';
+      const col = avC(p.title || 'P');
+      const tech = p.tech_stack || p.techStack || p.tags || [];
+      const lookingForMembers = p.looking_for_members || p.lookingForMembers || false;
+
+      content.innerHTML = `
+        <div class="flex items-center gap-4 p-5 rounded-2xl" style="background:linear-gradient(135deg, ${col}12, ${col}24)">
+          <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-2xl" style="background:${col}">${(p.title||'P')[0].toUpperCase()}</div>
+          <div>
+            <h4 class="font-extrabold text-lg text-gray-900 dark:text-gray-100">${p.title}</h4>
+            <div class="flex flex-wrap gap-2 mt-1.5">
+              ${p.category ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 capitalize">${p.category}</span>` : ''}
+              ${lookingForMembers ? `<span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center gap-1"><span class="material-symbols-outlined text-xs">group</span>Looking for team members</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Project Description</h5>
+          <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-[15px] whitespace-pre-wrap">${p.description || 'No description provided.'}</p>
+        </div>
+
+        ${tech.length ? `
+        <div class="flex flex-col gap-2">
+          <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Tech Stack</h5>
+          <div class="flex flex-wrap gap-2">${tech.map(t => `<span class="tag px-3 py-1 text-xs">${t}</span>`).join('')}</div>
+        </div>` : ''}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-b border-gray-100 dark:border-gray-800 py-4 my-2">
+          <div>
+            <span class="text-xs text-gray-400 block mb-1">Created By</span>
+            <a href="/profile?id=${p.owner?.id || p.owner_id}" class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-200 hover:text-indigo-500 transition-colors">
+              <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style="background:${avC(p.owner?.first_name || 'U')}">
+                ${(p.owner?.first_name || 'U')[0]}
+              </div>
+              ${p.owner?.first_name || ''} ${p.owner?.last_name || ''}
+            </a>
+          </div>
+          <div>
+            <span class="text-xs text-gray-400 block mb-1">University</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1">
+              <span class="material-symbols-outlined text-base text-gray-400">school</span>
+              ${p.owner?.university || 'Not Specified'}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex gap-3 mt-2">
+          ${p.github_url || p.github ? `
+            <a href="${p.github_url || p.github}" target="_blank" class="flex-1 flex items-center justify-center gap-2 py-3 border border-gray-200 dark:border-gray-700 hover:border-gray-400 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-slate-50 dark:hover:bg-gray-850 transition-all">
+              <span class="material-symbols-outlined text-[18px]">code</span> GitHub Repository
+            </a>` : ''}
+          ${p.demo_url || p.demoUrl || p.liveUrl ? `
+            <a href="${p.demo_url || p.demoUrl || p.liveUrl}" target="_blank" class="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 transition-all">
+              <span class="material-symbols-outlined text-[18px]">open_in_new</span> Live Demo
+            </a>` : ''}
+        </div>
+      `;
+    } catch(e) {
+      content.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 text-rose-500 gap-2">
+          <span class="material-symbols-outlined text-4xl">error</span>
+          <p class="text-sm">Failed to load project details.</p>
+        </div>`;
+    }
+  };
+
+  window.closeDetailModal = function() {
+    document.getElementById('detail-modal').classList.replace('flex', 'hidden');
+  };
+
+  document.getElementById('detail-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeDetailModal();
+  });
+
+  window.toggleSave=async function(pid,btn){
+    const isSaved=savedIds.has(pid);
+    const icon=btn.querySelector('.material-symbols-outlined');
+    btn.disabled=true;
+    try{
+      if(isSaved){
+        await fetch(API_BASE+`/api/saved/project/${pid}`,{method:'DELETE',headers:H});
+        savedIds.delete(pid);
+        btn.className='p-1.5 transition-colors text-gray-400 hover:text-indigo-500';
+        btn.title='Save project';
+        if(icon){icon.textContent='bookmark_border';icon.style.fontVariationSettings='';}
+        PHToast?.success('Removed from saved');
+      } else {
+        await fetch(API_BASE+'/api/saved',{method:'POST',headers:H,body:JSON.stringify({type:'project',projectId:pid})});
+        savedIds.add(pid);
+        btn.className='p-1.5 transition-colors text-indigo-500';
+        btn.title='Unsave';
+        if(icon){icon.textContent='bookmark';icon.style.fontVariationSettings="'FILL' 1";}
+        PHToast?.success('Project saved!');
+      }
+    }catch(e){PHToast?.error('Could not update saved');} 
+    btn.disabled=false;
+  };
+
+  window.deleteProject=async function(pid,btn){
+    if(!confirm('Delete this project? This cannot be undone.')) return;
+    btn.disabled=true;
+    try{
+      const r=await fetch(API_BASE+`/api/projects/${pid}`,{method:'DELETE',headers:H});
+      if(r.ok){
+        allProjects=allProjects.filter(p=>(p._id||p.id)!==pid);
+        PHToast?.success('Project deleted');
+        render(applyFilter(allProjects));
+      } else {
+        const d=await r.json();
+        PHToast?.error(d.error||'Cannot delete');
+        btn.disabled=false;
+      }
+    }catch(e){PHToast?.error('Server offline');btn.disabled=false;}
+  };
+
   async function load(){
+
     try{
       const r=await fetch(API_BASE+'/api/projects',{headers:H});
       if(r.ok){

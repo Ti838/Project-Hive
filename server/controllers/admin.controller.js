@@ -8,12 +8,26 @@ function sanitizeSearch(input) {
   return input.replace(/[%_(),.;'"\\=<>!#|&\-\[\]{}^~`]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
 }
 
-// ── System Flags (in-memory; survives per-process, reset on redeploy) ────────
+// ── System Flags (DB-backed — persists across restarts) ──────────────────────
 const FLAGS = {
   maintenanceMode: false,
   registrationEnabled: true,
   emailVerification: false,
 };
+
+// Load flags from DB on startup (non-blocking)
+export async function loadFlagsFromDB() {
+  try {
+    const { data } = await supabaseAdmin.from('system_flags').select('key, value');
+    if (data) {
+      data.forEach(row => {
+        if (row.key in FLAGS) FLAGS[row.key] = row.value;
+      });
+    }
+  } catch (e) {
+    console.warn('[Admin] Could not load system flags from DB (using defaults):', e.message);
+  }
+}
 export function getFlags() { return FLAGS; }
 
 // ── Helper: normalize Supabase snake_case → camelCase for frontend ────────────
@@ -199,8 +213,20 @@ export async function getSystemFlags(req, res) {
 // PATCH /api/admin/flags
 export async function updateFlags(req, res) {
   const allowed = ['maintenanceMode', 'registrationEnabled', 'emailVerification'];
+  const updates = [];
   for (const key of allowed) {
-    if (req.body[key] !== undefined) FLAGS[key] = Boolean(req.body[key]);
+    if (req.body[key] !== undefined) {
+      FLAGS[key] = Boolean(req.body[key]);
+      updates.push({ key, value: FLAGS[key], updated_at: new Date().toISOString() });
+    }
+  }
+  // Persist to DB (upsert)
+  if (updates.length > 0) {
+    try {
+      await supabaseAdmin.from('system_flags').upsert(updates, { onConflict: 'key' });
+    } catch (e) {
+      console.warn('[Admin] Failed to persist flags to DB:', e.message);
+    }
   }
   console.log('[Admin] System flags updated:', FLAGS);
   res.json({ message: 'System flags updated', flags: FLAGS });

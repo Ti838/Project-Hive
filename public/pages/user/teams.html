@@ -74,7 +74,9 @@
   function ini(s){return(s||'T').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'T';}
   function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
-  let teams=[],myIds=new Set();
+  let teams=[],myIds=new Set(),myTeamRoles=new Map();
+  window.teams = teams; // expose for edit modal
+
 
   function render(list){
     const g=document.getElementById('grid');
@@ -83,7 +85,8 @@
       const name=t.name||'Team';const c=col(name);const isMine=myIds.has(t._id);
       const members=t.members?.length||t.memberCount||0;
       const tags=(t.tags||t.skills||[]).slice(0,3);const isOpen=t.isOpen!==false;
-      return `<div id="team-card-${t._id}" class="team-card ph-card" style="overflow:hidden;cursor:default">
+      const isLeader=myTeamRoles.get(t._id)==='leader';
+      return `<div id="team-card-${t._id}" class="team-card ph-card" style="overflow:hidden;cursor:pointer;transition:transform .2s" onclick="openTeamDetailsModal('${t._id}',event)" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
         <!-- Banner -->
         <div style="height:80px;background:linear-gradient(135deg,${c}30,${c}55);position:relative;display:flex;align-items:center;justify-content:center">
           <div style="width:52px;height:52px;border-radius:14px;background:${c};color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px ${c}60">${ini(name)}</div>
@@ -94,12 +97,18 @@
           <h3 style="font-size:15px;font-weight:800;margin:0 0 6px;color:var(--tx)">${esc(name)}</h3>
           <p style="font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(t.description||'No description.')}</p>
           ${tags.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${tags.map(tg=>`<span class="ph-tag">${esc(tg)}</span>`).join('')}</div>`:''}
-          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1.5px solid var(--bd)">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1.5px solid var(--bd)" onclick="event.stopPropagation()">
             <span style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px"><span class="ms" style="font-size:16px">group</span>${members} member${members!==1?'s':''}</span>
             ${isMine
-              ?`<span style="font-size:12px;font-weight:700;color:var(--green);display:flex;align-items:center;gap:4px"><span class="ms" style="font-size:16px">check_circle</span>Joined</span>`
-              :isOpen
-                ?`<button onclick="join('${t._id}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
+              ? isLeader
+                ? `<div style="display:flex;gap:6px;align-items:center">
+                     <span style="font-size:11px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:3px"><span class="ms" style="font-size:14px">star</span>Leader</span>
+                     <button onclick="event.stopPropagation();editTeam('${t._id}')" style="padding:5px 10px;font-size:11px;border-radius:7px;background:var(--ac-light);color:var(--ac);border:1px solid var(--bd);cursor:pointer;font-weight:700">Edit</button>
+                     <button onclick="event.stopPropagation();deleteTeam('${t._id}','${esc(name)}',this)" style="padding:5px 10px;font-size:11px;border-radius:7px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);cursor:pointer;font-weight:700">Delete</button>
+                   </div>`
+                : `<button onclick="event.stopPropagation();leaveTeam('${t._id}',this)" class="ph-btn" style="padding:5px 14px;font-size:12px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
+              : isOpen
+                ?`<button onclick="event.stopPropagation();join('${t._id}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
                 :`<span style="font-size:12px;color:var(--sub)">Members only</span>`
             }
           </div>
@@ -108,15 +117,40 @@
     }).join('');
   }
 
+
   window.search=function(q){render(q?teams.filter(t=>(t.name||'').toLowerCase().includes(q.toLowerCase())||(t.description||'').toLowerCase().includes(q.toLowerCase())):teams);};
 
   window.join=async function(id,btn){
     btn.disabled=true;btn.textContent='Joining…';
     try{
       const r=await fetch(API_BASE+`/api/teams/${id}/join`,{method:'POST',headers:H});
-      if(r.ok){btn.textContent='Joined!';btn.style.background='var(--green)';myIds.add(id);PHToast?.success('Joined!');}
-      else{const d=await r.json();PHToast?.error(d.message||'Failed');btn.textContent='Join';btn.disabled=false;}
+      if(r.ok){btn.textContent='Joined!';btn.style.background='var(--green)';myIds.add(id);PHToast?.success('Join request sent!');
+        setTimeout(()=>load(),800);
+      }
+      else{const d=await r.json();PHToast?.error(d.message||d.error||'Failed');btn.textContent='Join';btn.disabled=false;}
     }catch(e){PHToast?.error('Server offline');btn.textContent='Join';btn.disabled=false;}
+  };
+
+  window.leaveTeam=async function(id,btn){
+    if(!confirm('Leave this team?')) return;
+    btn.disabled=true;btn.textContent='Leaving…';
+    try{
+      const r=await fetch(API_BASE+`/api/teams/${id}/leave`,{method:'POST',headers:H});
+      const d=await r.json();
+      if(r.ok){myIds.delete(id);PHToast?.success('Left team');setTimeout(()=>load(),600);}
+      else{PHToast?.error(d.error||'Cannot leave');btn.disabled=false;btn.textContent='Leave';}
+    }catch(e){PHToast?.error('Server error');btn.disabled=false;btn.textContent='Leave';}
+  };
+
+  window.deleteTeam=async function(id,name,btn){
+    if(!confirm(`Delete team "${name}"? This cannot be undone.`)) return;
+    btn.disabled=true;btn.textContent='Deleting…';
+    try{
+      const r=await fetch(API_BASE+`/api/teams/${id}`,{method:'DELETE',headers:H});
+      const d=await r.json();
+      if(r.ok){PHToast?.success('Team deleted');setTimeout(()=>load(),600);}
+      else{PHToast?.error(d.error||'Cannot delete');btn.disabled=false;btn.textContent='Delete';}
+    }catch(e){PHToast?.error('Server error');btn.disabled=false;btn.textContent='Delete';}
   };
 
   async function load(){
@@ -141,7 +175,9 @@
       const [tr,mr]=await Promise.allSettled([fetch(API_BASE+'/api/teams',{headers:H}).then(r=>r.json()),fetch(API_BASE+'/api/teams/my-teams',{headers:H}).then(r=>r.json())]);
       if(tr.status==='fulfilled'){
         teams=tr.value?.teams||tr.value||[];
+        window.teams=teams; // keep in sync for edit modal
         localStorage.setItem('ph-teams-all-cache', JSON.stringify(teams));
+
         document.getElementById('st-total').textContent=teams.length;
         document.getElementById('st-open').textContent=teams.filter(t=>t.isOpen!==false).length;
         render(teams);
@@ -149,7 +185,8 @@
       if(mr.status==='fulfilled'){
         const mine=mr.value?.teams||mr.value||[];
         localStorage.setItem('ph-teams-mine-cache', JSON.stringify(mine));
-        myIds=new Set(mine.map(t=>t._id));
+        myIds=new Set(mine.map(t=>t._id||t.id));
+        myTeamRoles=new Map(mine.map(t=>[t._id||t.id, t.myRole||'member']));
         document.getElementById('st-mine').textContent=mine.length;
         if (tr.status==='fulfilled') render(teams);
       }
@@ -180,5 +217,299 @@
   load();
 })();
 </script>
-<script src="/assets/js/core/info-modal.js"></script></body>
+
+<!-- Team Details & Members Modal -->
+<div id="team-details-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:450;align-items:center;justify-content:center;padding:16px">
+  <div class="ph-card" style="width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:0">
+    <div style="padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--sf);z-index:1">
+      <h3 style="font-size:16px;font-weight:800;margin:0" id="td-title">Team Details</h3>
+      <button onclick="closeTeamDetailsModal()" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
+    </div>
+    <div style="padding:24px;display:flex;flex-direction:column;gap:20px" id="td-content">
+      <!-- Dynamic detail content -->
+    </div>
+  </div>
+</div>
+
+
+<!-- Edit Team Modal -->
+<div id="edit-team-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px">
+  <div class="ph-card" style="width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:0">
+    <div style="padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--sf);z-index:1">
+      <h3 style="font-size:16px;font-weight:800;margin:0">Edit Team</h3>
+      <button onclick="closeEditModal()" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
+    </div>
+    <form id="edit-team-form" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <input type="hidden" id="edit-tid">
+      <div>
+        <label class="ph-label">Team Name *</label>
+        <input id="edit-name" class="ph-input" placeholder="Team name" required>
+      </div>
+      <div>
+        <label class="ph-label">Description</label>
+        <textarea id="edit-desc" class="ph-input" rows="3" placeholder="What is your team about?" style="resize:vertical"></textarea>
+      </div>
+      <div>
+        <label class="ph-label">Category</label>
+        <select id="edit-cat" class="ph-input">
+          <option value="">General</option>
+          <option value="web">Web Development</option>
+          <option value="mobile">Mobile App</option>
+          <option value="ai">AI / ML</option>
+          <option value="design">Design</option>
+          <option value="research">Research</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--sf2);border-radius:12px;border:1.5px solid var(--bd)">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--tx)">Open to Join</div>
+          <div style="font-size:11px;color:var(--sub)">Anyone can request to join</div>
+        </div>
+        <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
+          <input type="checkbox" id="edit-open" style="opacity:0;width:0;height:0">
+          <span id="edit-open-track" style="position:absolute;inset:0;border-radius:12px;background:var(--bd2);transition:.3s;cursor:pointer" onclick="toggleEditOpen()"></span>
+          <span id="edit-open-thumb" style="position:absolute;left:3px;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.3s;box-shadow:0 1px 4px rgba(0,0,0,.2)"></span>
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;padding-top:4px">
+        <button type="button" onclick="closeEditModal()" class="ph-btn" style="flex:1;background:var(--sf2);color:var(--sub);border:1.5px solid var(--bd)">Cancel</button>
+        <button type="submit" id="edit-save-btn" class="ph-btn" style="flex:2">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/assets/js/core/info-modal.js"></script>
+<script>
+(function(){
+  window.closeTeamDetailsModal = function() {
+    document.getElementById('team-details-modal').style.display = 'none';
+  };
+
+  window.openTeamDetailsModal = async function(id, ev) {
+    if (ev) ev.stopPropagation();
+    const modal = document.getElementById('team-details-modal');
+    const content = document.getElementById('td-content');
+    modal.style.display = 'flex';
+    content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)"><span class="ms animate-spin" style="font-size:32px;display:block;margin-bottom:8px">progress_activity</span>Loading details…</div>`;
+
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${id}`, { headers: H });
+      if (!res.ok) throw new Error();
+      const t = await res.json();
+
+      document.getElementById('td-title').textContent = t.name || 'Team Details';
+
+      // Check current user role
+      const isLeader = t.leader_id === myId;
+      const isMember = myIds.has(t.id || t._id);
+
+      // Members list markup
+      const membersHTML = (t.team_members || []).map(m => {
+        const u = m.users || m.user || {};
+        const uid = u.id || u._id || m.user_id;
+        const name = `${u.first_name || 'Member'} ${u.last_name || ''}`;
+        const userAvatarCol = col(u.first_name || 'M');
+        const roleText = m.role === 'leader' ? '<span style="color:var(--ac);font-weight:bold;font-size:11px">Leader</span>' : '<span style="color:var(--sub);font-size:11px">Member</span>';
+        
+        // Show kick button if current user is leader and target is not leader
+        const kickBtn = (isLeader && m.role !== 'leader') 
+          ? `<button onclick="kickUser('${t.id || t._id}', '${uid}', '${esc(name)}', this)" style="padding:4px 8px;font-size:11px;border-radius:6px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);cursor:pointer;font-weight:700">Kick</button>` 
+          : '';
+
+        return `
+          <div style="display:flex;align-items:center;justify-content:between;padding:10px 0;border-bottom:1.5px solid var(--bd)">
+            <div style="display:flex;align-items:center;gap:10px;flex:1">
+              <div style="width:32px;height:32px;border-radius:50%;background:${userAvatarCol};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">
+                ${(u.first_name || 'M')[0].toUpperCase()}
+              </div>
+              <div>
+                <a href="/profile?id=${uid}" style="font-size:13px;font-weight:700;color:var(--tx);text-decoration:none">${esc(name)}</a>
+                <div style="font-size:11px;color:var(--sub)">${esc(u.university || t.leader?.university || '')}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+              ${roleText}
+              ${kickBtn}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Join requests list (Leader only)
+      let requestsHTML = '';
+      if (isLeader) {
+        try {
+          const reqRes = await fetch(API_BASE + `/api/teams/${t.id || t._id}/requests`, { headers: H });
+          if (reqRes.ok) {
+            const requests = await reqRes.json();
+            const pending = requests.filter(r => r.status === 'pending');
+            if (pending.length) {
+              requestsHTML = `
+                <div style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--bd)">
+                  <h4 style="font-size:14px;font-weight:800;margin:0 0 12px;color:var(--tx);display:flex;align-items:center;gap:6px">
+                    <span class="ms" style="color:var(--ac)">group_add</span> Join Requests (${pending.length})
+                  </h4>
+                  <div style="display:flex;flex-direction:column;gap:10px">
+                    ${pending.map(r => {
+                      const u = r.users || {};
+                      const reqName = `${u.first_name || 'Applicant'} ${u.last_name || ''}`;
+                      return `
+                        <div style="padding:12px;background:var(--sf2);border-radius:12px;border:1.5px solid var(--bd)">
+                          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+                            <div>
+                              <strong style="font-size:13px;color:var(--tx)">${esc(reqName)}</strong>
+                              <span style="font-size:11px;color:var(--sub);display:block">${esc(u.university || '')}</span>
+                            </div>
+                            <div style="display:flex;gap:6px">
+                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'accept', this)" style="padding:5px 10px;font-size:11px;border-radius:6px;background:var(--ac);color:#fff;border:none;cursor:pointer;font-weight:700">Accept</button>
+                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'reject', this)" style="padding:5px 10px;font-size:11px;border-radius:6px;background:var(--sf);color:var(--sub);border:1.5px solid var(--bd);cursor:pointer;font-weight:700">Reject</button>
+                            </div>
+                          </div>
+                          ${r.message ? `<p style="margin:0;font-size:12px;color:var(--sub);font-style:italic">"${esc(r.message)}"</p>` : ''}
+                        </div>
+                      `;
+                    }).join('')}
+                  </div>
+                </div>
+              `;
+            }
+          }
+        } catch(e) {}
+      }
+
+      content.innerHTML = `
+        <div>
+          <h4 style="font-size:12px;font-weight:800;color:var(--sub);margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px">Description</h4>
+          <p style="font-size:14px;color:var(--tx);margin:0;line-height:1.5;white-space:pre-wrap">${esc(t.description || 'No description.')}</p>
+        </div>
+
+        <div style="margin-top:10px">
+          <h4 style="font-size:12px;font-weight:800;color:var(--sub);margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px">Members (${t.team_members?.length || 0})</h4>
+          <div style="display:flex;flex-direction:column;max-height:220px;overflow-y:auto">
+            ${membersHTML || '<div style="color:var(--sub);font-size:13px">No members listed.</div>'}
+          </div>
+        </div>
+
+        ${requestsHTML}
+      `;
+
+    } catch(err) {
+      content.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)"><span class="ms" style="font-size:32px;display:block;margin-bottom:8px">error</span>Could not load details.</div>`;
+    }
+  };
+
+  window.kickUser = async function(teamId, memberId, memberName, btn) {
+    if (!confirm(`Are you sure you want to kick ${memberName} from the team?`)) return;
+    btn.disabled = true; btn.textContent = '...';
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${teamId}/members/${memberId}`, { method: 'DELETE', headers: H });
+      const d = await res.json();
+      if (res.ok) {
+        PHToast?.success(`${memberName} removed from team`);
+        openTeamDetailsModal(teamId); // reload modal content
+        load(); // reload dashboard stats
+      } else {
+        PHToast?.error(d.error || 'Failed to kick member');
+        btn.disabled = false; btn.textContent = 'Kick';
+      }
+    } catch(e) {
+      PHToast?.error('Server offline');
+      btn.disabled = false; btn.textContent = 'Kick';
+    }
+  };
+
+  window.handleRequest = async function(teamId, reqId, action, btn) {
+    btn.disabled = true;
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${teamId}/requests/${reqId}/${action}`, { method: 'POST', headers: H });
+      if (res.ok) {
+        PHToast?.success(`Request ${action}ed successfully`);
+        openTeamDetailsModal(teamId); // refresh
+        load();
+      } else {
+        const d = await res.json();
+        PHToast?.error(d.error || 'Failed to update request');
+        btn.disabled = false;
+      }
+    } catch(e) {
+      PHToast?.error('Server error');
+      btn.disabled = false;
+    }
+  };
+
+  window.editTeam = function(id) {
+    const t = teams.find(x => x._id === id);
+    if (!t) return;
+    document.getElementById('edit-tid').value = id;
+    document.getElementById('edit-name').value = t.name || '';
+    document.getElementById('edit-desc').value = t.description || '';
+    document.getElementById('edit-cat').value = t.category || '';
+    const isOpen = t.isOpen !== false;
+    document.getElementById('edit-open').checked = isOpen;
+    const track = document.getElementById('edit-open-track');
+    const thumb = document.getElementById('edit-open-thumb');
+    track.style.background = isOpen ? 'var(--ac)' : 'var(--bd2)';
+    thumb.style.left = isOpen ? '23px' : '3px';
+    const modal = document.getElementById('edit-team-modal');
+    modal.style.display = 'flex';
+  };
+
+  window.closeEditModal = function() {
+    document.getElementById('edit-team-modal').style.display = 'none';
+  };
+
+  window.toggleEditOpen = function() {
+    const cb = document.getElementById('edit-open');
+    cb.checked = !cb.checked;
+    const track = document.getElementById('edit-open-track');
+    const thumb = document.getElementById('edit-open-thumb');
+    track.style.background = cb.checked ? 'var(--ac)' : 'var(--bd2)';
+    thumb.style.left = cb.checked ? '23px' : '3px';
+  };
+
+  document.getElementById('edit-team-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeEditModal();
+  });
+
+  const TK2 = localStorage.getItem('access_token');
+  const H2 = {Authorization:'Bearer '+TK2,'Content-Type':'application/json'};
+  const API2 = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
+
+  document.getElementById('edit-team-form').onsubmit = async function(e) {
+    e.preventDefault();
+    const id = document.getElementById('edit-tid').value;
+    const btn = document.getElementById('edit-save-btn');
+    btn.textContent = 'Saving…'; btn.disabled = true;
+    try {
+      const r = await fetch(API2 + `/api/teams/${id}`, {
+        method: 'PUT', headers: H2,
+        body: JSON.stringify({
+          name: document.getElementById('edit-name').value.trim(),
+          description: document.getElementById('edit-desc').value.trim(),
+          category: document.getElementById('edit-cat').value,
+          isOpen: document.getElementById('edit-open').checked,
+        })
+      });
+      if (r.ok) {
+        PHToast?.success('Team updated!');
+        closeEditModal();
+        // Refresh teams list
+        setTimeout(() => location.reload(), 500);
+      } else {
+        const d = await r.json();
+        PHToast?.error(d.error || 'Could not update team');
+        btn.textContent = 'Save Changes'; btn.disabled = false;
+      }
+    } catch(err) {
+      PHToast?.error('Server offline');
+      btn.textContent = 'Save Changes'; btn.disabled = false;
+    }
+  };
+})();
+</script>
+</body>
 </html>

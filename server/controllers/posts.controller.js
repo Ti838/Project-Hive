@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { getIo } from '../services/socket.service.js';
 
 // ── Helper: normalize post data ───────────────────────────────────────────────
 function normPost(p) {
@@ -29,7 +30,7 @@ function normPost(p) {
 export async function getFeed(req, res, next) {
   try {
     const userId = req.user.id;
-    const { page = 1, limit = 20 } = req.query;
+    const { page = 1, limit = 20, sortBy = 'recent' } = req.query;
     const offset = (page - 1) * limit;
 
     // Get friend IDs (friends table stores mutual rows: user_id → friend_id)
@@ -97,12 +98,21 @@ export async function getFeed(req, res, next) {
       (mine || []).forEach(r => { myReactions[r.post_id] = r.type; });
     }
 
-    const result = (posts || []).map(p => normPost({
+    let result = (posts || []).map(p => normPost({
       ...p,
       reactions: reactionsMap[p.id] || {},
       comments_count: commentsMap[p.id] || 0,
       my_reaction: myReactions[p.id] || null,
     }));
+
+    // Sort by popularity (total reactions) when requested
+    if (sortBy === 'popular') {
+      result = result.sort((a, b) => {
+        const aTotal = Object.values(a.reactions || {}).reduce((s, v) => s + v, 0);
+        const bTotal = Object.values(b.reactions || {}).reduce((s, v) => s + v, 0);
+        return bTotal - aTotal;
+      });
+    }
 
     res.json({ posts: result, page: +page, limit: +limit });
   } catch (err) { next(err); }
@@ -114,7 +124,7 @@ export async function createPost(req, res, next) {
     const { content, postType = 'general', imageUrl = null, linkMetadata = null } = req.body;
     if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
 
-    const validTypes = ['general', 'achievement', 'project_update', 'looking_for_team'];
+    const validTypes = ['general', 'achievement', 'project_update', 'looking_for_team', 'poll'];
     if (!validTypes.includes(postType)) return res.status(400).json({ error: 'Invalid post type' });
 
     const insertData = {
@@ -135,7 +145,12 @@ export async function createPost(req, res, next) {
       .single();
 
     if (error) throw error;
-    res.status(201).json({ post: normPost({ ...post, reactions: {}, comments_count: 0, my_reaction: null }) });
+    const result = normPost({ ...post, reactions: {}, comments_count: 0, my_reaction: null });
+
+    // Broadcast to all connected users so feed pages show the banner
+    try { getIo()?.emit('post:new', { postId: result.id, authorId: req.user.id }); } catch(_) {}
+
+    res.status(201).json({ post: result });
   } catch (err) { next(err); }
 }
 
@@ -458,3 +473,189 @@ export async function getUserPosts(req, res, next) {
     res.json({ posts: result });
   } catch (err) { next(err); }
 }
+
+// PATCH /api/posts/:id — edit own post
+export async function editPost(req, res, next) {
+  try {
+    const { content } = req.body;
+    if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
+
+    const { data: post } = await supabaseAdmin.from('posts').select('author_id').eq('id', req.params.id).single();
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    if (post.author_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+    const { data: updated, error } = await supabaseAdmin
+      .from('posts')
+      .update({ content: content.trim() })
+      .eq('id', req.params.id)
+      .select(`
+        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+      `)
+      .single();
+
+    if (error) throw error;
+    res.json({ post: normPost({ ...updated, reactions: {}, comments_count: 0, my_reaction: null }) });
+  } catch (err) { next(err); }
+}
+
+// PATCH /api/posts/:id/comments/:cid — edit own comment
+export async function editComment(req, res, next) {
+  try {
+    const { content } = req.body;
+    if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
+
+    const { data: comment } = await supabaseAdmin.from('post_comments').select('author_id').eq('id', req.params.cid).single();
+    if (!comment) return res.status(404).json({ error: 'Comment not found' });
+    if (comment.author_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
+
+    const { data: updated, error } = await supabaseAdmin
+      .from('post_comments')
+      .update({ content: content.trim() })
+      .eq('id', req.params.cid)
+      .select(`id, content, created_at, author:users!author_id(id, first_name, last_name, avatar, online_status)`)
+      .single();
+
+    if (error) throw error;
+    res.json({
+      comment: {
+        id: updated.id,
+        content: updated.content,
+        createdAt: updated.created_at,
+        author: updated.author ? {
+          id: updated.author.id,
+          firstName: updated.author.first_name,
+          lastName: updated.author.last_name,
+          avatar: updated.author.avatar,
+          onlineStatus: updated.author.online_status,
+        } : null,
+      }
+    });
+  } catch (err) { next(err); }
+}
+
+// POST /api/posts/:id/save — save/unsave a post (toggle)
+export async function savePost(req, res, next) {
+  try {
+    const { id: postId } = req.params;
+    const userId = req.user.id;
+
+    const { data: existing } = await supabaseAdmin
+      .from('saved_posts').select('id').eq('post_id', postId).eq('user_id', userId).maybeSingle();
+
+    if (existing) {
+      await supabaseAdmin.from('saved_posts').delete().eq('id', existing.id);
+      return res.json({ saved: false, message: 'Post unsaved' });
+    }
+
+    await supabaseAdmin.from('saved_posts').insert({ post_id: postId, user_id: userId });
+    res.json({ saved: true, message: 'Post saved' });
+  } catch (err) { next(err); }
+}
+
+// GET /api/posts/saved — get all saved posts for the current user
+export async function getSavedPosts(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { page = 1, limit = 20 } = req.query;
+    const offset = (+page - 1) * +limit;
+
+    const { data: saved, error, count } = await supabaseAdmin
+      .from('saved_posts')
+      .select(`
+        post:post_id(
+          id, content, post_type, created_at, updated_at, image_url, link_metadata,
+          author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        )
+      `, { count: 'exact' })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + +limit - 1);
+
+    if (error) throw error;
+
+    const posts = (saved || []).map(s => s.post).filter(Boolean);
+    const postIds = posts.map(p => p.id);
+    let reactionsMap = {}, commentsMap = {}, myReactions = {};
+
+    if (postIds.length > 0) {
+      const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
+        supabaseAdmin.from('post_reactions').select('post_id, type, user_id').in('post_id', postIds),
+        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds),
+        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId),
+      ]);
+      (reactions || []).forEach(r => {
+        if (!reactionsMap[r.post_id]) reactionsMap[r.post_id] = {};
+        reactionsMap[r.post_id][r.type] = (reactionsMap[r.post_id][r.type] || 0) + 1;
+      });
+      (comments || []).forEach(c => { commentsMap[c.post_id] = (commentsMap[c.post_id] || 0) + 1; });
+      (mine || []).forEach(r => { myReactions[r.post_id] = r.type; });
+    }
+
+    const result = posts.map(p => normPost({
+      ...p,
+      reactions: reactionsMap[p.id] || {},
+      comments_count: commentsMap[p.id] || 0,
+      my_reaction: myReactions[p.id] || null,
+    }));
+
+    res.json({ posts: result, total: count || 0, page: +page, limit: +limit });
+  } catch (err) { next(err); }
+}
+
+// POST /api/posts/:id/vote — vote in a poll
+export async function votePoll(req, res, next) {
+  try {
+    const postId = req.params.id;
+    const userId = req.user.id;
+    const { optionText } = req.body;
+
+    if (!optionText) return res.status(400).json({ error: 'Option text is required' });
+
+    const { data: post, error: fetchErr } = await supabaseAdmin
+      .from('posts')
+      .select('id, link_metadata, author_id, content, post_type, created_at, image_url')
+      .eq('id', postId)
+      .single();
+
+    if (fetchErr || !post) return res.status(404).json({ error: 'Post not found' });
+    if (post.post_type !== 'poll') return res.status(400).json({ error: 'Post is not a poll' });
+
+    const metadata = post.link_metadata || {};
+    if (!metadata.isPoll || !Array.isArray(metadata.options)) {
+      return res.status(400).json({ error: 'Invalid poll metadata' });
+    }
+
+    metadata.options.forEach(opt => {
+      if (!Array.isArray(opt.votes)) opt.votes = [];
+      const userIdx = opt.votes.indexOf(userId);
+      if (opt.text === optionText) {
+        if (userIdx === -1) {
+          opt.votes.push(userId);
+        } else {
+          opt.votes.splice(userIdx, 1);
+        }
+      } else {
+        if (userIdx !== -1) {
+          opt.votes.splice(userIdx, 1);
+        }
+      }
+    });
+
+    const { data: updated, error: updateErr } = await supabaseAdmin
+      .from('posts')
+      .update({ link_metadata: metadata })
+      .eq('id', postId)
+      .select(`
+        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+      `)
+      .single();
+
+    if (updateErr) throw updateErr;
+
+    res.json({ post: normPost({ ...updated, reactions: {}, comments_count: 0, my_reaction: null }) });
+  } catch (err) { next(err); }
+}
+
+

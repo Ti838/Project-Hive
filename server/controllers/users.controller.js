@@ -411,3 +411,64 @@ export async function globalSearch(req, res, next) {
     next(err);
   }
 }
+
+// ─── ENDORSE SKILL ────────────────────────────────────────────────────────────
+// POST /api/users/:userId/skills/:skillId/endorse — toggle endorsement
+export async function endorseSkill(req, res, next) {
+  try {
+    const endorserId = req.user.id;
+    const { userId, skillId } = req.params;
+
+    if (endorserId === userId) return res.status(400).json({ error: 'You cannot endorse your own skills' });
+
+    // Verify skill belongs to user
+    const { data: skill } = await supabaseAdmin
+      .from('skills').select('id, endorsements').eq('id', skillId).eq('user_id', userId).single();
+    if (!skill) return res.status(404).json({ error: 'Skill not found' });
+
+    // Check existing endorsement (toggle)
+    const { data: existing } = await supabaseAdmin
+      .from('skill_endorsements').select('id').eq('skill_id', skillId).eq('endorser_id', endorserId).maybeSingle();
+
+    if (existing) {
+      // Remove endorsement
+      await supabaseAdmin.from('skill_endorsements').delete().eq('id', existing.id);
+      const newCount = Math.max(0, (skill.endorsements || 0) - 1);
+      await supabaseAdmin.from('skills').update({ endorsements: newCount }).eq('id', skillId);
+      return res.json({ endorsed: false, endorsements: newCount });
+    }
+
+    // Add endorsement
+    await supabaseAdmin.from('skill_endorsements').insert({ skill_id: skillId, endorser_id: endorserId });
+    const newCount = (skill.endorsements || 0) + 1;
+    await supabaseAdmin.from('skills').update({ endorsements: newCount }).eq('id', skillId);
+
+    // Notify skill owner
+    const { data: endorser } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', endorserId).single();
+    await supabaseAdmin.from('notifications').insert({
+      user_id: userId,
+      type: 'skill_endorsed',
+      title: 'Skill Endorsed!',
+      message: `${endorser?.first_name} ${endorser?.last_name} endorsed your skill`,
+      data: { skillId, endorserId },
+    });
+
+    res.json({ endorsed: true, endorsements: newCount });
+  } catch (err) { next(err); }
+}
+
+// ─── DELETE OWN ACCOUNT ────────────────────────────────────────────────────────
+export async function deleteOwnAccount(req, res, next) {
+  try {
+    const requesterId = req.user.id;
+    const { id } = req.params;
+
+    // Only allow users to delete their own account
+    if (requesterId !== id) {
+      return res.status(403).json({ error: 'You can only delete your own account' });
+    }
+
+    await supabaseAdmin.from('users').delete().eq('id', id);
+    res.json({ ok: true, message: 'Account deleted successfully' });
+  } catch (err) { next(err); }
+}

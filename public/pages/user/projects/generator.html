@@ -405,6 +405,22 @@
                   <div style="font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Tech Stack</div>
                   <div style="display:flex;flex-wrap:wrap;gap:6px">${tech.map(t=>`<span class="tech-badge">${esc(t)}</span>`).join('')}</div>
                 </div>`:''}
+
+                <!-- Action Buttons -->
+                <div style="display:flex;gap:8px;margin-top:16px;padding-top:14px;border-top:1.5px solid var(--bd)">
+                  <button onclick="saveIdea(this,'${esc(title).replace(/'/g,'&#39;')}','${i}')"
+                    style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;border:1.5px solid var(--bd);background:var(--sf2);color:var(--sub);cursor:pointer;font-family:inherit;transition:all .15s"
+                    onmouseover="this.style.borderColor='${pal.bg}';this.style.color='${pal.bg}';this.style.background='${pal.bg}18'"
+                    onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--sub)';this.style.background='var(--sf2)'">
+                    <span class="ms" style="font-size:16px">bookmark_border</span>Save Idea
+                  </button>
+                  <button onclick="shareIdea(this,'${esc(title).replace(/'/g,'&#39;')}','${esc(desc.substring(0,200)).replace(/'/g,'&#39;')}','${tech.slice(0,3).join(', ')}')"
+                    style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:700;border:1.5px solid var(--bd);background:var(--sf2);color:var(--sub);cursor:pointer;font-family:inherit;transition:all .15s"
+                    onmouseover="this.style.borderColor='#10b981';this.style.color='#10b981';this.style.background='rgba(16,185,129,.08)'"
+                    onmouseout="this.style.borderColor='var(--bd)';this.style.color='var(--sub)';this.style.background='var(--sf2)'">
+                    <span class="ms" style="font-size:16px">send</span>Share to Feed
+                  </button>
+                </div>
               </div>
             </div>
           </div>`;
@@ -495,9 +511,58 @@
     btn.disabled=false;
   };
 
+  /* ── Save Idea to history ── */
+  window.saveIdea = function(btn, title, idx) {
+    const ideas = JSON.parse(localStorage.getItem('ph-saved-ideas') || '[]');
+    const idea = { title, savedAt: new Date().toISOString(), idx };
+    if (ideas.find(i => i.title === title)) {
+      PHToast?.info('Idea already saved!');
+      return;
+    }
+    ideas.unshift(idea);
+    if (ideas.length > 50) ideas.pop();
+    localStorage.setItem('ph-saved-ideas', JSON.stringify(ideas));
+    btn.innerHTML = '<span class="ms" style="font-size:16px">bookmark</span>Saved!';
+    btn.style.background = 'rgba(99,102,241,.12)';
+    btn.style.color = '#6366f1';
+    btn.style.borderColor = '#6366f1';
+    btn.disabled = true;
+    PHToast?.success('Idea saved to your collection!');
+  };
+
+  /* ── Share Idea to Feed ── */
+  window.shareIdea = async function(btn, title, desc, techStr) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="ms" style="font-size:16px;animation:sp .7s linear infinite;display:inline-block">progress_activity</span>Sharing…';
+    const content = `💡 Project Idea: ${title}\n\n${desc}${techStr ? '\n\n🛠 Tech: ' + techStr : ''}\n\n#ProjectIdea #ProjectHive`;
+    try {
+      const r = await fetch(API_BASE + '/api/posts', {
+        method: 'POST', headers: H,
+        body: JSON.stringify({ content, type: 'idea' })
+      });
+      if (r.ok) {
+        PHToast?.success('Shared to your Feed!');
+        btn.innerHTML = '<span class="ms" style="font-size:16px">check</span>Shared!';
+        btn.style.background = 'rgba(16,185,129,.12)';
+        btn.style.color = '#10b981';
+        btn.style.borderColor = '#10b981';
+      } else {
+        const d = await r.json();
+        PHToast?.error(d.error || 'Could not share');
+        btn.innerHTML = '<span class="ms" style="font-size:16px">send</span>Share to Feed';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      PHToast?.error('Server offline');
+      btn.innerHTML = '<span class="ms" style="font-size:16px">send</span>Share to Feed';
+      btn.disabled = false;
+    }
+  };
+
   /* ── XSS escape ── */
   function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 })();
+
 </script>
 <script src="/assets/js/core/info-modal.js"></script></body>
 </html>

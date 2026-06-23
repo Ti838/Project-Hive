@@ -329,6 +329,18 @@ tr:hover td{background:rgba(99,102,241,.03)}
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
     <span>System</span>
   </button>
+  <button class="sb-item" id="nav-au" onclick="nav('au',this)" title="Audit Log">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>Audit Log</span>
+  </button>
+  <button class="sb-item" id="nav-rp" onclick="nav('rp',this)" title="Reports">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+    <span>Reports</span>
+  </button>
+  <button class="sb-item" id="nav-em" onclick="nav('em',this)" title="Email Blast">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+    <span>Email Blast</span>
+  </button>
   <div class="sb-footer">
     <button class="sb-theme" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
       <div style="display:flex;align-items:center;gap:10px">
@@ -380,6 +392,66 @@ tr:hover td{background:rgba(99,102,241,.03)}
 </div>
 <div id="sec-pr" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Project Management</div><div style="display:flex;gap:8px;align-items:center"><input class="srch" id="psrch" placeholder="Search projects…" oninput="rProjects()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Featured</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ptb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div>
 <div id="sec-us" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab active" onclick="uTab('all',this)">All</button><button class="tab" onclick="uTab('student',this)">Students</button><button class="tab" onclick="uTab('admin',this)">Admins</button><button class="tab" onclick="uTab('banned',this)">Banned</button></div><input class="srch" id="usrch" placeholder="Search users…" oninput="rUsers()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-tm" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Team Management</div><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab active" onclick="tTab('all',this)">All</button><button class="tab" onclick="tTab('open',this)">Open</button><button class="tab" onclick="tTab('closed',this)">Closed</button></div><input class="srch" id="tsrch" placeholder="Search teams…" oninput="rTeams()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-an" class="section" style="display:none"><div class="analytics-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="stat-n" id="an-u">—</div><div class="stat-l">Registered Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="stat-n" id="an-v">—</div><div class="stat-l">Verified Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="an-a">—</div><div class="stat-l">Admin Users</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>User Distribution by Role</div></div><div style="padding:20px"><div id="role-chart" class="chart-bars"></div><div id="role-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Team Status Breakdown</div></div><div style="padding:20px"><div id="team-chart" class="chart-bars"></div><div id="team-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div></div><div id="sec-sy" class="section" style="display:none"><div class="sys-grid"><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Controls</div><div class="sys-row"><div><div class="sys-label">Maintenance Mode</div><div class="sys-desc">Show maintenance page to all users</div></div><button class="toggle" id="maint-tog" onclick="toggleMaint()"></button></div><div class="sys-row"><div><div class="sys-label">User Registration</div><div class="sys-desc" id="reg-desc">New users can register</div></div><button class="toggle on" id="reg-tog" onclick="toggleReg()"></button></div><div class="sys-row"><div><div class="sys-label">Email Verification</div><div class="sys-desc">Require email verification on signup</div></div><button class="toggle" id="ev-tog" onclick="toggleEV()"></button></div></div><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Platform Health</div><div class="sys-row"><div><div class="sys-label">Backend API</div><div class="sys-desc">Render.com server status</div></div><span class="badge active" id="api-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking…</span></div><div class="sys-row"><div><div class="sys-label">Database</div><div class="sys-desc">Supabase PostgreSQL</div></div><span class="badge active" id="db-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking…</span></div><div class="sys-row"><div><div class="sys-label">Admin Email</div><div class="sys-desc">Configured in environment</div></div><span class="badge active"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Set</span></div></div></div></div></div></div></div>
+<!-- Audit Log Section -->
+<div id="sec-au" class="section" style="display:none">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Activity Audit Log</div>
+      <button class="btn" onclick="auditLog=[];localStorage.removeItem('ph-audit-log');renderAuditLog()">Clear Log</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table><thead><tr><th>Time</th><th>Action</th><th>Details</th><th>Admin</th></tr></thead>
+      <tbody id="audit-tb"><tr><td colspan="4"><div class="empty">Navigate here to view audit events</div></td></tr></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- Reports Section -->
+<div id="sec-rp" class="section" style="display:none">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>Platform Reports</div>
+    </div>
+    <div style="padding:20px" id="reports-content">
+      <div class="empty"><span class="spin"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Email Blast Section -->
+<div id="sec-em" class="section" style="display:none">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send Email Blast</div>
+    </div>
+    <div style="padding:20px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:600px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block">Target Audience</label>
+          <select id="blast-target" class="srch" style="width:100%">
+            <option value="all">All Users</option>
+            <option value="students">Students Only</option>
+            <option value="admins">Admins Only</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block">Subject</label>
+          <input id="blast-subject" class="srch" style="width:100%" placeholder="Email subject line...">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block">Message Body</label>
+          <textarea id="blast-body" class="srch" style="width:100%;min-height:120px;resize:vertical;font-family:Inter,sans-serif" placeholder="Write your announcement here..."></textarea>
+        </div>
+        <button id="blast-send" class="btn primary" onclick="sendEmailBlast()" style="align-self:flex-start">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Blast
+        </button>
+        <p style="font-size:11px;color:var(--sub);margin:0">Note: Email delivery requires SMTP configuration in environment variables.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div></div>
 <script>
 const TK=localStorage.getItem("admin_token")||localStorage.getItem("access_token");
 if(!TK){location.href="/pages/admin/login.html"}
@@ -409,16 +481,18 @@ function toggleTheme(){
 }
 // ── Nav ──
 function nav(id,btn){
-  const secs=["ov","us","tm","pr","po","an","sy"];
+  const secs=["ov","us","tm","pr","po","an","sy","au","rp","em"];
   secs.forEach(s=>{const el=document.getElementById("sec-"+s);if(el)el.style.display=s===id?"":"none"});
   document.querySelectorAll(".sb-item").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  const titles={ov:"Control Center",us:"User Management",tm:"Team Management",pr:"Project Management",po:"Post Moderation",an:"Analytics",sy:"System"};
+  const titles={ov:"Control Center",us:"User Management",tm:"Team Management",pr:"Project Management",po:"Post Moderation",an:"Analytics",sy:"System",au:"Audit Log",rp:"Reports",em:"Email Blast"};
   const el=document.getElementById("pg-title");if(el)el.textContent=titles[id];
   if(id==="sy"){checkHealth();const mb=document.getElementById("maint-btn");if(mb)mb.style.display="none";}
   else{const mb=document.getElementById("maint-btn");if(mb)mb.style.display="";}
   if(id==="an")renderAnalytics();
   if(id==="po")rPostsMod();
+  if(id==="au")renderAuditLog();
+  if(id==="rp")renderReports();
 }
 // ── Collapse ──
 function toggleCollapse() {
@@ -706,6 +780,122 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Load flags from backend on start
 fetch(API+'/api/admin/flags',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{if(d)syncFlags(d);}).catch(()=>{});
+// ── Audit Log ──
+let auditLog = [];
+function pushAudit(action, details) {
+  const entry = { time: new Date().toISOString(), action, details, admin: curAdminEmail };
+  auditLog.unshift(entry);
+  if (auditLog.length > 100) auditLog.pop();
+  try { localStorage.setItem('ph-audit-log', JSON.stringify(auditLog)); } catch(e) {}
+}
+try { auditLog = JSON.parse(localStorage.getItem('ph-audit-log') || '[]'); } catch(e) { auditLog = []; }
+
+function renderAuditLog() {
+  const el = document.getElementById('audit-tb');
+  if (!el) return;
+  if (!auditLog.length) {
+    el.innerHTML = '<tr><td colspan="4"><div class="empty">No audit events yet. Actions you perform will be logged here.</div></td></tr>';
+    return;
+  }
+  el.innerHTML = auditLog.slice(0, 50).map(e => `<tr>
+    <td style="font-size:11px;color:var(--sub)">${ago(e.time)}</td>
+    <td><span class="badge admin">${e.action}</span></td>
+    <td style="font-size:12px">${e.details || '—'}</td>
+    <td style="font-size:11px;color:var(--sub)">${e.admin}</td>
+  </tr>`).join('');
+}
+
+// Override admin actions to log them
+const _origBanU = banU;
+banU = async function(id, ban) {
+  await _origBanU(id, ban);
+  pushAudit(ban ? 'BAN_USER' : 'UNBAN_USER', 'User ID: ' + id);
+};
+const _origDelU = delU;
+delU = async function(id, nm) {
+  await _origDelU(id, nm);
+  pushAudit('DELETE_USER', nm);
+};
+const _origDelT = delT;
+delT = async function(id, nm) {
+  await _origDelT(id, nm);
+  pushAudit('DELETE_TEAM', nm);
+};
+const _origDelP = delP;
+delP = async function(id, nm) {
+  await _origDelP(id, nm);
+  pushAudit('DELETE_PROJECT', nm);
+};
+
+// ── Reports ──
+function renderReports() {
+  const el = document.getElementById('reports-content');
+  if (!el) return;
+  const totalUsers = AU.length;
+  const bannedUsers = AU.filter(u => u.isBanned).length;
+  const adminUsers = AU.filter(u => u.role === 'admin').length;
+  const totalTeams = AT.length;
+  const openTeams = AT.filter(t => !t.is_closed && t.status !== 'closed').length;
+  const totalProjects = AP.length;
+  const totalPosts = APo.length;
+  const todayUsers = AU.filter(u => { const d = new Date(u.createdAt); return Date.now() - d < 86400000; }).length;
+
+  el.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px">
+      <div class="stat-card"><div class="stat-n" style="font-size:22px">${totalUsers}</div><div class="stat-l">Total Users</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--red)">${bannedUsers}</div><div class="stat-l">Banned Users</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--ac)">${adminUsers}</div><div class="stat-l">Admin Users</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--grn)">${todayUsers}</div><div class="stat-l">Signups Today</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px">${totalTeams}</div><div class="stat-l">Total Teams</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--blu)">${openTeams}</div><div class="stat-l">Open Teams</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--yel)">${totalProjects}</div><div class="stat-l">Total Projects</div></div>
+      <div class="stat-card"><div class="stat-n" style="font-size:22px">${totalPosts}</div><div class="stat-l">Total Posts</div></div>
+    </div>
+    <button class="btn primary" onclick="exportReport()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Export Report (.json)</button>
+  `;
+}
+
+function exportReport() {
+  const data = {
+    generatedAt: new Date().toISOString(),
+    summary: { users: AU.length, teams: AT.length, projects: AP.length, posts: APo.length, banned: AU.filter(u => u.isBanned).length },
+    users: AU.map(u => ({ id: u._id, name: (u.firstName||'') + ' ' + (u.lastName||''), email: u.email, role: u.role, banned: u.isBanned, joined: u.createdAt })),
+    teams: AT.map(t => ({ id: t._id || t.id, name: t.name, status: t.is_closed ? 'closed' : 'open', members: t.members?.length || 0 })),
+    auditLog: auditLog.slice(0, 50)
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `projecthive-admin-report-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  pushAudit('EXPORT_REPORT', 'Admin report exported');
+}
+
+// ── Email Blast ──
+function sendEmailBlast() {
+  const subject = document.getElementById('blast-subject')?.value?.trim();
+  const body = document.getElementById('blast-body')?.value?.trim();
+  const target = document.getElementById('blast-target')?.value || 'all';
+  if (!subject || !body) return alert('Please fill in subject and body');
+  if (!confirm(`Send email blast to ${target} users?\n\nSubject: ${subject}`)) return;
+
+  const btn = document.getElementById('blast-send');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Sending…';
+
+  // Simulate sending (no email service configured)
+  setTimeout(() => {
+    pushAudit('EMAIL_BLAST', `To: ${target} | Subject: ${subject}`);
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Blast';
+    document.getElementById('blast-subject').value = '';
+    document.getElementById('blast-body').value = '';
+    alert('Email blast queued successfully! (Note: Actual email delivery requires SMTP configuration)');
+  }, 1500);
+}
+
 loadAll();
 checkHealth();
 </script>

@@ -15,8 +15,13 @@ router.post('/reset-password',  authController.resetPassword);
 router.get('/verify-email',       authController.verifyEmail);        // ?token=xxx
 router.post('/resend-verification', authController.resendVerification);
 
+// ─── Google OAuth ──────────────────────────────────────────────────────────────
+router.get('/google',          authController.googleInitiate);  // → returns OAuth URL
+router.post('/google/callback', authController.googleCallback); // ← frontend posts Supabase session
+
 // Protected routes
 router.post('/logout', authMiddleware, authController.logout);
 router.get('/me',      authMiddleware, authController.getMe);
 
 export default router;
+

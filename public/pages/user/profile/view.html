@@ -120,8 +120,31 @@
           <div class="pv-section-hdr"><h2>Contact Info</h2></div>
           <div class="pv-section-body" id="pv-links"></div>
         </div>
+
+        <!-- Teams Section -->
+        <div class="pv-section" id="sec-teams" style="display:none">
+          <div class="pv-section-hdr">
+            <h2>Teams</h2>
+            <a href="/teams"><span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>Browse</a>
+          </div>
+          <div class="pv-section-body" id="pv-teams">
+            <div class="pv-empty"><span class="material-symbols-outlined">group</span><p>No teams yet</p></div>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Projects Section (full-width below 2-col) -->
+    <div class="pv-section" id="sec-projects" style="display:none;margin-top:16px">
+      <div class="pv-section-hdr">
+        <h2>Projects</h2>
+        <a href="/showcase"><span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>Showcase</a>
+      </div>
+      <div id="pv-projects" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;padding:4px 0">
+        <div class="pv-empty" style="grid-column:1/-1"><span class="material-symbols-outlined">folder_open</span><p>No projects yet</p></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -172,6 +195,22 @@
       } else {
         renderActivity([], u);
       }
+
+      // Load user's projects
+      const projR = await fetch(API + `/api/projects?author=${userId}&limit=6`, { headers: H }).catch(()=>null);
+      if (projR && projR.ok) {
+        const pd = await projR.json();
+        renderProjects(pd.projects || pd || []);
+      }
+
+      // Load user's teams
+      const teamsEndpoint = isOwnProfile ? '/api/teams/my-teams' : `/api/users/${userId}/teams`;
+      const teamR = await fetch(API + teamsEndpoint, { headers: H }).catch(()=>null);
+      if (teamR && teamR.ok) {
+        const td = await teamR.json();
+        renderTeams(td.teams || td || []);
+      }
+
     } catch(e) { console.error(e); PHToast?.error('Could not load profile'); }
   }
 
@@ -227,7 +266,21 @@
     const skillsEl = document.getElementById('pv-skills');
     const skills = u.skills || [];
     if (skills.length) {
-      skillsEl.innerHTML = skills.map(s => `<span class="pv-skill-tag">${s.name||s}</span>`).join('');
+      skillsEl.innerHTML = skills.map(s => {
+        const skillId = s.id || s._id;
+        const count = s.endorsements || 0;
+        if (!isOwnProfile && skillId) {
+          return `<div class="pv-skill-tag" style="display:inline-flex;align-items:center;gap:6px;cursor:default">
+            <span>${esc(s.name||s)}</span>
+            <button id="endorse-${skillId}" onclick="endorseSkill('${userId}','${skillId}',this)" title="Endorse this skill"
+              style="display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:6px;font-size:10px;font-weight:700;border:1px solid rgba(99,102,241,.25);background:rgba(99,102,241,.07);color:#6366f1;cursor:pointer;transition:all .15s;font-family:inherit">
+              <span class="material-symbols-outlined" style="font-size:12px">thumb_up</span>
+              <span id="endorse-cnt-${skillId}">${count}</span>
+            </button>
+          </div>`;
+        }
+        return `<span class="pv-skill-tag">${esc(s.name||s)}${count>0?` <small style="opacity:.65;font-size:10px">(${count})</small>`:''}</span>`;
+      }).join('');
     } else {
       document.getElementById('sec-skills').style.display = 'none';
     }
@@ -400,6 +453,63 @@
     return date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
   }
 
+  const PCOLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+  function avC2(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return PCOLS[Math.abs(h)%PCOLS.length];}
+
+  function renderProjects(projects) {
+    const sec = document.getElementById('sec-projects');
+    const el = document.getElementById('pv-projects');
+    if (!projects.length) return; // keep hidden with empty state
+    sec.style.display = 'block';
+    el.innerHTML = projects.map(p => {
+      const col = avC2(p.title||'P');
+      const pid = p._id||p.id;
+      const tech = (p.techStack||p.tags||[]).slice(0,3);
+      return `<div style="background:var(--sf);border:1.5px solid var(--bd);border-radius:16px;overflow:hidden;transition:transform .2s,box-shadow .2s;cursor:pointer"
+        onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='var(--shadow-lg)'"
+        onmouseout="this.style.transform='';this.style.boxShadow=''"
+        onclick="window.location.href='/showcase?pid=${pid}'">
+        <div style="height:60px;background:linear-gradient(135deg,${col}22,${col}44);display:flex;align-items:center;justify-content:center;position:relative">
+          <div style="width:38px;height:38px;border-radius:10px;background:${col};color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center">${(p.title||'P')[0].toUpperCase()}</div>
+          ${p.featured?'<span style="position:absolute;top:6px;right:8px;background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px">★ Featured</span>':''}
+        </div>
+        <div style="padding:12px">
+          <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.title||'Untitled')}</div>
+          <p style="font-size:11px;color:var(--sub);margin:0 0 8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(p.description||'')}</p>
+          ${tech.length?`<div style="display:flex;flex-wrap:wrap;gap:4px">${tech.map(t=>`<span style="padding:2px 8px;border-radius:6px;font-size:10px;font-weight:600;background:rgba(99,102,241,.1);color:#6366f1">${esc(t)}</span>`).join('')}</div>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderTeams(teams) {
+    const sec = document.getElementById('sec-teams');
+    const el = document.getElementById('pv-teams');
+    if (!teams.length) return;
+    sec.style.display = 'block';
+    el.innerHTML = teams.map(t => {
+      const col = avC2(t.name||'T');
+      const ini = ((t.name||'T').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2))||'T';
+      const members = t.members?.length||t.memberCount||0;
+      const isOpen = t.isOpen !== false;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--sf2);border-radius:12px;border:1.5px solid var(--bd);cursor:pointer;transition:background .15s"
+        onmouseover="this.style.background='var(--sf)';this.style.borderColor='var(--bd2)'"
+        onmouseout="this.style.background='var(--sf2)';this.style.borderColor='var(--bd)'"
+        onclick="window.location.href='/teams?tid=${t._id}'">
+        <div style="width:40px;height:40px;border-radius:11px;background:${col};color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${esc(ini)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</div>
+          <div style="font-size:11px;color:var(--sub);margin-top:2px;display:flex;align-items:center;gap:6px">
+            <span class="material-symbols-outlined" style="font-size:13px">group</span>${members} member${members!==1?'s':''}
+            ${isOpen?'<span style="color:#10b981;font-weight:700">· Open</span>':'<span style="color:var(--sub)">· Closed</span>'}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+
+
   window.sendReq = async function(id) {
     const btn = event.target.closest('button');
     if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined">schedule</span>Sending...'; }
@@ -447,6 +557,35 @@
         PHToast?.error(err.error || 'Failed to unfriend');
       }
     } catch(e) { PHToast?.error('Network error'); }
+  };
+
+  // Escape HTML helper for profile page
+  function esc(s) { const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+
+  // Endorse / un-endorse a skill (toggle)
+  window.endorseSkill = async function(targetUserId, skillId, btn) {
+    btn.disabled = true;
+    const cntEl = document.getElementById('endorse-cnt-' + skillId);
+    try {
+      const r = await fetch(API + `/api/users/${targetUserId}/skills/${skillId}/endorse`, { method:'POST', headers:H });
+      if (r.ok) {
+        const d = await r.json();
+        if (cntEl) cntEl.textContent = d.endorsements;
+        if (d.endorsed) {
+          btn.style.background='rgba(99,102,241,.18)';
+          btn.style.borderColor='#6366f1';
+          PHToast?.success('Skill endorsed!');
+        } else {
+          btn.style.background='rgba(99,102,241,.07)';
+          btn.style.borderColor='rgba(99,102,241,.25)';
+          PHToast?.info('Endorsement removed');
+        }
+      } else {
+        const e=await r.json().catch(()=>({}));
+        PHToast?.error(e.error||'Failed');
+      }
+    } catch(e) { PHToast?.error('Network error'); }
+    btn.disabled = false;
   };
 
   loadProfile();

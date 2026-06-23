@@ -29,6 +29,9 @@ router.delete('/conversation/:friendId', authMiddleware, mc.deleteConversation);
 // Delete single message
 router.delete('/:id',               authMiddleware, mc.deleteMessage);
 
+// Edit single message
+router.put('/:id',                  authMiddleware, mc.updateMessage);
+
 // Save message via REST (socket fallback)
 router.post('/',                    authMiddleware, mc.saveMessage);
 

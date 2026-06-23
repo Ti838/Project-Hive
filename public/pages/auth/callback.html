@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Signing in… — ProjectHive</title>
+<link rel="icon" href="/favicon.png?v=2">
+<script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    background:#F0F2F9;
+    color:#1e1f2e;
+  }
+  html.dark body{background:#0C0D14;color:#e2e4f0;}
+  .card{
+    background:#fff;
+    border:1.5px solid #e5e7f0;
+    border-radius:24px;
+    padding:48px 40px;
+    text-align:center;
+    max-width:400px;
+    width:90%;
+    box-shadow:0 8px 40px rgba(99,102,241,.12);
+  }
+  html.dark .card{background:#13141E;border-color:#252636;}
+  .logo{font-size:22px;font-weight:900;background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:24px;display:block}
+  .spinner-wrap{display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .spinner{
+    width:48px;height:48px;
+    border:3px solid rgba(99,102,241,.15);
+    border-top-color:#6366f1;
+    border-radius:50%;
+    animation:sp .8s linear infinite;
+  }
+  @keyframes sp{to{transform:rotate(360deg)}}
+  h1{font-size:18px;font-weight:800;margin-bottom:8px}
+  p{font-size:13px;color:#64748b;line-height:1.6}
+  html.dark p{color:#94a3b8}
+  .error-box{display:none;background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.2);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:13px;color:#ef4444;line-height:1.5}
+  .retry-btn{display:none;margin-top:16px;padding:10px 24px;border-radius:10px;background:#6366f1;color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:opacity .15s}
+  .retry-btn:hover{opacity:.85}
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="logo">ProjectHive 🐝</span>
+  <div class="spinner-wrap">
+    <div class="spinner" id="spinner"></div>
+  </div>
+  <h1 id="title">Signing you in…</h1>
+  <p id="msg">Please wait while we verify your Google account.</p>
+  <div class="error-box" id="err-box"></div>
+  <button class="retry-btn" id="retry-btn" onclick="window.location.href='/login'">Back to Login</button>
+</div>
+
+<script>
+(function(){
+  const BACKEND = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port==='3000' ? 'http://localhost:5000/api' : '/api')
+    : 'https://projecthive-backend.onrender.com/api';
+
+  function showError(msg) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('title').textContent = 'Sign-in failed';
+    document.getElementById('msg').textContent = 'Something went wrong during Google sign-in.';
+    const eb = document.getElementById('err-box');
+    eb.textContent = msg;
+    eb.style.display = 'block';
+    document.getElementById('retry-btn').style.display = 'inline-block';
+  }
+
+  async function handleCallback() {
+    // Supabase puts the session in the URL hash fragment after OAuth redirect
+    // Format: #access_token=...&refresh_token=...&token_type=bearer
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+
+    // Also check query string (some flows use ?code= instead)
+    const query = new URLSearchParams(window.location.search);
+    const code  = query.get('code');
+    const error = query.get('error') || params.get('error');
+
+    if (error) {
+      showError('Google sign-in was cancelled or failed: ' + (query.get('error_description') || error));
+      return;
+    }
+
+    let access_token  = params.get('access_token');
+    let refresh_token = params.get('refresh_token');
+
+    // If we have a code (PKCE flow), exchange it via Supabase JS client
+    if (code && !access_token) {
+      try {
+        // Dynamically load Supabase JS to exchange code for session
+        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+        const sb = createClient(
+          'https://iekfvgjxkmgduxdvkuxf.supabase.co',
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlla2Z2Z2p4a21nZHV4ZHZrdXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzMjI2MjEsImV4cCI6MjA5Njg5ODYyMX0.s73x7IQTdae7TPD0AoJmH9m6Ip0SKQPV5Ozr9v5nACg'
+        );
+        const { data: sessionData, error: exchErr } = await sb.auth.exchangeCodeForSession(code);
+        if (exchErr || !sessionData?.session) {
+          showError('Could not exchange OAuth code: ' + (exchErr?.message || 'Unknown error'));
+          return;
+        }
+        access_token  = sessionData.session.access_token;
+        refresh_token = sessionData.session.refresh_token;
+      } catch(e) {
+        showError('Code exchange failed: ' + e.message);
+        return;
+      }
+    }
+
+    if (!access_token) {
+      showError('No authentication token received. Please try again.');
+      return;
+    }
+
+    // Send Supabase token to our backend → get platform JWT
+    try {
+      const res = await fetch(BACKEND + '/auth/google/callback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ access_token, refresh_token })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.accessToken) {
+        localStorage.setItem('access_token', data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
+        if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
+
+        document.getElementById('title').textContent = 'Welcome back!';
+        document.getElementById('msg').textContent   = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
+        document.getElementById('spinner').style.borderTopColor = '#10b981';
+
+        setTimeout(() => window.location.href = '/dashboard', 1000);
+      } else {
+        showError(data.error || 'Sign-in failed. Please try again.');
+      }
+    } catch(e) {
+      showError('Could not reach the server. Please check your connection.');
+    }
+  }
+
+  handleCallback();
+})();
+</script>
+</body>
+</html>

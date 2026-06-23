@@ -8,7 +8,7 @@ function sanitizeSearch(input) {
 export async function submitProject(req, res, next) {
   try {
     const userId = req.user.id;
-    const { title, description, techStack, demoURL, githubURL, category, tags, thumbnail } = req.body;
+    const { title, description, techStack, demoURL, githubURL, category, tags, thumbnail, looking_for_members } = req.body;
 
     const { data: project, error } = await supabaseAdmin
       .from('projects')
@@ -23,6 +23,7 @@ export async function submitProject(req, res, next) {
         thumbnail: thumbnail || null,
         owner_id: userId,
         status: 'active',
+        looking_for_members: looking_for_members || false,
       })
       .select('*, owner:owner_id(id, first_name, last_name, avatar, avatar_color)')
       .single();
@@ -57,8 +58,27 @@ export async function getProjects(req, res, next) {
     const { data: projects, error, count } = await q;
     if (error) throw error;
 
+    // Attach isLiked field if user is logged in
+    let likedProjectIds = new Set();
+    if (req.user && req.user.id && projects && projects.length) {
+      const pids = projects.map(p => p.id);
+      const { data: likes } = await supabaseAdmin
+        .from('project_likes')
+        .select('project_id')
+        .eq('user_id', req.user.id)
+        .in('project_id', pids);
+      if (likes) {
+        likes.forEach(lk => likedProjectIds.add(lk.project_id));
+      }
+    }
+
+    const projectsWithLike = (projects || []).map(p => ({
+      ...p,
+      isLiked: likedProjectIds.has(p.id)
+    }));
+
     res.json({
-      projects: projects || [],
+      projects: projectsWithLike,
       pagination: { total: count || 0, skip: parseInt(skip), limit: parseInt(limit), hasMore: parseInt(skip) + parseInt(limit) < (count || 0) },
     });
   } catch (err) { next(err); }
@@ -78,7 +98,18 @@ export async function getProjectDetail(req, res, next) {
     // Increment views
     await supabaseAdmin.from('projects').update({ views: (project.views || 0) + 1 }).eq('id', id);
 
-    res.json(project);
+    let isLiked = false;
+    if (req.user && req.user.id) {
+      const { data: like } = await supabaseAdmin
+        .from('project_likes')
+        .select('id')
+        .eq('project_id', id)
+        .eq('user_id', req.user.id)
+        .maybeSingle();
+      if (like) isLiked = true;
+    }
+
+    res.json({ ...project, isLiked });
   } catch (err) { next(err); }
 }
 
@@ -142,6 +173,51 @@ export async function likeProject(req, res, next) {
 }
 
 export async function saveProject(req, res, next) {
-  // Reuse like logic for now — can extend with saved_projects table
-  res.json({ message: 'Feature coming soon' });
+  try {
+    const { id: projectId } = req.params;
+    const userId = req.user.id;
+
+    // Verify project exists
+    const { data: proj } = await supabaseAdmin.from('projects').select('id').eq('id', projectId).maybeSingle();
+    if (!proj) return res.status(404).json({ error: 'Project not found' });
+
+    // Toggle save
+    const { data: existing } = await supabaseAdmin
+      .from('saved_projects').select('id').eq('project_id', projectId).eq('user_id', userId).maybeSingle();
+
+    if (existing) {
+      await supabaseAdmin.from('saved_projects').delete().eq('id', existing.id);
+      return res.json({ saved: false, message: 'Project unsaved' });
+    }
+
+    await supabaseAdmin.from('saved_projects').insert({ project_id: projectId, user_id: userId });
+    res.json({ saved: true, message: 'Project saved' });
+  } catch (err) { next(err); }
+}
+
+// GET /api/projects/saved — get all saved projects for the current user
+export async function getSavedProjects(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { skip = 0, limit = 20 } = req.query;
+
+    const { data: savedRows, error, count } = await supabaseAdmin
+      .from('saved_projects')
+      .select(`
+        project:project_id(
+          *, owner:owner_id(id, first_name, last_name, avatar, avatar_color, university)
+        )
+      `, { count: 'exact' })
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .range(+skip, +skip + +limit - 1);
+
+    if (error) throw error;
+
+    const projects = (savedRows || []).map(r => r.project).filter(Boolean);
+    res.json({
+      projects,
+      pagination: { total: count || 0, skip: +skip, limit: +limit, hasMore: +skip + +limit < (count || 0) },
+    });
+  } catch (err) { next(err); }
 }

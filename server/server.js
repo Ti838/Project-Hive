@@ -22,6 +22,7 @@ import {
   handleCallDecline,
   handleCallHangup,
   handleGroupCallInitiate,
+  getUserSocket,
 } from './services/socket.service.js';
 
 const PORT = process.env.PORT || 5000;
@@ -33,6 +34,11 @@ async function startServer() {
 
     // Connect to Supabase
     await connectDB();
+
+    // Load persistent system flags from DB
+    const { loadFlagsFromDB } = await import('./controllers/admin.controller.js');
+    await loadFlagsFromDB();
+    console.log('[ProjectHive] 🚩 System flags loaded from DB');
 
     // Initialize Gemini AI (optional)
     try {

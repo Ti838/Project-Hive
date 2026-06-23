@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Saved Posts — ProjectHive</title>
+<title>Saved — ProjectHive</title>
 <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})();</script>
 <style>html{background-color:#F0F2F9!important}html.dark{background-color:#0C0D14!important}</style>
 <link rel="icon" href="/favicon.png?v=2">
@@ -13,39 +13,43 @@
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
 <style>
-.saved-wrap{max-width:680px;margin:0 auto;padding:24px 16px 60px}
-.saved-header{display:flex;align-items:center;gap:12px;margin-bottom:28px}
-.saved-header .ic{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,#ec4899,#db2777);display:flex;align-items:center;justify-content:center}
-.saved-header .ic .material-symbols-outlined{font-size:22px;color:#fff}
-.saved-header h1{font-size:22px;font-weight:800;color:var(--tx)}
-.saved-header .count{font-size:12px;color:var(--sub);font-weight:600;margin-top:2px}
+.sv-wrap{max-width:720px;margin:0 auto;padding:24px 16px 80px}
+.sv-tabs{display:flex;gap:8px;margin-bottom:22px}
+.sv-tab{display:flex;align-items:center;gap:6px;padding:8px 18px;border-radius:30px;font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all .2s;font-family:inherit}
+.sv-tab.active{background:var(--ac);color:#fff}
+.sv-tab:not(.active){background:var(--sf2);color:var(--sub)}
+.sv-tab:not(.active):hover{color:var(--tx)}
+.sv-count{font-size:11px;background:rgba(255,255,255,.25);padding:1px 7px;border-radius:20px;font-weight:800}
+.sv-tab:not(.active) .sv-count{background:var(--bd);color:var(--sub)}
 
-.empty-state{text-align:center;padding:80px 24px}
-.empty-state .ic{width:80px;height:80px;border-radius:24px;background:var(--sf2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
-.empty-state .ic .material-symbols-outlined{font-size:36px;color:var(--sub)}
-.empty-state h2{font-size:18px;font-weight:800;color:var(--tx);margin-bottom:6px}
-.empty-state p{font-size:13px;color:var(--sub);max-width:320px;margin:0 auto 20px;line-height:1.6}
-.empty-state a{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;background:var(--ac);color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700;transition:opacity .2s}
-.empty-state a:hover{opacity:.9}
-
-.post-card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-bottom:14px;transition:transform .2s,box-shadow .2s}
-.post-card:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(99,102,241,.06)}
-.post-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.post-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;flex-shrink:0;overflow:hidden}
-.post-avatar img{width:100%;height:100%;object-fit:cover}
-.post-meta .name{font-size:13px;font-weight:700;color:var(--tx);cursor:pointer}
-.post-meta .name:hover{color:var(--ac)}
-.post-meta .info{font-size:11px;color:var(--sub)}
-.post-content{font-size:14px;color:var(--tx);line-height:1.7;margin-bottom:12px}
-.post-content a{color:var(--ac);font-weight:600;text-decoration:none}
-.post-actions{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--bd)}
-.post-actions button{display:flex;align-items:center;gap:5px;padding:6px 12px;border:none;background:none;border-radius:8px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;transition:all .15s;font-family:inherit}
-.post-actions button:hover{background:rgba(99,102,241,.06);color:var(--ac)}
-.post-actions .remove{color:#ef4444}
-.post-actions .remove:hover{background:rgba(239,68,68,.06);color:#ef4444}
-
-.loading-state{text-align:center;padding:60px;color:var(--sub);font-size:13px}
-.tag{display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;margin-right:6px;margin-bottom:4px}
+.sv-card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:20px;margin-bottom:12px;transition:transform .18s,box-shadow .18s,opacity .2s}
+.sv-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.07)}
+.sv-card-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sv-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:13px;flex-shrink:0;overflow:hidden}
+.sv-avatar img{width:100%;height:100%;object-fit:cover}
+.sv-meta .sv-name{font-size:13px;font-weight:700;color:var(--tx);cursor:pointer;transition:color .15s}
+.sv-meta .sv-name:hover{color:var(--ac)}
+.sv-meta .sv-info{font-size:11px;color:var(--sub);margin-top:1px}
+.sv-body{font-size:13px;color:var(--tx);line-height:1.7;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.sv-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:6px;font-size:10px;font-weight:700;margin-bottom:8px}
+.sv-foot{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--bd)}
+.sv-foot-actions{display:flex;gap:6px}
+.sv-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:600;border:none;cursor:pointer;transition:all .15s;font-family:inherit}
+.sv-btn-ghost{background:var(--sf2);color:var(--sub)}
+.sv-btn-ghost:hover{background:rgba(99,102,241,.08);color:var(--ac)}
+.sv-btn-danger{background:rgba(239,68,68,.06);color:#ef4444}
+.sv-btn-danger:hover{background:rgba(239,68,68,.12)}
+.sv-reactions{display:flex;gap:8px;font-size:12px;color:var(--sub);margin-bottom:10px}
+.sv-proj-img{width:100%;height:150px;object-fit:cover;border-radius:10px;margin-bottom:12px}
+.sv-proj-title{font-size:15px;font-weight:800;color:var(--tx);margin-bottom:6px}
+.sv-empty{text-align:center;padding:80px 24px}
+.sv-empty .sv-eic{width:80px;height:80px;border-radius:24px;background:var(--sf2);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.sv-empty .sv-eic span{font-size:36px;color:var(--sub)}
+.sv-empty h2{font-size:18px;font-weight:800;color:var(--tx);margin-bottom:6px}
+.sv-empty p{font-size:13px;color:var(--sub);max-width:300px;margin:0 auto 20px;line-height:1.6}
+.sv-empty a{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;background:var(--ac);color:#fff;text-decoration:none;border-radius:10px;font-size:13px;font-weight:700}
+.sv-loading{text-align:center;padding:60px;color:var(--sub);font-size:13px}
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body data-no-float-theme="1">
@@ -54,150 +58,153 @@
   <div class="ph-topbar">
     <a href="/feed" style="color:var(--sub);display:flex;align-items:center;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--sub)'"><span class="material-symbols-outlined">arrow_back</span></a>
     <span class="material-symbols-outlined" style="color:var(--ac)">bookmark</span>
-    <h1 style="font-size:16px;font-weight:800;margin:0;flex:1;color:var(--tx)">Saved Posts</h1>
+    <h1 style="font-size:16px;font-weight:800;margin:0;flex:1;color:var(--tx)">Saved</h1>
   </div>
-  <div class="saved-wrap">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding:0 4px">
-    <div id="saved-count" style="font-size:12px;color:var(--sub);font-weight:700">Loading...</div>
+  <div class="sv-wrap">
+    <div class="sv-tabs">
+      <button class="sv-tab active" id="tab-posts" onclick="switchTab('posts')">
+        <span class="material-symbols-outlined" style="font-size:16px">article</span>Posts
+        <span class="sv-count" id="cnt-posts">—</span>
+      </button>
+      <button class="sv-tab" id="tab-projects" onclick="switchTab('projects')">
+        <span class="material-symbols-outlined" style="font-size:16px">folder_special</span>Projects
+        <span class="sv-count" id="cnt-projects">—</span>
+      </button>
+    </div>
+    <div id="sv-list">
+      <div class="sv-loading"><span class="material-symbols-outlined" style="font-size:28px;animation:spin 1s linear infinite;display:inline-block">progress_activity</span><p style="margin-top:8px">Loading saved items...</p></div>
+    </div>
   </div>
-  <div id="saved-list">
-    <div class="loading-state"><span class="material-symbols-outlined" style="font-size:28px;animation:spin 1s linear infinite">progress_activity</span><p style="margin-top:8px">Loading saved posts...</p></div>
-  </div>
-</div>
 </div>
 
 <script>
 (function(){
   const TK = localStorage.getItem('access_token');
-  if (!TK) { window.location.href = '/login'; return; }
+  if (!TK) { location.href='/login'; return; }
 
   PHSidebar.init('', '../../');
 
-  const API = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? (window.location.port === '3000' ? 'http://localhost:5000' : '')
-    : 'https://projecthive-backend.onrender.com';
+  const H = { Authorization:'Bearer '+TK, 'Content-Type':'application/json' };
+  const API = (location.hostname==='localhost'||location.hostname==='127.0.0.1') ? 'http://localhost:5000' : 'https://projecthive-backend.onrender.com';
 
-  function getBookmarks() {
-    try { return JSON.parse(localStorage.getItem('projecthive_bookmarks') || '[]'); }
-    catch { return []; }
-  }
+  const COLORS = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+  function getColor(s=''){let h=0;for(const c of s)h=c.charCodeAt(0)+((h<<5)-h);return COLORS[Math.abs(h)%COLORS.length];}
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+  function ago(d){if(!d)return'';const s=Math.floor((Date.now()-new Date(d))/1000);if(s<60)return'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';return new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric'});}
 
-  function escapeHtml(s) {
-    const d = document.createElement('div');
-    d.textContent = s || '';
-    return d.innerHTML;
-  }
+  const TYPE_BADGE={achievement:{bg:'rgba(245,158,11,.1)',color:'#f59e0b',icon:'emoji_events',label:'Achievement'},project_update:{bg:'rgba(59,130,246,.1)',color:'#3b82f6',icon:'rocket_launch',label:'Project Update'},looking_for_team:{bg:'rgba(16,185,129,.1)',color:'#10b981',icon:'group_add',label:'Looking for Team'}};
 
-  function formatTimeAgo(date) {
-    const s = Math.floor((Date.now() - new Date(date)) / 1000);
-    if (s < 60) return 'Just now';
-    if (s < 3600) return Math.floor(s/60) + 'm ago';
-    if (s < 86400) return Math.floor(s/3600) + 'h ago';
-    if (s < 604800) return Math.floor(s/86400) + 'd ago';
-    return new Date(date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  }
+  let currentTab='posts', savedPosts=[], savedProjects=[];
 
-  function getInitials(fn, ln) {
-    return ((fn||'')[0]||'') + ((ln||'')[0]||'') || '?';
-  }
-
-  const COLORS = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6','#ef4444','#8b5cf6'];
-  function getColor(id) { let h=0; for(let i=0;i<(id||'').length;i++) h=id.charCodeAt(i)+((h<<5)-h); return COLORS[Math.abs(h)%COLORS.length]; }
-
-  const TYPE_STYLES = {
-    'general':{'bg':'rgba(99,102,241,.08)','color':'#6366f1','icon':'chat_bubble'},
-    'achievement':{'bg':'rgba(245,158,11,.08)','color':'#f59e0b','icon':'emoji_events'},
-    'project_update':{'bg':'rgba(16,185,129,.08)','color':'#10b981','icon':'rocket_launch'},
-    'looking_for_team':{'bg':'rgba(236,72,153,.08)','color':'#ec4899','icon':'group_add'}
+  window.switchTab = function(tab) {
+    currentTab=tab;
+    document.getElementById('tab-posts').className='sv-tab'+(tab==='posts'?' active':'');
+    document.getElementById('tab-projects').className='sv-tab'+(tab==='projects'?' active':'');
+    render();
   };
 
-  function removeBookmark(postId) {
-    let bm = getBookmarks().filter(id => id !== postId);
-    localStorage.setItem('projecthive_bookmarks', JSON.stringify(bm));
-    const card = document.getElementById('saved-' + postId);
-    if (card) { card.style.transform='scale(0.95)'; card.style.opacity='0'; setTimeout(()=>{card.remove(); updateCount();},200); }
-    if (window.PHToast) PHToast.info('Post removed from saved');
-  }
-  window.removeBookmark = removeBookmark;
-
-  function updateCount() {
-    const cards = document.querySelectorAll('.post-card');
-    document.getElementById('saved-count').textContent = cards.length + ' saved post' + (cards.length!==1?'s':'');
-    if (cards.length === 0) showEmpty();
-  }
-
-  function showEmpty() {
-    document.getElementById('saved-list').innerHTML = `
-      <div class="empty-state">
-        <div class="ic"><span class="material-symbols-outlined">bookmark_border</span></div>
-        <h2>No saved posts yet</h2>
-        <p>When you save posts from your feed, they'll appear here for easy access.</p>
-        <a href="/feed"><span class="material-symbols-outlined" style="font-size:16px">arrow_back</span> Go to Feed</a>
-      </div>`;
-  }
-
-  async function loadSavedPosts() {
-    const bookmarks = getBookmarks();
-    if (bookmarks.length === 0) { showEmpty(); return; }
-
-    try {
-      const res = await fetch(`${API}/api/posts/feed?limit=100`, { headers: { Authorization: 'Bearer ' + TK } });
-      if (!res.ok) throw new Error('Failed');
-      const data = await res.json();
-      const posts = (data.posts || data || []).filter(p => bookmarks.includes(p.id));
-
-      if (posts.length === 0) { showEmpty(); return; }
-
-      document.getElementById('saved-count').textContent = posts.length + ' saved post' + (posts.length!==1?'s':'');
-
-      let html = '';
-      for (const p of posts) {
-        const a = p.author || {};
-        const name = escapeHtml([a.first_name, a.last_name].filter(Boolean).join(' ') || 'Unknown');
-        const initials = getInitials(a.first_name, a.last_name);
-        const color = a.avatar_color || getColor(a.id || '');
-        const ts = TYPE_STYLES[p.type] || TYPE_STYLES['general'];
-
-        const avatarHtml = a.avatar
-          ? `<div class="post-avatar"><img src="${a.avatar}" alt="${name}"></div>`
-          : `<div class="post-avatar" style="background:${color}">${initials}</div>`;
-
-        const contentText = escapeHtml(p.content || '').replace(/#(\w+)/g, '<a href="/feed?tag=$1">#$1</a>');
-
-        const tagHtml = p.type ? `<span class="tag" style="background:${ts.bg};color:${ts.color}"><span class="material-symbols-outlined" style="font-size:11px;vertical-align:middle">${ts.icon}</span> ${(p.type||'').replace(/_/g,' ')}</span>` : '';
-
-        html += `
-        <div class="post-card" id="saved-${p.id}" style="transition:transform .2s,opacity .2s">
-          <div class="post-header">
-            ${avatarHtml}
-            <div class="post-meta">
-              <div class="name" onclick="window.location.href='/feed'">${name}</div>
-              <div class="info">${escapeHtml(a.university||'')} · ${formatTimeAgo(p.createdAt||p.created_at)}</div>
-            </div>
-          </div>
-          ${tagHtml}
-          <div class="post-content">${contentText}</div>
-          <div class="post-actions">
-            <button onclick="window.location.href='/feed'"><span class="material-symbols-outlined" style="font-size:16px">open_in_new</span> View in Feed</button>
-            <button class="remove" onclick="removeBookmark('${p.id}')"><span class="material-symbols-outlined" style="font-size:16px">bookmark_remove</span> Unsave</button>
-          </div>
-        </div>`;
-      }
-      document.getElementById('saved-list').innerHTML = html;
-    } catch (err) {
-      document.getElementById('saved-list').innerHTML = `
-        <div class="empty-state">
-          <div class="ic"><span class="material-symbols-outlined">error_outline</span></div>
-          <h2>Something went wrong</h2>
-          <p>Could not load your saved posts. Please try again.</p>
-          <a href="/saved"><span class="material-symbols-outlined" style="font-size:16px">refresh</span> Retry</a>
-        </div>`;
+  function render() {
+    const el=document.getElementById('sv-list');
+    if (currentTab==='posts') {
+      if (!savedPosts.length){el.innerHTML=emptyHtml('bookmark_border','No saved posts yet','Save posts from your feed — click the bookmark icon on any post.','/feed','Go to Feed');return;}
+      el.innerHTML=savedPosts.map(p=>postCard(p)).join('');
+    } else {
+      if (!savedProjects.length){el.innerHTML=emptyHtml('folder_off','No saved projects yet','Explore and save projects that interest you.','/showcase','Explore Projects');return;}
+      el.innerHTML=savedProjects.map(p=>projectCard(p)).join('');
     }
   }
 
-  loadSavedPosts();
+  function emptyHtml(icon,title,desc,href,linkText) {
+    return `<div class="sv-empty"><div class="sv-eic"><span class="material-symbols-outlined">${icon}</span></div><h2>${title}</h2><p>${desc}</p><a href="${href}"><span class="material-symbols-outlined" style="font-size:16px">arrow_forward</span>${linkText}</a></div>`;
+  }
+
+  function postCard(p) {
+    const a=p.author||{};
+    const fn=a.firstName||a.first_name||'';const ln=a.lastName||a.last_name||'';
+    const name=esc((fn+' '+ln).trim()||'User');
+    const color=a.avatarColor||a.avatar_color||getColor(a.id||'');
+    const initials=((fn[0]||'').toUpperCase()+(ln[0]||'').toUpperCase())||'?';
+    const badge=TYPE_BADGE[p.postType];
+    const totalReact=Object.values(p.reactions||{}).reduce((s,v)=>s+v,0);
+    const EMOJIS={like:'👍',celebrate:'🎉',insightful:'💡',support:'🤝'};
+    return `<div class="sv-card" id="sv-post-${p.id}">
+      <div class="sv-card-head">
+        <div class="sv-avatar" style="background:${color}">${a.avatar?`<img src="${a.avatar}" alt="${name}">`:(initials)}</div>
+        <div class="sv-meta">
+          <div class="sv-name" onclick="location.href='/profile?id=${a.id||a._id}'">${name}</div>
+          <div class="sv-info">${esc(a.university||'')}${a.university?' · ':''}${ago(p.createdAt)}</div>
+        </div>
+      </div>
+      ${badge?`<div class="sv-badge" style="background:${badge.bg};color:${badge.color}"><span class="material-symbols-outlined" style="font-size:12px">${badge.icon}</span>${badge.label}</div>`:''}
+      <div class="sv-body">${esc(p.content||'')}</div>
+      ${totalReact?`<div class="sv-reactions">${Object.entries(p.reactions||{}).map(([t,c])=>EMOJIS[t]?`<span>${EMOJIS[t]} ${c}</span>`:'').join('')}</div>`:''}
+      <div class="sv-foot">
+        <span style="font-size:12px;color:var(--sub)">💬 ${p.commentsCount||0} comment${(p.commentsCount||0)!==1?'s':''}</span>
+        <div class="sv-foot-actions">
+          <button class="sv-btn sv-btn-ghost" onclick="location.href='/feed?post=${p.id}'"><span class="material-symbols-outlined" style="font-size:15px">open_in_new</span>View</button>
+          <button class="sv-btn sv-btn-danger" onclick="unsavePost('${p.id}')"><span class="material-symbols-outlined" style="font-size:15px">bookmark_remove</span>Unsave</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function projectCard(p) {
+    const title=esc(p.title||'Untitled');
+    return `<div class="sv-card" id="sv-proj-${p.id}">
+      ${p.image_url?`<img src="${p.image_url}" class="sv-proj-img" alt="${title}">` :''}
+      <div class="sv-proj-title">${title}</div>
+      <div class="sv-body">${esc(p.description||'No description provided.')}</div>
+      <div class="sv-foot">
+        <span style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px"><span class="material-symbols-outlined" style="font-size:14px">category</span>${esc(p.category||'Project')}</span>
+        <div class="sv-foot-actions">
+          <button class="sv-btn sv-btn-ghost" onclick="location.href='/showcase/project?id=${p.id}'"><span class="material-symbols-outlined" style="font-size:15px">open_in_new</span>View</button>
+          <button class="sv-btn sv-btn-danger" onclick="unsaveProject('${p.id}')"><span class="material-symbols-outlined" style="font-size:15px">bookmark_remove</span>Unsave</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  window.unsavePost = async function(postId) {
+    try {
+      const r=await fetch(API+`/api/posts/${postId}/save`,{method:'POST',headers:H});
+      if (r.ok) {
+        savedPosts=savedPosts.filter(p=>p.id!==postId);
+        document.getElementById('cnt-posts').textContent=savedPosts.length;
+        const card=document.getElementById('sv-post-'+postId);
+        if(card){card.style.opacity='0';card.style.transform='scale(0.95)';setTimeout(()=>{card.remove();if(!savedPosts.length&&currentTab==='posts')render();},220);}
+        PHToast?.info('Post unsaved');
+      }
+    } catch(e){PHToast?.error('Failed');}
+  };
+
+  window.unsaveProject = async function(projId) {
+    try {
+      const r=await fetch(API+`/api/projects/${projId}/save`,{method:'POST',headers:H});
+      if (r.ok) {
+        savedProjects=savedProjects.filter(p=>p.id!==projId);
+        document.getElementById('cnt-projects').textContent=savedProjects.length;
+        const card=document.getElementById('sv-proj-'+projId);
+        if(card){card.style.opacity='0';card.style.transform='scale(0.95)';setTimeout(()=>{card.remove();if(!savedProjects.length&&currentTab==='projects')render();},220);}
+        PHToast?.info('Project unsaved');
+      }
+    } catch(e){PHToast?.error('Failed');}
+  };
+
+  async function load() {
+    try {
+      const [pr,qr]=await Promise.allSettled([
+        fetch(API+'/api/posts/saved',{headers:H}).then(r=>r.json()),
+        fetch(API+'/api/projects/saved',{headers:H}).then(r=>r.json()),
+      ]);
+      if(pr.status==='fulfilled'){savedPosts=pr.value.posts||[];document.getElementById('cnt-posts').textContent=savedPosts.length;}
+      if(qr.status==='fulfilled'){savedProjects=qr.value.projects||[];document.getElementById('cnt-projects').textContent=savedProjects.length;}
+    } catch(e){}
+    render();
+  }
+
+  load();
 })();
 </script>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-<script src="/assets/js/core/info-modal.js"></script></body>
+<script src="/assets/js/core/info-modal.js"></script>
+</body>
 </html>

@@ -471,3 +471,163 @@ export async function getMe(req, res, next) {
     next(error);
   }
 }
+
+// ─── GOOGLE OAUTH — INITIATE ──────────────────────────────────────────────────
+// Returns the Supabase Google OAuth URL for the frontend to redirect to
+export async function googleInitiate(req, res, next) {
+  try {
+    const APP_URL = process.env.NODE_ENV === 'production'
+      ? process.env.APP_URL_PROD
+      : (process.env.APP_URL || 'http://localhost:5000');
+
+    const redirectTo = `${APP_URL}/auth/callback`;
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        scopes: 'email profile',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account',
+        },
+      },
+    });
+
+    if (error || !data?.url) {
+      console.error('[ProjectHive] Google OAuth initiate error:', error);
+      return res.status(500).json({ error: 'Failed to generate Google OAuth URL.' });
+    }
+
+    res.json({ url: data.url });
+  } catch (error) {
+    console.error('[ProjectHive] Google OAuth initiate error:', error);
+    next(error);
+  }
+}
+
+// ─── GOOGLE OAUTH — CALLBACK ──────────────────────────────────────────────────
+// Called by the frontend /auth/callback page with the Supabase session tokens
+export async function googleCallback(req, res, next) {
+  try {
+    const { access_token, refresh_token } = req.body;
+
+    if (!access_token) {
+      return res.status(400).json({ error: 'Missing Supabase access token.' });
+    }
+
+    // Verify the Supabase session and extract user info
+    const { data: { user: sbUser }, error: verifyError } = await supabaseAdmin.auth.getUser(access_token);
+
+    if (verifyError || !sbUser) {
+      console.error('[ProjectHive] Supabase token verify error:', verifyError);
+      return res.status(401).json({ error: 'Invalid or expired Google session.' });
+    }
+
+    const email = sbUser.email?.toLowerCase();
+    const googleId = sbUser.id; // Supabase auth user ID
+    const fullName = sbUser.user_metadata?.full_name || '';
+    const avatarUrl = sbUser.user_metadata?.avatar_url || null;
+    const firstName = sbUser.user_metadata?.given_name || fullName.split(' ')[0] || 'User';
+    const lastName  = sbUser.user_metadata?.family_name || fullName.split(' ').slice(1).join(' ') || '';
+
+    if (!email) {
+      return res.status(400).json({ error: 'Could not retrieve email from Google account.' });
+    }
+
+    // Check if user already exists (by email OR google_id)
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .or(`email.eq.${email},google_id.eq.${googleId}`)
+      .single();
+
+    let platformUser;
+
+    if (existingUser) {
+      // Update google_id & mark verified if not already
+      const updates = { google_id: googleId, is_verified: true, auth_provider: 'google' };
+      if (avatarUrl && !existingUser.avatar) updates.avatar = avatarUrl;
+
+      const { data: updated } = await supabaseAdmin
+        .from('users')
+        .update(updates)
+        .eq('id', existingUser.id)
+        .select()
+        .single();
+
+      platformUser = updated || existingUser;
+      console.log('[ProjectHive] 🔑 Google OAuth — existing user signed in:', email);
+    } else {
+      // New user — create account (no password_hash for OAuth users)
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          email,
+          google_id: googleId,
+          avatar: avatarUrl,
+          is_verified: true,
+          auth_provider: 'google',
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('[ProjectHive] Google OAuth create user error:', createError);
+        return res.status(500).json({ error: 'Failed to create account.' });
+      }
+
+      platformUser = newUser;
+      console.log('[ProjectHive] ✅ Google OAuth — new user created:', email);
+    }
+
+    // Check ban
+    if (platformUser.is_banned) {
+      return res.status(403).json({ error: 'Your account has been suspended.' });
+    }
+
+    // Auto-promote admin
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.toLowerCase();
+    if (ADMIN_EMAIL && platformUser.email === ADMIN_EMAIL && platformUser.role !== 'admin') {
+      await supabaseAdmin.from('users').update({ role: 'admin' }).eq('id', platformUser.id);
+      platformUser.role = 'admin';
+    }
+
+    // Generate platform JWT (same as regular login)
+    const { accessToken, refreshToken: platformRefresh } = generateTokenPair(
+      platformUser.id,
+      platformUser.email,
+      platformUser.role
+    );
+
+    // Store refresh token
+    const tokens = [...(platformUser.refresh_tokens || []), platformRefresh].slice(-5);
+    await supabaseAdmin
+      .from('users')
+      .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
+      .eq('id', platformUser.id);
+
+    res.json({
+      message: 'Google sign-in successful',
+      accessToken,
+      refreshToken: platformRefresh,
+      user: {
+        id: platformUser.id,
+        firstName: platformUser.first_name,
+        lastName: platformUser.last_name,
+        email: platformUser.email,
+        university: platformUser.university || '',
+        avatar: platformUser.avatar,
+        avatarColor: platformUser.avatar_color,
+        role: platformUser.role || 'user',
+        isVerified: true,
+      },
+    });
+  } catch (error) {
+    console.error('[ProjectHive] Google OAuth callback error:', error);
+    next(error);
+  }
+}
+

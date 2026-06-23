@@ -496,3 +496,36 @@ export async function reactToMessage(req, res, next) {
     res.json({ ok: true, action: 'added' });
   } catch (err) { next(err); }
 }
+
+export async function updateMessage(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const userId = req.user.id;
+
+    const { data: msg } = await supabaseAdmin.from('messages').select('sender_id, room_id').eq('id', id).maybeSingle();
+    if (!msg) return res.status(404).json({ error: 'Message not found' });
+    if (msg.sender_id !== userId) return res.status(403).json({ error: 'Unauthorized to edit this message' });
+
+    // Try updating content with is_edited: true
+    const { data: updatedMsg, error } = await supabaseAdmin
+      .from('messages')
+      .update({ content, is_edited: true })
+      .eq('id', id)
+      .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
+      .maybeSingle();
+
+    if (error) {
+      // Fallback: update content only
+      const { data: fallbackMsg, error: err2 } = await supabaseAdmin
+        .from('messages')
+        .update({ content })
+        .eq('id', id)
+        .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
+        .maybeSingle();
+      if (err2) throw err2;
+      return res.json({ ok: true, message: fallbackMsg });
+    }
+    res.json({ ok: true, message: updatedMsg });
+  } catch (err) { next(err); }
+}
