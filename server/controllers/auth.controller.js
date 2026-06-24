@@ -493,6 +493,7 @@ export async function googleInitiate(req, res, next) {
       options: {
         redirectTo,
         scopes: 'email profile',
+        skipBrowserRedirect: true,
         queryParams: {
           access_type: 'offline',
           prompt: 'select_account',
@@ -661,4 +662,167 @@ export async function googleCallback(req, res, next) {
   }
 }
 
+// ─── GOOGLE OAUTH — CODE EXCHANGE ─────────────────────────────────────────────
+// Exchanges PKCE authorization code for Supabase session on the server side,
+// then processes the user (find/create) and returns a platform JWT.
+// This is needed because the PKCE code_verifier is stored server-side.
+export async function googleCodeExchange(req, res, next) {
+  try {
+    const { code } = req.body;
 
+    if (!code) {
+      return res.status(400).json({ error: 'Missing authorization code.' });
+    }
+
+    console.log('[ProjectHive] 🔑 Google OAuth — exchanging PKCE code server-side');
+
+    // Exchange the code for a Supabase session using the server's Supabase client
+    const { data: sessionData, error: exchErr } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (exchErr || !sessionData?.session) {
+      console.error('[ProjectHive] PKCE exchange error:', exchErr?.message || 'No session returned');
+      
+      // Fallback: Try using Supabase REST API directly
+      try {
+        const tokenRes = await fetch(`${process.env.SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+          },
+          body: JSON.stringify({
+            auth_code: code,
+            code_verifier: '' // Empty — Supabase will use its stored verifier
+          })
+        });
+
+        if (!tokenRes.ok) {
+          const errText = await tokenRes.text();
+          console.error('[ProjectHive] PKCE REST fallback failed:', tokenRes.status, errText);
+          return res.status(401).json({ error: 'Could not exchange authorization code. Please try again.' });
+        }
+
+        const tokenData = await tokenRes.json();
+        if (tokenData.access_token) {
+          // Got token via REST, redirect to the normal callback flow
+          req.body = { access_token: tokenData.access_token, refresh_token: tokenData.refresh_token };
+          return googleCallback(req, res, next);
+        }
+      } catch (restErr) {
+        console.error('[ProjectHive] PKCE REST error:', restErr.message);
+      }
+
+      return res.status(401).json({ error: 'Failed to exchange code: ' + (exchErr?.message || 'Unknown error') });
+    }
+
+    // We have a valid Supabase session — extract user info
+    const sbUser = sessionData.user || sessionData.session?.user;
+    if (!sbUser) {
+      return res.status(401).json({ error: 'No user data in session.' });
+    }
+
+    const email = sbUser.email?.toLowerCase();
+    const googleId = sbUser.id;
+    const fullName = sbUser.user_metadata?.full_name || '';
+    const avatarUrl = sbUser.user_metadata?.avatar_url || null;
+    const firstName = sbUser.user_metadata?.given_name || fullName.split(' ')[0] || 'User';
+    const lastName  = sbUser.user_metadata?.family_name || fullName.split(' ').slice(1).join(' ') || '';
+
+    if (!email) {
+      return res.status(400).json({ error: 'Could not retrieve email from Google account.' });
+    }
+
+    // Check if user already exists (by email OR google_id)
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .or(`email.eq.${email},google_id.eq.${googleId}`)
+      .single();
+
+    let platformUser;
+
+    if (existingUser) {
+      const updates = { google_id: googleId, is_verified: true, auth_provider: 'google' };
+      if (avatarUrl && !existingUser.avatar) updates.avatar = avatarUrl;
+
+      const { data: updated } = await supabaseAdmin
+        .from('users')
+        .update(updates)
+        .eq('id', existingUser.id)
+        .select()
+        .single();
+
+      platformUser = updated || existingUser;
+      console.log('[ProjectHive] 🔑 Google OAuth (code) — existing user:', email);
+    } else {
+      const { data: newUser, error: createError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          email,
+          google_id: googleId,
+          avatar: avatarUrl,
+          is_verified: true,
+          auth_provider: 'google',
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        console.error('[ProjectHive] Google OAuth (code) create user error:', createError);
+        return res.status(500).json({ error: 'Failed to create account.' });
+      }
+
+      platformUser = newUser;
+      console.log('[ProjectHive] ✅ Google OAuth (code) — new user created:', email);
+    }
+
+    if (platformUser.is_banned) {
+      return res.status(403).json({ error: 'Your account has been suspended.' });
+    }
+
+    // Auto-promote admin
+    const ADMIN_EMAIL = process.env.ADMIN_EMAIL?.toLowerCase();
+    if (ADMIN_EMAIL && platformUser.email === ADMIN_EMAIL && platformUser.role !== 'admin') {
+      await supabaseAdmin.from('users').update({ role: 'admin' }).eq('id', platformUser.id);
+      platformUser.role = 'admin';
+    }
+
+    // Generate platform JWT
+    const { accessToken, refreshToken: platformRefresh } = generateTokenPair(
+      platformUser.id,
+      platformUser.email,
+      platformUser.role
+    );
+
+    // Store refresh token
+    const tokens = [...(platformUser.refresh_tokens || []), platformRefresh].slice(-5);
+    await supabaseAdmin
+      .from('users')
+      .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
+      .eq('id', platformUser.id);
+
+    console.log('[ProjectHive] ✅ Google OAuth (code) — sign-in complete:', email);
+
+    res.json({
+      message: 'Google sign-in successful',
+      accessToken,
+      refreshToken: platformRefresh,
+      user: {
+        id: platformUser.id,
+        firstName: platformUser.first_name,
+        lastName: platformUser.last_name,
+        email: platformUser.email,
+        university: platformUser.university || '',
+        avatar: platformUser.avatar,
+        avatarColor: platformUser.avatar_color,
+        role: platformUser.role || 'user',
+        isVerified: true,
+      },
+    });
+  } catch (error) {
+    console.error('[ProjectHive] Google OAuth code exchange error:', error.message, error.stack);
+    res.status(500).json({ error: error.message || 'Internal server error' });
+  }
+}

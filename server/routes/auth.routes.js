@@ -16,8 +16,9 @@ router.get('/verify-email',       authController.verifyEmail);        // ?token=
 router.post('/resend-verification', authController.resendVerification);
 
 // ─── Google OAuth ──────────────────────────────────────────────────────────────
-router.get('/google',          authController.googleInitiate);  // → returns OAuth URL
-router.post('/google/callback', authController.googleCallback); // ← frontend posts Supabase session
+router.get('/google',          authController.googleInitiate);       // → returns OAuth URL
+router.post('/google/callback', authController.googleCallback);     // ← frontend posts Supabase session
+router.post('/google/code',     authController.googleCodeExchange); // ← frontend posts PKCE code for server-side exchange
 
 // Protected routes
 router.post('/logout', authMiddleware, authController.logout);

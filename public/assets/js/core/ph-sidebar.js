@@ -296,11 +296,36 @@ const PHSidebar = (() => {
   }
 
   function init(active, base = '../../') {
-    // Theme init first (idempotent)
+    // Theme init first (idempotent) — supports 'system', 'dark', 'light'
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && matchMedia('(prefers-color-scheme:dark)').matches)) {
+    if (savedTheme === 'dark') {
       document.documentElement.classList.add('dark');
+    } else if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      // 'system' or null — follow OS preference
+      if (matchMedia('(prefers-color-scheme:dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
     }
+
+    // Listen for real-time OS theme changes (when in 'system' mode)
+    try {
+      const mq = matchMedia('(prefers-color-scheme:dark)');
+      mq.addEventListener('change', (e) => {
+        const current = localStorage.getItem('theme');
+        if (!current || current === 'system') {
+          if (e.matches) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          syncThemeBtn();
+        }
+      });
+    } catch(_) {}
 
     // Collapse init
     const isCollapsed = localStorage.getItem('ph-sidebar-collapsed') === 'true';
@@ -802,7 +827,7 @@ const PHSidebar = (() => {
         <a href="/saved" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">bookmark</span>Saved
         </a>
-        <button id="ph-ps-theme" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600;font-family:inherit;text-align:left">
+        <button id="ph-ps-theme" data-theme-wired="1" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600;font-family:inherit;text-align:left;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none">
           <span class="material-symbols-outlined" id="ph-ps-theme-icon" style="font-size:20px;color:var(--sub,#64748b)">${themeIcon}</span>
           <span id="ph-ps-theme-label">${themeLabel}</span>
         </button>
@@ -823,14 +848,23 @@ const PHSidebar = (() => {
     });
 
     // Wire theme toggle
-    document.getElementById('ph-ps-theme')?.addEventListener('click', () => {
-      toggleTheme();
-      const isDarkNow = document.documentElement.classList.contains('dark');
-      const icon = document.getElementById('ph-ps-theme-icon');
-      const label = document.getElementById('ph-ps-theme-label');
-      if (icon) icon.textContent = isDarkNow ? 'light_mode' : 'dark_mode';
-      if (label) label.textContent = isDarkNow ? 'Light Mode' : 'Dark Mode';
-    });
+    const psThemeBtn = document.getElementById('ph-ps-theme');
+    if (psThemeBtn) {
+      psThemeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleTheme();
+        // Update icon and label to reflect new state
+        const isDarkNow = document.documentElement.classList.contains('dark');
+        const mode = localStorage.getItem('theme') || 'system';
+        const icon = document.getElementById('ph-ps-theme-icon');
+        const label = document.getElementById('ph-ps-theme-label');
+        if (icon) icon.textContent = mode === 'system' ? 'routine' : (isDarkNow ? 'light_mode' : 'dark_mode');
+        if (label) {
+          if (mode === 'system') label.textContent = isDarkNow ? 'System (Dark)' : 'System (Light)';
+          else label.textContent = isDarkNow ? 'Light Mode' : 'Dark Mode';
+        }
+      });
+    }
 
     // Wire logout
     document.getElementById('ph-ps-logout')?.addEventListener('click', () => {
@@ -934,10 +968,14 @@ const PHSidebar = (() => {
 
   function syncThemeBtn() {
     const isDark = document.documentElement.classList.contains('dark');
+    const mode = localStorage.getItem('theme') || 'system';
 
-    // Sidebar theme label
+    // Sidebar theme label — show mode info
     const label = document.getElementById('ph-sb-theme-label');
-    if (label) label.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+    if (label) {
+      if (mode === 'system') label.textContent = isDark ? 'Dark (System)' : 'Light (System)';
+      else label.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+    }
 
     // Update ALL sun/moon SVG pairs (sidebar + topbar + floating)
     document.querySelectorAll('.ph-theme-svg-sun').forEach(el => el.style.display = isDark ? 'none' : 'block');
@@ -1473,8 +1511,35 @@ const PHSidebar = (() => {
   }
 
   function toggleTheme() {
-    const dark = document.documentElement.classList.toggle('dark');
-    localStorage.setItem('theme', dark ? 'dark' : 'light');
+    // 3-state cycle: system → dark → light → system
+    const current = localStorage.getItem('theme') || 'system';
+    let next;
+    if (current === 'system') {
+      // Currently system → force dark
+      next = 'dark';
+    } else if (current === 'dark') {
+      // Currently dark → force light
+      next = 'light';
+    } else {
+      // Currently light → back to system
+      next = 'system';
+    }
+
+    if (next === 'system') {
+      localStorage.removeItem('theme');
+      // Apply OS preference
+      if (matchMedia('(prefers-color-scheme:dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } else if (next === 'dark') {
+      localStorage.setItem('theme', 'dark');
+      document.documentElement.classList.add('dark');
+    } else {
+      localStorage.setItem('theme', 'light');
+      document.documentElement.classList.remove('dark');
+    }
     syncThemeBtn();
   }
 

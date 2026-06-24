@@ -14,10 +14,12 @@ if (!supabaseAnonKey) {
 }
 
 // Public client (for OAuth URL generation — server-safe config)
+// Uses implicit flow because server has no persistent session to store PKCE code_verifier
 export const supabase = createClient(supabaseUrl, supabaseAnonKey || supabaseServiceKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
+    flowType: 'implicit',
   },
 });
 

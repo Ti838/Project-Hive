@@ -31,8 +31,11 @@ function sanitizeObject(obj) {
       // Don't sanitize password fields (they might contain special chars)
       if (key === 'password' || key === 'currentPassword' || key === 'newPassword' || key === 'password_hash') {
         cleaned[key] = value;
-      } else if (key === 'imageBase64' || key === 'mimeType') {
-        // Don't sanitize base64 image data
+      } else if (key === 'imageBase64' || key === 'mimeType' || key === 'avatar' || key === 'bannerImage') {
+        // Don't sanitize base64 image data (profile photos, banners)
+        cleaned[key] = value;
+      } else if (key === 'content' && typeof value === 'string' && value.trimStart().startsWith('{')) {
+        // Don't sanitize message content that is JSON media payload (base64 images/voice)
         cleaned[key] = value;
       } else {
         cleaned[key] = sanitizeObject(value);

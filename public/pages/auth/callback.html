@@ -92,22 +92,30 @@
     let access_token  = params.get('access_token');
     let refresh_token = params.get('refresh_token');
 
-    // If we have a code (PKCE flow), exchange it via Supabase JS client
+    // If we have a code (PKCE flow), send it to the server for exchange
+    // The server initiated the OAuth flow, so only it has the code_verifier
     if (code && !access_token) {
       try {
-        // Dynamically load Supabase JS to exchange code for session
-        const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-        const sb = createClient(
-          'https://iekfvgjxkmgduxdvkuxf.supabase.co',
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlla2Z2Z2p4a21nZHV4ZHZrdXhmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzMjI2MjEsImV4cCI6MjA5Njg5ODYyMX0.s73x7IQTdae7TPD0AoJmH9m6Ip0SKQPV5Ozr9v5nACg'
-        );
-        const { data: sessionData, error: exchErr } = await sb.auth.exchangeCodeForSession(code);
-        if (exchErr || !sessionData?.session) {
-          showError('Could not exchange OAuth code: ' + (exchErr?.message || 'Unknown error'));
+        const codeRes = await fetch(BACKEND + '/auth/google/code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code })
+        });
+        const codeData = await codeRes.json();
+        if (codeRes.ok && codeData.accessToken) {
+          // Server exchanged code and returned platform JWT directly
+          localStorage.setItem('access_token', codeData.accessToken);
+          if (codeData.refreshToken) localStorage.setItem('refresh_token', codeData.refreshToken);
+          if (codeData.user) localStorage.setItem('user_data', JSON.stringify(codeData.user));
+          document.getElementById('title').textContent = 'Welcome back!';
+          document.getElementById('msg').textContent = 'Signed in as ' + (codeData.user?.email || '') + '. Redirecting…';
+          document.getElementById('spinner').style.borderTopColor = '#10b981';
+          setTimeout(() => window.location.href = '/dashboard', 1000);
+          return;
+        } else {
+          showError(codeData.error || 'Code exchange failed.');
           return;
         }
-        access_token  = sessionData.session.access_token;
-        refresh_token = sessionData.session.refresh_token;
       } catch(e) {
         showError('Code exchange failed: ' + e.message);
         return;

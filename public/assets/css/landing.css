@@ -116,6 +116,7 @@ a { color: inherit; text-decoration: none; }
   transition: all .2s;
 }
 .ln-theme-btn:hover { border-color: var(--ac); background: var(--ac-soft); }
+#mobile-theme-btn { display: none; } /* shown on mobile via media query */
 
 /* ═══ HERO ═══ */
 .ln-hero {
@@ -515,6 +516,7 @@ a { color: inherit; text-decoration: none; }
 @media(max-width: 768px) {
   .ln-nav-links { display: none; }
   .ln-hamburger { display: flex; }
+  #mobile-theme-btn { display: flex !important; }
   .ln-hero { padding-top: calc(var(--nav-h) + 40px); padding-bottom: 48px; }
   .ln-hero-grid { padding: 0 20px; }
   .ln-hero-stats { flex-wrap: wrap; gap: 16px; justify-content: center; }

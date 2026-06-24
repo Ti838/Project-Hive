@@ -273,6 +273,7 @@ body {
 
 /* ─── Animations ─── */
 @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 @keyframes spin   { to { transform: rotate(360deg); } }
 .anim-fadeup { animation: fadeUp .3s ease forwards; }
 .anim-spin   { animation: spin .7s linear infinite; }

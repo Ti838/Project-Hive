@@ -31,9 +31,17 @@ tailwind.config = {
 /* Sprint 2 #19 — Auth page mobile touch targets */
 @media(max-width:768px){
   #theme-btn{min-width:44px!important;min-height:44px!important;width:44px!important;height:44px!important}
-  nav a[href="/register"],nav a[href="/login"]{min-height:44px!important;padding:10px 20px!important;display:inline-flex!important;align-items:center!important}
+  nav a[href="/register"],nav a[href="/login"]{min-height:44px!important;padding:10px 16px!important;display:inline-flex!important;align-items:center!important;font-size:12px!important}
   button[type="submit"]{min-height:48px!important;font-size:15px!important}
   input[type="email"],input[type="password"],input[type="text"]{font-size:16px!important;min-height:44px!important}
+  /* Fix navbar cramping on mobile */
+  nav{padding-left:14px!important;padding-right:14px!important;gap:8px!important}
+  nav .text-lg{font-size:14px!important}
+  nav a img.w-9{display:none!important}/* hide logo image on very small screens */
+}
+@media(max-width:380px){
+  nav a[href="/register"],nav a[href="/login"]{padding:8px 12px!important;font-size:11px!important}
+  nav .gradient-text{font-size:13px!important}
 }
 </style>
 </head>
@@ -45,16 +53,16 @@ tailwind.config = {
 
 <!-- Nav -->
 <nav class="fixed top-0 left-0 right-0 z-50 bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-700 px-6 h-[60px] flex items-center justify-between transition-colors">
-  <a href="/" class="flex items-center gap-2.5 no-underline">
-    <img src="/favicon.png?v=2" alt="ProjectHive" class="w-9 h-9 rounded-[9px] object-contain" onerror="this.style.display='none'">
-    <span class="text-lg font-extrabold gradient-text">ProjectHive</span>
+  <a href="/" class="flex items-center gap-2.5 no-underline shrink-0 min-w-0">
+    <img src="/favicon.png?v=2" alt="ProjectHive" class="w-9 h-9 rounded-[9px] object-contain shrink-0" onerror="this.style.display='none'">
+    <span class="text-lg font-extrabold gradient-text whitespace-nowrap">ProjectHive</span>
   </a>
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-2 shrink-0">
     <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme"
-      class="w-9 h-9 rounded-[9px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 cursor-pointer flex items-center justify-center text-slate-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 transition-all">
+      class="w-9 h-9 rounded-[9px] border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 cursor-pointer flex items-center justify-center text-slate-500 dark:text-slate-400 hover:border-indigo-500 hover:text-indigo-500 transition-all shrink-0">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="theme-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
     </button>
-    <a href="/register" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13.5px] font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/40 transition-all no-underline">Create Account</a>
+    <a href="/register" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13.5px] font-bold bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/30 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-indigo-500/40 transition-all no-underline whitespace-nowrap shrink-0">Create Account</a>
   </div>
 </nav>
 
@@ -110,8 +118,8 @@ tailwind.config = {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-40 pointer-events-none z-10"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <input id="password" type="password" placeholder="Enter your password" required autocomplete="current-password"
             class="w-full pl-10 pr-11 py-[11px] border-[1.5px] border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-base font-sans outline-none focus:border-indigo-500 focus:ring-[3px] focus:ring-indigo-500/10 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500">
-          <button type="button" onclick="togglePw()" class="absolute right-2.5 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-slate-400 p-1.5 hover:text-indigo-500 transition-colors z-20 flex items-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <button type="button" id="toggle-pw-btn" class="absolute right-1 top-1/2 -translate-y-1/2 bg-transparent border-none cursor-pointer text-slate-400 hover:text-indigo-500 transition-colors z-20 flex items-center justify-center" style="width:44px;height:44px;-webkit-tap-highlight-color:transparent;touch-action:manipulation">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="eye-icon"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
       </div>
@@ -165,17 +173,52 @@ async function signInWithGoogle(){
 
 
 
+const sunSvg='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+const moonSvg='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+const sysSvg='<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>';
+
 function toggleTheme(){
-  const dark=document.documentElement.classList.toggle('dark');
-  localStorage.setItem('theme',dark?'dark':'light');
-  updateThemeIcon(dark);
+  // 3-state: system → dark → light → system
+  const cur=localStorage.getItem('theme')||'system';
+  let next;
+  if(cur==='system') next='dark';
+  else if(cur==='dark') next='light';
+  else next='system';
+
+  if(next==='system'){
+    localStorage.removeItem('theme');
+    if(matchMedia('(prefers-color-scheme:dark)').matches) document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  } else if(next==='dark'){
+    localStorage.setItem('theme','dark');
+    document.documentElement.classList.add('dark');
+  } else {
+    localStorage.setItem('theme','light');
+    document.documentElement.classList.remove('dark');
+  }
+  updateThemeIcon();
 }
-function updateThemeIcon(dark){
+function updateThemeIcon(){
   const i=document.getElementById('theme-icon');
-  if(dark){i.innerHTML='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';}
-  else{i.innerHTML='<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';}
+  if(!i)return;
+  const mode=localStorage.getItem('theme')||'system';
+  const isDark=document.documentElement.classList.contains('dark');
+  if(mode==='system') i.innerHTML=sysSvg;
+  else if(isDark) i.innerHTML=sunSvg;
+  else i.innerHTML=moonSvg;
 }
-updateThemeIcon(document.documentElement.classList.contains('dark'));
+updateThemeIcon();
+
+// Listen for OS theme changes in real-time (when in system mode)
+try{
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',function(e){
+    if(!localStorage.getItem('theme')){
+      if(e.matches) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+      updateThemeIcon();
+    }
+  });
+}catch(_){}
 
 function togglePw(){
   const inp=document.getElementById('password');
@@ -185,6 +228,22 @@ function togglePw(){
     ?'<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>'
     :'<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
 }
+// Wire password toggle via addEventListener (more reliable on mobile than inline onclick)
+document.addEventListener('DOMContentLoaded', function(){
+  const pwBtn=document.getElementById('toggle-pw-btn');
+  if(pwBtn){
+    let lastPwToggle=0;
+    function handlePwToggle(e){
+      if(e){e.preventDefault();e.stopPropagation();}
+      const now=Date.now();
+      if(now-lastPwToggle<300)return;
+      lastPwToggle=now;
+      togglePw();
+    }
+    pwBtn.addEventListener('click', handlePwToggle);
+    pwBtn.addEventListener('touchend', handlePwToggle);
+  }
+});
 
 function showAlert(msg,type='err'){
   const el=document.getElementById('alert');

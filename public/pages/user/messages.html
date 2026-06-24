@@ -504,6 +504,25 @@
     </div>
   </div>
 
+  <!-- Custom Confirmation Modal — replaces browser confirm() -->
+  <div id="ph-confirm-modal" class="fixed inset-0 z-[9998] hidden items-center justify-center" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)">
+    <div class="bg-white dark:bg-[#1a1b27] border border-gray-200 dark:border-[#2e2f43] rounded-2xl shadow-2xl w-[90%] max-w-[340px] overflow-hidden" style="animation:cropModalUp 0.25s cubic-bezier(0.34,1.56,0.64,1)">
+      <div class="p-5 pb-3">
+        <div class="flex items-center gap-3 mb-3">
+          <div id="ph-confirm-icon" class="w-10 h-10 rounded-xl bg-rose-100 dark:bg-rose-950/40 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-rose-500 text-xl">delete</span>
+          </div>
+          <h3 id="ph-confirm-title" class="text-sm font-extrabold text-gray-900 dark:text-white">Delete?</h3>
+        </div>
+        <p id="ph-confirm-msg" class="text-xs text-gray-500 dark:text-slate-400 leading-relaxed pl-[52px]">This action cannot be undone.</p>
+      </div>
+      <div class="flex border-t border-gray-100 dark:border-[#252636]">
+        <button id="ph-confirm-cancel" class="flex-1 py-3 text-xs font-bold text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-[#21222f] transition-colors">Cancel</button>
+        <button id="ph-confirm-ok" class="flex-1 py-3 text-xs font-extrabold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors border-l border-gray-100 dark:border-[#252636]">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function(){
       /* Auth Guards */
@@ -546,6 +565,38 @@
         }
       }
 
+      /* ─── Custom Confirmation Modal (replaces browser confirm()) ─── */
+      function phConfirm({ title, message, confirmText, icon }) {
+        return new Promise(resolve => {
+          const modal = document.getElementById('ph-confirm-modal');
+          const titleEl = document.getElementById('ph-confirm-title');
+          const msgEl = document.getElementById('ph-confirm-msg');
+          const okBtn = document.getElementById('ph-confirm-ok');
+          const cancelBtn = document.getElementById('ph-confirm-cancel');
+          const iconEl = document.getElementById('ph-confirm-icon');
+          titleEl.textContent = title || 'Delete?';
+          msgEl.textContent = message || 'This action cannot be undone.';
+          okBtn.textContent = confirmText || 'Delete';
+          if (icon) iconEl.querySelector('span').textContent = icon;
+          else iconEl.querySelector('span').textContent = 'delete';
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+          function cleanup() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onBg);
+          }
+          function onOk() { cleanup(); resolve(true); }
+          function onCancel() { cleanup(); resolve(false); }
+          function onBg(e) { if (e.target === modal) { cleanup(); resolve(false); } }
+          okBtn.addEventListener('click', onOk);
+          cancelBtn.addEventListener('click', onCancel);
+          modal.addEventListener('click', onBg);
+        });
+      }
+
       // Rich Formatting for Images, Documents, and Links
       function formatMessageContent(content) {
         if (!content) return '';
@@ -577,7 +628,7 @@
                   '</div>';
               }
               if (obj.type === 'image') {
-                return '<div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><img src="' + obj.url + '" alt="Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open(\'' + obj.url + '\', \'_blank\')"></div>';
+                return '<div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><img src="' + obj.url + '" alt="Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-action="lightbox"></div>';
               }
               if (obj.type === 'video') {
                 return '<div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><video src="' + obj.url + '" controls class="w-full max-h-60"></video></div>';
@@ -596,7 +647,7 @@
         if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)/i) || trimmed.startsWith('data:image/')) {
           return `
             <div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
-              <img src="${esc(trimmed)}" alt="Sent Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" onclick="window.open('${esc(trimmed)}', '_blank')">
+              <img src="${esc(trimmed)}" alt="Sent Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-action="lightbox">
             </div>
           `;
         }
@@ -849,26 +900,6 @@
         }
       };
 
-      // Message Deletion
-      window.deleteMsg = async function(id) {
-        if (!confirm('Delete this message for everyone?')) return;
-        try {
-          const res = await fetch(API_BASE + '/api/messages/' + id, {
-            method: 'DELETE',
-            headers: H
-          });
-          if (res.ok) {
-            allMsgs = allMsgs.filter(m => (m.id || m._id) !== id);
-            if (activeConv?.type === 'team') renderTeamMsgs(); else renderMsgs();
-            showToast('Message deleted', 'success');
-          } else {
-            const err = await res.json().catch(() => ({}));
-            showToast(err.error || 'Failed to delete message', 'error');
-          }
-        } catch (e) {
-          showToast('Error deleting message', 'error');
-        }
-      };
 
       window.insertEmoji = function(emoji) {
         const inp = document.getElementById('msg-inp');
@@ -968,7 +999,13 @@
       // ─── Message Delete ───────────────────────────────────────────────────────
       window.deleteMsg = async function(id) {
         if (!id) { showToast('Cannot delete: message ID missing', 'error'); return; }
-        if (!confirm('Delete this message for everyone?')) return;
+        const ok = await phConfirm({
+          title: 'Delete Message',
+          message: 'This will remove the message for everyone in this chat.',
+          confirmText: 'Delete',
+          icon: 'chat_bubble'
+        });
+        if (!ok) return;
         try {
           const res = await fetch(API_BASE + '/api/messages/' + id, {
             method: 'DELETE',
@@ -993,7 +1030,13 @@
           showToast('Cannot delete: friend ID missing', 'error');
           return;
         }
-        if (!confirm('Delete this entire conversation?')) return;
+        const ok = await phConfirm({
+          title: 'Delete Conversation',
+          message: 'All messages in this conversation will be permanently deleted.',
+          confirmText: 'Delete All',
+          icon: 'forum'
+        });
+        if (!ok) return;
         try {
           const res = await fetch(API_BASE + '/api/messages/conversation/' + friendId, {
             method: 'DELETE',
@@ -1061,6 +1104,19 @@
         const t = content.trim();
         try {
           if (t.startsWith('{')) {
+            // Call log system messages
+            if (t.includes('"type":"system"') || t.includes('"type": "system"')) {
+              if (t.includes('"action":"call"') || t.includes('"action": "call"')) {
+                const isVoice = t.includes('"callType":"voice"') || t.includes('"callType": "voice"');
+                const isCancelled = t.includes('"cancelled"');
+                const isMissed = t.includes('"missed"');
+                const label = isVoice ? '📞 Voice Call' : '📹 Video Call';
+                if (isMissed) return label + ' (missed)';
+                if (isCancelled) return label + ' (cancelled)';
+                return label;
+              }
+              return '⚙️ System message';
+            }
             if (t.includes('"type":"voice"') || t.includes('"type": "voice"')) return '🎤 Voice message';
             if (t.includes('"type":"image"') || t.includes('"type": "image"')) return '📷 Photo';
             if (t.includes('"type":"video"') || t.includes('"type": "video"')) return '🎬 Video';
@@ -1099,7 +1155,13 @@
       window.deleteSelectedConvs = async function() {
         if (!window.selectedConvs.size) return;
         const n = window.selectedConvs.size;
-        if (!confirm('Delete ' + n + ' conversation' + (n>1?'s':'') + '?')) return;
+        const ok = await phConfirm({
+          title: 'Delete ' + n + ' Conversation' + (n>1?'s':''),
+          message: 'All messages in ' + (n>1 ? 'these conversations' : 'this conversation') + ' will be permanently deleted.',
+          confirmText: 'Delete All',
+          icon: 'delete_sweep'
+        });
+        if (!ok) return;
         for (const fid of window.selectedConvs) {
           try {
             await fetch(API_BASE + '/api/messages/conversation/' + fid, { method: 'DELETE', headers: H });
@@ -1217,11 +1279,11 @@
             <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="showConvPanel()">
               <span class="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <div class="relative cursor-pointer" onclick="window.location.href='/pages/user/profile.html?user=${f._id||f.id}'" title="View Profile">
+            <div class="relative cursor-pointer" onclick="window.location.href='/pages/user/profile/view.html?id=${f._id||f.id}'" title="View Profile">
               <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
               <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-darkSurface-panel ${hdrStatus.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-hdr-dot="${f._id||f.id}"></span>
             </div>
-            <div class="cursor-pointer" onclick="window.location.href='/pages/user/profile.html?user=${f._id||f.id}'" title="View Profile">
+            <div class="cursor-pointer" onclick="window.location.href='/pages/user/profile/view.html?id=${f._id||f.id}'" title="View Profile">
               <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight hover:underline">${esc(name)}</div>
               <div id="chat-hdr-status" class="text-[11px] ${hdrStatus.cssClass} flex items-center gap-1.5 mt-0.5" data-user-hdr-activity="${f._id||f.id}" data-last-seen="${f.lastSeen||''}">
                 ${hdrStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>' : ''}
@@ -1568,9 +1630,28 @@
 
       // contextReact is defined below with full reaction API support
 
-      document.addEventListener('click', () => {
+      document.addEventListener('click', (e) => {
         document.getElementById('msg-context-menu')?.classList.add('hidden');
-        document.getElementById('emoji-picker-container')?.classList.add('hidden');
+        // Don't close emoji picker here — handled by the specific outside-click listener (line ~960)
+      });
+
+      // Delegated image lightbox handler — opens full image in overlay
+      document.addEventListener('click', function(e) {
+        const img = e.target.closest('[data-action="lightbox"]');
+        if (!img) return;
+        e.stopPropagation();
+        const src = img.src || img.dataset.src;
+        if (!src) return;
+        // Create fullscreen overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn 0.2s ease';
+        const fullImg = document.createElement('img');
+        fullImg.src = src;
+        fullImg.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px;box-shadow:0 24px 64px rgba(0,0,0,0.5)';
+        overlay.appendChild(fullImg);
+        overlay.addEventListener('click', () => overlay.remove());
+        document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } });
+        document.body.appendChild(overlay);
       });
 
       // ─── CHAT INFO PANEL ──────────────────────────────────────
@@ -1595,7 +1676,7 @@
           var items = sharedMedia.map(function(m) {
             try {
               var o = JSON.parse(m.content);
-              if (o.type === 'image') return '<img src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" onclick="window.open(\'' + o.url + '\',\'_blank\')">';
+              if (o.type === 'image') return '<img src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" data-action="lightbox">';
               return '<video src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl"></video>';
             } catch(e) { return ''; }
           }).join('');
@@ -1611,7 +1692,7 @@
             '<div class="flex gap-3 mt-4">' +
               '<button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all"><span class="material-symbols-outlined text-xl">call</span><span class="text-[9px] font-bold">Voice</span></button>' +
               '<button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all"><span class="material-symbols-outlined text-xl">videocam</span><span class="text-[9px] font-bold">Video</span></button>' +
-              '<a href="/profile?id=' + friendId + '" target="_blank"' +
+              '<a href="/pages/user/profile/view.html?id=' + friendId + '"' +
                ' class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 dark:bg-darkSurface-card rounded-2xl justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-darkSurface-hover transition-all">' +
                '<span class="material-symbols-outlined text-xl">person</span>' +
                '<span class="text-[9px] font-bold">Profile</span></a>' +

@@ -311,21 +311,28 @@
     cropCtx.drawImage(cropImg, -w/2, -h/2, w, h);
     cropCtx.restore();
     
-    // Mask overlay
+    // Mask overlay — use evenodd fill rule so inner path creates cutout
     cropCtx.fillStyle = 'rgba(0, 0, 0, 0.6)';
     cropCtx.beginPath();
+    // Outer rect (clockwise)
     cropCtx.rect(0, 0, cw, ch);
     
     if (activeCropType === 'avatar') {
       const radius = Math.min(cw, ch) * 0.38;
       cropCtx.arc(cx, cy, radius, 0, Math.PI * 2, true);
     } else {
+      // Inner rect drawn counter-clockwise for cutout
       const rectW = cw * 0.9;
       const rectH = rectW * 0.35;
-      cropCtx.rect(cx - rectW/2, cy - rectH/2, rectW, rectH, true);
+      const rx = cx - rectW/2, ry = cy - rectH/2;
+      cropCtx.moveTo(rx, ry);
+      cropCtx.lineTo(rx, ry + rectH);
+      cropCtx.lineTo(rx + rectW, ry + rectH);
+      cropCtx.lineTo(rx + rectW, ry);
+      cropCtx.closePath();
     }
     
-    cropCtx.fill();
+    cropCtx.fill('evenodd');
     
     // Outline boundary
     cropCtx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
