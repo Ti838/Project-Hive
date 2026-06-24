@@ -521,8 +521,11 @@ export async function googleCallback(req, res, next) {
     const { access_token, refresh_token } = req.body;
 
     if (!access_token) {
+      console.error('[ProjectHive] Google callback: missing access_token in body. Keys:', Object.keys(req.body));
       return res.status(400).json({ error: 'Missing Supabase access token.' });
     }
+
+    console.log('[ProjectHive] 🔑 Google callback: verifying Supabase token (length:', access_token.length, ')');
 
     // Bug 2 fix: Use direct REST API call instead of supabaseAdmin.auth.getUser()
     // supabaseAdmin.auth.getUser() can fail when verifying tokens issued by a
@@ -543,15 +546,22 @@ export async function googleCallback(req, res, next) {
       }
 
       sbUser = await userRes.json();
+      console.log('[ProjectHive] ✅ Supabase token verified for:', sbUser.email);
     } catch (fetchErr) {
       console.error('[ProjectHive] Supabase REST verify error:', fetchErr.message);
       // Fallback to SDK method
-      const { data: { user: sdkUser }, error: verifyError } = await supabaseAdmin.auth.getUser(access_token);
-      if (verifyError || !sdkUser) {
-        console.error('[ProjectHive] Supabase SDK fallback also failed:', verifyError);
-        return res.status(401).json({ error: 'Invalid or expired Google session.' });
+      try {
+        const { data: { user: sdkUser }, error: verifyError } = await supabaseAdmin.auth.getUser(access_token);
+        if (verifyError || !sdkUser) {
+          console.error('[ProjectHive] Supabase SDK fallback also failed:', verifyError);
+          return res.status(401).json({ error: 'Invalid or expired Google session.' });
+        }
+        sbUser = sdkUser;
+        console.log('[ProjectHive] ✅ SDK fallback verified for:', sbUser.email);
+      } catch (sdkErr) {
+        console.error('[ProjectHive] SDK fallback threw:', sdkErr.message);
+        return res.status(401).json({ error: 'Authentication verification failed.' });
       }
-      sbUser = sdkUser;
     }
 
     const email = sbUser.email?.toLowerCase();
@@ -565,12 +575,19 @@ export async function googleCallback(req, res, next) {
       return res.status(400).json({ error: 'Could not retrieve email from Google account.' });
     }
 
+    console.log('[ProjectHive] 🔍 Looking up user:', email, '| googleId:', googleId);
+
     // Check if user already exists (by email OR google_id)
-    const { data: existingUser } = await supabaseAdmin
+    const { data: existingUser, error: lookupError } = await supabaseAdmin
       .from('users')
       .select('*')
       .or(`email.eq.${email},google_id.eq.${googleId}`)
       .single();
+
+    if (lookupError && lookupError.code !== 'PGRST116') {
+      // PGRST116 = "no rows found" — that's fine (new user)
+      console.error('[ProjectHive] User lookup error:', lookupError);
+    }
 
     let platformUser;
 
@@ -579,12 +596,16 @@ export async function googleCallback(req, res, next) {
       const updates = { google_id: googleId, is_verified: true, auth_provider: 'google' };
       if (avatarUrl && !existingUser.avatar) updates.avatar = avatarUrl;
 
-      const { data: updated } = await supabaseAdmin
+      const { data: updated, error: updateError } = await supabaseAdmin
         .from('users')
         .update(updates)
         .eq('id', existingUser.id)
         .select()
         .single();
+
+      if (updateError) {
+        console.error('[ProjectHive] User update error:', updateError);
+      }
 
       platformUser = updated || existingUser;
       console.log('[ProjectHive] 🔑 Google OAuth — existing user signed in:', email);
@@ -606,7 +627,7 @@ export async function googleCallback(req, res, next) {
 
       if (createError) {
         console.error('[ProjectHive] Google OAuth create user error:', createError);
-        return res.status(500).json({ error: 'Failed to create account.' });
+        return res.status(500).json({ error: 'Failed to create account: ' + (createError.message || createError.code) });
       }
 
       platformUser = newUser;
@@ -639,6 +660,8 @@ export async function googleCallback(req, res, next) {
       .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
       .eq('id', platformUser.id);
 
+    console.log('[ProjectHive] ✅ Google OAuth complete for:', email);
+
     res.json({
       message: 'Google sign-in successful',
       accessToken,
@@ -656,9 +679,8 @@ export async function googleCallback(req, res, next) {
       },
     });
   } catch (error) {
-    console.error('[ProjectHive] Google OAuth callback error:', error.message, error.stack);
-    // Bug 2 fix: Return actual error message instead of generic 500
-    res.status(500).json({ error: error.message || 'Internal server error' });
+    console.error('[ProjectHive] Google OAuth callback UNHANDLED error:', error.message, error.stack);
+    res.status(500).json({ error: 'Google sign-in failed: ' + (error.message || 'Internal server error') });
   }
 }
 

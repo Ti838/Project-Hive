@@ -31,6 +31,9 @@ function sanitizeObject(obj) {
       // Don't sanitize password fields (they might contain special chars)
       if (key === 'password' || key === 'currentPassword' || key === 'newPassword' || key === 'password_hash') {
         cleaned[key] = value;
+      } else if (key === 'access_token' || key === 'refresh_token' || key === 'code') {
+        // Don't sanitize OAuth tokens/codes (JWTs contain base64 that could be corrupted)
+        cleaned[key] = value;
       } else if (key === 'imageBase64' || key === 'mimeType' || key === 'avatar' || key === 'bannerImage') {
         // Don't sanitize base64 image data (profile photos, banners)
         cleaned[key] = value;
