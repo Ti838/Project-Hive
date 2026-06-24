@@ -151,7 +151,7 @@ graph TB
 | **Backend** | Node.js + Express.js | REST API server |
 | **Database** | Supabase PostgreSQL | 13 tables, RLS security |
 | **Real-time** | Socket.IO | WebSocket for messaging & notifications |
-| **AI** | Google Gemini API | Project idea generation, chat assistant |
+| **AI** | Groq + Google Gemini | Dual AI with auto-fallback (Groq primary, Gemini vision) |
 | **Auth** | JWT + Google OAuth | Secure authentication |
 | **Email** | Brevo (Sendinblue) | Verification & password reset emails |
 | **CAPTCHA** | Cloudflare Turnstile | Bot protection on login |
@@ -500,7 +500,7 @@ graph LR
 
 ### 5.8 AI Generator
 
-Powered by **Google Gemini API** (`gemini-2.0-flash`).
+Powered by **Groq** (`llama-3.3-70b` — primary) + **Google Gemini** (`gemini-2.5-flash` — fallback & vision).
 
 ```mermaid
 graph TB

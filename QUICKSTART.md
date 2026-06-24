@@ -15,24 +15,24 @@ Create `server/.env` (copy from `.env.example`):
 NODE_ENV=development
 PORT=5000
 
-SUPABASE_URL=https://iekfvgjxkmgduxdvkuxf.supabase.co
+SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 JWT_SECRET=your-jwt-secret
 
-BREVO_SMTP_LOGIN=your_smtp_login
-BREVO_SMTP_KEY=your_smtp_key
+BREVO_API_KEY=your_brevo_api_key
 BREVO_FROM_EMAIL=noreply@yourdomain.com
 
-GEMINI_API_KEY=your_gemini_key_from_https://aistudio.google.com/apikey
+GEMINI_API_KEY=your_key_from_https://aistudio.google.com/apikey
+GROQ_API_KEY=your_key_from_https://console.groq.com/keys
 
 ADMIN_EMAIL=admin@projecthive.com
 ADMIN_PASSWORD=YourSecureAdminPassword
 
 FRONTEND_URL=http://localhost:5000
 ```
-> **Minimum required:** `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
+> **Minimum required:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `GROQ_API_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
 **Step 3 — Run the server**
 ```bash
