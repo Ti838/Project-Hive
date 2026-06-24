@@ -1,7 +1,7 @@
 # ProjectHive — System Documentation
 
 > **A Student Collaboration & Team Formation Platform**  
-> Version 1.0 | Last Updated: June 24, 2026
+> Version 1.1 | Last Updated: June 25, 2026
 
 ---
 
@@ -150,7 +150,9 @@ graph TB
 | **Fonts** | Inter (Google Fonts) | Modern, readable typography |
 | **Backend** | Node.js + Express.js | REST API server |
 | **Database** | Supabase PostgreSQL | 13 tables, RLS security |
-| **Real-time** | Socket.IO | WebSocket for messaging & notifications |
+| **Real-time** | Socket.IO + WebRTC | WebSocket messaging + peer-to-peer calling |
+| **Calling** | WebRTC + Jitsi Meet | 1:1 voice/video + group calls |
+| **TURN Relay** | Metered.ca Open Relay | NAT traversal for any network (4G, WiFi, firewall) |
 | **AI** | Groq + Google Gemini | Dual AI with auto-fallback (Groq primary, Gemini vision) |
 | **Auth** | JWT + Google OAuth | Secure authentication |
 | **Email** | Brevo (Sendinblue) | Verification & password reset emails |
@@ -380,6 +382,57 @@ graph TB
 
 ---
 
+### 5.5 Voice & Video Calling
+
+Full calling system with 1:1 WebRTC and group Jitsi Meet.
+
+```mermaid
+graph TB
+    subgraph CALLING["📞 Calling System"]
+        subgraph SINGLE["1:1 Calls (WebRTC)"]
+            VC["📹 Video Call"]
+            AC["🎙️ Voice Call"]
+            TURN_S["🔄 TURN Relay"]
+        end
+        
+        subgraph GROUP["Group Calls (Jitsi Meet)"]
+            GVC["📹 Group Video"]
+            GAC["🎙️ Group Voice"]
+            EMBED["🖥️ Embedded iframe"]
+        end
+
+        subgraph INFRA["Infrastructure"]
+            STUN["🌐 STUN Servers"]
+            TURN_I["🔀 TURN Relay"]
+            HMAC["🔑 HMAC Credentials"]
+            ICE["❄️ ICE Queue"]
+        end
+    end
+
+    style CALLING fill:#0f172a,stroke:#6366f1,color:#e2e8f0
+    style SINGLE fill:#1e1b4b,stroke:#10b981,color:#e2e8f0
+    style GROUP fill:#1e1b4b,stroke:#f59e0b,color:#e2e8f0
+    style INFRA fill:#1e1b4b,stroke:#ec4899,color:#e2e8f0
+```
+
+| Feature | Description |
+|---------|-------------|
+| 1:1 Voice Call | WebRTC peer-to-peer audio with TURN relay fallback |
+| 1:1 Video Call | WebRTC peer-to-peer video with front camera |
+| Group Voice Call | Jitsi Meet embedded with audio-only mode |
+| Group Video Call | Jitsi Meet embedded with full video |
+| TURN Server | Metered.ca Open Relay — bypasses 4G, WiFi, corporate firewalls |
+| HMAC Credentials | Time-limited (24h) server-generated TURN credentials |
+| ICE Queue | Buffers ICE candidates during ringing phase |
+| Connection Monitor | Auto-detects failed/disconnected state |
+| iOS Compatibility | facingMode: user + playsinline + camera fallback |
+| Call Timer | Live duration counter |
+| Ringtone | Incoming ring + outgoing ring sound |
+| Missed Call | Auto-decline after 30 seconds |
+| Call Log | Saved as system message in conversation |
+
+---
+
 ### 5.5 People & Networking
 
 ```mermaid
@@ -524,12 +577,13 @@ graph TB
 
 | Feature | Description |
 |---------|-------------|
-| AI Chat | Natural language conversation about project ideas |
+| AI Chat | Natural language conversation about project ideas (Groq llama-3.3-70b) |
 | Idea Generation | Input your skills + interests → get 3 structured project suggestions |
 | Idea Cards | Title, description, tech stack, difficulty level |
 | Save Idea | Save to localStorage collection for later |
 | Share to Feed | Post idea to social feed with `#ProjectIdea` tag |
-| Image Analysis | Upload an image → AI analyzes and discusses it |
+| Image Analysis | Upload an image → Gemini 2.5 Flash analyzes and discusses it |
+| Auto-Fallback | If Groq fails → automatically switches to Gemini |
 
 ---
 
@@ -681,7 +735,8 @@ graph TB
 | Controllers | 11 |
 | Route Files | 10 |
 | Security Fixes | 21 |
-| Socket.IO Events | 10+ |
+| Socket.IO Events | 18+ |
+| Call Types | 4 (1:1 voice/video + group voice/video) |
 | Post Types | 5 |
 | Reaction Types | 4 |
 | Settings Tabs | 7 |

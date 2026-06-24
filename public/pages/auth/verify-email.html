@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Verify Email — ProjectHive</title>
 <meta name="description" content="Verify your ProjectHive email address to activate your account.">
 <link rel="icon" href="/favicon.png?v=2">
@@ -33,7 +33,7 @@ body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;flex-di
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner-ring{width:44px;height:44px;border:4px solid rgba(99,102,241,.2);border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
 /* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 28px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;width:100%}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 28px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;width:100%;min-height:48px}
 .btn:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(99,102,241,.4)}
 .btn:active{transform:translateY(0)}
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--txt);margin-top:10px}
@@ -42,7 +42,7 @@ body{min-height:100vh;background:var(--bg);color:var(--txt);display:flex;flex-di
 .resend-section{margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
 .resend-label{font-size:13px;color:var(--sub);margin-bottom:10px}
 .input-wrap{position:relative;margin-bottom:10px}
-.input-wrap input{width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--txt);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:all .2s}
+.input-wrap input{width:100%;padding:11px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--input-bg);color:var(--txt);font-size:16px;font-family:'Inter',sans-serif;outline:none;transition:all .2s;min-height:44px}
 .input-wrap input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
 .input-wrap input::placeholder{color:var(--muted)}
 /* Alert */

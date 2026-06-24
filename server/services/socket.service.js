@@ -150,7 +150,7 @@ export function broadcastToRoom(io, roomId, event, data) {
 }
 
 export async function handleCallInitiate(socket, data) {
-  const { roomId, targetId, callerName } = data;
+  const { roomId, targetId, callerName, isWebRTC, isVoiceOnly } = data;
   if (!roomId || !targetId) return;
 
   // Server-side friend-gating: verify friendship before allowing call
@@ -172,7 +172,17 @@ export async function handleCallInitiate(socket, data) {
 
   const targetSocket = getUserSocket(targetId);
   if (targetSocket) {
-    targetSocket.emit('call:incoming', { roomId, callerName, callerId: socket.userId });
+    // Bug #5 fix: pass ALL call metadata so receiver knows call type
+    targetSocket.emit('call:incoming', {
+      roomId,
+      callerName,
+      callerId: socket.userId,
+      isWebRTC: !!isWebRTC,
+      isVoiceOnly: !!isVoiceOnly
+    });
+  } else {
+    // Target user is offline
+    socket.emit('call:error', { message: 'User is currently offline' });
   }
 }
 

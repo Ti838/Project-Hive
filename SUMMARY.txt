@@ -29,7 +29,10 @@ TECHNOLOGY STACK (CURRENT)
     - JWT HS256 authentication
     - bcryptjs (password hashing, 12 rounds)
     - nodemailer + Brevo SMTP (email delivery)
-    - @google/generative-ai (Gemini 2.0 Flash)
+    - Groq (llama-3.3-70b primary AI) + Google Gemini (fallback + vision)
+    - WebRTC peer-to-peer calling engine
+    - TURN/STUN relay (Metered.ca Open Relay — HMAC credentials)
+    - Jitsi Meet embedded (group calls)
     - helmet, cors, express-rate-limit, morgan
     - Hosted on Render (free tier)
 
@@ -41,8 +44,12 @@ TECHNOLOGY STACK (CURRENT)
   SERVICES
     - Supabase          — PostgreSQL database
     - Brevo SMTP        — Transactional email
-    - Google Gemini     — AI project idea generation
+    - Groq              — Primary AI engine (llama-3.3-70b)
+    - Google Gemini     — Fallback AI + image analysis
     - Cloudflare        — Turnstile CAPTCHA
+    - Metered.ca        — Free TURN relay server (WebRTC NAT traversal)
+    - Jitsi Meet        — Group video/voice calling
+    - Google OAuth      — Social login via Supabase provider
     - Vercel            — Frontend hosting (static CDN)
     - Render            — Backend hosting (Node.js)
 
@@ -53,6 +60,7 @@ FEATURES IMPLEMENTED (PRODUCTION-READY)
   AUTHENTICATION ✅
     - User registration with Cloudflare Turnstile CAPTCHA
     - Email verification (Brevo SMTP) before first login
+    - Google OAuth (one-click sign-in via Supabase provider)
     - JWT access tokens (24h) + refresh tokens (7 days)
     - Token refresh and rotation
     - Password reset via email token
@@ -93,6 +101,27 @@ FEATURES IMPLEMENTED (PRODUCTION-READY)
     - Typing indicators
     - Online / offline status
     - Message history persisted in Supabase
+    - Reply to messages
+    - Edit / delete messages
+    - Emoji reactions
+    - Voice message recording with live waveform
+    - Image attachments
+    - Read receipts
+
+  VOICE & VIDEO CALLING ✅
+    - 1:1 Voice call (WebRTC peer-to-peer)
+    - 1:1 Video call (WebRTC peer-to-peer)
+    - Group voice call (Jitsi Meet embedded)
+    - Group video call (Jitsi Meet embedded)
+    - TURN server relay for 100% NAT traversal (4G, WiFi, firewalls)
+    - HMAC-based temporary TURN credentials (auto-generated)
+    - ICE candidate queuing (handles ringing-phase race condition)
+    - Connection state monitoring (auto-detect failure/disconnect)
+    - iOS Safari camera compatibility (facingMode: user)
+    - Camera-to-voice fallback if camera permission denied
+    - Call timer, ringtone, outgoing ring sound
+    - Missed call timeout (30 seconds)
+    - Call log saved as system message in conversation
 
   NOTIFICATIONS ✅
     - Real-time push via Socket.IO
@@ -109,10 +138,12 @@ FEATURES IMPLEMENTED (PRODUCTION-READY)
     - Admin can feature/unfeature projects
 
   AI GENERATOR ✅
-    - Google Gemini 2.0 Flash integration
-    - Input: skills, interests, team size, deadline
-    - Output: 5 tailored project ideas with tech stack
-    - Authenticated endpoint + public demo endpoint
+    - Dual AI: Groq (llama-3.3-70b primary) + Google Gemini (fallback + vision)
+    - AI Chat: Natural conversation about project ideas
+    - Idea Generation: Input skills + interests → get 3 structured ideas
+    - Image Analysis: Upload image for AI review
+    - Save ideas to localStorage collection
+    - Share ideas to social feed
     - Rate limited (100 req/15 min)
 
   DASHBOARD ✅
@@ -136,7 +167,7 @@ FEATURES IMPLEMENTED (PRODUCTION-READY)
 API ENDPOINTS (60+)
 ================================================================================
 
-  AUTH (8)
+  AUTH (10)
     POST   /api/auth/register
     POST   /api/auth/login
     POST   /api/auth/refresh
@@ -145,6 +176,8 @@ API ENDPOINTS (60+)
     POST   /api/auth/resend-verification
     POST   /api/auth/forgot-password
     POST   /api/auth/reset-password
+    GET    /api/auth/google                → returns OAuth URL
+    POST   /api/auth/google/callback       ← frontend posts Supabase session
 
   USERS (5)
     GET    /api/users/me
@@ -211,7 +244,14 @@ API ENDPOINTS (60+)
 
   SOCKET.IO EVENTS
     Client → Server: join_room, leave_room, send_message, typing
-    Server → Client: new_message, user_typing, user_online, user_offline, notification
+    Client → Server: call:initiate, call:accept, call:decline, call:hangup
+    Client → Server: call:group, webrtc:signal
+    Server → Client: new_message, user_typing, user_online, user_offline
+    Server → Client: notification, call:incoming, call:accepted, call:declined
+    Server → Client: call:ended, call:error, webrtc:signal
+
+  INFRASTRUCTURE (1)
+    GET    /api/turn-credentials          → HMAC-generated TURN relay credentials
 
 ================================================================================
 SECURITY (21 Vulnerabilities Identified & Resolved — OWASP Top 10)
@@ -245,6 +285,12 @@ SECURITY (21 Vulnerabilities Identified & Resolved — OWASP Top 10)
     ✅ CORS configured for frontend origin only
     ✅ Body size limit capped at 2MB (prevents DoS)
     ✅ HTTPS enforced by Vercel and Render
+
+  WEBRTC SECURITY
+    ✅ DTLS-SRTP end-to-end encryption on all media (audio/video)
+    ✅ Time-limited TURN credentials (24h HMAC expiry)
+    ✅ Server-side friendship verification before call relay
+    ✅ CSP allows only meet.jit.si for embedded group calls
 
   Full audit report: docs/SECURITY_AUDIT.md
 
@@ -280,14 +326,17 @@ PAGES (18 Total)
   USER (authenticated)
     /pages/user/dashboard.html          Main dashboard
     /pages/user/profile/edit.html       Edit profile
+    /pages/user/profile/view.html       View profile
     /pages/user/settings.html           Account settings
     /pages/user/people.html             Find people
     /pages/user/notifications.html      Notifications
-    /pages/user/messages.html           Real-time chat
+    /pages/user/messages.html           Real-time chat + voice/video calling
     /pages/user/teams.html              Browse teams
     /pages/user/teams-create.html       Create team
     /pages/user/projects/showcase.html  Project showcase
     /pages/user/projects/generator.html AI idea generator
+    /pages/user/feed.html               Social feed
+    /pages/user/saved.html              Saved posts
 
   ADMIN (admin JWT required)
     /pages/admin/login.html             Admin login portal
@@ -314,10 +363,11 @@ PROJECT STATUS
   STATUS:     PRODUCTION LIVE ✅
   PLATFORM:   https://projecthive-bd.vercel.app
   REPO:       https://github.com/Ti838/Project-Hive
-  STACK:      Node.js + Express + Supabase + Socket.IO + Gemini AI
-  PAGES:      18 production HTML pages
-  API ROUTES: 60+ REST endpoints + Socket.IO events
-  SECURITY:   JWT, bcrypt, CAPTCHA, Helmet, rate limiting
+  STACK:      Node.js + Express + Supabase + Socket.IO + WebRTC + Groq/Gemini AI
+  PAGES:      26 production HTML pages
+  API ROUTES: 90+ REST endpoints + Socket.IO events
+  CALLING:    WebRTC (1:1) + Jitsi Meet (group) + TURN relay
+  SECURITY:   JWT, bcrypt, CAPTCHA, Helmet, rate limiting, DTLS-SRTP
 
 ================================================================================
                          PROJECTHIVE — BUILT & LIVE 🚀

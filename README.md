@@ -6,7 +6,8 @@
 [![Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render)](https://projecthive-backend.onrender.com)
 [![Database](https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ECF8E?logo=supabase)](https://supabase.com)
 [![Realtime](https://img.shields.io/badge/Realtime-Socket.IO-010101?logo=socketdotio)](https://socket.io)
-[![AI](https://img.shields.io/badge/AI-Google%20Gemini%202.0-4285F4?logo=google)](https://aistudio.google.com)
+[![AI](https://img.shields.io/badge/AI-Groq%20+%20Gemini-F55036?logo=groq)](https://groq.com)
+[![Calling](https://img.shields.io/badge/Calling-WebRTC%20+%20Jitsi-97C100?logo=webrtc)](https://webrtc.org)
 [![Email](https://img.shields.io/badge/Email-Brevo%20SMTP-0092FF)](https://app.brevo.com)
 
 ---
@@ -30,15 +31,17 @@
 
 | Module | Description |
 |--------|-------------|
-| 🔐 **Auth + Email Verification** | JWT tokens, bcrypt hashing, Brevo SMTP email verification & password reset |
+| 🔐 **Auth + Google OAuth** | JWT tokens, bcrypt hashing, Google OAuth, Brevo SMTP email verification & password reset |
 | 👤 **Profile** | Avatar, banner, skills, social links, completion percentage |
 | ⚙️ **Settings** | Account info, password change, notification preferences, theme, privacy |
 | 👥 **Find People** | Discover students, send/accept friend requests, filter by skill |
 | 🔔 **Notifications** | Real-time Socket.IO push notifications |
 | 🏷️ **Teams** | Create/join teams, join-request workflow, team chat |
-| 💬 **Messages** | Real-time DMs + team channels via Socket.IO |
+| 💬 **Messages** | Real-time DMs + team channels, voice messages, replies, reactions, read receipts |
+| 📞 **Voice & Video Calling** | 1:1 WebRTC calls + group Jitsi Meet, TURN relay for any network |
 | 🚀 **Showcase** | Submit and browse student projects |
-| 🤖 **AI Generator** | Google Gemini 2.0 Flash — generate tailored project ideas |
+| 📰 **Social Feed** | Posts, achievements, polls, @mentions, reactions, comments |
+| 🤖 **AI Generator** | Groq (primary) + Gemini (fallback) — chat, idea generation, image analysis |
 | 🛡️ **CAPTCHA** | Cloudflare Turnstile bot protection on auth pages |
 | 👑 **Admin Panel** | Industrial-grade control center — user/team/project management, maintenance mode, system flags |
 
@@ -204,6 +207,8 @@ http://localhost:5000
 | POST | `/resend-verification` | ❌ | Resend verification email |
 | POST | `/forgot-password` | ❌ | Send password reset email |
 | POST | `/reset-password` | ❌ | Reset password with token |
+| GET | `/google` | ❌ | Initiate Google OAuth → returns Supabase OAuth URL |
+| POST | `/google/callback` | ❌ | Exchange Supabase OAuth token for platform JWT |
 
 ### Users  `/api/users`
 
@@ -322,6 +327,28 @@ const socket = io('https://projecthive-backend.onrender.com', {
 | `user_online` | `{ userId }` | User came online |
 | `user_offline` | `{ userId }` | User went offline |
 | `notification` | `{ type, message, data }` | Real-time notification |
+
+### Call Events (Client → Server)
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `call:initiate` | `{ roomId, targetId, callerName, isWebRTC, isVoiceOnly }` | Start a call |
+| `call:accept` | `{ roomId, targetId }` | Accept incoming call |
+| `call:decline` | `{ roomId, targetId }` | Decline incoming call |
+| `call:hangup` | `{ roomId, targetId }` | End active call |
+| `call:group` | `{ roomId, teamId, callerName }` | Initiate group call |
+| `webrtc:signal` | `{ targetId, signal }` | WebRTC SDP/ICE signaling |
+
+### Call Events (Server → Client)
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `call:incoming` | `{ roomId, callerName, callerId, isWebRTC, isVoiceOnly }` | Incoming call alert |
+| `call:accepted` | `{ roomId }` | Call was accepted |
+| `call:declined` | `{ roomId }` | Call was declined |
+| `call:ended` | `{ roomId }` | Call ended |
+| `call:error` | `{ message }` | Call error (offline, not friends) |
+| `webrtc:signal` | `{ senderId, signal }` | WebRTC signal relay |
 
 ---
 

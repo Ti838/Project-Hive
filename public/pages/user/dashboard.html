@@ -10,7 +10,7 @@
 </style>
 <link rel="icon" href="/favicon.png?v=2">
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <title>ProjectHive | Student Dashboard</title>
 <meta name="description" content="Your ProjectHive academic dashboard — track teams, projects, messages and more."/>
 <!-- Preconnect to CDNs for faster loading -->
@@ -217,7 +217,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 <div id="ph-sidebar"></div>
 
 <!-- TOP BAR -->
-<header class="fixed top-0 right-0 left-[260px] h-20 bg-surface/80 backdrop-blur-md z-40 flex items-center justify-between px-10 max-md:left-0 max-md:px-4">
+<header class="fixed top-0 right-0 left-[260px] h-16 bg-surface/80 backdrop-blur-md z-40 flex items-center justify-between px-10 max-md:left-0 max-md:px-4">
 <div class="flex items-center gap-4">
   <!-- Hamburger shown on mobile via CSS -->
   <div id="ph-hamburger-slot"></div>
@@ -238,7 +238,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
     AI Generator
   </a>
   <div class="flex items-center gap-3 pr-6 border-r border-outline-variant">
-    <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors">
+    <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/help'" title="Help Center">
       <span class="material-symbols-outlined">help</span>
     </button>
     <div class="relative">
@@ -259,7 +259,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 </header>
 
 <!-- MAIN CONTENT WRAPPER -->
-<main class="ml-[260px] pt-20 flex min-h-screen max-md:ml-0 max-md:pb-20">
+<main class="ml-[260px] pt-16 flex min-h-screen max-md:ml-0 max-md:pb-20">
 <!-- DASHBOARD BODY -->
 <div class="flex-1 p-10 max-w-[1000px] max-md:p-4">
   <header class="mb-stack-lg">

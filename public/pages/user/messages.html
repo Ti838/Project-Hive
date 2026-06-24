@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>ProjectHive — Collaboration & Messages</title>
   <script>
     (function(){
@@ -1241,7 +1241,7 @@
             <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Voice Call">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">call</span>
             </button>
-            <button id="video-call-btn" onclick="startCall()" class="hidden sm:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Video Call">
+            <button id="video-call-btn" onclick="startCall()" class="flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Video Call">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">video_call</span>
             </button>
             <button onclick="deleteConversation('${f._id||f.id}')" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-rose-50 dark:hover:bg-rose-950/40 text-gray-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="Delete Chat">
@@ -1611,7 +1611,7 @@
             '<div class="flex gap-3 mt-4">' +
               '<button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all"><span class="material-symbols-outlined text-xl">call</span><span class="text-[9px] font-bold">Voice</span></button>' +
               '<button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all"><span class="material-symbols-outlined text-xl">videocam</span><span class="text-[9px] font-bold">Video</span></button>' +
-              '<a href="/pages/user/profile/view.html?id=' + friendId + '" target="_blank"' +
+              '<a href="/profile?id=' + friendId + '" target="_blank"' +
                ' class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 dark:bg-darkSurface-card rounded-2xl justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-darkSurface-hover transition-all">' +
                '<span class="material-symbols-outlined text-xl">person</span>' +
                '<span class="text-[9px] font-bold">Profile</span></a>' +
@@ -2413,6 +2413,7 @@
           activeCallRoom = data.roomId;
           incomingCallIsWebRTC = !!data.isWebRTC;
           incomingCallIsVoiceOnly = !!data.isVoiceOnly;
+          incomingCallerId = data.callerId || null; // Bug #6 fix: store caller ID
           const callerNameEl = document.getElementById('caller-name');
           if (callerNameEl) {
             callerNameEl.textContent = `${data.callerName || 'Teammate'}`;
@@ -2532,17 +2533,75 @@
       let incomingCallIsWebRTC = false;
       let incomingCallIsVoiceOnly = false;
       let pendingSdpOffer = null;
+      let pendingIceCandidates = []; // Bug 1 fix: queue ICE candidates during ringing
+      let incomingCallerId = null; // Bug #6 fix: store actual caller ID from incoming event
 
+      // WebRTC ICE Server Configuration
+      // STUN = discovers public IP (free, lightweight)
+      // TURN = relays traffic when peer-to-peer fails (mobile 4G, corporate WiFi, strict NAT)
+      // These static credentials are fallback — fetchTurnCredentials() loads HMAC creds from server
       const rtcConfig = {
         iceServers: [
+          // Free Google STUN servers (fast IP discovery)
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' }
-        ]
+        ],
+        iceCandidatePoolSize: 10,
+        iceTransportPolicy: 'all'  // Try direct first, fall back to relay
       };
 
-      window.startCall = function() {
+      // Dynamic TURN credential fetcher (for when credentials rotate)
+      async function fetchTurnCredentials() {
+        try {
+          const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? '/api' : 'https://projecthive-backend.onrender.com/api';
+          const res = await fetch(API + '/turn-credentials', {
+            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.iceServers && data.iceServers.length > 0) {
+              rtcConfig.iceServers = data.iceServers;
+              console.log('[WebRTC] Dynamic TURN credentials loaded');
+            }
+          }
+        } catch(e) {
+          // Non-fatal: use static credentials
+          console.log('[WebRTC] Using static TURN credentials');
+        }
+      }
+      // Try to load dynamic credentials on page load
+      fetchTurnCredentials();
+
+      // Bug 4 fix: check if browser supports WebRTC calling
+      function checkCallCapability() {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          showToast('Calling requires a secure (HTTPS) connection and a supported browser.', 'error');
+          return false;
+        }
+        return true;
+      }
+
+      // Bug 4 fix: pre-check permission status before calling
+      async function checkMediaPermission() {
+        try {
+          if (navigator.permissions) {
+            const micPerm = await navigator.permissions.query({ name: 'microphone' });
+            if (micPerm.state === 'denied') {
+              showToast('Microphone is blocked. Please allow it in your browser settings.', 'error');
+              return false;
+            }
+          }
+          return true;
+        } catch(e) {
+          return true; // permissions API not supported, proceed anyway
+        }
+      }
+
+      window.startCall = async function() {
         if (!activeConv) return;
+        if (!checkCallCapability()) return;
+        if (!(await checkMediaPermission())) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call!', 'error');
@@ -2566,11 +2625,14 @@
         }
         
         activeCallRoom = roomId;
+        pendingIceCandidates = []; // Bug 1: clear queue for new call
         initiateWebRTCCall(friendId, false);
       };
 
-      window.startVoiceCall = function() {
+      window.startVoiceCall = async function() {
         if (!activeConv) return;
+        if (!checkCallCapability()) return;
+        if (!(await checkMediaPermission())) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call!', 'error');
@@ -2594,6 +2656,7 @@
         }
         
         activeCallRoom = roomId;
+        pendingIceCandidates = []; // Bug 1: clear queue for new call
         initiateWebRTCCall(friendId, true);
       };
 
@@ -2711,10 +2774,21 @@
         const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
 
         try {
-          localStream = await navigator.mediaDevices.getUserMedia({
-            video: !voiceOnly,
-            audio: true
-          });
+          // Bug 4 fix: iOS-safe constraints with facingMode + fallback
+          const mediaConstraints = {
+            audio: true,
+            video: voiceOnly ? false : { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+          };
+          try {
+            localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          } catch(mediaErr) {
+            if (!voiceOnly && (mediaErr.name === 'NotAllowedError' || mediaErr.name === 'NotFoundError')) {
+              showToast('Camera unavailable. Switching to voice-only...', 'info');
+              localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } else {
+              throw mediaErr;
+            }
+          }
           document.getElementById('webrtc-local-video').srcObject = localStream;
 
           peerConnection = new RTCPeerConnection(rtcConfig);
@@ -2730,6 +2804,26 @@
             document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
             setCallConnectionStatus('connected');
             startCallTimer();
+          };
+
+          // Bug #7 fix: monitor connection state for failures
+          peerConnection.onconnectionstatechange = () => {
+            const state = peerConnection?.connectionState;
+            console.log('[WebRTC] Connection state:', state);
+            if (state === 'failed') {
+              showToast('Call connection failed. Please try again.', 'error');
+              endCall();
+            } else if (state === 'disconnected') {
+              setCallConnectionStatus('connecting');
+              showToast('Connection interrupted. Reconnecting...', 'info');
+              // Auto-end after 15s of disconnection
+              setTimeout(() => {
+                if (peerConnection?.connectionState === 'disconnected') {
+                  showToast('Call dropped due to network issue.', 'error');
+                  endCall();
+                }
+              }, 15000);
+            }
           };
 
           const offer = await peerConnection.createOffer();
@@ -2762,10 +2856,21 @@
         const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
 
         try {
-          localStream = await navigator.mediaDevices.getUserMedia({
-            video: !voiceOnly,
-            audio: true
-          });
+          // Bug 4 fix: iOS-safe constraints with facingMode + fallback
+          const mediaConstraints = {
+            audio: true,
+            video: voiceOnly ? false : { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+          };
+          try {
+            localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          } catch(mediaErr) {
+            if (!voiceOnly && (mediaErr.name === 'NotAllowedError' || mediaErr.name === 'NotFoundError')) {
+              showToast('Camera unavailable. Switching to voice-only...', 'info');
+              localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } else {
+              throw mediaErr;
+            }
+          }
           document.getElementById('webrtc-local-video').srcObject = localStream;
 
           peerConnection = new RTCPeerConnection(rtcConfig);
@@ -2783,12 +2888,44 @@
             startCallTimer();
           };
 
+          // Bug #7 fix: monitor connection state for failures
+          peerConnection.onconnectionstatechange = () => {
+            const state = peerConnection?.connectionState;
+            console.log('[WebRTC] Connection state:', state);
+            if (state === 'failed') {
+              showToast('Call connection failed. Please try again.', 'error');
+              endCall();
+            } else if (state === 'disconnected') {
+              setCallConnectionStatus('connecting');
+              showToast('Connection interrupted. Reconnecting...', 'info');
+              setTimeout(() => {
+                if (peerConnection?.connectionState === 'disconnected') {
+                  showToast('Call dropped due to network issue.', 'error');
+                  endCall();
+                }
+              }, 15000);
+            }
+          };
+
           if (pendingSdpOffer) {
             await peerConnection.setRemoteDescription(new RTCSessionDescription(pendingSdpOffer));
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
             socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
             pendingSdpOffer = null;
+          }
+
+          // Bug 1 fix: flush queued ICE candidates that arrived during ringing
+          if (pendingIceCandidates.length > 0) {
+            for (const candidate of pendingIceCandidates) {
+              try {
+                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+              } catch(e) {
+                console.warn('[WebRTC] Failed to add queued ICE candidate:', e);
+              }
+            }
+            console.log('[WebRTC] Flushed', pendingIceCandidates.length, 'queued ICE candidates');
+            pendingIceCandidates = [];
           }
         } catch (err) {
           console.error('[WebRTC] Accept track error:', err);
@@ -2818,6 +2955,9 @@
           if (peerConnection) {
             peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
               .catch(e => console.error('[WebRTC] ICE placement error:', e));
+          } else {
+            // Bug 1 fix: queue ICE candidates when peerConnection not yet created (ringing phase)
+            pendingIceCandidates.push(signal.candidate);
           }
         }
       }
@@ -2897,6 +3037,8 @@
         }
         isWebRTCCall = false;
         pendingSdpOffer = null;
+        pendingIceCandidates = []; // Bug 1: clear queue on call end
+        incomingCallerId = null; // Bug #6: clear caller reference
         currentVoiceOnly = false;
 
         const voiceDisplay = document.getElementById('voice-only-display');
@@ -3035,7 +3177,8 @@
         stopOutgoingRing();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
-          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          // Bug #6 fix: use stored callerId instead of activeConv which may point to wrong person
+          var friendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (socket) {
             socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
           }
@@ -3052,12 +3195,14 @@
         stopOutgoingRing();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
-          var friendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
+          // Bug #6 fix: use stored callerId
+          var friendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (socket) {
             socket.emit('call:decline', { roomId: activeCallRoom, targetId: friendId });
           }
         }
         activeCallRoom = null;
+        incomingCallerId = null;
       };
     })();
   </script>

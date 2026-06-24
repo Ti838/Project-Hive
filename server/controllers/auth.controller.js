@@ -523,12 +523,34 @@ export async function googleCallback(req, res, next) {
       return res.status(400).json({ error: 'Missing Supabase access token.' });
     }
 
-    // Verify the Supabase session and extract user info
-    const { data: { user: sbUser }, error: verifyError } = await supabaseAdmin.auth.getUser(access_token);
+    // Bug 2 fix: Use direct REST API call instead of supabaseAdmin.auth.getUser()
+    // supabaseAdmin.auth.getUser() can fail when verifying tokens issued by a
+    // different Supabase client instance (client-side anon key vs server service role)
+    let sbUser;
+    try {
+      const userRes = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'apikey': process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
+        }
+      });
 
-    if (verifyError || !sbUser) {
-      console.error('[ProjectHive] Supabase token verify error:', verifyError);
-      return res.status(401).json({ error: 'Invalid or expired Google session.' });
+      if (!userRes.ok) {
+        const errBody = await userRes.text();
+        console.error('[ProjectHive] Supabase token verify failed:', userRes.status, errBody);
+        return res.status(401).json({ error: 'Invalid or expired Google session.' });
+      }
+
+      sbUser = await userRes.json();
+    } catch (fetchErr) {
+      console.error('[ProjectHive] Supabase REST verify error:', fetchErr.message);
+      // Fallback to SDK method
+      const { data: { user: sdkUser }, error: verifyError } = await supabaseAdmin.auth.getUser(access_token);
+      if (verifyError || !sdkUser) {
+        console.error('[ProjectHive] Supabase SDK fallback also failed:', verifyError);
+        return res.status(401).json({ error: 'Invalid or expired Google session.' });
+      }
+      sbUser = sdkUser;
     }
 
     const email = sbUser.email?.toLowerCase();
@@ -633,8 +655,10 @@ export async function googleCallback(req, res, next) {
       },
     });
   } catch (error) {
-    console.error('[ProjectHive] Google OAuth callback error:', error);
-    next(error);
+    console.error('[ProjectHive] Google OAuth callback error:', error.message, error.stack);
+    // Bug 2 fix: Return actual error message instead of generic 500
+    res.status(500).json({ error: error.message || 'Internal server error' });
   }
 }
+
 

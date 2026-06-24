@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Create Account — ProjectHive</title>
 <meta name="description" content="Join ProjectHive and start collaborating with students worldwide.">
 <link rel="icon" href="/favicon.png?v=2">
@@ -39,6 +39,16 @@ tailwind.config = {
 .dark .input-field{border-color:#475569;background:#0f172a;color:#f1f5f9}
 .input-field:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
 .input-field::placeholder{color:#94a3b8}
+
+/* Sprint 2 #19+#20 — Auth mobile touch targets + checkbox */
+@media(max-width:768px){
+  #theme-btn{min-width:44px!important;min-height:44px!important;width:44px!important;height:44px!important}
+  nav a[href="/register"],nav a[href="/login"]{min-height:44px!important;padding:10px 20px!important;display:inline-flex!important;align-items:center!important}
+  button[type="submit"]{min-height:48px!important;font-size:15px!important}
+  input[type="email"],input[type="password"],input[type="text"],select{font-size:16px!important;min-height:44px!important}
+  /* #20 — Checkbox 24x24 for touch */
+  input[type="checkbox"]#terms{width:24px!important;height:24px!important;min-width:24px!important;min-height:24px!important}
+}
 </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300 overflow-x-hidden font-sans">

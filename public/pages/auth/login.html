@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Sign In — ProjectHive</title>
 <meta name="description" content="Sign in to your ProjectHive account and continue building.">
 <link rel="icon" href="/favicon.png?v=2">
@@ -27,6 +27,14 @@ tailwind.config = {
 .gradient-text{background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spinner{width:18px;height:18px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+
+/* Sprint 2 #19 — Auth page mobile touch targets */
+@media(max-width:768px){
+  #theme-btn{min-width:44px!important;min-height:44px!important;width:44px!important;height:44px!important}
+  nav a[href="/register"],nav a[href="/login"]{min-height:44px!important;padding:10px 20px!important;display:inline-flex!important;align-items:center!important}
+  button[type="submit"]{min-height:48px!important;font-size:15px!important}
+  input[type="email"],input[type="password"],input[type="text"]{font-size:16px!important;min-height:44px!important}
+}
 </style>
 </head>
 <body class="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col transition-colors duration-300 overflow-x-hidden font-sans">

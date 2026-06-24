@@ -1,6 +1,6 @@
 # 🔒 ProjectHive — Security Audit Report
 
-**Date:** June 20, 2026 | **Last Verified:** June 24, 2026  
+**Date:** June 20, 2026 | **Last Verified:** June 25, 2026  
 **Auditor:** Antigravity AI Security Analysis  
 **Application:** ProjectHive (Student Team Collaboration Platform)  
 **Stack:** Express.js + Supabase + Socket.IO + Cloudflare + Vercel/Render  
@@ -133,7 +133,8 @@ A total of **21 security vulnerabilities** were identified across **4 severity l
 - **File:** `vercel.json`
 - **OWASP:** A05:2021 – Security Misconfiguration
 - **Issue:** No Permissions-Policy header to restrict browser features.
-- **Fix:** Added `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+- **Fix:** Added `Permissions-Policy: camera=(self), microphone=(self), geolocation=()`.
+  - Camera and microphone are required for WebRTC voice/video calls — restricted to same-origin only.
 
 ### 16. Admin JWT Token Lifetime Too Long
 - **File:** `server/controllers/admin.auth.controller.js`
@@ -197,6 +198,22 @@ A total of **21 security vulnerabilities** were identified across **4 severity l
 | File | Purpose |
 |------|---------|
 | `server/middleware/sanitize.js` | XSS input sanitization middleware |
+
+---
+
+## 🔒 WebRTC Security Measures
+
+The voice/video calling system implements these security measures:
+
+| Measure | Implementation |
+|---------|---------------|
+| **DTLS-SRTP Encryption** | All WebRTC media (audio/video) is end-to-end encrypted by the browser — TURN servers cannot decrypt traffic |
+| **Time-limited TURN Credentials** | HMAC-SHA1 credentials expire after 24 hours — generated server-side via `/api/turn-credentials` |
+| **Friendship Verification** | Server verifies users are friends before relaying call signals |
+| **Offline Detection** | Server returns `call:error` if target user is offline |
+| **CSP Frame Restriction** | Only `meet.jit.si` is allowed in `frame-src` for group calls |
+| **CSP Connect Restriction** | Only `staticauth.openrelay.metered.ca` is allowed for TURN connections |
+| **ICE Candidate Isolation** | WebRTC signals are only relayed between authenticated, connected Socket.IO users |
 
 ---
 

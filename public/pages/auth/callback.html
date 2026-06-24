@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Signing in… — ProjectHive</title>
 <link rel="icon" href="/favicon.png?v=2">
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
@@ -54,7 +54,7 @@
   <h1 id="title">Signing you in…</h1>
   <p id="msg">Please wait while we verify your Google account.</p>
   <div class="error-box" id="err-box"></div>
-  <button class="retry-btn" id="retry-btn" onclick="window.location.href='/login'">Back to Login</button>
+  <button class="retry-btn" id="retry-btn">Back to Login</button>
 </div>
 
 <script>
@@ -148,6 +148,11 @@
   }
 
   handleCallback();
+
+  // Bug 3 fix: use addEventListener instead of inline onclick (CSP-safe)
+  document.getElementById('retry-btn').addEventListener('click', function() {
+    window.location.href = '/login';
+  });
 })();
 </script>
 </body>

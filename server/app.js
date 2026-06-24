@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -37,12 +38,12 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.socket.io", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://esm.sh"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.socket.io", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://esm.sh", "https://meet.jit.si"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
       fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:", "blob:", "https:"],
-      connectSrc: ["'self'", "https://projecthive-backend.onrender.com", "wss://projecthive-backend.onrender.com", "https://generativelanguage.googleapis.com", "https://api.groq.com", "https://api.brevo.com", "https://iekfvgjxkmgduxdvkuxf.supabase.co"],
-      frameSrc: ["'none'"],
+      connectSrc: ["'self'", "https://projecthive-backend.onrender.com", "wss://projecthive-backend.onrender.com", "https://generativelanguage.googleapis.com", "https://api.groq.com", "https://api.brevo.com", "https://iekfvgjxkmgduxdvkuxf.supabase.co", "turn:staticauth.openrelay.metered.ca:80", "turn:staticauth.openrelay.metered.ca:443", "turns:staticauth.openrelay.metered.ca:443"],
+      frameSrc: ["'self'", "https://meet.jit.si"],
       objectSrc: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'"],
@@ -195,6 +196,67 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
+
+// TURN credentials endpoint — generates time-limited HMAC credentials
+// Uses Metered.ca Open Relay Static Auth (no signup needed)
+// Secret: 'openrelayprojectsecret' — generates temp credentials via HMAC-SHA1
+
+app.get('/api/turn-credentials', (req, res) => {
+  try {
+    // If custom TURN servers provided via env, use those
+    if (process.env.TURN_SERVERS) {
+      return res.json({ iceServers: JSON.parse(process.env.TURN_SERVERS) });
+    }
+
+    // Generate time-limited credentials for Metered Static Auth TURN
+    const turnSecret = process.env.TURN_SECRET || 'openrelayprojectsecret';
+    const turnDomain = process.env.TURN_DOMAIN || 'staticauth.openrelay.metered.ca';
+    
+    // Credential expires in 24 hours (Unix timestamp)
+    const unixTimestamp = Math.floor(Date.now() / 1000) + 24 * 3600;
+    const username = unixTimestamp.toString();
+    const credential = crypto
+      .createHmac('sha1', turnSecret)
+      .update(username)
+      .digest('base64');
+
+    res.json({
+      iceServers: [
+        // STUN servers (IP discovery)
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        // TURN over UDP on port 80 (most networks)
+        {
+          urls: `turn:${turnDomain}:80`,
+          username: username,
+          credential: credential
+        },
+        // TURN over TCP on port 80
+        {
+          urls: `turn:${turnDomain}:80?transport=tcp`,
+          username: username,
+          credential: credential
+        },
+        // TURN on port 443 (corporate firewalls)
+        {
+          urls: `turn:${turnDomain}:443`,
+          username: username,
+          credential: credential
+        },
+        // TURNS over TLS on 443 (maximum firewall bypass)
+        {
+          urls: `turns:${turnDomain}:443?transport=tcp`,
+          username: username,
+          credential: credential
+        }
+      ],
+      ttl: 86400 // 24 hours
+    });
+  } catch(e) {
+    console.error('[ProjectHive] TURN credential generation failed:', e.message);
+    res.json({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  }
+});
 
 
 // 404 handler for API routes only — HTML pages are served by express.static above

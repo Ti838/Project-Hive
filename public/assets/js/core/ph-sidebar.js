@@ -657,6 +657,27 @@ const PHSidebar = (() => {
         closeSearch();
       }
     });
+
+    // #27 — Mobile search trigger button (visible 🔍 in topbar)
+    if (window.innerWidth <= 768) {
+      const topbar = document.querySelector('.ph-topbar');
+      if (topbar && !topbar.querySelector('.ph-mobile-search-btn')) {
+        const searchBtn = document.createElement('button');
+        searchBtn.className = 'ph-mobile-search-btn';
+        searchBtn.setAttribute('aria-label', 'Search');
+        searchBtn.setAttribute('title', 'Search');
+        searchBtn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;border:none;background:var(--sf2,#f1f5f9);cursor:pointer;border-radius:10px;transition:all .15s;flex-shrink:0;color:var(--sub,#64748b);';
+        searchBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+        searchBtn.addEventListener('click', toggleSearch);
+        // Insert before the last child or append
+        const lastChild = topbar.lastElementChild;
+        if (lastChild) {
+          topbar.insertBefore(searchBtn, lastChild);
+        } else {
+          topbar.appendChild(searchBtn);
+        }
+      }
+    }
   }
 
   // ══ Premium Mobile Bottom Navigation Bar (with center AI button) ═══════════
@@ -673,7 +694,7 @@ const PHSidebar = (() => {
         icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>` },
       { key: 'notifications', href: '/notifications', label: 'Alerts',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>` },
-      { key: 'profile', href: '/profile', label: 'Profile',
+      { key: 'profile', href: '#', label: 'Me', isSheet: true,
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>` },
     ];
 
@@ -683,10 +704,15 @@ const PHSidebar = (() => {
     nav.innerHTML = items.map(item => {
       const isActive = item.key === active;
       if (item.isCenter) {
-        // Center AI button — elevated, gradient
         return `<button class="ph-bn-center" id="ph-bn-ai-btn" title="AI Chat" aria-label="Open AI Chat">
           <div class="ph-bn-center-ring"></div>
           ${item.icon}
+        </button>`;
+      }
+      if (item.isSheet) {
+        return `<button class="ph-bn-item" id="ph-bn-profile-btn" data-key="profile" title="${item.label}">
+          ${item.icon}
+          <span>${item.label}</span>
         </button>`;
       }
       return `<a href="${item.href}" class="ph-bn-item${isActive ? ' active' : ''}" data-key="${item.key}" title="${item.label}">
@@ -697,20 +723,137 @@ const PHSidebar = (() => {
 
     document.body.appendChild(nav);
 
-    // Wire center AI button to toggle AI popup on dashboard
+    // Wire center AI button
     const aiBtn = document.getElementById('ph-bn-ai-btn');
     if (aiBtn) {
       aiBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        // If toggleAIPopup exists (dashboard), use it
         if (typeof toggleAIPopup === 'function') {
           toggleAIPopup();
         } else {
-          // On other pages, navigate to generator
           window.location.href = '/generator';
         }
       });
     }
+
+    // Wire Profile bottom sheet
+    const profileBtn = document.getElementById('ph-bn-profile-btn');
+    if (profileBtn) {
+      profileBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openProfileSheet();
+      });
+    }
+
+    // Build profile bottom sheet HTML
+    buildProfileSheet();
+  }
+
+  function buildProfileSheet() {
+    if (document.getElementById('ph-profile-sheet-backdrop')) return;
+
+    // Get cached user info
+    let userName = 'Student', userInitials = '?', userBg = '#6366f1', userAvatar = null;
+    try {
+      const c = JSON.parse(localStorage.getItem('ph-user-cache') || 'null');
+      if (c) {
+        const fn = c.firstName || c.first_name || 'Student';
+        const ln = c.lastName || c.last_name || '';
+        userName = fn + (ln ? ' ' + ln : '');
+        userInitials = ((fn[0]||'') + (ln[0]||'')).toUpperCase() || '?';
+        userBg = getAvatarColor(userName);
+        userAvatar = c.avatar || null;
+      }
+    } catch(_) {}
+
+    const isDark = document.documentElement.classList.contains('dark');
+    const themeLabel = isDark ? 'Light Mode' : 'Dark Mode';
+    const themeIcon = isDark ? 'light_mode' : 'dark_mode';
+
+    const backdrop = document.createElement('div');
+    backdrop.id = 'ph-profile-sheet-backdrop';
+    backdrop.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .25s ease;';
+    backdrop.addEventListener('click', closeProfileSheet);
+
+    const sheet = document.createElement('div');
+    sheet.id = 'ph-profile-sheet';
+    sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:var(--sf,#fff);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,1.28,.58,1);padding:0;box-shadow:0 -8px 40px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto;';
+
+    sheet.innerHTML = `
+      <div style="display:flex;justify-content:center;padding:10px 0 4px">
+        <div style="width:36px;height:4px;border-radius:4px;background:var(--bd,#e2e8f0)"></div>
+      </div>
+      <div style="padding:16px 20px 12px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--bd,#e2e8f0)">
+        <div style="width:44px;height:44px;border-radius:50%;background:${userAvatar ? 'transparent' : userBg};display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:15px;flex-shrink:0;overflow:hidden">
+          ${userAvatar ? `<img src="${userAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : userInitials}
+        </div>
+        <div style="min-width:0;flex:1">
+          <div style="font-size:15px;font-weight:700;color:var(--tx,#111)">${userName}</div>
+          <div style="font-size:12px;color:var(--sub,#64748b)">Manage your account</div>
+        </div>
+      </div>
+      <div style="padding:8px 12px 20px">
+        <a href="/profile" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">person</span>My Profile
+        </a>
+        <a href="/settings" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">settings</span>Settings
+        </a>
+        <a href="/saved" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">bookmark</span>Saved
+        </a>
+        <button id="ph-ps-theme" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600;font-family:inherit;text-align:left">
+          <span class="material-symbols-outlined" id="ph-ps-theme-icon" style="font-size:20px;color:var(--sub,#64748b)">${themeIcon}</span>
+          <span id="ph-ps-theme-label">${themeLabel}</span>
+        </button>
+        <div style="height:1px;background:var(--bd,#e2e8f0);margin:4px 12px"></div>
+        <button id="ph-ps-logout" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:#ef4444;transition:background .15s;min-height:48px;font-size:14px;font-weight:700;font-family:inherit;text-align:left">
+          <span class="material-symbols-outlined" style="font-size:20px">logout</span>Sign Out
+        </button>
+      </div>
+    `;
+
+    document.body.appendChild(backdrop);
+    document.body.appendChild(sheet);
+
+    // Hover effect for items
+    sheet.querySelectorAll('.ph-ps-item, #ph-ps-theme, #ph-ps-logout').forEach(el => {
+      el.addEventListener('mouseenter', () => el.style.background = 'var(--sf2, #f1f5f9)');
+      el.addEventListener('mouseleave', () => el.style.background = 'none');
+    });
+
+    // Wire theme toggle
+    document.getElementById('ph-ps-theme')?.addEventListener('click', () => {
+      toggleTheme();
+      const isDarkNow = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('ph-ps-theme-icon');
+      const label = document.getElementById('ph-ps-theme-label');
+      if (icon) icon.textContent = isDarkNow ? 'light_mode' : 'dark_mode';
+      if (label) label.textContent = isDarkNow ? 'Light Mode' : 'Dark Mode';
+    });
+
+    // Wire logout
+    document.getElementById('ph-ps-logout')?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to sign out?')) {
+        logout();
+      }
+    });
+  }
+
+  function openProfileSheet() {
+    const backdrop = document.getElementById('ph-profile-sheet-backdrop');
+    const sheet = document.getElementById('ph-profile-sheet');
+    if (backdrop) { backdrop.style.opacity = '1'; backdrop.style.pointerEvents = 'all'; }
+    if (sheet) sheet.style.transform = 'translateY(0)';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeProfileSheet() {
+    const backdrop = document.getElementById('ph-profile-sheet-backdrop');
+    const sheet = document.getElementById('ph-profile-sheet');
+    if (backdrop) { backdrop.style.opacity = '0'; backdrop.style.pointerEvents = 'none'; }
+    if (sheet) sheet.style.transform = 'translateY(100%)';
+    document.body.style.overflow = '';
   }
 
   // ══ Mobile FAB removed — AI is now in center of bottom nav ═══════════════
@@ -721,28 +864,37 @@ const PHSidebar = (() => {
 
   /** Inject a hamburger button into the page topbar/header for mobile */
   function injectHamburger(base) {
+    // Only show on mobile
+    if (window.innerWidth > 768) return;
+
     // Look for an existing hamburger slot first
     const slot = document.getElementById('ph-hamburger-slot');
     if (slot) {
-      slot.innerHTML = `<button class="ph-hamburger" aria-label="Open menu" onclick="PHSidebar.openDrawer()">
+      slot.innerHTML = `<button class="ph-hamburger" aria-label="Open menu">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
           <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
       </button>`;
+      slot.querySelector('.ph-hamburger')?.addEventListener('click', () => PHSidebar.openDrawer());
       return;
     }
-    // Otherwise prepend to the first <header> on the page
-    const header = document.querySelector('header');
-    if (!header) return;
+
+    // Auto-inject into .ph-topbar OR <header> (whichever exists)
+    const target = document.querySelector('.ph-topbar') || document.querySelector('header');
+    if (!target) return;
+    // Don't inject twice
+    if (target.querySelector('.ph-hamburger') || document.getElementById('ph-hamburger-btn')) return;
+
     const btn = document.createElement('button');
     btn.className = 'ph-hamburger';
     btn.setAttribute('aria-label', 'Open menu');
     btn.setAttribute('id', 'ph-hamburger-btn');
-    btn.setAttribute('onclick', 'PHSidebar.openDrawer()');
+    btn.style.cssText = 'display:flex;align-items:center;justify-content:center;width:40px;height:40px;border:none;background:none;cursor:pointer;border-radius:10px;transition:background .15s;flex-shrink:0;';
     btn.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
       <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
     </svg>`;
-    header.insertBefore(btn, header.firstChild);
+    btn.addEventListener('click', () => PHSidebar.openDrawer());
+    target.insertBefore(btn, target.firstChild);
   }
 
   /** Set up LinkedIn-style mobile header: Move Avatar to left and bind to drawer */
@@ -1353,6 +1505,10 @@ const PHSidebar = (() => {
   function initWithKeepAlive(active, base) {
     _origInit(active, base);
     startKeepAlive();
+    // D4: Restore sidebar collapse state from localStorage (desktop only)
+    if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
+      document.documentElement.classList.add('sidebar-collapsed');
+    }
   }
 
   return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest };

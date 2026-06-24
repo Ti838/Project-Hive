@@ -51,6 +51,26 @@ html.dark {
   --shadow-lg:0 8px 32px rgba(0,0,0,.35);
 }
 
+/* ═══ D1: Cross-Reference Aliases ═══
+   ph-design.css is the source of truth.
+   These aliases ensure ph-system.css vars
+   resolve to the same values, eliminating
+   the 3-system maintenance nightmare.
+   ═══════════════════════════════════════ */
+:root {
+  --ph-bg:      var(--bg);
+  --ph-bg2:     var(--sf2);
+  --ph-card:    var(--sf);
+  --ph-txt:     var(--tx);
+  --ph-txt2:    var(--sub);
+  --ph-muted:   var(--sub);
+  --ph-border:  var(--bd);
+  --ph-inp:     var(--sf2);
+  --ph-primary: var(--ac);
+  --ph-primary-dark: var(--ac2);
+  --ph-shadow:  var(--shadow);
+  --ph-shadow-lg: var(--shadow-lg);
+}
 /* ─── Base ─── */
 *, *::before, *::after { box-sizing: border-box; }
 
