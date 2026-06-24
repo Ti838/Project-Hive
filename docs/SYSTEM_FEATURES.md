@@ -1,7 +1,7 @@
 # ProjectHive — System Documentation
 
 > **A Student Collaboration & Team Formation Platform**  
-> Version 1.0 | June 2026
+> Version 1.0 | Last Updated: June 24, 2026
 
 ---
 
@@ -675,7 +675,7 @@ graph TB
 
 | Metric | Count |
 |--------|-------|
-| HTML Pages | 16 |
+| HTML Pages | 26 |
 | API Endpoints | 90+ |
 | Database Tables | 13 |
 | Controllers | 11 |

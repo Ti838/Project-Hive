@@ -72,18 +72,26 @@ The admin panel has its **own dedicated login** — separate from the regular us
 | `/pages/auth/verify-email.html` | Email verification |
 | `/pages/auth/forgot-password.html` | Forgot password |
 | `/pages/auth/reset-password.html` | Reset password |
+| `/pages/auth/callback.html` | OAuth callback |
 | `/pages/user/dashboard.html` | Student dashboard |
+| `/pages/user/feed.html` | Social feed |
+| `/pages/user/profile/view.html` | View profile |
 | `/pages/user/profile/edit.html` | Edit profile |
 | `/pages/user/settings.html` | Account settings |
 | `/pages/user/people.html` | Find people |
 | `/pages/user/notifications.html` | Notifications |
 | `/pages/user/messages.html` | Real-time chat |
+| `/pages/user/saved.html` | Saved posts & projects |
 | `/pages/user/teams.html` | Browse teams |
 | `/pages/user/teams-create.html` | Create team |
 | `/pages/user/projects/showcase.html` | Project showcase |
 | `/pages/user/projects/generator.html` | AI project generator |
 | `/pages/admin/login.html` | Admin login portal |
 | `/pages/admin/dashboard.html` | Admin control center |
+| `/pages/info/about.html` | About ProjectHive |
+| `/pages/info/help.html` | Help & FAQ |
+| `/pages/info/privacy.html` | Privacy policy |
+| `/pages/info/terms.html` | Terms of service |
 
 ---
 

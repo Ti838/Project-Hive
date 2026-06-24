@@ -1,7 +1,7 @@
 # ProjectHive — Database Architecture
 
 > **Database:** Supabase PostgreSQL | **Tables:** 13 | **Relations:** 18 Foreign Keys  
-> **Security:** Row Level Security (RLS) on all tables | **Last Updated:** June 23, 2026
+> **Security:** Row Level Security (RLS) on all tables | **Last Updated:** June 24, 2026
 
 ---
 

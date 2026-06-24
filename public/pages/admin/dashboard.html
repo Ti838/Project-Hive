@@ -187,10 +187,19 @@ tr:hover td{background:rgba(99,102,241,.03)}
   .stat-grid,.analytics-grid{grid-template-columns:1fr}
   .stat-card{padding:14px 12px}
   .topbar{padding-left:48px}
-  .content{padding:12px}
+  .content{padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
   .card-hdr{padding:10px 12px}
   td,th{padding:6px 8px;font-size:10px}
   .act{padding:4px 6px;font-size:9px}
+}
+/* ── Safe area insets for notch phones ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .content {
+    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+  }
+  .sb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
 }
 /* ── Admin Collapsible Sidebar Styles ── */
 .sb {

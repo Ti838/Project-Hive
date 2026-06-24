@@ -2022,5 +2022,28 @@
     </button>
     <img id="lightbox-img" class="max-w-full max-h-full rounded-lg object-contain shadow-2xl" src="" alt="Zoomed attachment" onclick="event.stopPropagation()">
   </div>
+
+  <!-- Mobile Reaction Picker Touch Support -->
+  <script>
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    document.addEventListener('click', function(e) {
+      const trigger = e.target.closest('.reaction-trigger');
+      if (trigger) {
+        e.stopPropagation();
+        const picker = trigger.querySelector('.reaction-picker');
+        if (picker) {
+          // Close all other pickers
+          document.querySelectorAll('.reaction-picker.touch-show')
+            .forEach(function(p) { if (p !== picker) p.classList.remove('touch-show'); });
+          picker.classList.toggle('touch-show');
+        }
+        return;
+      }
+      // Close all pickers when tapping elsewhere
+      document.querySelectorAll('.reaction-picker.touch-show')
+        .forEach(function(p) { p.classList.remove('touch-show'); });
+    });
+  }
+  </script>
 </body>
 </html>

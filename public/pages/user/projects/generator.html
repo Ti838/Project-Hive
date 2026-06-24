@@ -191,6 +191,27 @@
   .diff-easy   { background: rgba(16,185,129,.1); color: var(--green); border-color: rgba(16,185,129,.2); }
   .diff-medium { background: rgba(245,158,11,.1); color: var(--yellow); border-color: rgba(245,158,11,.2); }
   .diff-hard   { background: rgba(239,68,68,.1);  color: var(--red);   border-color: rgba(239,68,68,.2); }
+
+  /* ── Mobile touch target fix ── */
+  @media (max-width: 768px) {
+    .chip {
+      min-height: 44px;
+      padding: 10px 16px;
+      font-size: 13px;
+    }
+    .lvl {
+      min-height: 44px;
+      padding: 12px 8px;
+    }
+    .tech-badge {
+      min-height: 32px;
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    .idea-card {
+      padding: 20px 16px;
+    }
+  }
 </style>
 </head>
 <body data-no-float-theme="1" style="background:var(--bg);color:var(--tx);margin:0;min-height:100vh;">
