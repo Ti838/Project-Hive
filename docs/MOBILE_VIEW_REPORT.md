@@ -1,7 +1,7 @@
 # 📱 ProjectHive — Mobile View Report
 
 > **Platform:** ProjectHive Student Collaboration Platform  
-> **Report Date:** 2026-06-24  
+> **Report Date:** 2026-06-25  
 > **Viewport Range:** 320px – 768px  
 > **Total Pages:** 25
 
@@ -53,7 +53,7 @@
 
 | Page | Mobile Behavior |
 |------|----------------|
-| **Login** | Centered card (`max-w-440px`), full-width on small screens, gradient orbs, Google OAuth button full-width |
+| **Login** | Centered card (`max-w-440px`), full-width on small screens, gradient orbs, Google OAuth button full-width. **Navbar:** Logo image hidden on mobile, text compact (14px), CTA buttons shrink to 12px. Extra-small (≤380px): further compaction (11px CTA, 13px brand). **Password toggle:** 44x44px touch target, debounced click/touch handlers |
 | **Register** | 2-col name fields → 1-col, university autocomplete dropdown, password strength bar, 16px inputs |
 | **Forgot Password** | Simple centered card, single input, responsive |
 | **Reset Password** | Simple centered card, password + confirm fields |
@@ -64,7 +64,7 @@
 
 | Page | Key Mobile Behaviors |
 |------|---------------------|
-| **Dashboard** | Stats: 2-col grid. Welcome banner: compact padding. Quick Actions: 2-col. Right sidebar: hidden. Header: 56px |
+| **Dashboard** | Stats: 2-col grid. Welcome banner: compact padding. Quick Actions: 2-col. Right sidebar: hidden. Header: 56px. **Theme toggle:** accessible via profile bottom sheet ("Me" → Theme button) with `data-theme-wired` to prevent duplicate handlers |
 | **Feed** | Topbar: search full-width, help/notif/back hidden. Cards: full-width LinkedIn-style. Composer: type buttons scroll horizontally, publish full-width. Reactions: tap-to-toggle picker. Right sidebar: hidden |
 | **Messages** | Height: `100dvh` with Safari fallback. Conversation panel: full-width overlay. Bottom nav: hidden when in chat. Chat input: safe-area padding. Modals: bottom-sheet |
 | **Notifications** | Wrap: 16px padding, -40px margin-top. Summary card: flex-wrap. Tabs: horizontal scroll. Mark-all button: aligned right |
@@ -93,11 +93,40 @@
 
 ---
 
+## 🎨 3-State Theme System (NEW)
+
+All pages support a unified 3-state theme cycle that works on both mobile and desktop:
+
+| State | localStorage | Behavior | Icon |
+|-------|-------------|----------|------|
+| **System** | `null` (removed) | Auto-follows OS preference via `prefers-color-scheme` | 🖥️ Monitor |
+| **Dark** | `'dark'` | Forces dark mode regardless of OS | ☀️ Sun |
+| **Light** | `'light'` | Forces light mode regardless of OS | 🌙 Moon |
+
+**Cycle:** System → Dark → Light → System → ...
+
+### Features
+- **Real-time OS listener:** `matchMedia('(prefers-color-scheme:dark)').addEventListener('change')` — auto-updates when OS switches day/night mode (only in System mode)
+- **Consistent across pages:** Landing, Login, Dashboard all share the same localStorage key and cycle logic
+- **Dashboard protection:** Profile sheet theme button marked with `data-theme-wired="1"` to prevent `wireThemeButtons()` from adding a duplicate click handler (was the root cause of the "toggle doesn't work" bug)
+
+### Mobile Theme Access Points
+| Page | Access Method |
+|------|-------------|
+| **Landing** | Navbar theme button (CSS hidden on desktop, shown on ≤768px) + hamburger dropdown "Dark Mode" / "Light Mode" / "System" button |
+| **Login** | Navbar theme button (always visible) |
+| **Dashboard** | Bottom nav "Me" → Profile sheet → Theme toggle button |
+| **Dashboard (alt)** | Hamburger → Sidebar drawer → Theme toggle at bottom |
+
+---
+
 ## 🔧 Mobile-Specific Features
 
 ### Touch Optimization
 - All buttons: `min-height: 44px` (Apple HIG)
 - Reaction buttons: 40×40px tap area
+- Password toggle: 44×44px with `touch-action: manipulation` and click/touchend debounce
+- Theme buttons: `touch-action: manipulation`, `-webkit-tap-highlight-color: transparent`
 - Swipe-back gesture: `overscroll-behavior-x: none`, `touch-action: pan-y`
 
 ### iOS-Specific
@@ -134,3 +163,8 @@
 - [x] Loading states visible
 - [x] Safe area handled (notch + home bar)
 - [x] Swipe-back gesture works
+- [x] Theme toggle works on all pages (3-state: System/Dark/Light)
+- [x] Password show/hide toggle responsive on mobile
+- [x] Login navbar doesn't overflow on small screens
+- [x] Landing page theme accessible in mobile dropdown
+
