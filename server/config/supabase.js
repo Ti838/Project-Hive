@@ -9,8 +9,17 @@ if (!supabaseUrl || !supabaseServiceKey) {
   process.exit(1);
 }
 
-// Public client (for frontend-facing operations)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseAnonKey) {
+  console.warn('[ProjectHive] ⚠️  Missing SUPABASE_ANON_KEY — Google OAuth will not work');
+}
+
+// Public client (for OAuth URL generation — server-safe config)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey || supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false,
+  },
+});
 
 // Admin client (bypasses RLS — use only in server-side code)
 export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {

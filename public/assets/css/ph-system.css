@@ -558,11 +558,14 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
 .ph-bn-item.active::before {
   content: '';
   position: absolute;
-  top: 6px;
-  left: 50%; transform: translateX(-50%);
-  width: 32px; height: 32px;
-  border-radius: 10px;
-  background: rgba(99,102,241,0.15);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(99,102,241,0.12);
+  z-index: -1;
 }
 .ph-bn-item:active { transform: scale(0.92); }
 
@@ -605,6 +608,13 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
 /* Mobile Floating Action Button — HIDDEN (now in bottom nav center) */
 .ph-mobile-fab {
   display: none !important;
+}
+
+/* Hide Floating AI FAB on mobile — AI is in bottom nav center */
+@media (max-width: 768px) {
+  #ai-fab-wrap {
+    display: none !important;
+  }
 }
 
 @media (max-width: 768px) {
@@ -964,6 +974,49 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
     padding-bottom: env(safe-area-inset-bottom, 8px) !important;
   }
 
+  /* ── Messages — Chat Header Action Icons Fix ── */
+  #chat-hdr {
+    padding: 0 10px !important;
+    gap: 4px !important;
+    height: auto !important;
+    min-height: 56px !important;
+  }
+  #chat-hdr button,
+  #chat-hdr .msg-back-btn button {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  #chat-hdr .flex.items-center.gap-2 {
+    gap: 4px !important;
+  }
+  #chat-hdr .flex.items-center.gap-3 {
+    gap: 4px !important;
+  }
+  /* Chat header user name area */
+  #chat-hdr .flex-1 {
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  #chat-hdr .font-heading,
+  #chat-hdr .font-bold {
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  /* ── Messages — Conversation Panel Mobile Full Width ── */
+  .msg-conv-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   /* ══════════════════════════════════════════════
      SPRINT 2: UX QUALITY IMPROVEMENTS
      ══════════════════════════════════════════════ */
@@ -1066,19 +1119,20 @@ html:not(.dark) .ph-bn-item.active { color: #6366f1; }
   .ph-bn-item::before {
     content: '';
     position: absolute;
-    top: 6px;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: 0;
     height: 0;
-    border-radius: 10px;
+    border-radius: 12px;
     background: rgba(99,102,241,0.12);
     transition: width 0.25s cubic-bezier(.34,1.56,.64,1),
                 height 0.25s cubic-bezier(.34,1.56,.64,1);
+    z-index: -1;
   }
   .ph-bn-item.active::before {
-    width: 36px;
-    height: 36px;
+    width: 42px;
+    height: 42px;
   }
 
   /* ── People page — hero compact ── */

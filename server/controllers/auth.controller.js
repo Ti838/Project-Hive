@@ -1,6 +1,6 @@
 import bcryptjs from 'bcryptjs';
 import crypto from 'crypto';
-import { supabaseAdmin } from '../config/supabase.js';
+import { supabase, supabaseAdmin } from '../config/supabase.js';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.utils.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../services/email.service.js';
 import { getFlags } from './admin.controller.js';
@@ -481,6 +481,12 @@ export async function googleInitiate(req, res, next) {
       : (process.env.APP_URL || 'http://localhost:5000');
 
     const redirectTo = `${APP_URL}/auth/callback`;
+    console.log('[ProjectHive] 🔑 Google OAuth — redirectTo:', redirectTo);
+
+    if (!supabase) {
+      console.error('[ProjectHive] ❌ Supabase public client not initialized');
+      return res.status(500).json({ error: 'Authentication service not configured.' });
+    }
 
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -495,14 +501,15 @@ export async function googleInitiate(req, res, next) {
     });
 
     if (error || !data?.url) {
-      console.error('[ProjectHive] Google OAuth initiate error:', error);
-      return res.status(500).json({ error: 'Failed to generate Google OAuth URL.' });
+      console.error('[ProjectHive] Google OAuth initiate error:', error?.message || error);
+      return res.status(500).json({ error: 'Failed to generate Google OAuth URL. ' + (error?.message || '') });
     }
 
+    console.log('[ProjectHive] ✅ Google OAuth URL generated successfully');
     res.json({ url: data.url });
   } catch (error) {
-    console.error('[ProjectHive] Google OAuth initiate error:', error);
-    next(error);
+    console.error('[ProjectHive] Google OAuth initiate catch error:', error?.message || error);
+    res.status(500).json({ error: 'Internal server error during Google sign-in.' });
   }
 }
 
