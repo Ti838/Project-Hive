@@ -183,8 +183,11 @@ tr:hover td{background:rgba(99,102,241,.03)}
   .srch{width:100%;min-width:0;font-size:16px}
 
   /* Table rows â†’ hide on mobile, show cards */
-  .desktop-table{display:none!important}
-  .mobile-card-list{display:block}
+  .desktop-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .desktop-table table{min-width:650px}
+  .desktop-table th:first-child,.desktop-table td:first-child{position:sticky;left:0;z-index:10;background:var(--bg)}
+  .desktop-table td:first-child{background:var(--sf);border-right:1px solid var(--bd)}
+  .desktop-table th{background:var(--bg)}
 
   /* Maintenance banner */
   .maint-banner{flex-direction:column;align-items:flex-start;gap:10px;padding:12px}
