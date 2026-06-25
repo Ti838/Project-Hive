@@ -108,6 +108,17 @@
        PREMIUM FULL-WIDTH LAYOUT FOR DESKTOP
        ========================================================================== */
     @media (min-width: 769px) {
+      /* ── CRITICAL: Override ph-system.css D2 rule that applies max-width:1400px
+         to all .flex-1 children of .ml-[260px] containers. On the messages page,
+         .msg-layout has the flex-1 class, so it gets incorrectly centered/capped.
+         This override ensures the full chat workspace spans 100% of available width. ── */
+      .msg-layout {
+        max-width: none !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important;
+      }
+
       /* Ensure full width and normal scrollbar layout on desktop */
       #msgs {
         width: 100% !important;
