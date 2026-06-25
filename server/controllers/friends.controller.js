@@ -30,10 +30,22 @@ export async function sendFriendRequest(req, res, next) {
     if (error) throw error;
 
     const { data: sender } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', senderId).single();
+    const title = 'New Friend Request';
+    const message = `${sender?.first_name} ${sender?.last_name} sent you a friend request`;
+
+    await supabaseAdmin.from('notifications').insert({
+      user_id: receiverId,
+      type: 'friend_request',
+      title,
+      message,
+      link: '/people',
+      is_read: false
+    });
+
     broadcastNotification(getIo(), receiverId, {
       type: 'friend_request',
-      title: 'New Friend Request',
-      message: `${sender?.first_name} ${sender?.last_name} sent you a friend request`,
+      title,
+      message,
       requestId: request.id,
     });
 
@@ -60,10 +72,22 @@ export async function acceptFriendRequest(req, res, next) {
     ]);
 
     const { data: accepter } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
+    const title = 'Friend Request Accepted';
+    const message = `${accepter?.first_name} ${accepter?.last_name} accepted your friend request`;
+
+    await supabaseAdmin.from('notifications').insert({
+      user_id: request.from_user_id,
+      type: 'friend_accepted',
+      title,
+      message,
+      link: `/profile/view?id=${userId}`,
+      is_read: false
+    });
+
     broadcastNotification(getIo(), request.from_user_id, {
       type: 'friend_accepted',
-      title: 'Friend Request Accepted',
-      message: `${accepter?.first_name} ${accepter?.last_name} accepted your friend request`,
+      title,
+      message,
     });
 
     res.json({ message: 'Friend request accepted' });

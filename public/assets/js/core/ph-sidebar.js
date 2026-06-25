@@ -353,6 +353,7 @@ const PHSidebar = (() => {
       try { if (typeof initTransitions === 'function') initTransitions(); } catch(_) {}
       try { initGlobalSearch(base); } catch(_) {}
       try { if (typeof initGlobalProfile === 'function') initGlobalProfile(base); } catch(_) {}
+      try { initGlobalRealtime(base); } catch(_) {}
     };
 
     if (document.getElementById('ph-sidebar')) {
@@ -702,6 +703,96 @@ const PHSidebar = (() => {
           topbar.appendChild(searchBtn);
         }
       }
+    }
+  }
+
+  // ── Global Realtime Socket & Sounds ──
+  function initGlobalRealtime(base) {
+    if (window.phGlobalSocketInited) return;
+    window.phGlobalSocketInited = true;
+
+    const tk = localStorage.getItem('access_token');
+    if (!tk) return;
+
+    if (typeof io === 'undefined') {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+      script.onload = () => setupSockets(tk);
+      document.head.appendChild(script);
+    } else {
+      setupSockets(tk);
+    }
+
+    function playNotificationSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.2);
+      } catch(e) {}
+    }
+
+    function playCallSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const playRing = (startTime) => {
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc1.connect(gain); osc2.connect(gain);
+          gain.connect(ctx.destination);
+          osc1.type = 'sine'; osc2.type = 'sine';
+          osc1.frequency.value = 440; osc2.frequency.value = 480;
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.15, startTime + 0.1);
+          gain.gain.linearRampToValueAtTime(0, startTime + 1.5);
+          osc1.start(startTime); osc2.start(startTime);
+          osc1.stop(startTime + 1.5); osc2.stop(startTime + 1.5);
+        };
+        for(let i=0; i<3; i++) playRing(ctx.currentTime + i * 2);
+      } catch(e) {}
+    }
+
+    function setupSockets(token) {
+      const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
+      
+      const socket = io(apiBase, { auth: { token }, transports: ['websocket', 'polling'] });
+      
+      socket.on('notification:new', (notif) => {
+        playNotificationSound();
+        if (typeof PHToast !== 'undefined' && PHToast.info) {
+          PHToast.info(`<strong>${notif.title||'Notification'}</strong><br/><span style="font-size:12px">${notif.message||''}</span>`);
+        }
+      });
+
+      socket.on('call:incoming', (data) => {
+        playCallSound();
+        // Check if already on messages page
+        if (location.pathname.includes('/messages')) return; 
+        
+        if (typeof PHToast !== 'undefined' && PHToast.info) {
+          PHToast.info(
+            `<div style="display:flex;align-items:center;gap:12px;">
+              <span class="material-symbols-outlined" style="font-size:28px;color:#10b981;">call</span>
+              <div>
+                <strong>Incoming Call</strong><br/>
+                <span style="font-size:12px">${data.callerName||'Someone'} is calling you.</span><br/>
+                <a href="/messages?chat=${data.callerId||data.teamId}" style="display:inline-block;margin-top:6px;background:#10b981;color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px">Answer Call</a>
+              </div>
+            </div>`, 15000
+          );
+        }
+      });
     }
   }
 
