@@ -401,16 +401,26 @@
     cropCtx.clearRect(0, 0, cw, ch);
     cropCtx.save();
     
+    let maskW, maskH;
+    if (activeCropType === 'avatar') {
+      maskW = Math.min(cw, ch) * 0.76;
+      maskH = maskW;
+    } else {
+      maskW = cw * 0.9;
+      maskH = maskW * 0.35;
+    }
+
     const imgRatio = cropImg.width / cropImg.height;
-    const canvasRatio = cw / ch;
+    const maskRatio = maskW / maskH;
     
     let drawW, drawH;
-    if (imgRatio > canvasRatio) {
-      drawH = ch;
-      drawW = ch * imgRatio;
+    // Use contain logic relative to the mask so the full image is visible
+    if (imgRatio > maskRatio) {
+      drawW = maskW;
+      drawH = maskW / imgRatio;
     } else {
-      drawW = cw;
-      drawH = cw / imgRatio;
+      drawH = maskH;
+      drawW = maskH * imgRatio;
     }
     
     const s = scale;
@@ -532,15 +542,15 @@
     outCtx.save();
     
     const imgRatio = cropImg.width / cropImg.height;
-    const canvasRatio = cw / ch;
+    const maskRatio = maskW / maskH;
     
     let drawW, drawH;
-    if (imgRatio > canvasRatio) {
-      drawH = ch;
-      drawW = ch * imgRatio;
+    if (imgRatio > maskRatio) {
+      drawW = maskW;
+      drawH = maskW / imgRatio;
     } else {
-      drawW = cw;
-      drawH = cw / imgRatio;
+      drawH = maskH;
+      drawW = maskH * imgRatio;
     }
     
     const w = drawW * scale;
