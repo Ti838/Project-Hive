@@ -100,18 +100,11 @@
        PREMIUM CENTERING & FLOATING ISLAND LAYOUT FOR DESKTOP
        ========================================================================== */
     @media (min-width: 769px) {
-      /* 1. Header Centering (dynamic padding to center content to 900px) */
+      /* 1. Header Centering (fluid padding to perfectly align content to 900px grid) */
       #chat-hdr {
-        padding-left: 24px !important;
-        padding-right: 24px !important;
+        padding-left: max(24px, calc((100% - 900px) / 2 + 24px)) !important;
+        padding-right: max(24px, calc((100% - 900px) / 2 + 24px)) !important;
         transition: padding 0.2s ease;
-      }
-      
-      @media (min-width: 1280px) {
-        #chat-hdr {
-          padding-left: calc((100% - 900px) / 2 + 24px) !important;
-          padding-right: calc((100% - 900px) / 2 + 24px) !important;
-        }
       }
 
       /* 2. Message List Centering */
@@ -417,7 +410,7 @@
             <button onclick="toggleEmojiPicker()" id="emoji-btn" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji" aria-label="Add emoji">
               <span class="material-symbols-outlined text-lg">mood</span>
             </button>
-            <div id="emoji-picker-container" class="absolute bottom-14 right-0 hidden z-50 w-72 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-2xl shadow-2xl overflow-hidden">
+            <div id="emoji-picker-container" class="absolute bottom-14 left-0 hidden z-50 w-72 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-2xl shadow-2xl overflow-hidden">
               <div class="p-2 border-b border-gray-100 dark:border-darkSurface-border">
                 <input type="text" id="emoji-search" placeholder="Search emoji..." oninput="filterEmojis(this.value)"
                   class="w-full px-3 py-1.5 text-xs bg-gray-100 dark:bg-darkSurface-hover rounded-lg outline-none text-gray-800 dark:text-slate-200 placeholder-gray-400">
