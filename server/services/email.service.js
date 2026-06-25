@@ -153,7 +153,7 @@ function emailWrapper(content) {
 
 // ─── Verification Email ────────────────────────────────────────────────────────
 export async function sendVerificationEmail(email, firstName, token) {
-  const verifyUrl = `${FRONTEND_URL}/pages/auth/verify-email.html?token=${token}`;
+  const verifyUrl = `${FRONTEND_URL}/verify-email?token=${token}`;
 
   const content = `
     <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0 0 8px;">Hey ${firstName}! 👋</h1>
@@ -186,7 +186,7 @@ export async function sendVerificationEmail(email, firstName, token) {
 
 // ─── Welcome Email ─────────────────────────────────────────────────────────────
 export async function sendWelcomeEmail(email, firstName) {
-  const dashUrl = `${FRONTEND_URL}/pages/user/dashboard.html`;
+  const dashUrl = `${FRONTEND_URL}/dashboard`;
 
   const content = `
     <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0 0 8px;">Welcome aboard, ${firstName}! 🎉</h1>
@@ -228,7 +228,7 @@ export async function sendWelcomeEmail(email, firstName) {
 
 // ─── Password Reset Email ──────────────────────────────────────────────────────
 export async function sendPasswordResetEmail(email, firstName, token) {
-  const resetUrl = `${FRONTEND_URL}/pages/auth/reset-password.html?token=${token}`;
+  const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`;
 
   const content = `
     <h1 style="color:#f1f5f9;font-size:22px;font-weight:700;margin:0 0 8px;">Password Reset Request 🔐</h1>
