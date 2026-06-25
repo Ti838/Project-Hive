@@ -95,6 +95,87 @@
     #ai-fab-wrap {
       display: none !important;
     }
+
+    /* ==========================================================================
+       PREMIUM CENTERING & FLOATING ISLAND LAYOUT FOR DESKTOP
+       ========================================================================== */
+    @media (min-width: 769px) {
+      /* 1. Header Centering (dynamic padding to center content to 900px) */
+      #chat-hdr {
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+        transition: padding 0.2s ease;
+      }
+      
+      @media (min-width: 1280px) {
+        #chat-hdr {
+          padding-left: calc((100% - 900px) / 2 + 24px) !important;
+          padding-right: calc((100% - 900px) / 2 + 24px) !important;
+        }
+      }
+
+      /* 2. Message List Centering */
+      #msgs {
+        max-width: 900px !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        padding-left: 24px !important;
+        padding-right: 24px !important;
+      }
+
+      /* 3. Floating Search Bar */
+      #chat-search-bar {
+        background: transparent !important;
+        border-bottom: none !important;
+        padding: 0 !important;
+      }
+      #chat-search-bar > div {
+        max-width: 900px !important;
+        margin: 12px auto 0 !important;
+        width: calc(100% - 48px) !important;
+      }
+
+      /* 4. Typing Indicator Alignment */
+      #typing-indicator {
+        max-width: 900px !important;
+        margin: 0 auto !important;
+        width: calc(100% - 48px) !important;
+        background: transparent !important;
+        border: none !important;
+        padding-left: 24px !important;
+        padding-bottom: 8px !important;
+      }
+
+      /* 5. Floating Island Input Composer */
+      #chat-input-area {
+        max-width: 900px !important;
+        margin: 16px auto 24px !important;
+        width: calc(100% - 48px) !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(99, 102, 241, 0.12) !important;
+        background: #ffffff !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.03), 0 2px 12px rgba(99, 102, 241, 0.02) !important;
+        transition: all 0.25s ease;
+      }
+
+      /* Dark mode overrides for the floating input island */
+      html.dark #chat-input-area {
+        background: #11131e !important;
+        border-color: #24273e !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25) !important;
+      }
+
+      /* Focus states for premium feel */
+      #chat-input-area:focus-within {
+        border-color: rgba(99, 102, 241, 0.4) !important;
+        box-shadow: 0 12px 40px rgba(99, 102, 241, 0.08), 0 2px 12px rgba(99, 102, 241, 0.04) !important;
+      }
+      
+      html.dark #chat-input-area:focus-within {
+        border-color: rgba(99, 102, 241, 0.5) !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+      }
+    }
   </style>
 </head>
 
