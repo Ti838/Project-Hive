@@ -321,7 +321,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     btn.disabled = true;
     btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:14px">progress_activity</span>';
     try {
-      const r = await fetch(API_BASE + `/api/friends/remove/${uid}`, { method: 'DELETE', headers: H });
+      const r = await fetch(API_BASE + `/api/friends/${uid}`, { method: 'DELETE', headers: H });
       if (r.ok) {
         myFriends.delete(uid);
         document.getElementById('st-friends').textContent = myFriends.size;
