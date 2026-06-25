@@ -96,6 +96,14 @@
       display: none !important;
     }
 
+    #msg-content-wrapper {
+      width: 100%;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+    }
+
     /* ==========================================================================
        PREMIUM CENTERING & FLOATING ISLAND LAYOUT FOR DESKTOP
        ========================================================================== */
@@ -109,11 +117,19 @@
 
       /* 2. Message List Centering */
       #msgs {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      #msg-content-wrapper {
         max-width: 900px !important;
         margin: 0 auto !important;
         width: 100% !important;
         padding-left: 24px !important;
         padding-right: 24px !important;
+        padding-top: 24px !important;
+        padding-bottom: 24px !important;
       }
 
       /* 3. Floating Search Bar */
@@ -296,7 +312,7 @@
         </div>
 
         <!-- Chat messages view area -->
-        <div id="msgs" class="flex-1 overflow-y-auto p-6 flex flex-col gap-3.5">
+        <div id="msgs" class="flex-1 overflow-y-auto flex flex-col">
           <!-- Empty/Welcome Dashboard View -->
           <div class="flex flex-col items-center justify-center min-h-full py-8 px-6 max-w-[850px] mx-auto w-full text-center">
             <!-- Icon with elegant glow -->
@@ -1505,7 +1521,7 @@
         
         let lastDateString = '';
         
-        container.innerHTML = allMsgs.map(m=>{
+        const htmlContent = allMsgs.map(m=>{
           const mine = m.sender_id===ME?.id||m.sender?.id===ME?.id||m.sender===ME?.id||m._tmp;
           const ts = new Date(m.createdAt || m.created_at || Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
           const msgDate = new Date(m.createdAt || m.created_at || Date.now());
@@ -1521,6 +1537,27 @@
             dateDividerHtml = `
               <div class="flex items-center justify-center my-4 shrink-0">
                 <span class="bg-gray-200/60 dark:bg-darkSurface-card text-gray-500 dark:text-slate-400 text-[10px] px-3.5 py-1 rounded-full font-bold tracking-wider uppercase border border-gray-300/10">${displayDate}</span>
+              </div>
+            `;
+          }
+
+          let isSystemMsg = false;
+          let systemMsgHtml = '';
+          try {
+            if (m.content && m.content.trim().startsWith('{')) {
+              const obj = JSON.parse(m.content.trim());
+              if (obj.type === 'system') {
+                isSystemMsg = true;
+                systemMsgHtml = formatMessageContent(m.content);
+              }
+            }
+          } catch(e) {}
+
+          if (isSystemMsg) {
+            return `
+              ${dateDividerHtml}
+              <div class="flex justify-center my-2 shrink-0" data-msg-id="${m.id || m._id || ''}">
+                ${systemMsgHtml}
               </div>
             `;
           }
@@ -1592,6 +1629,7 @@
             </div>`;
         }).join('');
         
+        container.innerHTML = `<div id="msg-content-wrapper">${htmlContent}</div>`;
         container.scrollTop = container.scrollHeight;
       }
 
@@ -2378,7 +2416,7 @@
         
         let lastDateString = '';
         
-        container.innerHTML = allMsgs.map(m => {
+        const htmlContent = allMsgs.map(m => {
           const sender = m.sender || {};
           const sId = sender.id || sender._id || m.sender;
           const mine = sId === ME?.id;
@@ -2403,6 +2441,27 @@
             `;
           }
 
+          let isSystemMsg = false;
+          let systemMsgHtml = '';
+          try {
+            if (m.content && m.content.trim().startsWith('{')) {
+              const obj = JSON.parse(m.content.trim());
+              if (obj.type === 'system') {
+                isSystemMsg = true;
+                systemMsgHtml = formatMessageContent(m.content);
+              }
+            }
+          } catch(e) {}
+
+          if (isSystemMsg) {
+            return `
+              ${dateDividerHtml}
+              <div class="flex justify-center my-2 shrink-0" data-msg-id="${m.id || m._id || ''}">
+                ${systemMsgHtml}
+              </div>
+            `;
+          }
+
           return `
             ${dateDividerHtml}
             <div class="flex ${mine ? 'justify-end' : 'justify-start'} bubble-in gap-2.5">
@@ -2416,6 +2475,7 @@
             </div>`;
         }).join('');
         
+        container.innerHTML = `<div id="msg-content-wrapper">${htmlContent}</div>`;
         container.scrollTop = container.scrollHeight;
       }
 
