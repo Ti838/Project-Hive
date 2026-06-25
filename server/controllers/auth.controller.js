@@ -476,11 +476,11 @@ export async function getMe(req, res, next) {
 // Returns the Supabase Google OAuth URL for the frontend to redirect to
 export async function googleInitiate(req, res, next) {
   try {
-    const APP_URL = process.env.NODE_ENV === 'production'
-      ? process.env.APP_URL_PROD
-      : (process.env.APP_URL || 'http://localhost:5000');
+    const appUrl = process.env.NODE_ENV === 'production'
+      ? (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || process.env.APP_URL_PROD || process.env.APP_URL)
+      : (process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5000');
 
-    const redirectTo = `${APP_URL}/auth/callback`;
+    const redirectTo = `${appUrl.replace(/\/$/, '')}/auth/callback`;
     console.log('[ProjectHive] 🔑 Google OAuth — redirectTo:', redirectTo);
 
     if (!supabase) {
@@ -611,12 +611,18 @@ export async function googleCallback(req, res, next) {
       console.log('[ProjectHive] 🔑 Google OAuth — existing user signed in:', email);
     } else {
       // New user — create account (no password_hash for OAuth users)
+      // Generate a random dummy password hash to satisfy NOT NULL constraint
+      const dummyPassword = crypto.randomBytes(32).toString('hex');
+      const salt = await bcryptjs.genSalt(12);
+      const passwordHash = await bcryptjs.hash(dummyPassword, salt);
+
       const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
         .insert({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           email,
+          password_hash: passwordHash,
           google_id: googleId,
           avatar: avatarUrl,
           is_verified: true,
@@ -777,12 +783,18 @@ export async function googleCodeExchange(req, res, next) {
       platformUser = updated || existingUser;
       console.log('[ProjectHive] 🔑 Google OAuth (code) — existing user:', email);
     } else {
+      // Generate a random dummy password hash to satisfy NOT NULL constraint
+      const dummyPassword = crypto.randomBytes(32).toString('hex');
+      const salt = await bcryptjs.genSalt(12);
+      const passwordHash = await bcryptjs.hash(dummyPassword, salt);
+
       const { data: newUser, error: createError } = await supabaseAdmin
         .from('users')
         .insert({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           email,
+          password_hash: passwordHash,
           google_id: googleId,
           avatar: avatarUrl,
           is_verified: true,

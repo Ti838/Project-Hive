@@ -2173,3 +2173,674 @@ html.dark .glass-card {
   outline-offset: -2px;
   border-radius: 10px;
 }
+
+/* ════════════════════════════════════════════
+   MOBILE MEGA-FIX PATCH
+   ════════════════════════════════════════════ */
+
+/* ── Image Lightbox Overlay ── */
+#ph-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.92);
+  backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+#ph-lightbox.active {
+  opacity: 1;
+  pointer-events: all;
+}
+#ph-lightbox img {
+  max-width: 92vw;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  transition: transform 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+#ph-lightbox.zoomed img {
+  max-width: none;
+  max-height: none;
+  cursor: grab;
+}
+#ph-lightbox .lb-toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent);
+  z-index: 2;
+}
+#ph-lightbox .lb-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+#ph-lightbox .lb-btn:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.3);
+}
+#ph-lightbox .lb-btn:active {
+  transform: scale(0.92);
+}
+
+/* ── Premium Logout Confirmation Modal ── */
+#ph-logout-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+  padding: 16px;
+}
+#ph-logout-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+#ph-logout-modal .lo-card {
+  background: var(--ph-card, #fff);
+  border: 1px solid var(--ph-border, #e2e8f0);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 360px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+  animation: ph-lo-enter 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes ph-lo-enter {
+  from { opacity: 0; transform: scale(0.88) translateY(16px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+#ph-logout-modal .lo-card .lo-header {
+  padding: 28px 24px 20px;
+  text-align: center;
+}
+#ph-logout-modal .lo-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(239,68,68,0.08);
+  border: 1.5px solid rgba(239,68,68,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+#ph-logout-modal .lo-icon svg {
+  width: 26px;
+  height: 26px;
+  color: #ef4444;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+#ph-logout-modal .lo-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ph-txt, #0f172a);
+  margin: 0 0 6px;
+}
+#ph-logout-modal .lo-msg {
+  font-size: 13px;
+  color: var(--ph-txt2, #475569);
+  line-height: 1.5;
+  margin: 0;
+}
+#ph-logout-modal .lo-actions {
+  display: flex;
+  border-top: 1px solid var(--ph-border, #e2e8f0);
+}
+#ph-logout-modal .lo-btn {
+  flex: 1;
+  padding: 15px 12px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.15s;
+}
+#ph-logout-modal .lo-btn-cancel {
+  color: var(--ph-txt2, #475569);
+}
+#ph-logout-modal .lo-btn-cancel:hover {
+  background: var(--ph-bg2, #f1f5f9);
+}
+#ph-logout-modal .lo-btn-confirm {
+  color: #ef4444;
+  border-left: 1px solid var(--ph-border, #e2e8f0);
+}
+#ph-logout-modal .lo-btn-confirm:hover {
+  background: rgba(239,68,68,0.06);
+}
+
+/* ── Mobile Chat Input — WhatsApp-style fixed bottom ── */
+@media (max-width: 768px) {
+  #chat-input-area {
+    position: sticky !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 30 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* Chat messages area — ensure it doesn't go behind input */
+  #msgs {
+    padding: 12px 12px 8px !important;
+    flex: 1 !important;
+    min-height: 0 !important;
+  }
+
+  /* Make emoji picker visible on mobile */
+  #emoji-btn {
+    display: flex !important;
+  }
+  .relative.hidden.md\:block {
+    display: block !important;
+  }
+  #emoji-picker-container {
+    position: fixed !important;
+    bottom: 70px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-height: 50vh !important;
+    border-radius: 20px !important;
+    z-index: 100 !important;
+  }
+
+  /* Chat input buttons — slightly smaller on mobile */
+  #chat-input-area button {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+  #chat-input-area #msg-inp {
+    padding: 10px 14px !important;
+    border-radius: 12px !important;
+    font-size: 15px !important;
+  }
+
+  /* Send button highlight */
+  #chat-input-area button[onclick="sendMsg()"] {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+  }
+
+  /* Chat area must use remaining height properly */
+  .msg-chat-area {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100% !important;
+  }
+
+  /* ── Admin Dashboard Mobile ── */
+  .admin-sidebar,
+  aside[class*="w-64"],
+  aside[class*="w-[260px]"] {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.3s cubic-bezier(0.4,0,0.2,1) !important;
+  }
+  .admin-sidebar.open,
+  aside[class*="w-64"].open,
+  aside[class*="w-[260px]"].open {
+    transform: translateX(0) !important;
+  }
+
+  /* Admin content full width on mobile */
+  main[class*="ml-64"],
+  main[class*="ml-[260px]"],
+  div[class*="ml-64"],
+  div[class*="ml-[260px]"] {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Admin tables — scrollable on mobile */
+  .admin-table-wrap,
+  .overflow-x-auto {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .admin-table-wrap table {
+    min-width: 600px !important;
+  }
+
+  /* Context menu — bottom sheet on mobile */
+  #msg-context-menu {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    border-radius: 20px 20px 0 0 !important;
+    max-height: 70vh !important;
+    width: 100% !important;
+    min-width: auto !important;
+    animation: ph-ctx-slide-up 0.25s ease-out !important;
+    padding-bottom: env(safe-area-inset-bottom, 8px) !important;
+  }
+  @keyframes ph-ctx-slide-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  /* Chat info panel — full width on mobile */
+  #chat-info-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Voice recording bar */
+  #voice-rec-bar {
+    gap: 8px !important;
+  }
+
+  /* Messages header — properly aligned on mobile */
+  .msg-chat-actions {
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: none !important;
+  }
+  .msg-chat-actions::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
+/* ── Prevent body scroll when modals/sheets are open ── */
+body.modal-open {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
+/* Final mobile audit fixes: chat/admin overflow containment */
+.msg-layout,
+.msg-chat-area,
+.msg-conv-panel,
+#chat-hdr,
+#chat-input-area {
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .msg-layout {
+    width: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .msg-conv-panel {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    min-width: 0 !important;
+  }
+
+  .msg-chat-area {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #chat-hdr > div {
+    min-width: 0 !important;
+  }
+
+  #chat-hdr span,
+  #chat-hdr h1,
+  #chat-hdr h2,
+  #chat-hdr p {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  #chat-input-area {
+    width: 100% !important;
+    max-width: 100vw !important;
+    align-items: center !important;
+    overflow: visible !important;
+  }
+
+  #chat-input-area #msg-inp {
+    min-width: 0 !important;
+    width: auto !important;
+    flex: 1 1 0 !important;
+  }
+
+  #voice-rec-bar {
+    min-width: 0 !important;
+  }
+
+  #emoji-picker-container {
+    max-width: calc(100vw - 16px) !important;
+  }
+
+  .card:has(table),
+  .admin-table-wrap,
+  .table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .card table,
+  .admin-table-wrap table,
+  .table-wrap table {
+    min-width: 640px !important;
+  }
+
+  .topbar-right {
+    min-width: 0 !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-end !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #chat-input-area {
+    gap: 6px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  #chat-input-area button {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+}
+
+/* ══ Global AI Popup (injected by ph-sidebar.js) ═══════════════════════════ */
+#ai-fab-wrap {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+#ai-fab-btn {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #7c3aed, #ec4899);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(99,102,241,.5);
+  transition: transform .2s, box-shadow .2s;
+  position: relative;
+  flex-shrink: 0;
+}
+#ai-fab-btn:hover { transform: scale(1.08); }
+#ai-fab-btn.is-open { background: linear-gradient(135deg, #4f46e5, #6d28d9); }
+.ai-fab-glow {
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  opacity: .25;
+  filter: blur(10px);
+  animation: aipulse 2.5s ease-in-out infinite;
+  z-index: -1;
+}
+@keyframes aipulse {
+  0%, 100% { opacity: .2; transform: scale(1); }
+  50% { opacity: .45; transform: scale(1.15); }
+}
+.ai-popup {
+  position: absolute;
+  bottom: 74px;
+  right: 0;
+  width: 360px;
+  background: var(--sf, #fff);
+  border: 1.5px solid var(--bd, #e2e8f0);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.18), 0 4px 16px rgba(99,102,241,.12);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(16px) scale(.96);
+  pointer-events: none;
+  transition: opacity .22s, transform .22s;
+  max-height: 520px;
+}
+.ai-popup.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+.ai-popup-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--bd, #e2e8f0);
+  background: linear-gradient(135deg, rgba(99,102,241,.06), rgba(236,72,153,.03));
+  flex-shrink: 0;
+}
+.ai-popup-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 80px;
+  max-height: 220px;
+  -webkit-overflow-scrolling: touch;
+}
+.ai-msg { display: flex; align-items: flex-start; gap: 8px; }
+.ai-msg-user { flex-direction: row-reverse; }
+.ai-msg-av {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #ec4899);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  color: #fff;
+  font-weight: 700;
+}
+.ai-msg-bub {
+  max-width: 83%;
+  padding: 9px 12px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--tx, #0f172a);
+}
+.ai-msg-bot .ai-msg-bub {
+  background: var(--sf2, #f1f5f9);
+  border-bottom-left-radius: 4px;
+}
+.ai-msg-user .ai-msg-bub {
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.ai-typing-dots {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  padding: 10px 14px;
+}
+.ai-typing-dots span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sub, #94a3b8);
+  animation: aitype 1.2s ease-in-out infinite;
+}
+.ai-typing-dots span:nth-child(2) { animation-delay: .2s; }
+.ai-typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes aitype {
+  0%, 60%, 100% { transform: translateY(0); opacity: .4; }
+  30% { transform: translateY(-5px); opacity: 1; }
+}
+.ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px;
+  border-top: 1px solid var(--bd, #e2e8f0);
+  flex-shrink: 0;
+}
+.ai-chip {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--bd, #e2e8f0);
+  background: var(--sf2, #f1f5f9);
+  color: var(--sub, #64748b);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  font-family: 'Inter', sans-serif;
+  min-height: 32px;
+}
+.ai-chip:hover {
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: #fff;
+  border-color: transparent;
+}
+.ai-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--bd, #e2e8f0);
+  flex-shrink: 0;
+  background: var(--sf, #fff);
+}
+.ai-textarea {
+  flex: 1;
+  resize: none;
+  border: 1.5px solid var(--bd, #e2e8f0);
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 16px;
+  font-family: 'Inter', sans-serif;
+  background: var(--sf2, #f8fafc);
+  color: var(--tx, #0f172a);
+  outline: none;
+  max-height: 100px;
+  line-height: 1.5;
+  min-height: 44px;
+}
+.ai-textarea:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+}
+.ai-send {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ai-send:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Chat image loading skeleton */
+.ph-chat-img-wrap { position: relative; min-height: 120px; }
+.ph-img-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--sf2,#f1f5f9) 25%, var(--sf3,#e2e8f0) 50%, var(--sf2,#f1f5f9) 75%);
+  background-size: 200% 100%;
+  animation: ph-shimmer 1.2s infinite;
+  z-index: 0;
+}
+@keyframes ph-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mobile: fixed chat input + keyboard offset */
+@media (max-width: 768px) {
+  body.chat-active-mobile #chat-input-area {
+    position: fixed !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: var(--chat-kb-offset, 0px) !important;
+    z-index: 50 !important;
+    transform: none !important;
+  }
+  body.chat-active-mobile #msgs {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.chat-active-mobile .msg-chat-area {
+    padding-bottom: 0 !important;
+  }
+
+  #ph-logout-modal {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  #ph-logout-modal .lo-card {
+    max-width: 100% !important;
+    border-radius: 24px 24px 0 0 !important;
+    animation: ph-ctx-slide-up 0.3s ease-out both !important;
+  }
+}

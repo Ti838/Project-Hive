@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
   <title>ProjectHive — Collaboration & Messages</title>
   <script>
     (function(){
@@ -270,8 +270,8 @@
             </button>
           </div>
 
-          <div class="relative hidden md:block">
-            <button onclick="toggleEmojiPicker()" id="emoji-btn" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji">
+          <div class="relative shrink-0">
+            <button onclick="toggleEmojiPicker()" id="emoji-btn" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Add emoji" aria-label="Add emoji">
               <span class="material-symbols-outlined text-lg">mood</span>
             </button>
             <div id="emoji-picker-container" class="absolute bottom-14 right-0 hidden z-50 w-72 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-2xl shadow-2xl overflow-hidden">
@@ -628,7 +628,7 @@
                   '</div>';
               }
               if (obj.type === 'image') {
-                return '<div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><img src="' + obj.url + '" alt="Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-action="lightbox"></div>';
+                return '<div class="ph-chat-img-wrap mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><div class="ph-img-skeleton"></div><img src="' + obj.url + '" alt="Image" loading="lazy" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity relative z-10" data-action="lightbox" onload="this.previousElementSibling?.remove()"></div>';
               }
               if (obj.type === 'video') {
                 return '<div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50"><video src="' + obj.url + '" controls class="w-full max-h-60"></video></div>';
@@ -646,8 +646,9 @@
         // 2. Legacy Image Check
         if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)/i) || trimmed.startsWith('data:image/')) {
           return `
-            <div class="mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
-              <img src="${esc(trimmed)}" alt="Sent Image" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity" data-action="lightbox">
+            <div class="ph-chat-img-wrap mb-1 rounded-xl overflow-hidden max-w-[280px] bg-slate-900 border border-slate-700/50">
+              <div class="ph-img-skeleton"></div>
+              <img src="${esc(trimmed)}" alt="Sent Image" loading="lazy" class="w-full h-auto max-h-60 object-cover cursor-pointer hover:opacity-90 transition-opacity relative z-10" data-action="lightbox" onload="this.previousElementSibling?.remove()">
             </div>
           `;
         }
@@ -1635,23 +1636,27 @@
         // Don't close emoji picker here — handled by the specific outside-click listener (line ~960)
       });
 
-      // Delegated image lightbox handler — opens full image in overlay
+      // Delegated image lightbox handler — opens full image in global premium overlay
       document.addEventListener('click', function(e) {
         const img = e.target.closest('[data-action="lightbox"]');
         if (!img) return;
         e.stopPropagation();
         const src = img.src || img.dataset.src;
         if (!src) return;
-        // Create fullscreen overlay
-        const overlay = document.createElement('div');
-        overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn 0.2s ease';
-        const fullImg = document.createElement('img');
-        fullImg.src = src;
-        fullImg.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px;box-shadow:0 24px 64px rgba(0,0,0,0.5)';
-        overlay.appendChild(fullImg);
-        overlay.addEventListener('click', () => overlay.remove());
-        document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } });
-        document.body.appendChild(overlay);
+        if (typeof window.openLightbox === 'function') {
+          window.openLightbox(src);
+        } else {
+          // Fallback if sidebar script is not initialized/loaded
+          const overlay = document.createElement('div');
+          overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;cursor:zoom-out;animation:fadeIn 0.2s ease';
+          const fullImg = document.createElement('img');
+          fullImg.src = src;
+          fullImg.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px;box-shadow:0 24px 64px rgba(0,0,0,0.5)';
+          overlay.appendChild(fullImg);
+          overlay.addEventListener('click', () => overlay.remove());
+          document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', esc); } });
+          document.body.appendChild(overlay);
+        }
       });
 
       // ─── CHAT INFO PANEL ──────────────────────────────────────
@@ -1676,7 +1681,7 @@
           var items = sharedMedia.map(function(m) {
             try {
               var o = JSON.parse(m.content);
-              if (o.type === 'image') return '<img src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" data-action="lightbox">';
+              if (o.type === 'image') return '<img src="' + o.url + '" loading="lazy" class="w-full aspect-square object-cover rounded-xl cursor-pointer hover:opacity-80 transition-opacity" data-action="lightbox" alt="Shared image">';
               return '<video src="' + o.url + '" class="w-full aspect-square object-cover rounded-xl"></video>';
             } catch(e) { return ''; }
           }).join('');
@@ -2522,8 +2527,12 @@
         });
 
         socket.on('call:accepted', data => {
-          stopOutgoingRing(); // caller ring stops when accepted
-          showToast('Call connection established!', 'success');
+          stopOutgoingRing();
+          setCallConnectionStatus('connecting');
+          // Caller side: open the WebRTC call screen now that receiver accepted
+          document.getElementById('call-modal').classList.replace('hidden', 'flex');
+          document.getElementById('jitsi-container').classList.add('hidden');
+          document.getElementById('webrtc-container').classList.remove('hidden');
         });
 
         socket.on('call:declined', data => {
@@ -2618,20 +2627,31 @@
       let incomingCallerId = null; // Bug #6 fix: store actual caller ID from incoming event
 
       // WebRTC ICE Server Configuration
-      // STUN = discovers public IP (free, lightweight)
-      // TURN = relays traffic when peer-to-peer fails (mobile 4G, corporate WiFi, strict NAT)
-      // These static credentials are fallback — fetchTurnCredentials() loads HMAC creds from server
+      // Multiple STUN servers for redundancy + static TURN as immediate fallback
+      // fetchTurnCredentials() upgrades to HMAC-signed credentials from server
       const rtcConfig = {
         iceServers: [
-          // Free Google STUN servers (fast IP discovery)
+          // Google STUN (most reliable, global)
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          // Cloudflare STUN (fast, low latency)
+          { urls: 'stun:stun.cloudflare.com:3478' },
+          // Metered STUN
+          { urls: 'stun:stun.relay.metered.ca:80' },
+          // ── Static TURN fallback (works immediately, no server round-trip needed) ──
+          // These are Metered.ca Open Relay — limited but functional for most cases
+          { urls: 'turn:global.relay.metered.ca:80',      username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turn:global.relay.metered.ca:443',     username: 'openrelayproject', credential: 'openrelayproject' },
+          { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
         ],
         iceCandidatePoolSize: 10,
-        iceTransportPolicy: 'all'  // Try direct first, fall back to relay
+        iceTransportPolicy: 'all'  // Try direct P2P first, relay as last resort
       };
 
-      // Dynamic TURN credential fetcher (for when credentials rotate)
+      // Upgrade to HMAC-signed TURN credentials from server (more reliable)
       async function fetchTurnCredentials() {
         try {
           const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
@@ -2643,46 +2663,88 @@
             const data = await res.json();
             if (data.iceServers && data.iceServers.length > 0) {
               rtcConfig.iceServers = data.iceServers;
-              console.log('[WebRTC] Dynamic TURN credentials loaded');
+              console.log('[WebRTC] ✅ Dynamic HMAC TURN credentials loaded (' + data.iceServers.length + ' servers)');
             }
           }
         } catch(e) {
-          // Non-fatal: use static credentials
-          console.log('[WebRTC] Using static TURN credentials');
+          // Non-fatal: static TURN already set above
+          console.log('[WebRTC] ⚠️ Using static TURN fallback (server unreachable)');
         }
       }
       // Try to load dynamic credentials on page load
       fetchTurnCredentials();
 
-      // Bug 4 fix: check if browser supports WebRTC calling
+      // Check if browser supports WebRTC
       function checkCallCapability() {
+        if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+          showToast('⚠️ Calling requires HTTPS. Please use the production URL.', 'error');
+          return false;
+        }
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          showToast('Calling requires a secure (HTTPS) connection and a supported browser.', 'error');
+          showToast('⚠️ Your browser does not support calling. Try Chrome or Safari.', 'error');
+          return false;
+        }
+        if (!window.RTCPeerConnection) {
+          showToast('⚠️ WebRTC not supported in this browser.', 'error');
           return false;
         }
         return true;
       }
 
-      // Bug 4 fix: pre-check permission status before calling
-      async function checkMediaPermission() {
+      // Safe media getter — tries ideal constraints, falls back gracefully
+      async function getMedia(voiceOnly) {
+        // Try ideal constraints first
+        const ideal = {
+          audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 },
+          video: voiceOnly ? false : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
+        };
         try {
-          if (navigator.permissions) {
-            const micPerm = await navigator.permissions.query({ name: 'microphone' });
-            if (micPerm.state === 'denied') {
-              showToast('Microphone is blocked. Please allow it in your browser settings.', 'error');
-              return false;
-            }
+          return await navigator.mediaDevices.getUserMedia(ideal);
+        } catch(err) {
+          // Camera not found or denied — fall back to audio-only for video calls
+          if (!voiceOnly && (err.name === 'NotFoundError' || err.name === 'OverconstrainedError' || err.name === 'NotReadableError')) {
+            showToast('📷 Camera unavailable — switching to voice only.', 'info');
+            return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
           }
-          return true;
-        } catch(e) {
-          return true; // permissions API not supported, proceed anyway
+          // Re-throw for caller to handle (e.g. NotAllowedError)
+          throw err;
+        }
+      }
+
+      // Human-readable permission error handler
+      function handleMediaError(err) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+          if (isMobile) {
+            showToast('🎙️ Allow mic/camera: tap the lock icon in your browser address bar → Site settings → Allow.', 'error');
+          } else {
+            showToast('🎙️ Mic/Camera blocked. Click the camera icon in the address bar and allow access, then try again.', 'error');
+          }
+        } else if (err.name === 'NotFoundError') {
+          showToast('🎙️ No microphone found. Please connect a mic and try again.', 'error');
+        } else if (err.name === 'NotReadableError') {
+          showToast('🎙️ Mic/Camera already in use by another app. Close it and try again.', 'error');
+        } else {
+          showToast('⚠️ Could not access mic/camera: ' + err.message, 'error');
+        }
+      }
+
+      // Safe autoplay helper for mobile browsers
+      function safePlay(videoEl) {
+        if (!videoEl) return;
+        const p = videoEl.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {
+            // Autoplay blocked — unmute and try again (mobile quirk)
+            videoEl.muted = true;
+            videoEl.play().catch(() => {});
+          });
         }
       }
 
       window.startCall = async function() {
         if (!activeConv) return;
         if (!checkCallCapability()) return;
-        if (!(await checkMediaPermission())) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call!', 'error');
@@ -2690,30 +2752,27 @@
         }
         const roomId = 'ProjectHive-' + [ME.id, friendId].sort().join('-');
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
-        
+
+        // Open call modal immediately for caller
+        document.getElementById('call-modal').classList.replace('hidden', 'flex');
+        document.getElementById('jitsi-container').classList.add('hidden');
+        document.getElementById('webrtc-container').classList.remove('hidden');
+        setupVoiceOnlyUI(false);
+
         if (socket) {
           socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: false });
         }
-        
-        // Start outgoing ring sound for caller
         startOutgoingRing();
-        
-        // Show offline warning if friend isn't active
-        if (!friendOnline) {
-          setCallConnectionStatus('offline');
-        } else {
-          setCallConnectionStatus('calling');
-        }
-        
+        setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
+
         activeCallRoom = roomId;
-        pendingIceCandidates = []; // Bug 1: clear queue for new call
+        pendingIceCandidates = [];
         initiateWebRTCCall(friendId, false);
       };
 
       window.startVoiceCall = async function() {
         if (!activeConv) return;
         if (!checkCallCapability()) return;
-        if (!(await checkMediaPermission())) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call!', 'error');
@@ -2721,23 +2780,21 @@
         }
         const roomId = 'ProjectHive-voice-' + [ME.id, friendId].sort().join('-');
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
-        
+
+        // Open call modal immediately for caller
+        document.getElementById('call-modal').classList.replace('hidden', 'flex');
+        document.getElementById('jitsi-container').classList.add('hidden');
+        document.getElementById('webrtc-container').classList.remove('hidden');
+        setupVoiceOnlyUI(true);
+
         if (socket) {
           socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: true });
         }
-        
-        // Start outgoing ring sound for caller
         startOutgoingRing();
-        
-        // Show offline warning if friend isn't active
-        if (!friendOnline) {
-          setCallConnectionStatus('offline');
-        } else {
-          setCallConnectionStatus('calling');
-        }
-        
+        setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
+
         activeCallRoom = roomId;
-        pendingIceCandidates = []; // Bug 1: clear queue for new call
+        pendingIceCandidates = [];
         initiateWebRTCCall(friendId, true);
       };
 
@@ -2841,36 +2898,21 @@
         isWebRTCCall = true;
         isMuted = false;
         isCameraOff = false;
-        document.getElementById('call-modal').classList.replace('hidden', 'flex');
-        document.getElementById('jitsi-container').classList.add('hidden');
-        document.getElementById('webrtc-container').classList.remove('hidden');
 
-        setCallConnectionStatus('calling');
-        setupVoiceOnlyUI(voiceOnly);
-
-        // Reset toggles style
+        // Reset toggle styles
         const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
         const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
         const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
         const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
 
         try {
-          // Bug 4 fix: iOS-safe constraints with facingMode + fallback
-          const mediaConstraints = {
-            audio: true,
-            video: voiceOnly ? false : { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-          };
-          try {
-            localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-          } catch(mediaErr) {
-            if (!voiceOnly && (mediaErr.name === 'NotAllowedError' || mediaErr.name === 'NotFoundError')) {
-              showToast('Camera unavailable. Switching to voice-only...', 'info');
-              localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            } else {
-              throw mediaErr;
-            }
-          }
-          document.getElementById('webrtc-local-video').srcObject = localStream;
+          localStream = await getMedia(voiceOnly);
+
+          // Show local preview
+          const localVideo = document.getElementById('webrtc-local-video');
+          localVideo.srcObject = localStream;
+          localVideo.muted = true; // always mute local to prevent echo
+          safePlay(localVideo);
 
           peerConnection = new RTCPeerConnection(rtcConfig);
           localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -2882,40 +2924,42 @@
           };
 
           peerConnection.ontrack = event => {
-            document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+            const remoteVideo = document.getElementById('webrtc-remote-video');
+            remoteVideo.srcObject = event.streams[0];
+            remoteVideo.muted = false;
+            safePlay(remoteVideo);
             setCallConnectionStatus('connected');
             startCallTimer();
           };
 
-          // Bug #7 fix: monitor connection state for failures
           peerConnection.onconnectionstatechange = () => {
             const state = peerConnection?.connectionState;
-            console.log('[WebRTC] Connection state:', state);
+            console.log('[WebRTC] Caller connection state:', state);
             if (state === 'failed') {
-              showToast('Call connection failed. Please try again.', 'error');
+              showToast('⚠️ Call connection failed. Check your network and try again.', 'error');
               endCall();
             } else if (state === 'disconnected') {
               setCallConnectionStatus('connecting');
-              showToast('Connection interrupted. Reconnecting...', 'info');
-              // Auto-end after 15s of disconnection
+              showToast('📶 Connection interrupted. Reconnecting...', 'info');
               setTimeout(() => {
                 if (peerConnection?.connectionState === 'disconnected') {
-                  showToast('Call dropped due to network issue.', 'error');
+                  showToast('📶 Call dropped due to network issue.', 'error');
                   endCall();
                 }
               }, 15000);
+            } else if (state === 'connected') {
+              setCallConnectionStatus('connected');
             }
           };
 
-          const offer = await peerConnection.createOffer();
+          const offer = await peerConnection.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: !voiceOnly });
           await peerConnection.setLocalDescription(offer);
-
           if (socket) {
             socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
           }
         } catch (err) {
-          console.error('[WebRTC] Media grab failure:', err);
-          showToast('Required hardware permissions denied', 'error');
+          console.error('[WebRTC] initiateWebRTCCall error:', err);
+          handleMediaError(err);
           endCall();
         }
       }
@@ -2937,22 +2981,12 @@
         const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
 
         try {
-          // Bug 4 fix: iOS-safe constraints with facingMode + fallback
-          const mediaConstraints = {
-            audio: true,
-            video: voiceOnly ? false : { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
-          };
-          try {
-            localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-          } catch(mediaErr) {
-            if (!voiceOnly && (mediaErr.name === 'NotAllowedError' || mediaErr.name === 'NotFoundError')) {
-              showToast('Camera unavailable. Switching to voice-only...', 'info');
-              localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            } else {
-              throw mediaErr;
-            }
-          }
-          document.getElementById('webrtc-local-video').srcObject = localStream;
+          localStream = await getMedia(voiceOnly);
+
+          const localVideo = document.getElementById('webrtc-local-video');
+          localVideo.srcObject = localStream;
+          localVideo.muted = true; // always mute local to prevent echo
+          safePlay(localVideo);
 
           peerConnection = new RTCPeerConnection(rtcConfig);
           localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
@@ -2964,27 +2998,31 @@
           };
 
           peerConnection.ontrack = event => {
-            document.getElementById('webrtc-remote-video').srcObject = event.streams[0];
+            const remoteVideo = document.getElementById('webrtc-remote-video');
+            remoteVideo.srcObject = event.streams[0];
+            remoteVideo.muted = false;
+            safePlay(remoteVideo);
             setCallConnectionStatus('connected');
             startCallTimer();
           };
 
-          // Bug #7 fix: monitor connection state for failures
           peerConnection.onconnectionstatechange = () => {
             const state = peerConnection?.connectionState;
-            console.log('[WebRTC] Connection state:', state);
+            console.log('[WebRTC] Receiver connection state:', state);
             if (state === 'failed') {
-              showToast('Call connection failed. Please try again.', 'error');
+              showToast('⚠️ Call connection failed. Check your network and try again.', 'error');
               endCall();
             } else if (state === 'disconnected') {
               setCallConnectionStatus('connecting');
-              showToast('Connection interrupted. Reconnecting...', 'info');
+              showToast('📶 Connection interrupted. Reconnecting...', 'info');
               setTimeout(() => {
                 if (peerConnection?.connectionState === 'disconnected') {
-                  showToast('Call dropped due to network issue.', 'error');
+                  showToast('📶 Call dropped due to network issue.', 'error');
                   endCall();
                 }
               }, 15000);
+            } else if (state === 'connected') {
+              setCallConnectionStatus('connected');
             }
           };
 
@@ -2996,21 +3034,21 @@
             pendingSdpOffer = null;
           }
 
-          // Bug 1 fix: flush queued ICE candidates that arrived during ringing
-          if (pendingIceCandidates.length > 0) {
-            for (const candidate of pendingIceCandidates) {
-              try {
-                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-              } catch(e) {
-                console.warn('[WebRTC] Failed to add queued ICE candidate:', e);
-              }
+          // Flush queued ICE candidates that arrived during ringing
+          for (const candidate of pendingIceCandidates) {
+            try {
+              await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch(e) {
+              console.warn('[WebRTC] Failed to add queued ICE candidate:', e);
             }
-            console.log('[WebRTC] Flushed', pendingIceCandidates.length, 'queued ICE candidates');
-            pendingIceCandidates = [];
           }
+          if (pendingIceCandidates.length > 0) {
+            console.log('[WebRTC] Flushed', pendingIceCandidates.length, 'queued ICE candidates');
+          }
+          pendingIceCandidates = [];
         } catch (err) {
-          console.error('[WebRTC] Accept track error:', err);
-          showToast('Required hardware permissions denied', 'error');
+          console.error('[WebRTC] acceptWebRTCCall error:', err);
+          handleMediaError(err);
           endCall();
         }
       }
@@ -3310,6 +3348,40 @@
         }
       });
     }
+
+    // Mobile keyboard — keep input pinned above virtual keyboard (iOS/Android)
+    (function initMobileChatKeyboard() {
+      if (window.innerWidth > 768) return;
+      const inputArea = document.getElementById('chat-input-area');
+      const msgInp = document.getElementById('msg-inp');
+      const msgsEl = document.getElementById('msgs');
+      if (!inputArea || !window.visualViewport) return;
+
+      function scrollMsgsToBottom() {
+        if (!msgsEl) return;
+        requestAnimationFrame(() => { msgsEl.scrollTop = msgsEl.scrollHeight; });
+      }
+
+      function adjustForKeyboard() {
+        if (!document.body.classList.contains('chat-active-mobile')) return;
+        const vv = window.visualViewport;
+        const offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+        document.documentElement.style.setProperty('--chat-kb-offset', offset + 'px');
+        if (document.activeElement === msgInp) scrollMsgsToBottom();
+      }
+
+      function resetKeyboardOffset() {
+        document.documentElement.style.setProperty('--chat-kb-offset', '0px');
+      }
+
+      window.visualViewport.addEventListener('resize', adjustForKeyboard);
+      window.visualViewport.addEventListener('scroll', adjustForKeyboard);
+      msgInp?.addEventListener('focus', () => {
+        setTimeout(adjustForKeyboard, 100);
+        scrollMsgsToBottom();
+      });
+      msgInp?.addEventListener('blur', resetKeyboardOffset);
+    })();
   </script>
   <script src="/assets/js/core/info-modal.js"></script>
 </body>

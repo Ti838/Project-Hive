@@ -197,35 +197,26 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
 
-// TURN credentials endpoint — generates time-limited HMAC credentials
-// Uses Metered.ca Open Relay Static Auth (no signup needed)
-// Secret: 'openrelayprojectsecret' — generates temp credentials via HMAC-SHA1
-
-app.get('/api/turn-credentials', (req, res) => {
+// TURN credentials endpoint
+app.get('/api/turn-credentials', async (req, res) => {
   try {
-    // If custom TURN servers provided via env, use those
-    if (process.env.TURN_SERVERS) {
-      return res.json({ iceServers: JSON.parse(process.env.TURN_SERVERS) });
+    if (process.env.METERED_API_KEY) {
+      const response = await fetch(`https://${process.env.METERED_DOMAIN || 'projecthive.metered.live'}/api/v1/turn/credentials?apiKey=${process.env.METERED_API_KEY}`);
+      const data = await response.json();
+      return res.json(data);
     }
-
-    // Generate time-limited credentials for Metered Static Auth TURN
+    
+    // Fallback to HMAC open relay
     const turnSecret = process.env.TURN_SECRET || 'openrelayprojectsecret';
     const turnDomain = process.env.TURN_DOMAIN || 'staticauth.openrelay.metered.ca';
-    
-    // Credential expires in 24 hours (Unix timestamp)
     const unixTimestamp = Math.floor(Date.now() / 1000) + 24 * 3600;
     const username = unixTimestamp.toString();
-    const credential = crypto
-      .createHmac('sha1', turnSecret)
-      .update(username)
-      .digest('base64');
+    const credential = crypto.createHmac('sha1', turnSecret).update(username).digest('base64');
 
     res.json({
       iceServers: [
-        // STUN servers (IP discovery)
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        // TURN over UDP on port 80 (most networks)
         {
           urls: `turn:${turnDomain}:80`,
           username: username,

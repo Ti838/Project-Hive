@@ -490,6 +490,10 @@ function toggleTheme(){
 }
 // ── Nav ──
 function nav(id,btn){
+  // Auto-close mobile menu on navigation
+  document.querySelector('.sb')?.classList.remove('mob-open');
+  document.querySelector('.mob-overlay')?.classList.remove('open');
+
   const secs=["ov","us","tm","pr","po","an","sy","au","rp","em"];
   secs.forEach(s=>{const el=document.getElementById("sec-"+s);if(el)el.style.display=s===id?"":"none"});
   document.querySelectorAll(".sb-item").forEach(b=>b.classList.remove("active"));
@@ -662,9 +666,9 @@ function rProjects(){
   }).join('');
 }
 async function delP(id,nm){
-  if(!confirm('Delete project "'+nm+'"? This cannot be undone.'))return;
+  if(!(await adminConfirm('Delete project "'+nm+'"? This cannot be undone.', 'Delete Project', true)))return;
   const r=await fetch(API+'/api/admin/projects/'+id,{method:'DELETE',headers:H});
-  if(r.ok)loadAll();else alert('Failed to delete project');
+  if(r.ok) { loadAll(); adminAlert('Project deleted.', 'Success'); } else adminAlert('Failed to delete project.', 'Error');
 }
 async function featureP(id,feat){
   const r=await fetch(API+'/api/admin/projects/'+id+'/feature',{method:'PATCH',headers:H,body:JSON.stringify({featured:feat})});
@@ -704,9 +708,9 @@ function rPostsMod(){
   }).join('');
 }
 async function delPostMod(id){
-  if(!confirm('Delete this post? This cannot be undone.'))return;
+  if(!(await adminConfirm('Delete this post? This cannot be undone.', 'Delete Post', true)))return;
   const r=await fetch(API+'/api/admin/posts/'+id,{method:'DELETE',headers:H});
-  if(r.ok)loadAll();else alert('Failed to delete post');
+  if(r.ok) { loadAll(); adminAlert('Post deleted.', 'Success'); } else adminAlert('Failed to delete post.', 'Error');
 }
 // ── System flags sync ──
 function syncFlags(f){
@@ -724,49 +728,126 @@ function syncFlags(f){
 }
 async function toggleMaint(){
   const mt=document.getElementById('maint-tog');const on=mt?.classList.contains('on');
+  if (!(await adminConfirm(`Are you sure you want to ${on ? 'disable' : 'enable'} Maintenance Mode? ${on ? 'Users will be able to access the site normally.' : 'This will restrict access to all users.'}`, 'Maintenance Mode'))) return;
   const r=await fetch(API+'/api/admin/flags',{method:'PATCH',headers:H,body:JSON.stringify({maintenanceMode:!on})});
-  if(r.ok){const d=await r.json();syncFlags(d.flags);}
-  else alert('Failed to update maintenance mode');
+  if(r.ok){const d=await r.json();syncFlags(d.flags); adminAlert(`Maintenance Mode ${on ? 'disabled' : 'enabled'}.`, 'System Update');}
+  else adminAlert('Failed to update maintenance mode', 'Error');
 }
 async function toggleReg(){
   const rt=document.getElementById('reg-tog');const on=rt?.classList.contains('on');
+  if (!(await adminConfirm(`Are you sure you want to ${on ? 'disable' : 'enable'} user registrations?`, 'User Registration'))) return;
   const r=await fetch(API+'/api/admin/flags',{method:'PATCH',headers:H,body:JSON.stringify({registrationEnabled:!on})});
-  if(r.ok){const d=await r.json();syncFlags(d.flags);}
-  else alert('Failed');
+  if(r.ok){const d=await r.json();syncFlags(d.flags); adminAlert(`User registration ${on ? 'disabled' : 'enabled'}.`, 'System Update');}
+  else adminAlert('Failed to update user registration status', 'Error');
 }
 async function toggleEV(){
   const et=document.getElementById('ev-tog');const on=et?.classList.contains('on');
+  if (!(await adminConfirm(`Are you sure you want to ${on ? 'disable' : 'enable'} email verification requirement?`, 'Email Verification'))) return;
   const r=await fetch(API+'/api/admin/flags',{method:'PATCH',headers:H,body:JSON.stringify({emailVerification:!on})});
-  if(r.ok){const d=await r.json();syncFlags(d.flags);}
-  else alert('Failed');
+  if(r.ok){const d=await r.json();syncFlags(d.flags); adminAlert(`Email verification ${on ? 'disabled' : 'enabled'}.`, 'System Update');}
+  else adminAlert('Failed to update email verification status', 'Error');
 }
 // ── User actions ──
 async function banU(id,ban){
-  if(!confirm(ban?'Ban this user? They will not be able to log in.':'Unban this user?'))return;
+  if(!(await adminConfirm(ban?'Ban this user? They will not be able to log in.':'Unban this user?', ban?'Ban User':'Unban User', ban)))return;
   const r=await fetch(API+'/api/admin/users/'+id+'/ban',{method:'PATCH',headers:H,body:JSON.stringify({ban})});
-  if(r.ok)loadAll();else alert('Failed');
+  if(r.ok) { loadAll(); adminAlert(ban?'User banned.':'User unbanned.', 'Success'); } else adminAlert('Failed to update user status.', 'Error');
 }
 async function cRole(id,role){
-  if(!confirm('Change role to '+role+'?'))return;
+  if(!(await adminConfirm('Change role to '+role+'?', 'Change User Role')))return;
   const r=await fetch(API+'/api/admin/users/'+id+'/role',{method:'PATCH',headers:H,body:JSON.stringify({role})});
-  if(r.ok)loadAll();else alert('Failed');
+  if(r.ok) { loadAll(); adminAlert('Role updated to '+role+'.', 'Success'); } else adminAlert('Failed to update role.', 'Error');
 }
 async function delU(id,nm){
-  if(!confirm('Delete user "'+nm+'"? This cannot be undone.'))return;
+  if(!(await adminConfirm('Delete user "'+nm+'"? This cannot be undone.', 'Delete User', true)))return;
   const r=await fetch(API+'/api/admin/users/'+id,{method:'DELETE',headers:H});
-  if(r.ok)loadAll();else alert('Failed');
+  if(r.ok) { loadAll(); adminAlert('User deleted.', 'Success'); } else adminAlert('Failed to delete user.', 'Error');
 }
 // ── Team actions ──
 async function delT(id,nm){
-  if(!confirm('Delete team "'+nm+'"? This cannot be undone.'))return;
+  if(!(await adminConfirm('Delete team "'+nm+'"? This cannot be undone.', 'Delete Team', true)))return;
   const r=await fetch(API+'/api/admin/teams/'+id,{method:'DELETE',headers:H});
-  if(r.ok)loadAll();else alert('Failed');
+  if(r.ok) { loadAll(); adminAlert('Team deleted.', 'Success'); } else adminAlert('Failed to delete team.', 'Error');
 }
-function doOut(){
+async function doOut(){
+  if (!(await adminConfirm('Are you sure you want to sign out of the Admin Panel?', 'Sign Out'))) return;
   localStorage.removeItem('admin_token');
   localStorage.removeItem('access_token');
-  location.href='/pages/admin/login.html';
+  location.href='/admin/login';
 }
+
+// ══ Custom Themed Dialog Modal System ══════════════════════════════════════
+function showAdminModal(msg, title = 'Notice', showCancel = true, isDanger = false) {
+  return new Promise((resolve) => {
+    let container = document.getElementById('admin-modal-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'admin-modal-container';
+      container.className = 'fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm opacity-0 transition-opacity duration-200 pointer-events-none';
+      container.innerHTML = `
+        <div class="bg-white dark:bg-[#12131d] border border-slate-200 dark:border-slate-700/80 rounded-2xl max-w-sm w-full p-6 shadow-2xl transform scale-95 transition-transform duration-200" id="admin-modal-card">
+          <h3 class="text-base font-extrabold text-slate-900 dark:text-slate-100 mb-2" id="admin-modal-title">Notice</h3>
+          <p class="text-[13px] text-slate-500 dark:text-slate-400 mb-6 leading-relaxed" id="admin-modal-msg"></p>
+          <div class="flex justify-end gap-2.5">
+            <button class="btn" id="admin-modal-cancel">Cancel</button>
+            <button class="btn" id="admin-modal-confirm">Confirm</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(container);
+    }
+
+    const titleEl = document.getElementById('admin-modal-title');
+    const msgEl = document.getElementById('admin-modal-msg');
+    const cancelBtn = document.getElementById('admin-modal-cancel');
+    const confirmBtn = document.getElementById('admin-modal-confirm');
+
+    titleEl.textContent = title;
+    msgEl.textContent = msg;
+    cancelBtn.style.display = showCancel ? 'inline-flex' : 'none';
+
+    if (isDanger) {
+      confirmBtn.className = 'btn danger';
+      confirmBtn.textContent = 'Delete';
+    } else {
+      confirmBtn.className = 'btn primary';
+      confirmBtn.textContent = showCancel ? 'Confirm' : 'OK';
+    }
+
+    function cleanUp() {
+      container.classList.remove('opacity-100');
+      container.classList.add('opacity-0', 'pointer-events-none');
+      container.firstElementChild.classList.remove('scale-100');
+      container.firstElementChild.classList.add('scale-95');
+      cancelBtn.removeEventListener('click', onCancel);
+      confirmBtn.removeEventListener('click', onConfirm);
+    }
+
+    function onCancel() {
+      cleanUp();
+      resolve(false);
+    }
+
+    function onConfirm() {
+      cleanUp();
+      resolve(true);
+    }
+
+    cancelBtn.addEventListener('click', onCancel);
+    confirmBtn.addEventListener('click', onConfirm);
+
+    // Show modal
+    container.classList.remove('opacity-0', 'pointer-events-none');
+    container.classList.add('opacity-100');
+    // Force reflow
+    container.offsetHeight;
+    container.firstElementChild.classList.remove('scale-95');
+    container.firstElementChild.classList.add('scale-100');
+  });
+}
+
+const adminConfirm = (msg, title, isDanger) => showAdminModal(msg, title, true, isDanger);
+const adminAlert = (msg, title) => showAdminModal(msg, title, false, false);
 // ── Mobile menu ──
 function toggleMobMenu(){
   document.querySelector('.sb')?.classList.toggle('mob-open');
@@ -883,12 +964,12 @@ function exportReport() {
 }
 
 // ── Email Blast ──
-function sendEmailBlast() {
+async function sendEmailBlast() {
   const subject = document.getElementById('blast-subject')?.value?.trim();
   const body = document.getElementById('blast-body')?.value?.trim();
   const target = document.getElementById('blast-target')?.value || 'all';
-  if (!subject || !body) return alert('Please fill in subject and body');
-  if (!confirm(`Send email blast to ${target} users?\n\nSubject: ${subject}`)) return;
+  if (!subject || !body) return adminAlert('Please fill in subject and body', 'Input Required');
+  if (!(await adminConfirm(`Send email blast to ${target} users?\n\nSubject: ${subject}`, 'Confirm Blast'))) return;
 
   const btn = document.getElementById('blast-send');
   btn.disabled = true;
@@ -901,7 +982,7 @@ function sendEmailBlast() {
     btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Send Blast';
     document.getElementById('blast-subject').value = '';
     document.getElementById('blast-body').value = '';
-    alert('Email blast queued successfully! (Note: Actual email delivery requires SMTP configuration)');
+    adminAlert('Email blast queued successfully! (Note: Actual email delivery requires SMTP configuration)', 'Email Blast Queued');
   }, 1500);
 }
 

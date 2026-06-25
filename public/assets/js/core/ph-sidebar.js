@@ -207,7 +207,7 @@ const PHSidebar = (() => {
           <svg class="ph-theme-svg-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
           <span class="ph-sb-theme-label" id="ph-sb-theme-label">Light Mode</span>
         </button>
-        <button class="ph-sb-signout" onclick="PHSidebar.logout()" title="Sign Out">
+        <button class="ph-sb-signout" onclick="PHSidebar.showLogoutModal()" title="Sign Out">
           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
             <polyline points="16 17 21 12 16 7"/>
@@ -713,8 +713,8 @@ const PHSidebar = (() => {
     const items = [
       { key: 'dashboard', href: '/dashboard', label: 'Home',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>` },
-      { key: 'people', href: '/people', label: 'People',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>` },
+      { key: 'messages', href: '/messages', label: 'Chat',
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
       { key: 'ai-center', href: '#', label: 'AI', isCenter: true,
         icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>` },
       { key: 'notifications', href: '/notifications', label: 'Alerts',
@@ -866,11 +866,10 @@ const PHSidebar = (() => {
       });
     }
 
-    // Wire logout
+    // Wire logout — use premium modal instead of browser confirm()
     document.getElementById('ph-ps-logout')?.addEventListener('click', () => {
-      if (confirm('Are you sure you want to sign out?')) {
-        logout();
-      }
+      closeProfileSheet();
+      showLogoutModal();
     });
   }
 
@@ -1502,12 +1501,343 @@ const PHSidebar = (() => {
   window.sendFriendRequestGlobal = sendFriendRequestGlobal;
   window.respondToRequest = respondToRequest;
 
-  function logout() {
+  async function logout() {
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+    const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? (location.port === '3000' ? 'http://localhost:5000' : '')
+      : 'https://projecthive-backend.onrender.com';
+
+    if (accessToken) {
+      try {
+        await fetch(apiBase + '/api/auth/logout', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + accessToken,
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      } catch (_) {
+        // Local cleanup still signs the user out if the network is unavailable.
+      }
+    }
+
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('ph-user-cache');
-    window.location.href = '/login';
+    if (window.PHToast) PHToast.success('Signed out successfully');
+    setTimeout(() => { window.location.href = '/login'; }, 350);
+  }
+
+  // ══ Premium Logout Confirmation Modal ══════════════════════════════════════
+  function showLogoutModal() {
+    let modal = document.getElementById('ph-logout-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'ph-logout-modal';
+      modal.innerHTML = `
+        <div class="lo-card">
+          <div class="lo-header">
+            <div class="lo-icon">
+              <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </div>
+            <h3 class="lo-title">Sign out of ProjectHive?</h3>
+            <p class="lo-msg">You'll need to sign in again to access your account, messages, and projects.</p>
+          </div>
+          <div class="lo-actions">
+            <button class="lo-btn lo-btn-cancel" id="ph-lo-cancel">Cancel</button>
+            <button class="lo-btn lo-btn-confirm" id="ph-lo-confirm">Sign Out</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Close on backdrop click
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) hideLogoutModal();
+      });
+      document.getElementById('ph-lo-cancel').addEventListener('click', hideLogoutModal);
+      document.getElementById('ph-lo-confirm').addEventListener('click', () => {
+        hideLogoutModal();
+        logout();
+      });
+    }
+    requestAnimationFrame(() => modal.classList.add('active'));
+  }
+
+  function hideLogoutModal() {
+    const modal = document.getElementById('ph-logout-modal');
+    if (modal) modal.classList.remove('active');
+  }
+
+  // ══ Image Lightbox Component ══════════════════════════════════════════════
+  function initLightbox() {
+    if (document.getElementById('ph-lightbox')) return;
+    const lb = document.createElement('div');
+    lb.id = 'ph-lightbox';
+    lb.innerHTML = `
+      <div class="lb-toolbar">
+        <button class="lb-btn" id="lb-download" title="Download image">
+          <span class="material-symbols-outlined" style="font-size:20px">download</span>
+        </button>
+        <button class="lb-btn" id="lb-zoom" title="Zoom in/out">
+          <span class="material-symbols-outlined" style="font-size:20px">zoom_in</span>
+        </button>
+        <button class="lb-btn" id="lb-close" title="Close">
+          <span class="material-symbols-outlined" style="font-size:20px">close</span>
+        </button>
+      </div>
+      <img id="lb-img" src="" alt="Preview">
+    `;
+    document.body.appendChild(lb);
+
+    // Close
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb) closeLightbox();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && lb.classList.contains('active')) closeLightbox();
+    });
+
+    // Download with CORS compatibility / base64 support
+    document.getElementById('lb-download').addEventListener('click', async () => {
+      const img = document.getElementById('lb-img');
+      if (!img.src) return;
+      const originalSrc = img.src;
+      try {
+        if (originalSrc.startsWith('data:')) {
+          // Base64 download
+          const a = document.createElement('a');
+          a.href = originalSrc;
+          a.download = 'projecthive-attachment-' + Date.now() + '.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          return;
+        }
+        // Fetch URL as blob to bypass cross-origin browser navigation
+        const response = await fetch(originalSrc);
+        const blob = await response.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        // Determine original extension or fallback to png
+        let ext = 'png';
+        const urlPath = originalSrc.split('?')[0];
+        const match = urlPath.match(/\.(png|jpe?g|gif|webp|svg)/i);
+        if (match) ext = match[1];
+        a.download = 'projecthive-attachment-' + Date.now() + '.' + ext;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        console.warn('[Lightbox] Direct blob download failed, falling back to window.open', err);
+        // Fallback: open in new tab with target _blank
+        const a = document.createElement('a');
+        a.href = originalSrc;
+        a.download = 'projecthive-attachment-' + Date.now() + '.png';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    });
+
+    // Zoom toggle
+    document.getElementById('lb-zoom').addEventListener('click', () => {
+      lb.classList.toggle('zoomed');
+      const icon = document.querySelector('#lb-zoom .material-symbols-outlined');
+      icon.textContent = lb.classList.contains('zoomed') ? 'zoom_out' : 'zoom_in';
+    });
+  }
+
+  function openLightbox(src) {
+    const lb = document.getElementById('ph-lightbox');
+    if (!lb) return;
+    document.getElementById('lb-img').src = src;
+    lb.classList.remove('zoomed');
+    const icon = document.querySelector('#lb-zoom .material-symbols-outlined');
+    if (icon) icon.textContent = 'zoom_in';
+    requestAnimationFrame(() => lb.classList.add('active'));
+  }
+
+  function closeLightbox() {
+    const lb = document.getElementById('ph-lightbox');
+    if (lb) { lb.classList.remove('active'); lb.classList.remove('zoomed'); }
+  }
+
+  // Expose globally
+  window.openLightbox = openLightbox;
+  window.closeLightbox = closeLightbox;
+
+  // ══ Global AI Popup (available on all authenticated pages) ════════════════
+  function initGlobalAIPopup() {
+    if (document.getElementById('ai-popup') || document.getElementById('ph-global-ai')) return;
+
+    const wrap = document.createElement('div');
+    wrap.id = 'ph-global-ai';
+    wrap.innerHTML = `
+      <div id="ai-fab-wrap">
+        <button id="ai-fab-btn" type="button" title="AI Assistant" aria-label="Open AI Assistant">
+          <span class="ai-fab-glow"></span>
+          <svg id="ai-icon-open" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>
+          <svg id="ai-icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <div id="ai-popup" class="ai-popup" role="dialog" aria-label="AI Assistant">
+          <div class="ai-popup-hdr">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#ec4899);display:flex;align-items:center;justify-content:center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>
+              </div>
+              <div>
+                <div style="font-size:14px;font-weight:800;color:var(--tx,#0f172a)">ProjectHive AI</div>
+                <div style="font-size:10px;color:#10b981;font-weight:600">● Online</div>
+              </div>
+            </div>
+            <button type="button" id="ai-popup-close" aria-label="Close AI" style="background:none;border:none;cursor:pointer;color:var(--sub,#64748b);padding:8px;border-radius:8px;min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="ai-popup-msgs" id="ai-msgs">
+            <div class="ai-msg ai-msg-bot">
+              <div class="ai-msg-av">✨</div>
+              <div class="ai-msg-bub">Hi <strong id="ai-greet">there</strong>! I'm your AI project assistant. Ask me anything!</div>
+            </div>
+          </div>
+          <div class="ai-chips" id="ai-chips">
+            <button type="button" class="ai-chip" data-q="Suggest a project idea for me">💡 Project idea</button>
+            <button type="button" class="ai-chip" data-q="What tech should I learn in 2025?">🔧 Tech to learn</button>
+            <button type="button" class="ai-chip" data-q="How do I find teammates?">👥 Find teammates</button>
+          </div>
+          <div class="ai-input-row">
+            <textarea id="ai-input" class="ai-textarea" placeholder="Ask anything…" rows="1"></textarea>
+            <button type="button" id="ai-send" class="ai-send" aria-label="Send">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(wrap);
+
+    try {
+      const c = JSON.parse(localStorage.getItem('ph-user-cache') || 'null');
+      const fn = c?.firstName || c?.first_name || 'there';
+      const greet = document.getElementById('ai-greet');
+      if (greet) greet.textContent = fn;
+    } catch (_) {}
+
+    let aiOpen = false;
+
+    function setAIOpen(open) {
+      aiOpen = open;
+      document.getElementById('ai-popup')?.classList.toggle('open', open);
+      document.getElementById('ai-fab-btn')?.classList.toggle('is-open', open);
+      const iconOpen = document.getElementById('ai-icon-open');
+      const iconClose = document.getElementById('ai-icon-close');
+      if (iconOpen) iconOpen.style.display = open ? 'none' : 'block';
+      if (iconClose) iconClose.style.display = open ? 'block' : 'none';
+      if (open) {
+        document.body.classList.add('modal-open');
+        setTimeout(() => document.getElementById('ai-input')?.focus(), 180);
+      } else {
+        document.body.classList.remove('modal-open');
+      }
+    }
+
+    window.toggleAIPopup = function () {
+      setAIOpen(!aiOpen);
+    };
+
+    document.getElementById('ai-fab-btn')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.toggleAIPopup();
+    });
+    document.getElementById('ai-popup-close')?.addEventListener('click', () => setAIOpen(false));
+
+    document.querySelectorAll('#ai-chips .ai-chip').forEach((chip) => {
+      chip.addEventListener('click', () => {
+        const q = chip.dataset.q || chip.textContent.trim();
+        if (q) window.askAI?.(q);
+      });
+    });
+
+    const aiInput = document.getElementById('ai-input');
+    aiInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        window.sendAI?.();
+      }
+    });
+    aiInput?.addEventListener('input', function () {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    document.getElementById('ai-send')?.addEventListener('click', () => window.sendAI?.());
+
+    function addAIMsg(html, role) {
+      const msgs = document.getElementById('ai-msgs');
+      if (!msgs) return;
+      const d = document.createElement('div');
+      d.className = 'ai-msg ai-msg-' + role;
+      const av = document.createElement('div');
+      av.className = 'ai-msg-av';
+      av.textContent = role === 'bot' ? '✨' : ((JSON.parse(localStorage.getItem('ph-user-cache') || '{}').firstName || 'U')[0] || 'U').toUpperCase();
+      const bub = document.createElement('div');
+      bub.className = 'ai-msg-bub';
+      bub.innerHTML = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+      d.appendChild(av);
+      d.appendChild(bub);
+      msgs.appendChild(d);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    async function callGlobalAI(q) {
+      const TK = localStorage.getItem('access_token');
+      const H = { Authorization: 'Bearer ' + TK, 'Content-Type': 'application/json' };
+      const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? (location.port === '3000' ? 'http://localhost:5000' : '')
+        : 'https://projecthive-backend.onrender.com';
+      try {
+        const r = await fetch(API + '/api/ai/chat', { method: 'POST', headers: H, body: JSON.stringify({ message: q }) });
+        const d = await r.json();
+        if (r.ok && d.reply) return d.reply;
+        if (r.status === 429) return '⏳ Rate limit reached. Please wait a few minutes.';
+      } catch (_) {}
+      return '⚠️ AI server unavailable. Try again shortly or visit the **AI Generator** page.';
+    }
+
+    window.askAI = async function (q) {
+      document.getElementById('ai-chips').style.display = 'none';
+      addAIMsg(q, 'user');
+      const inp = document.getElementById('ai-input');
+      const btn = document.getElementById('ai-send');
+      if (inp) { inp.value = ''; inp.style.height = 'auto'; }
+      if (btn) btn.disabled = true;
+      const typing = document.createElement('div');
+      typing.className = 'ai-msg ai-msg-bot';
+      typing.id = 'ai-typing';
+      typing.innerHTML = '<div class="ai-msg-av">✨</div><div class="ai-typing-dots"><span></span><span></span><span></span></div>';
+      document.getElementById('ai-msgs')?.appendChild(typing);
+      const ans = await callGlobalAI(q);
+      document.getElementById('ai-typing')?.remove();
+      addAIMsg(ans, 'bot');
+      if (btn) btn.disabled = false;
+      inp?.focus();
+    };
+
+    window.sendAI = function () {
+      const q = document.getElementById('ai-input')?.value.trim();
+      if (q) window.askAI(q);
+    };
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && aiOpen) setAIOpen(false);
+    });
   }
 
   function toggleTheme() {
@@ -1570,11 +1900,13 @@ const PHSidebar = (() => {
   function initWithKeepAlive(active, base) {
     _origInit(active, base);
     startKeepAlive();
+    initLightbox();
+    initGlobalAIPopup();
     // D4: Restore sidebar collapse state from localStorage (desktop only)
     if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
     }
   }
 
-  return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest };
+  return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest, showLogoutModal, openLightbox, closeLightbox };
 })();
