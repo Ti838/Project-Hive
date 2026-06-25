@@ -414,13 +414,13 @@
     const maskRatio = maskW / maskH;
     
     let drawW, drawH;
-    // Use contain logic relative to the mask so the full image is visible
+    // Use cover logic relative to the mask to perfectly fill the crop area without black bars (Facebook style)
     if (imgRatio > maskRatio) {
-      drawW = maskW;
-      drawH = maskW / imgRatio;
-    } else {
       drawH = maskH;
       drawW = maskH * imgRatio;
+    } else {
+      drawW = maskW;
+      drawH = maskW / imgRatio;
     }
     
     const s = scale;
@@ -545,12 +545,13 @@
     const maskRatio = maskW / maskH;
     
     let drawW, drawH;
+    // Use cover logic relative to the mask
     if (imgRatio > maskRatio) {
-      drawW = maskW;
-      drawH = maskW / imgRatio;
-    } else {
       drawH = maskH;
       drawW = maskH * imgRatio;
+    } else {
+      drawW = maskW;
+      drawH = maskW / imgRatio;
     }
     
     const w = drawW * scale;
