@@ -55,6 +55,7 @@
     { "source": "/teams",         "destination": "/pages/user/teams.html" },
     { "source": "/teams/create",  "destination": "/pages/user/teams-create.html" },
     { "source": "/profile",       "destination": "/pages/user/profile/edit.html" },
+    { "source": "/profile/view",  "destination": "/pages/user/profile/view.html" },
     { "source": "/settings",      "destination": "/pages/user/settings.html" },
     { "source": "/showcase",      "destination": "/pages/user/projects/showcase.html" },
     { "source": "/generator",     "destination": "/pages/user/projects/generator.html" },
