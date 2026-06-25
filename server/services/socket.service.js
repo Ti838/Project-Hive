@@ -52,6 +52,10 @@ export function getUserSocket(userId) {
   const sockets = activeUsers.get(userId);
   return (sockets && sockets.size > 0) ? Array.from(sockets)[0] : null;
 }
+export function getUserSockets(userId) {
+  const sockets = activeUsers.get(userId);
+  return (sockets && sockets.size > 0) ? Array.from(sockets) : [];
+}
 export function getActiveUsers() { return Array.from(activeUsers.keys()); }
 export function isUserOnline(userId) { return activeUsers.has(userId); }
 
@@ -170,16 +174,17 @@ export async function handleCallInitiate(socket, data) {
     // If DB check fails, allow the call (fail-open for UX)
   }
 
-  const targetSocket = getUserSocket(targetId);
-  if (targetSocket) {
-    // Bug #5 fix: pass ALL call metadata so receiver knows call type
-    targetSocket.emit('call:incoming', {
+  // Emit call:incoming to ALL sockets of the target user (mobile + PC = both ring)
+  const targetSockets = getUserSockets(targetId);
+  if (targetSockets.length > 0) {
+    const payload = {
       roomId,
       callerName,
       callerId: socket.userId,
       isWebRTC: !!isWebRTC,
       isVoiceOnly: !!isVoiceOnly
-    });
+    };
+    targetSockets.forEach(s => s.emit('call:incoming', payload));
   } else {
     // Target user is offline
     socket.emit('call:error', { message: 'User is currently offline' });
