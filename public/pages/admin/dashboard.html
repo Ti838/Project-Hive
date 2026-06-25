@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin Panel — ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script><style>
+﻿<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin Panel â€” ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script><style>
 :root{--bg:#f0f2ff;--sb:#fff;--sf:#fff;--bd:#dde2f5;--tx:#0f172a;--sub:#64748b;--tx2:#475569;--ac:#6366f1;--ac2:#4f46e5;--red:#dc2626;--grn:#059669;--yel:#d97706;--blu:#2563eb;--shadow:0 4px 24px rgba(0,0,0,.08)}
 html.dark{--bg:#07080f;--sb:#0b0d17;--sf:#0f1020;--bd:#1c1f35;--tx:#e2deee;--sub:#5a6080;--tx2:#8b93b8;--ac:#6366f1;--ac2:#818cf8;--red:#ef4444;--grn:#10b981;--yel:#f59e0b;--blu:#3b82f6;--shadow:0 4px 24px rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Inter",system-ui,sans-serif}
 html,body{height:100%}
 body{background:var(--bg);color:var(--tx);display:flex;height:100%;overflow:hidden;transition:background .25s,color .25s}
-/* ── Sidebar ── */
+/* â”€â”€ Sidebar â”€â”€ */
 .sb{width:248px;height:100vh;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;transition:background .25s,border-color .25s}
 .sb::-webkit-scrollbar{display:none}
 .sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 12px}
@@ -26,7 +26,7 @@ body{background:var(--bg);color:var(--tx);display:flex;height:100%;overflow:hidd
 .toggle.on{background:var(--ac)}
 .toggle::after{content:"";width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .toggle.on::after{left:19px}
-/* ── Main ── */
+/* â”€â”€ Main â”€â”€ */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 .topbar{padding:0 28px;height:56px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--sb);transition:background .25s,border-color .25s}
 .topbar-left{display:flex;align-items:center;gap:12px}
@@ -40,7 +40,7 @@ body{background:var(--bg);color:var(--tx);display:flex;height:100%;overflow:hidd
 .btn.danger:hover{background:rgba(239,68,68,.1);border-color:var(--red)}
 .btn.success{border-color:rgba(16,185,129,.3);color:var(--grn);background:rgba(16,185,129,.05)}
 .content{flex:1;overflow-y:auto;padding:24px 28px}
-/* ── Cards ── */
+/* â”€â”€ Cards â”€â”€ */
 .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
 .stat-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:16px;padding:20px;cursor:default;transition:all .2s;position:relative;overflow:hidden}
 .stat-card::before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.03),transparent);opacity:0;transition:opacity .2s}
@@ -54,7 +54,7 @@ body{background:var(--bg);color:var(--tx);display:flex;height:100%;overflow:hidd
 .card-hdr{padding:14px 20px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .card-title{font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
 .card-title svg{color:var(--ac)}
-/* ── Table ── */
+/* â”€â”€ Table â”€â”€ */
 table{width:100%;border-collapse:collapse}
 th{padding:9px 16px;font-size:9px;font-weight:800;color:var(--sub);text-align:left;text-transform:uppercase;letter-spacing:.07em;background:rgba(99,102,241,.04);white-space:nowrap}
 td{padding:11px 16px;font-size:12px;border-bottom:1px solid var(--bd);vertical-align:middle}
@@ -62,7 +62,7 @@ tr:last-child td{border:none}
 tr:hover td{background:rgba(99,102,241,.03)}
 .u-av{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden}
 .u-av img{width:100%;height:100%;object-fit:cover}
-/* ── Badges ── */
+/* â”€â”€ Badges â”€â”€ */
 .badge{padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700;display:inline-flex;align-items:center;gap:4px}
 .badge.admin{background:rgba(99,102,241,.15);color:var(--ac)}
 .badge.student{background:rgba(16,185,129,.1);color:var(--grn)}
@@ -71,229 +71,189 @@ tr:hover td{background:rgba(99,102,241,.03)}
 .badge.open{background:rgba(59,130,246,.1);color:var(--blu)}
 .badge.closed{background:rgba(100,116,139,.1);color:var(--sub)}
 .badge.maintenance{background:rgba(245,158,11,.12);color:var(--yel)}
-/* ── Tabs ── */
+/* â”€â”€ Tabs â”€â”€ */
 .tabs{display:flex;gap:2px;background:rgba(99,102,241,.06);border-radius:9px;padding:3px}
 .tab{padding:5px 12px;border-radius:7px;border:none;background:transparent;color:var(--sub);font-size:11px;font-weight:700;cursor:pointer;font-family:"Inter",sans-serif;transition:all .12s}
 .tab.active{background:var(--sf);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.1)}
 .srch{background:var(--bg);border:1.5px solid var(--bd);border-radius:9px;padding:6px 12px;color:var(--tx);font-size:12px;font-family:"Inter",sans-serif;outline:none;width:200px;transition:border .2s}
 .srch:focus{border-color:var(--ac)}
-/* ── Actions ── */
+/* â”€â”€ Actions â”€â”€ */
 .act-row{display:flex;gap:3px}
 .act{background:none;border:1.5px solid var(--bd);cursor:pointer;padding:4px 8px;border-radius:7px;color:var(--sub);transition:all .12s;display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700;font-family:"Inter",sans-serif}
 .act:hover{border-color:var(--ac);color:var(--ac)}
 .act.r:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,.06)}
 .act.g:hover{border-color:var(--grn);color:var(--grn)}
-/* ── Charts ── */
+/* â”€â”€ Charts â”€â”€ */
 .chart-bars{display:flex;align-items:flex-end;gap:6px;height:80px;padding:0 4px}
 .bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
 .bar{width:100%;border-radius:4px 4px 0 0;background:linear-gradient(180deg,#6366f1,#7c3aed);min-height:3px;transition:height .8s ease}
 .bar-lbl{font-size:8px;color:var(--sub);font-weight:600;text-align:center}
-/* ── System ── */
+/* â”€â”€ System â”€â”€ */
 .sys-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .sys-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:14px;padding:20px}
 .sys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--bd)}
 .sys-row:last-child{border:none}
 .sys-label{font-size:13px;font-weight:600}
 .sys-desc{font-size:11px;color:var(--sub);margin-top:2px}
-/* ── Spinner/Empty ── */
+/* â”€â”€ Spinner/Empty â”€â”€ */
 .empty{text-align:center;padding:40px;color:var(--sub);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px}
 .empty svg{opacity:.3}
 @keyframes spin{to{transform:rotate(360deg)}}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid rgba(99,102,241,.2);border-top-color:var(--ac);border-radius:50%;animation:spin .65s linear infinite;vertical-align:middle}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .section{animation:fadeUp .25s ease}
-/* ── Maintenance overlay ── */
+/* â”€â”€ Maintenance overlay â”€â”€ */
 .maint-banner{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(239,68,68,.1));border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:14px 18px;margin-bottom:16px;display:none;align-items:center;gap:12px}
 .maint-banner.show{display:flex}
-/* ── Analytics grid ── */
+/* â”€â”€ Analytics grid â”€â”€ */
 .analytics-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
-/* ── Mobile hamburger ── */
-.mob-menu{display:none;position:fixed;top:12px;left:12px;z-index:200;width:36px;height:36px;border-radius:10px;border:1.5px solid var(--bd);background:var(--sb);color:var(--sub);cursor:pointer;align-items:center;justify-content:center}
+/* â”€â”€ Mobile hamburger â”€â”€ */
+.mob-menu{display:none;position:fixed;top:12px;left:12px;z-index:200;width:40px;height:40px;border-radius:12px;border:1.5px solid var(--bd);background:var(--sb);color:var(--sub);cursor:pointer;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.12)}
 .mob-menu:hover{border-color:var(--ac);color:var(--ac)}
-.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49}
+.mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;backdrop-filter:blur(4px)}
 .mob-overlay.open{display:block}
+
+/* â”€â”€ Admin Bottom Nav (mobile only) â”€â”€ */
+.admin-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sb);border-top:1.5px solid var(--bd);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));flex-direction:row;align-items:center;justify-content:space-around}
+.admin-bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;border:none;background:none;cursor:pointer;color:var(--sub);font-size:9px;font-weight:700;min-width:44px;min-height:44px;justify-content:center;border-radius:10px;transition:all .15s;text-decoration:none;font-family:"Inter",sans-serif}
+.admin-bn-item.active{color:var(--ac)}
+.admin-bn-item svg{transition:transform .2s}
+.admin-bn-item.active svg{transform:scale(1.1)}
+.admin-bn-dot{width:4px;height:4px;border-radius:50%;background:var(--ac);opacity:0;transition:opacity .15s;margin-top:1px}
+.admin-bn-item.active .admin-bn-dot{opacity:1}
+
+/* â”€â”€ Mobile card list (replaces table) â”€â”€ */
+.mobile-card-list{display:none;padding:0}
+.mob-item-card{background:var(--sf);border:1.5px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:10px;transition:border-color .15s}
+.mob-item-card:hover{border-color:var(--ac)}
+.mob-item-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mob-item-meta{flex:1;min-width:0}
+.mob-item-name{font-size:14px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-item-sub{font-size:11px;color:var(--sub);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mob-item-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.mob-item-actions{display:flex;gap:8px;flex-wrap:wrap}
+.mob-item-actions .act{flex:1;justify-content:center;min-height:38px;font-size:11px;border-radius:10px}
+
 @media(max-width:768px){
   .mob-menu{display:flex}
   .sb{position:fixed;z-index:100;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1)}
   .sb.mob-open,.sb.open{transform:translateX(0)}
   .main{margin-left:0!important}
 
-  /* Stat grid — 2 columns on mobile */
+  /* Bottom nav visible */
+  .admin-bottom-nav{display:flex}
+
+  /* Stat grid â€” 2 columns on mobile */
   .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
-  .stat-card{padding:16px 14px}
-  .stat-n{font-size:22px}
+  .stat-card{padding:14px 12px}
+  .stat-n{font-size:20px}
   .stat-l{font-size:10px}
   .stat-delta{font-size:9px}
+  .stat-ic{width:34px;height:34px;margin-bottom:8px}
 
-  /* Analytics grid — 2 columns */
+  /* Analytics grid â€” 2 columns */
   .analytics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
 
-  /* System grid — single column */
+  /* System grid â€” single column */
   .sys-grid{grid-template-columns:1fr;gap:12px}
 
-  /* Topbar — space for hamburger button */
-  .topbar{padding:0 16px;padding-left:52px;height:50px}
-  .topbar h1{font-size:13px}
-  .topbar-right .btn{padding:5px 10px;font-size:11px}
-  .topbar-right .btn svg{width:11px;height:11px}
+  /* Topbar */
+  .topbar{padding:0 12px;padding-left:58px;height:52px}
+  .topbar h1{font-size:13px;font-weight:800}
+  .topbar-right{gap:6px}
+  .topbar-right .btn{padding:6px 10px;font-size:11px;gap:4px}
+  .topbar-right .btn span,.topbar-right .btn-lbl{display:none}
 
-  /* Content area */
-  .content{padding:16px;padding-bottom:32px}
+  /* Content area â€” add bottom padding for bottom nav */
+  .content{padding:14px 12px;padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 
-  /* Card headers — stack on mobile */
-  .card-hdr{
-    flex-direction:column;
-    align-items:stretch;
-    gap:10px;
-    padding:12px 16px;
-  }
+  /* Card headers â€” stack on mobile */
+  .card-hdr{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
   .card-title{font-size:12px}
 
-  /* Tabs — horizontally scrollable */
-  .tabs{
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    white-space:nowrap;
-    flex-wrap:nowrap;
-    width:100%;
-  }
+  /* Tabs â€” horizontally scrollable */
+  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;flex-wrap:nowrap;width:100%}
   .tab{flex-shrink:0;padding:5px 10px;font-size:10px}
 
-  /* Tables — proper mobile sizing */
-  td,th{padding:8px 10px;font-size:11px}
-  th{font-size:8px;letter-spacing:.05em}
-  
-  /* Search inputs — full width */
+  /* Search inputs â€” full width */
   .srch{width:100%;min-width:0;font-size:16px}
 
-  /* Action buttons — larger touch targets */
-  .act{padding:6px 10px;font-size:10px;min-height:32px}
-  .act-row{flex-wrap:wrap;gap:4px}
-  
-  /* User avatar in tables */
-  .u-av{width:28px;height:28px;font-size:10px}
-  
-  /* Badges */
-  .badge{font-size:9px;padding:2px 6px}
+  /* Table rows â†’ hide on mobile, show cards */
+  .desktop-table{display:none!important}
+  .mobile-card-list{display:block}
 
   /* Maintenance banner */
-  .maint-banner{flex-direction:column;align-items:flex-start;gap:10px;padding:12px 14px}
-  .maint-banner .btn{margin-left:0;width:100%}
+  .maint-banner{flex-direction:column;align-items:flex-start;gap:10px;padding:12px}
+  .maint-banner .btn{width:100%;justify-content:center}
 
   /* Sidebar footer */
   .sb-footer .sb-item{padding:8px 14px;font-size:12px}
 }
 @media(max-width:480px){
   .stat-grid,.analytics-grid{grid-template-columns:1fr}
-  .stat-card{padding:14px 12px}
-  .topbar{padding-left:48px}
-  .content{padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px))}
-  .card-hdr{padding:10px 12px}
-  td,th{padding:6px 8px;font-size:10px}
-  .act{padding:4px 6px;font-size:9px}
+  .stat-card{padding:12px}
+  .topbar{padding-left:54px}
+  .content{padding:10px;padding-bottom:calc(78px + env(safe-area-inset-bottom,0px))}
+  .card-hdr{padding:10px}
 }
-/* ── Safe area insets for notch phones ── */
-@supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .content {
-    padding-bottom: calc(32px + env(safe-area-inset-bottom, 0px));
-  }
-  .sb {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
+@supports(padding-bottom:env(safe-area-inset-bottom)){
+  .content{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .sb{padding-bottom:env(safe-area-inset-bottom,0px)}
 }
-/* ── Admin Collapsible Sidebar Styles ── */
-.sb {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.25s, border-color 0.25s !important;
-  position: relative;
-}
-.main {
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
+/* â”€â”€ Admin Collapsible Sidebar Styles â”€â”€ */
+.sb{transition:transform .3s cubic-bezier(.4,0,.2,1),width .3s cubic-bezier(.4,0,.2,1),background .25s,border-color .25s!important;position:relative}
+.main{transition:margin-left .3s cubic-bezier(.4,0,.2,1)!important}
 
-@media (min-width: 769px) {
-  /* Collapse Toggle Button for Admin */
-  .sb-collapse-btn {
-    position: fixed;
-    top: 26px;
-    left: 238px;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: var(--sb);
-    border: 1.5px solid var(--bd);
-    color: var(--sub);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    z-index: 1000;
-    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.2s ease, background 0.2s, color 0.2s, border-color 0.2s;
-  }
-  .sb-collapse-btn:hover {
-    background: var(--ac);
-    color: #fff;
-    border-color: var(--ac);
-    transform: scale(1.1);
-  }
-  .sb-collapse-btn svg {
-    transition: transform 0.3s ease;
-  }
-  .sidebar-collapsed .sb-collapse-btn svg {
-    transform: rotate(180deg);
-  }
-  .sidebar-collapsed .sb-collapse-btn {
-    left: 60px;
-  }
-
-  /* Collapsed layout overrides for admin */
-  .sidebar-collapsed .sb {
-    width: 70px !important;
-  }
-  
-  /* Smoothly shrink and fade labels for admin */
-  .sidebar-collapsed .sb-brand-name,
-  .sidebar-collapsed .sb-badge,
-  .sidebar-collapsed .sb-section,
-  .sidebar-collapsed .sb-item span,
-  .sidebar-collapsed .badge-cnt,
-  .sidebar-collapsed #th-lbl,
-  .sidebar-collapsed #th-tog {
-    display: none !important;
-  }
-
-  /* Center brand, navigation items, footer */
-  .sidebar-collapsed .sb-brand {
-    padding: 20px 0;
-    justify-content: center;
-  }
-  .sidebar-collapsed .sb-item {
-    justify-content: center;
-    padding: 10px;
-    width: 54px;
-    margin: 4px auto;
-  }
-  .sidebar-collapsed .sb-theme {
-    justify-content: center;
-    padding: 10px;
-    width: 54px;
-    margin: 0 auto;
-  }
-  .sidebar-collapsed .sb-footer {
-    padding: 12px 0;
-  }
+@media(min-width:769px){
+  .sb-collapse-btn{position:fixed;top:26px;left:238px;width:20px;height:20px;border-radius:50%;background:var(--sb);border:1.5px solid var(--bd);color:var(--sub);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.15);z-index:1000;transition:left .3s cubic-bezier(.4,0,.2,1),transform .2s ease,background .2s,color .2s,border-color .2s}
+  .sb-collapse-btn:hover{background:var(--ac);color:#fff;border-color:var(--ac);transform:scale(1.1)}
+  .sb-collapse-btn svg{transition:transform .3s ease}
+  .sidebar-collapsed .sb-collapse-btn svg{transform:rotate(180deg)}
+  .sidebar-collapsed .sb-collapse-btn{left:60px}
+  .sidebar-collapsed .sb{width:70px!important}
+  .sidebar-collapsed .sb-brand-name,.sidebar-collapsed .sb-badge,.sidebar-collapsed .sb-section,.sidebar-collapsed .sb-item span,.sidebar-collapsed .badge-cnt,.sidebar-collapsed #th-lbl,.sidebar-collapsed #th-tog{display:none!important}
+  .sidebar-collapsed .sb-brand{padding:20px 0;justify-content:center}
+  .sidebar-collapsed .sb-item{justify-content:center;padding:10px;width:54px;margin:4px auto}
+  .sidebar-collapsed .sb-theme{justify-content:center;padding:10px;width:54px;margin:0 auto}
+  .sidebar-collapsed .sb-footer{padding:12px 0}
 }
-@media (max-width: 768px) {
-  .sb-collapse-btn {
-    display: none !important;
-  }
-}
+@media(max-width:768px){.sb-collapse-btn{display:none!important}}
+
 </style></head>
 <body>
 <button class="mob-menu" onclick="toggleMobMenu()" aria-label="Menu">
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 </button>
 <div class="mob-overlay" onclick="toggleMobMenu()"></div>
+
+<!-- Mobile Bottom Navigation -->
+<nav class="admin-bottom-nav" id="admin-bottom-nav">
+  <button class="admin-bn-item active" id="bn-ov" onclick="nav('ov',document.getElementById('nav-ov'));updateBottomNav('bn-ov')" title="Overview">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    <span>Home</span>
+    <div class="admin-bn-dot"></div>
+  </button>
+  <button class="admin-bn-item" id="bn-us" onclick="nav('us',document.getElementById('nav-us'));updateBottomNav('bn-us')" title="Users">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span>Users</span>
+    <div class="admin-bn-dot"></div>
+  </button>
+  <button class="admin-bn-item" id="bn-tm" onclick="nav('tm',document.getElementById('nav-tm'));updateBottomNav('bn-tm')" title="Teams">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span>Teams</span>
+    <div class="admin-bn-dot"></div>
+  </button>
+  <button class="admin-bn-item" id="bn-sy" onclick="nav('sy',document.getElementById('nav-sy'));updateBottomNav('bn-sy')" title="System">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+    <span>System</span>
+    <div class="admin-bn-dot"></div>
+  </button>
+  <button class="admin-bn-item" id="bn-more" onclick="toggleMobMenu()" title="More">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    <span>More</span>
+    <div class="admin-bn-dot"></div>
+  </button>
+</nav>
 <button class="sb-collapse-btn" id="sb-collapse-btn" onclick="toggleCollapse()" aria-label="Toggle sidebar collapse" title="Toggle Sidebar">
   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
     <polyline points="15 18 9 12 15 6"></polyline>
@@ -314,19 +274,19 @@ tr:hover td{background:rgba(99,102,241,.03)}
   <div class="sb-section">Manage</div>
   <button class="sb-item" id="nav-us" onclick="nav('us',this)" title="Users">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    <span>Users</span><span class="badge-cnt" id="cnt-u">—</span>
+    <span>Users</span><span class="badge-cnt" id="cnt-u">â€”</span>
   </button>
   <button class="sb-item" id="nav-tm" onclick="nav('tm',this)" title="Teams">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    <span>Teams</span><span class="badge-cnt" id="cnt-t">—</span>
+    <span>Teams</span><span class="badge-cnt" id="cnt-t">â€”</span>
   </button>
   <button class="sb-item" id="nav-pr" onclick="nav('pr',this)" title="Projects">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    <span>Projects</span><span class="badge-cnt" id="cnt-pr">—</span>
+    <span>Projects</span><span class="badge-cnt" id="cnt-pr">â€”</span>
   </button>
   <button class="sb-item" id="nav-po" onclick="nav('po',this)" title="Posts">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span>Posts</span><span class="badge-cnt" id="cnt-po">—</span>
+    <span>Posts</span><span class="badge-cnt" id="cnt-po">â€”</span>
   </button>
   <div class="sb-section">Insights</div>
   <button class="sb-item" id="nav-an" onclick="nav('an',this)" title="Analytics">
@@ -369,7 +329,7 @@ tr:hover td{background:rgba(99,102,241,.03)}
     </button>
   </div>
 </div>
-<div class="main"><div class="topbar"><div class="topbar-left"><h1 id="pg-title">Control Center</h1></div><div class="topbar-right"><button class="btn" id="maint-btn" onclick="toggleMaint()" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button><button class="btn" id="refresh-btn" onclick="doRefresh()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div><div class="content"><div class="maint-banner" id="maint-banner"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div style="font-size:13px;font-weight:800;color:#f59e0b">Maintenance Mode Active</div><div style="font-size:11px;color:var(--sub);margin-top:2px">Site is in maintenance mode. Users will see a maintenance page.</div></div><button class="btn" style="margin-left:auto;border-color:#f59e0b;color:#f59e0b" onclick="toggleMaint()">Disable</button></div><div id="sec-ov" class="section"><div class="stat-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-n" id="st-u">—</div><div class="stat-l">Total Users</div><div class="stat-delta" style="color:var(--grn)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg><span id="st-u-d">—</span> new today</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="st-t">—</div><div class="stat-l">Teams</div><div class="stat-delta" style="color:var(--blu)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span id="st-t-d">—</span> active</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M3 10h18v11H3z"/><line x1="7" y1="15" x2="17" y2="15"/></svg></div><div class="stat-n" id="st-p">—</div><div class="stat-l">Projects</div><div class="stat-delta" style="color:var(--yel)">Total submitted</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(239,68,68,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div><div class="stat-n" id="st-b">—</div><div class="stat-l">Banned</div><div class="stat-delta" style="color:var(--red)">Users restricted</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Recent Members</div></div><div id="recent-wrap"><div class="empty"><span class="spin"></span></div></div></div></div>
+<div class="main"><div class="topbar"><div class="topbar-left"><h1 id="pg-title">Control Center</h1></div><div class="topbar-right"><button class="btn" id="maint-btn" onclick="toggleMaint()" style="display:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>Maintenance</button><button class="btn" id="refresh-btn" onclick="doRefresh()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh</button></div></div><div class="content"><div class="maint-banner" id="maint-banner"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><div><div style="font-size:13px;font-weight:800;color:#f59e0b">Maintenance Mode Active</div><div style="font-size:11px;color:var(--sub);margin-top:2px">Site is in maintenance mode. Users will see a maintenance page.</div></div><button class="btn" style="margin-left:auto;border-color:#f59e0b;color:#f59e0b" onclick="toggleMaint()">Disable</button></div><div id="sec-ov" class="section"><div class="stat-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div class="stat-n" id="st-u">â€”</div><div class="stat-l">Total Users</div><div class="stat-delta" style="color:var(--grn)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="18 15 12 9 6 15"/></svg><span id="st-u-d">â€”</span> new today</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="st-t">â€”</div><div class="stat-l">Teams</div><div class="stat-delta" style="color:var(--blu)"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg><span id="st-t-d">â€”</span> active</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><path d="M3 3h18v4H3z"/><path d="M3 10h18v11H3z"/><line x1="7" y1="15" x2="17" y2="15"/></svg></div><div class="stat-n" id="st-p">â€”</div><div class="stat-l">Projects</div><div class="stat-delta" style="color:var(--yel)">Total submitted</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(239,68,68,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div><div class="stat-n" id="st-b">â€”</div><div class="stat-l">Banned</div><div class="stat-delta" style="color:var(--red)">Users restricted</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Recent Members</div></div><div id="recent-wrap"><div class="empty"><span class="spin"></span></div></div></div></div>
 <div id="sec-po" class="section" style="display:none">
   <div class="card">
     <div class="card-hdr">
@@ -378,10 +338,10 @@ tr:hover td{background:rgba(99,102,241,.03)}
         Post Moderation
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <input class="srch" id="posrch" placeholder="Search posts…" oninput="rPostsMod()">
+        <input class="srch" id="posrch" placeholder="Search postsâ€¦" oninput="rPostsMod()">
       </div>
     </div>
-    <div style="overflow-x:auto">
+    <div class="desktop-table" style="overflow-x:auto">
       <table>
         <thead>
           <tr>
@@ -399,8 +359,8 @@ tr:hover td{background:rgba(99,102,241,.03)}
     </div>
   </div>
 </div>
-<div id="sec-pr" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Project Management</div><div style="display:flex;gap:8px;align-items:center"><input class="srch" id="psrch" placeholder="Search projects…" oninput="rProjects()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Featured</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ptb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div>
-<div id="sec-us" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab active" onclick="uTab('all',this)">All</button><button class="tab" onclick="uTab('student',this)">Students</button><button class="tab" onclick="uTab('admin',this)">Admins</button><button class="tab" onclick="uTab('banned',this)">Banned</button></div><input class="srch" id="usrch" placeholder="Search users…" oninput="rUsers()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-tm" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Team Management</div><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab active" onclick="tTab('all',this)">All</button><button class="tab" onclick="tTab('open',this)">Open</button><button class="tab" onclick="tTab('closed',this)">Closed</button></div><input class="srch" id="tsrch" placeholder="Search teams…" oninput="rTeams()"></div></div><div style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-an" class="section" style="display:none"><div class="analytics-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="stat-n" id="an-u">—</div><div class="stat-l">Registered Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="stat-n" id="an-v">—</div><div class="stat-l">Verified Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="an-a">—</div><div class="stat-l">Admin Users</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>User Distribution by Role</div></div><div style="padding:20px"><div id="role-chart" class="chart-bars"></div><div id="role-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Team Status Breakdown</div></div><div style="padding:20px"><div id="team-chart" class="chart-bars"></div><div id="team-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div></div><div id="sec-sy" class="section" style="display:none"><div class="sys-grid"><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Controls</div><div class="sys-row"><div><div class="sys-label">Maintenance Mode</div><div class="sys-desc">Show maintenance page to all users</div></div><button class="toggle" id="maint-tog" onclick="toggleMaint()"></button></div><div class="sys-row"><div><div class="sys-label">User Registration</div><div class="sys-desc" id="reg-desc">New users can register</div></div><button class="toggle on" id="reg-tog" onclick="toggleReg()"></button></div><div class="sys-row"><div><div class="sys-label">Email Verification</div><div class="sys-desc">Require email verification on signup</div></div><button class="toggle" id="ev-tog" onclick="toggleEV()"></button></div></div><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Platform Health</div><div class="sys-row"><div><div class="sys-label">Backend API</div><div class="sys-desc">Render.com server status</div></div><span class="badge active" id="api-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking…</span></div><div class="sys-row"><div><div class="sys-label">Database</div><div class="sys-desc">Supabase PostgreSQL</div></div><span class="badge active" id="db-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking…</span></div><div class="sys-row"><div><div class="sys-label">Admin Email</div><div class="sys-desc">Configured in environment</div></div><span class="badge active"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Set</span></div></div></div></div></div></div></div>
+<div id="sec-pr" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Project Management</div><div style="display:flex;gap:8px;align-items:center"><input class="srch" id="psrch" placeholder="Search projectsâ€¦" oninput="rProjects()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Featured</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ptb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div>
+<div id="sec-us" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab active" onclick="uTab('all',this)">All</button><button class="tab" onclick="uTab('student',this)">Students</button><button class="tab" onclick="uTab('admin',this)">Admins</button><button class="tab" onclick="uTab('banned',this)">Banned</button></div><input class="srch" id="usrch" placeholder="Search usersâ€¦" oninput="rUsers()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-tm" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Team Management</div><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab active" onclick="tTab('all',this)">All</button><button class="tab" onclick="tTab('open',this)">Open</button><button class="tab" onclick="tTab('closed',this)">Closed</button></div><input class="srch" id="tsrch" placeholder="Search teamsâ€¦" oninput="rTeams()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-an" class="section" style="display:none"><div class="analytics-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="stat-n" id="an-u">â€”</div><div class="stat-l">Registered Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="stat-n" id="an-v">â€”</div><div class="stat-l">Verified Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="an-a">â€”</div><div class="stat-l">Admin Users</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>User Distribution by Role</div></div><div style="padding:20px"><div id="role-chart" class="chart-bars"></div><div id="role-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Team Status Breakdown</div></div><div style="padding:20px"><div id="team-chart" class="chart-bars"></div><div id="team-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div></div><div id="sec-sy" class="section" style="display:none"><div class="sys-grid"><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Controls</div><div class="sys-row"><div><div class="sys-label">Maintenance Mode</div><div class="sys-desc">Show maintenance page to all users</div></div><button class="toggle" id="maint-tog" onclick="toggleMaint()"></button></div><div class="sys-row"><div><div class="sys-label">User Registration</div><div class="sys-desc" id="reg-desc">New users can register</div></div><button class="toggle on" id="reg-tog" onclick="toggleReg()"></button></div><div class="sys-row"><div><div class="sys-label">Email Verification</div><div class="sys-desc">Require email verification on signup</div></div><button class="toggle" id="ev-tog" onclick="toggleEV()"></button></div></div><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Platform Health</div><div class="sys-row"><div><div class="sys-label">Backend API</div><div class="sys-desc">Render.com server status</div></div><span class="badge active" id="api-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checkingâ€¦</span></div><div class="sys-row"><div><div class="sys-label">Database</div><div class="sys-desc">Supabase PostgreSQL</div></div><span class="badge active" id="db-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checkingâ€¦</span></div><div class="sys-row"><div><div class="sys-label">Admin Email</div><div class="sys-desc">Configured in environment</div></div><span class="badge active"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Set</span></div></div></div></div></div></div></div>
 <!-- Audit Log Section -->
 <div id="sec-au" class="section" style="display:none">
   <div class="card">
@@ -408,7 +368,7 @@ tr:hover td{background:rgba(99,102,241,.03)}
       <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Activity Audit Log</div>
       <button class="btn" onclick="auditLog=[];localStorage.removeItem('ph-audit-log');renderAuditLog()">Clear Log</button>
     </div>
-    <div style="overflow-x:auto">
+    <div class="desktop-table" style="overflow-x:auto">
       <table><thead><tr><th>Time</th><th>Action</th><th>Details</th><th>Admin</th></tr></thead>
       <tbody id="audit-tb"><tr><td colspan="4"><div class="empty">Navigate here to view audit events</div></td></tr></tbody></table>
     </div>
@@ -469,11 +429,11 @@ const API=["localhost","127.0.0.1"].includes(location.hostname)?(location.port==
 const H={"Authorization":"Bearer "+TK,"Content-Type":"application/json"};
 const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6","#ef4444","#14b8a6"];
 function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
-function ago(d){if(!d)return"—";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
+function ago(d){if(!d)return"â€”";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
 let AU=[],AT=[],AP=[],APo=[],uf="all",tf="all";
 let curAdminEmail="";
 try{const p=JSON.parse(atob(TK.split(".")[1]));curAdminEmail=(p.email||"").toLowerCase().trim();}catch(e){}
-// ── Theme ──
+// â”€â”€ Theme â”€â”€
 function initTheme(){
   const dark=document.documentElement.classList.contains("dark");
   const tog=document.getElementById("th-tog");
@@ -488,7 +448,7 @@ function toggleTheme(){
   localStorage.setItem("theme",dark?"dark":"light");
   initTheme();
 }
-// ── Nav ──
+// â”€â”€ Nav â”€â”€
 function nav(id,btn){
   // Auto-close mobile menu on navigation
   document.querySelector('.sb')?.classList.remove('mob-open');
@@ -507,7 +467,7 @@ function nav(id,btn){
   if(id==="au")renderAuditLog();
   if(id==="rp")renderReports();
 }
-// ── Collapse ──
+// â”€â”€ Collapse â”€â”€
 function toggleCollapse() {
   const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
   localStorage.setItem('ph-sidebar-collapsed', collapsed ? 'true' : 'false');
@@ -518,7 +478,7 @@ function initCollapse() {
     document.documentElement.classList.add('sidebar-collapsed');
   }
 }
-// ── Health ──
+// â”€â”€ Health â”€â”€
 async function checkHealth(){
   try{
     const r=await fetch(API+"/health",{signal:AbortSignal.timeout(5000)});
@@ -529,7 +489,7 @@ async function checkHealth(){
     if(ds&&ok){ds.className="badge active";ds.innerHTML='<svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Connected';}
   }catch(e){const as=document.getElementById("api-status");if(as){as.className="badge banned";as.innerHTML='<svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Offline';}}
 }
-// ── Load ──
+// â”€â”€ Load â”€â”€
 async function loadAll(){
   try{
     const[st,us,tm,pr,po]=await Promise.all([
@@ -545,7 +505,7 @@ async function loadAll(){
     APo=po.posts || [];
     const bn=AU.filter(u=>u.isBanned).length;
     const vf=u=>{const e=document.getElementById(u[0]);if(e)e.textContent=u[1]};
-    [["st-u",AU.length],["st-t",AT.length],["st-p",st.totalProjects||"—"],["st-b",bn],
+    [["st-u",AU.length],["st-t",AT.length],["st-p",st.totalProjects||"â€”"],["st-b",bn],
      ["st-u-d",AU.filter(u=>{const d=new Date(u.createdAt);return Date.now()-d<86400000}).length],
      ["st-t-d",AT.filter(t=>!t.isClosed&&t.status!=="closed").length],
      ["cnt-u",AU.length],["cnt-t",AT.length],["cnt-pr",AP.length],["cnt-po",APo.length],
@@ -556,7 +516,7 @@ async function loadAll(){
     rRecent();rUsers();rTeams();rProjects();rPostsMod();
   }catch(e){console.error(e)}
 }
-// ── Render Recent ──
+// â”€â”€ Render Recent â”€â”€
 function rRecent(){
   const el=document.getElementById("recent-wrap");if(!el)return;
   const list=AU.slice(0,6);
@@ -566,7 +526,7 @@ function rRecent(){
     return'<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="u-av" style="background:'+c+'">'+i+'</div><div><div style="font-weight:700">'+nm.trim()+'</div></div></div></td><td style="color:var(--sub)">'+u.email+'</td><td><span class="badge '+u.role+'">'+u.role+'</span></td><td><span class="badge '+(u.isBanned?"banned":"active")+'">'+(u.isBanned?"Banned":"Active")+'</span></td><td style="color:var(--sub);font-size:11px">'+ago(u.createdAt)+'</td></tr>'
   }).join("")+"</tbody></table>";
 }
-// ── Render Users ──
+// â”€â”€ Render Users â”€â”€
 function uTab(f,btn){uf=f;btn.closest(".tabs").querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));btn.classList.add("active");rUsers()}
 function rUsers(){
   const q=document.getElementById("usrch")?.value.toLowerCase()||"";
@@ -600,7 +560,7 @@ function rUsers(){
     return'<tr><td><div style="display:flex;align-items:center;gap:9px"><div class="u-av" style="background:'+c+'">'+av+'</div><div><div style="font-weight:700">'+displayName+'</div><div style="font-size:10px;color:var(--sub)">'+(u.university||"ProjectHive")+'</div></div></div></td><td style="color:var(--sub);font-size:11px">'+u.email+'</td><td style="font-size:11px">'+(u.university||"ProjectHive")+'</td><td><span class="badge '+u.role+'">'+u.role+'</span></td><td><span class="badge '+(bn?"banned":"active")+'">'+(bn?"Banned":"Active")+'</span></td><td style="color:var(--sub);font-size:11px">'+ago(u.createdAt)+'</td><td>'+actionCell+'</td></tr>'
   }).join("");
 }
-// ── Render Teams ──
+// â”€â”€ Render Teams â”€â”€
 function tTab(f,btn){tf=f;btn.closest(".tabs").querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));btn.classList.add("active");rTeams()}
 function rTeams(){
   const q=document.getElementById("tsrch")?.value.toLowerCase()||"";
@@ -615,11 +575,11 @@ function rTeams(){
   tb.innerHTML=list.map(t=>{
     const cl=t.is_closed||t.status==="closed";
     const membCount=t.members?.length||t.member_count||0;
-    const maxMem=t.max_members||t.maxMembers||'∞';
+    const maxMem=t.max_members||t.maxMembers||'âˆž';
     return'<tr><td><div style="font-weight:700">'+t.name+'</div><div style="font-size:10px;color:var(--sub);margin-top:2px">'+(t.description||"").slice(0,50)+'</div></td><td style="font-size:11px">'+membCount+'/'+maxMem+'</td><td><span class="badge '+(cl?"closed":"open")+'">'+(cl?"Closed":"Open")+'</span></td><td style="font-size:11px;color:var(--sub)">'+t.category+'</td><td style="font-size:11px;color:var(--sub)">'+ago(t.created_at||t.createdAt)+'</td><td><button class="act r" title="Delete" onclick="delT(\''+(t._id||t.id)+'\',\''+t.name.replace(/'/g,"\\'")+'\')">'+delI+'</button></td></tr>'
   }).join("");
 }
-// ── Analytics Charts ──
+// â”€â”€ Analytics Charts â”€â”€
 function renderAnalytics(){
   const roles={admin:0,student:0};
   AU.forEach(u=>roles[u.role]=(roles[u.role]||0)+1);
@@ -638,7 +598,7 @@ function renderAnalytics(){
   barChart(document.getElementById("team-chart"),tSt,["#3b82f6","#ef4444"]);
   legend(document.getElementById("team-legend"),tSt,["#3b82f6","#ef4444"]);
 }
-// ── Projects ──
+// â”€â”€ Projects â”€â”€
 function rProjects(){
   const q=(document.getElementById('psrch')?.value||'').toLowerCase();
   let list=AP;
@@ -654,7 +614,7 @@ function rProjects(){
     const st=p.status||'active';
     return `<tr>
       <td><div style="font-weight:700">${nm}</div><div style="font-size:10px;color:var(--sub)">${(p.description||'').slice(0,50)}</div></td>
-      <td style="font-size:11px;color:var(--sub)">${p.category||'—'}</td>
+      <td style="font-size:11px;color:var(--sub)">${p.category||'â€”'}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td><span class="badge ${feat?'admin':'closed'}">${feat?'Yes':'No'}</span></td>
       <td style="font-size:11px;color:var(--sub)">${ago(p.created_at||p.createdAt)}</td>
@@ -674,7 +634,7 @@ async function featureP(id,feat){
   const r=await fetch(API+'/api/admin/projects/'+id+'/feature',{method:'PATCH',headers:H,body:JSON.stringify({featured:feat})});
   if(r.ok)loadAll();else alert('Failed');
 }
-// ── Posts Moderation ──
+// â”€â”€ Posts Moderation â”€â”€
 function rPostsMod(){
   const q=(document.getElementById('posrch')?.value||'').toLowerCase();
   let list=APo;
@@ -694,7 +654,7 @@ function rPostsMod(){
     
     if (p.linkMetadata && p.linkMetadata.url) {
       contentHtml += `<div style="margin-top: 6px; font-size: 10px; color: var(--ac); display: inline-flex; align-items: center; gap: 4px; background: rgba(99, 102, 241, 0.08); padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(99, 102, 241, 0.15);">
-        <span style="font-size: 11px;">🔗</span> <a href="${p.linkMetadata.url}" target="_blank" style="color: inherit; text-decoration: none; font-weight: 600;">${p.linkMetadata.domain || 'Link'}: ${p.linkMetadata.title || 'Preview'}</a>
+        <span style="font-size: 11px;">ðŸ”—</span> <a href="${p.linkMetadata.url}" target="_blank" style="color: inherit; text-decoration: none; font-weight: 600;">${p.linkMetadata.domain || 'Link'}: ${p.linkMetadata.title || 'Preview'}</a>
       </div>`;
     }
 
@@ -712,7 +672,7 @@ async function delPostMod(id){
   const r=await fetch(API+'/api/admin/posts/'+id,{method:'DELETE',headers:H});
   if(r.ok) { loadAll(); adminAlert('Post deleted.', 'Success'); } else adminAlert('Failed to delete post.', 'Error');
 }
-// ── System flags sync ──
+// â”€â”€ System flags sync â”€â”€
 function syncFlags(f){
   const mt=document.getElementById('maint-tog'),rt=document.getElementById('reg-tog'),et=document.getElementById('ev-tog');
   if(mt)mt.classList.toggle('on',f.maintenanceMode);
@@ -747,7 +707,7 @@ async function toggleEV(){
   if(r.ok){const d=await r.json();syncFlags(d.flags); adminAlert(`Email verification ${on ? 'disabled' : 'enabled'}.`, 'System Update');}
   else adminAlert('Failed to update email verification status', 'Error');
 }
-// ── User actions ──
+// â”€â”€ User actions â”€â”€
 async function banU(id,ban){
   if(!(await adminConfirm(ban?'Ban this user? They will not be able to log in.':'Unban this user?', ban?'Ban User':'Unban User', ban)))return;
   const r=await fetch(API+'/api/admin/users/'+id+'/ban',{method:'PATCH',headers:H,body:JSON.stringify({ban})});
@@ -763,7 +723,7 @@ async function delU(id,nm){
   const r=await fetch(API+'/api/admin/users/'+id,{method:'DELETE',headers:H});
   if(r.ok) { loadAll(); adminAlert('User deleted.', 'Success'); } else adminAlert('Failed to delete user.', 'Error');
 }
-// ── Team actions ──
+// â”€â”€ Team actions â”€â”€
 async function delT(id,nm){
   if(!(await adminConfirm('Delete team "'+nm+'"? This cannot be undone.', 'Delete Team', true)))return;
   const r=await fetch(API+'/api/admin/teams/'+id,{method:'DELETE',headers:H});
@@ -776,7 +736,7 @@ async function doOut(){
   location.href='/admin/login';
 }
 
-// ══ Custom Themed Dialog Modal System ══════════════════════════════════════
+// â•â• Custom Themed Dialog Modal System â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 function showAdminModal(msg, title = 'Notice', showCancel = true, isDanger = false) {
   return new Promise((resolve) => {
     let container = document.getElementById('admin-modal-container');
@@ -848,19 +808,19 @@ function showAdminModal(msg, title = 'Notice', showCancel = true, isDanger = fal
 
 const adminConfirm = (msg, title, isDanger) => showAdminModal(msg, title, true, isDanger);
 const adminAlert = (msg, title) => showAdminModal(msg, title, false, false);
-// ── Mobile menu ──
+// â”€â”€ Mobile menu â”€â”€
 function toggleMobMenu(){
   document.querySelector('.sb')?.classList.toggle('mob-open');
   document.querySelector('.mob-overlay')?.classList.toggle('open');
 }
-// ── Refresh with visual feedback ──
+// â”€â”€ Refresh with visual feedback â”€â”€
 async function doRefresh() {
   const btn = document.getElementById('refresh-btn');
-  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Loading…'; }
+  if (btn) { btn.disabled = true; btn.innerHTML = '<span class="spin"></span> Loadingâ€¦'; }
   await loadAll();
   if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>Refresh'; }
 }
-// ── Init ──
+// â”€â”€ Init â”€â”€
 initTheme();
 initCollapse();
 // Bind refresh button via JS as fallback
@@ -870,7 +830,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Load flags from backend on start
 fetch(API+'/api/admin/flags',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{if(d)syncFlags(d);}).catch(()=>{});
-// ── Audit Log ──
+// â”€â”€ Audit Log â”€â”€
 let auditLog = [];
 function pushAudit(action, details) {
   const entry = { time: new Date().toISOString(), action, details, admin: curAdminEmail };
@@ -890,7 +850,7 @@ function renderAuditLog() {
   el.innerHTML = auditLog.slice(0, 50).map(e => `<tr>
     <td style="font-size:11px;color:var(--sub)">${ago(e.time)}</td>
     <td><span class="badge admin">${e.action}</span></td>
-    <td style="font-size:12px">${e.details || '—'}</td>
+    <td style="font-size:12px">${e.details || 'â€”'}</td>
     <td style="font-size:11px;color:var(--sub)">${e.admin}</td>
   </tr>`).join('');
 }
@@ -917,7 +877,7 @@ delP = async function(id, nm) {
   pushAudit('DELETE_PROJECT', nm);
 };
 
-// ── Reports ──
+// â”€â”€ Reports â”€â”€
 function renderReports() {
   const el = document.getElementById('reports-content');
   if (!el) return;
@@ -963,7 +923,7 @@ function exportReport() {
   pushAudit('EXPORT_REPORT', 'Admin report exported');
 }
 
-// ── Email Blast ──
+// â”€â”€ Email Blast â”€â”€
 async function sendEmailBlast() {
   const subject = document.getElementById('blast-subject')?.value?.trim();
   const body = document.getElementById('blast-body')?.value?.trim();
@@ -973,7 +933,7 @@ async function sendEmailBlast() {
 
   const btn = document.getElementById('blast-send');
   btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Sending…';
+  btn.innerHTML = '<span class="spin"></span> Sendingâ€¦';
 
   // Simulate sending (no email service configured)
   setTimeout(() => {
@@ -988,6 +948,213 @@ async function sendEmailBlast() {
 
 loadAll();
 checkHealth();
+
+// â”€â”€ Mobile Bottom Nav Sync â”€â”€
+function updateBottomNav(activeId) {
+  document.querySelectorAll('.admin-bn-item').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById(activeId);
+  if (el) el.classList.add('active');
+}
+
+// â”€â”€ Mobile Card Rendering â”€â”€
+// On small screens, inject card-style views alongside hidden desktop tables
+const isMobile = () => window.innerWidth <= 768;
+
+function getMobCardContainer(sectionId, containerId) {
+  let el = document.getElementById(containerId);
+  if (!el) {
+    el = document.createElement('div');
+    el.id = containerId;
+    el.className = 'mobile-card-list';
+    const section = document.getElementById(sectionId);
+    if (section) section.querySelector('.card')?.appendChild(el);
+  }
+  return el;
+}
+
+// Mobile User Cards
+const _origRUsers = rUsers;
+rUsers = function() {
+  _origRUsers();
+  if (!isMobile()) return;
+  const q = document.getElementById('usrch')?.value.toLowerCase() || '';
+  let list = AU;
+  if (uf === 'all') list = list.filter(u => u.role !== 'admin');
+  else if (uf === 'banned') list = list.filter(u => u.isBanned && u.role !== 'admin');
+  else list = list.filter(u => u.role === uf);
+  if (q) list = list.filter(u => ((u.firstName||'') + ' ' + (u.lastName||'') + ' ' + (u.email||'')).toLowerCase().includes(q));
+
+  const wrap = getMobCardContainer('sec-us', 'mob-users-wrap');
+  if (!wrap) return;
+
+  if (!list.length) { wrap.innerHTML = '<div class="empty">No users found</div>'; return; }
+
+  const banI = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>';
+  const unI  = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>';
+  const delI = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+  const rI   = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+
+  wrap.innerHTML = list.map(u => {
+    const nm = ((u.firstName||'') + ' ' + (u.lastName||'')).trim();
+    const c = avC(nm); const i = ((u.firstName?.[0]||'') + (u.lastName?.[0]||'')).toUpperCase() || '?';
+    const av = u.avatar ? `<img src="${u.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:9px">` : i;
+    const bn = u.isBanned; const isAdmin = u.role === 'admin';
+    const isSelf = u.email?.toLowerCase().trim() === curAdminEmail;
+    const isAdminLabel = isAdmin ? '<span class="badge admin">admin</span>' : '';
+    const banLabel = bn ? '<span class="badge banned">Banned</span>' : '<span class="badge active">Active</span>';
+    const verLabel = u.isVerified ? '' : '<span class="badge" style="background:rgba(245,158,11,.1);color:#f59e0b">Unverified</span>';
+
+    const actions = isSelf
+      ? `<span class="badge" style="border:1.5px dashed var(--ac);color:var(--ac);font-weight:800">Active Admin</span>`
+      : `<div class="mob-item-actions">
+          <button class="act" title="${isAdmin?'Demote':'Promote'}" onclick="cRole('${u._id}','${isAdmin?'student':'admin'}')">${rI} ${isAdmin?'Demote':'Promote'}</button>
+          <button class="act ${bn?'g':'r'}" title="${bn?'Unban':'Ban'}" onclick="banU('${u._id}',${!bn})">${bn?unI:banI} ${bn?'Unban':'Ban'}</button>
+          <button class="act r" title="Delete" onclick="delU('${u._id}','${nm.replace(/'/g,"\\\'")}')">${delI} Delete</button>
+        </div>`;
+    return `
+      <div class="mob-item-card">
+        <div class="mob-item-top">
+          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:13px;background:${c}">${av}</div>
+          <div class="mob-item-meta">
+            <div class="mob-item-name">${nm}${isSelf?' <span style="font-size:9px;background:rgba(99,102,241,.15);color:var(--ac);padding:2px 6px;border-radius:4px;font-weight:800">You</span>':''}</div>
+            <div class="mob-item-sub">${u.email||''}</div>
+            <div class="mob-item-sub">${u.university||'ProjectHive'}</div>
+          </div>
+        </div>
+        <div class="mob-item-badges">${isAdminLabel}${banLabel}${verLabel}</div>
+        ${actions}
+      </div>`;
+  }).join('');
+};
+
+// Mobile Team Cards
+const _origRTeams = rTeams;
+rTeams = function() {
+  _origRTeams();
+  if (!isMobile()) return;
+  const q = document.getElementById('tsrch')?.value.toLowerCase() || '';
+  let list = AT;
+  if (tf === 'open') list = list.filter(t => !t.is_closed && t.status !== 'closed');
+  else if (tf === 'closed') list = list.filter(t => t.is_closed || t.status === 'closed');
+  if (q) list = list.filter(t => (t.name||'').toLowerCase().includes(q));
+
+  const wrap = getMobCardContainer('sec-tm', 'mob-teams-wrap');
+  if (!wrap) return;
+
+  if (!list.length) { wrap.innerHTML = '<div class="empty">No teams found</div>'; return; }
+
+  const delI = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+
+  wrap.innerHTML = list.map(t => {
+    const cl = t.is_closed || t.status === 'closed';
+    const mem = t.members?.length || t.member_count || 0;
+    const max = t.max_members || t.maxMembers || 'âˆž';
+    const id = t._id || t.id;
+    return `
+      <div class="mob-item-card">
+        <div class="mob-item-top">
+          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:11px;background:${avC(t.name||'T')}">${(t.name||'T')[0].toUpperCase()}</div>
+          <div class="mob-item-meta">
+            <div class="mob-item-name">${t.name||'Unnamed'}</div>
+            <div class="mob-item-sub">${(t.description||'').slice(0,60)}</div>
+          </div>
+        </div>
+        <div class="mob-item-badges">
+          <span class="badge ${cl?'closed':'open'}">${cl?'Closed':'Open'}</span>
+          <span class="badge student">${mem}/${max} members</span>
+          <span class="badge" style="background:rgba(100,116,139,.1);color:var(--sub)">${t.category||'General'}</span>
+        </div>
+        <div class="mob-item-actions">
+          <button class="act r" title="Delete" onclick="delT('${id}','${(t.name||'').replace(/'/g,"\\\'")}')">${delI} Delete Team</button>
+        </div>
+      </div>`;
+  }).join('');
+};
+
+// Mobile Project Cards
+const _origRProjects = rProjects;
+rProjects = function() {
+  _origRProjects();
+  if (!isMobile()) return;
+  const q = (document.getElementById('psrch')?.value || '').toLowerCase();
+  let list = AP;
+  if (q) list = list.filter(p => (p.title||p.name||'').toLowerCase().includes(q));
+
+  const wrap = getMobCardContainer('sec-pr', 'mob-projects-wrap');
+  if (!wrap) return;
+
+  if (!list.length) { wrap.innerHTML = '<div class="empty">No projects found</div>'; return; }
+
+  const delI = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+  const starI = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+
+  wrap.innerHTML = list.map(p => {
+    const id = p.id || p._id;
+    const nm = p.title || p.name || 'Untitled';
+    const feat = !!p.is_featured;
+    return `
+      <div class="mob-item-card">
+        <div class="mob-item-top">
+          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">ðŸš€</div>
+          <div class="mob-item-meta">
+            <div class="mob-item-name">${nm}</div>
+            <div class="mob-item-sub">${(p.description||'').slice(0,60)}</div>
+          </div>
+        </div>
+        <div class="mob-item-badges">
+          <span class="badge ${p.status||'active'}">${p.status||'active'}</span>
+          ${feat ? '<span class="badge admin">â­ Featured</span>' : ''}
+          <span class="badge" style="background:rgba(100,116,139,.1);color:var(--sub)">${p.category||'â€”'}</span>
+        </div>
+        <div class="mob-item-actions">
+          <button class="act" title="${feat?'Unfeature':'Feature'}" onclick="featureP('${id}',${!feat})">${starI} ${feat?'Unfeature':'Feature'}</button>
+          <button class="act r" title="Delete" onclick="delP('${id}','${nm.replace(/'/g,"\\\'")}')">${delI} Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+};
+
+// Mobile Posts Cards
+const _origRPostsMod = rPostsMod;
+rPostsMod = function() {
+  _origRPostsMod();
+  if (!isMobile()) return;
+  const q = (document.getElementById('posrch')?.value || '').toLowerCase();
+  let list = APo;
+  if (q) list = list.filter(p => (p.content||'').toLowerCase().includes(q) || (`${p.author?.firstName||''} ${p.author?.lastName||''}`).toLowerCase().includes(q));
+
+  const wrap = getMobCardContainer('sec-po', 'mob-posts-wrap');
+  if (!wrap) return;
+
+  if (!list.length) { wrap.innerHTML = '<div class="empty">No posts found</div>'; return; }
+  const delI = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+
+  wrap.innerHTML = list.map(p => {
+    const id = p.id || p._id;
+    const author = p.author ? `${p.author.firstName||''} ${p.author.lastName||''}`.trim() : 'Anonymous';
+    const content = (p.content||'').slice(0, 100);
+    return `
+      <div class="mob-item-card">
+        <div class="mob-item-top">
+          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">ðŸ’¬</div>
+          <div class="mob-item-meta">
+            <div class="mob-item-name">${author}</div>
+            <div class="mob-item-sub">${p.author?.email||''}</div>
+          </div>
+          <span class="badge active" style="flex-shrink:0">${p.postType||'text'}</span>
+        </div>
+        <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;line-height:1.6;background:var(--bg);padding:8px 10px;border-radius:9px">${content}${content.length>=100?'â€¦':''}</p>
+        <div class="mob-item-actions">
+          <button class="act r" title="Delete Post" onclick="delPostMod('${id}')">${delI} Delete Post</button>
+        </div>
+      </div>`;
+  }).join('');
+};
+
+// Re-render mobile cards on window resize
+window.addEventListener('resize', () => {
+  if (isMobile()) { rUsers(); rTeams(); rProjects(); rPostsMod(); }
+});
 </script>
 </body>
 </html>
