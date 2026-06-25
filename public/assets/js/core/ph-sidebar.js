@@ -633,7 +633,7 @@ const PHSidebar = (() => {
       };
 
       appendGroup('Teammates & Students', users, (id, base) => {
-        window.location.href = `/people?uid=${id}`;
+        window.location.href = `/profile/view?id=${id}`;
       });
       appendGroup('Teams', teams, (id, base) => {
         window.location.href = `/teams?tid=${id}`;
