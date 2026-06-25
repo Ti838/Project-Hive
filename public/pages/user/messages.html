@@ -91,18 +91,9 @@
     .voice-wave-bar:nth-child(7) { animation-delay: 0.10s; }
     .voice-wave-bar:nth-child(8) { animation-delay: 0.30s; }
 
-    /* Reposition global AI floating button to prevent overlap with chat input on desktop */
-    @media (min-width: 769px) {
-      #ai-fab-wrap {
-        bottom: 96px !important;
-      }
-    }
-    
-    /* Hide global AI floating button on mobile when actively viewing/typing in a chat */
-    @media (max-width: 768px) {
-      body.chat-active-mobile #ai-fab-wrap {
-        display: none !important;
-      }
+    /* Hide global AI floating button completely on the messages page to prevent jumping and overlapping */
+    #ai-fab-wrap {
+      display: none !important;
     }
   </style>
 </head>
