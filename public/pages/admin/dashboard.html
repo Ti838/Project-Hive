@@ -1182,6 +1182,9 @@ window.addEventListener('resize', () => {
     display: block !important;
     /* Better touch handling */
     touch-action: pan-y !important;
+    /* Ensure body doesn't prevent scrolling */
+    height: 100vh !important;
+    overflow: hidden !important;
   }
 
   /* Hide sidebar completely on mobile */
@@ -1198,6 +1201,10 @@ window.addEventListener('resize', () => {
     max-width: 100vw !important;
     overflow-x: hidden !important;
     margin-left: 0 !important;
+    /* Enable vertical scrolling */
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
     /* Smooth momentum scrolling */
     -webkit-overflow-scrolling: touch !important;
   }
@@ -1218,11 +1225,16 @@ window.addEventListener('resize', () => {
     overflow-x: hidden !important;
     overflow-y: auto !important;
     width: 100% !important;
+    /* Enable scrolling - flex: 1 allows it to fill remaining space */
+    flex: 1 !important;
     /* Smooth native scrolling */
     -webkit-overflow-scrolling: touch !important;
     scroll-behavior: smooth !important;
     /* Remove any scroll snap for natural feel */
     scroll-snap-type: none !important;
+    /* Important: Set explicit height to enable scrolling */
+    height: auto !important;
+    min-height: 0 !important;
   }
 
   .stat-grid {
