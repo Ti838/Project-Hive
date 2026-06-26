@@ -194,28 +194,22 @@ export async function handleCallInitiate(socket, data) {
 export function handleCallAccept(socket, data) {
   const { roomId, targetId } = data;
   if (!roomId || !targetId) return;
-  const targetSocket = getUserSocket(targetId);
-  if (targetSocket) {
-    targetSocket.emit('call:accepted', { roomId });
-  }
+  const targetSockets = getUserSockets(targetId);
+  targetSockets.forEach(s => s.emit('call:accepted', { roomId }));
 }
 
 export function handleCallDecline(socket, data) {
   const { roomId, targetId } = data;
   if (!roomId || !targetId) return;
-  const targetSocket = getUserSocket(targetId);
-  if (targetSocket) {
-    targetSocket.emit('call:declined', { roomId });
-  }
+  const targetSockets = getUserSockets(targetId);
+  targetSockets.forEach(s => s.emit('call:declined', { roomId }));
 }
 
 export function handleCallHangup(socket, data) {
   const { roomId, targetId } = data;
   if (!roomId || !targetId) return;
-  const targetSocket = getUserSocket(targetId);
-  if (targetSocket) {
-    targetSocket.emit('call:hungup', { roomId });
-  }
+  const targetSockets = getUserSockets(targetId);
+  targetSockets.forEach(s => s.emit('call:hungup', { roomId }));
 }
 
 // ── Group Call: notify all team members ──────────────────────────────────────

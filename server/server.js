@@ -116,10 +116,8 @@ async function startServer() {
       socket.on('call:group',    (data) => handleGroupCallInitiate(socket, data));
       socket.on('webrtc:signal', (data) => {
         const { targetId, signal } = data;
-        const targetSocket = getUserSocket(targetId);
-        if (targetSocket) {
-          targetSocket.emit('webrtc:signal', { senderId: socket.userId, signal });
-        }
+        const targetSockets = getUserSockets(targetId);
+        targetSockets.forEach(s => s.emit('webrtc:signal', { senderId: socket.userId, signal }));
       });
 
       socket.on('disconnect', (reason) => {

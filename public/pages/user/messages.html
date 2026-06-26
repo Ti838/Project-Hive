@@ -3347,41 +3347,14 @@
           jitsiApiInstance = null;
         }
 
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-          localStream = null;
-        }
-        if (peerConnection) {
-          peerConnection.close();
-          peerConnection = null;
-        }
-        isWebRTCCall = false;
-        pendingSdpOffer = null;
-        pendingIceCandidates = []; // Bug 1: clear queue on call end
-        incomingCallerId = null; // Bug #6: clear caller reference
-        currentVoiceOnly = false;
-
-        const voiceDisplay = document.getElementById('voice-only-display');
-        if (voiceDisplay) voiceDisplay.classList.add('hidden');
-        const localBubble = document.getElementById('local-video-bubble');
-        if (localBubble) localBubble.classList.remove('hidden');
-
-        document.getElementById('webrtc-container').classList.add('hidden');
-        document.getElementById('jitsi-container').classList.remove('hidden');
-
-        const modal = document.getElementById('call-modal');
-        if (modal) modal.classList.replace('flex', 'hidden');
-        stopOutgoingRing(); // stop caller ring when ending
-        stopRingtone();
+        // Resolve target ID before clearing state!
+        var callFriendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
         
-        if (socket && activeCallRoom) {
-          var callFriendId = activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-          // Save callType BEFORE resetting currentVoiceOnly
+        if (socket && activeCallRoom && callFriendId) {
           var _callType = currentVoiceOnly ? 'voice' : 'video';
           socket.emit('call:hangup', { roomId: activeCallRoom, targetId: callFriendId });
 
-          // Save call log as system message in conversation
-          if (activeConv && activeConv.type !== 'team' && callFriendId) {
+          if (activeConv && activeConv.type !== 'team') {
             const callDuration = window._callSeconds || 0;
             const callStatus = callDuration > 3 ? 'ended' : 'cancelled';
             const callLogMsg = JSON.stringify({
@@ -3391,17 +3364,10 @@
               duration: callDuration,
               status: callStatus
             });
-            // Use the actual DM room ID, not activeConv._id
             const dmRoomId = [ME.id, callFriendId].sort().join('_');
-            socket.emit('message:send', {
-              roomId: dmRoomId,
-              content: callLogMsg
-            });
+            socket.emit('message:send', { roomId: dmRoomId, content: callLogMsg });
 
-            // ── Optimistic local update so call log appears instantly in chat ──
-            // Don't wait for socket broadcast — add it now if this is the active conv
-            const activeDmRoom = activeConv &&
-              [ME.id, (activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId)].sort().join('_');
+            const activeDmRoom = [ME.id, (activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId)].sort().join('_');
             if (activeDmRoom === dmRoomId) {
               const tmpMsg = {
                 id: 'call-log-' + Date.now(),
@@ -3416,8 +3382,35 @@
             }
           }
         }
+
+        if (localStream) {
+          localStream.getTracks().forEach(track => track.stop());
+          localStream = null;
+        }
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+        }
+        isWebRTCCall = false;
+        pendingSdpOffer = null;
+        pendingIceCandidates = [];
+        incomingCallerId = null;
+        currentVoiceOnly = false;
         window._callSeconds = 0;
         activeCallRoom = null;
+
+        const voiceDisplay = document.getElementById('voice-only-display');
+        if (voiceDisplay) voiceDisplay.classList.add('hidden');
+        const localBubble = document.getElementById('local-video-bubble');
+        if (localBubble) localBubble.classList.remove('hidden');
+
+        document.getElementById('webrtc-container').classList.add('hidden');
+        document.getElementById('jitsi-container').classList.remove('hidden');
+
+        const modal = document.getElementById('call-modal');
+        if (modal) modal.classList.replace('flex', 'hidden');
+        stopOutgoingRing();
+        stopRingtone();
       };
 
 

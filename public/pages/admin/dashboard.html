@@ -113,8 +113,9 @@ tr:hover td{background:rgba(99,102,241,.03)}
 .mob-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:49;backdrop-filter:blur(4px)}
 .mob-overlay.open{display:block}
 
-/* â”€â”€ Admin Bottom Nav (mobile only) â”€â”€ */
-.admin-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:var(--sb);border-top:1.5px solid var(--bd);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));flex-direction:row;align-items:center;justify-content:space-around}
+/* ── Admin Bottom Nav (mobile only) ── */
+.admin-bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:150;background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid rgba(0,0,0,0.05);padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));flex-direction:row;align-items:center;justify-content:space-around}
+html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid rgba(255,255,255,0.05)}
 .admin-bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;border:none;background:none;cursor:pointer;color:var(--sub);font-size:9px;font-weight:700;min-width:44px;min-height:44px;justify-content:center;border-radius:10px;transition:all .15s;text-decoration:none;font-family:"Inter",sans-serif}
 .admin-bn-item.active{color:var(--ac)}
 .admin-bn-item svg{transition:transform .2s}
@@ -185,12 +186,8 @@ tr:hover td{background:rgba(99,102,241,.03)}
   /* Search inputs â€” full width */
   .srch{width:100%;min-width:0;font-size:16px}
 
-  /* Table rows â†’ hide on mobile, show cards */
-  .desktop-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .desktop-table table{min-width:650px}
-  .desktop-table th:first-child,.desktop-table td:first-child{position:sticky;left:0;z-index:10;background:var(--bg)}
-  .desktop-table td:first-child{background:var(--sf);border-right:1px solid var(--bd)}
-  .desktop-table th{background:var(--bg)}
+  /* Table rows → hide on mobile, show cards */
+  .desktop-table{display:none !important}
 
   /* Maintenance banner */
   .maint-banner{flex-direction:column;align-items:flex-start;gap:10px;padding:12px}
@@ -1218,10 +1215,17 @@ window.addEventListener('resize', () => {
     position: sticky !important;
     top: 0 !important;
     z-index: 100 !important;
-    /* Reduce top padding/margin */
-    padding: 0 12px !important;
-    height: 56px !important;
+    padding: 0 16px !important;
+    height: 60px !important;
     margin: 0 !important;
+    background: rgba(255,255,255,0.85) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+  }
+  html.dark .topbar {
+    background: rgba(11,13,23,0.85) !important;
+    border-bottom: 1px solid rgba(255,255,255,0.05) !important;
   }
 
   .content {
@@ -1455,116 +1459,20 @@ window.addEventListener('resize', () => {
     min-width: 44px !important;
   }
 
-  /* Better table scrolling on mobile */
-  .desktop-table {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scroll-behavior: smooth !important;
-    /* Add scroll indicator shadow */
-    background:
-      linear-gradient(90deg, var(--sf) 30%, transparent),
-      linear-gradient(90deg, transparent, var(--sf) 70%) 100% 0,
-      radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.15), transparent),
-      radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.15), transparent) 100% 0;
-    background-repeat: no-repeat;
-    background-size: 30px 100%, 30px 100%, 14px 100%, 14px 100%;
-    background-attachment: local, local, scroll, scroll;
-  }
-
-  /* Fix table layout and text wrapping */
-  .desktop-table table {
-    table-layout: fixed !important;
-    width: 100% !important;
-    min-width: 650px !important;
-  }
-
-  .desktop-table th,
-  .desktop-table td {
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    vertical-align: middle !important;
-    padding: 10px 8px !important;
-  }
-
-  /* User column - show full name and avatar */
-  .desktop-table th:first-child,
-  .desktop-table td:first-child {
-    width: 200px !important;
-    min-width: 200px !important;
-    white-space: normal !important;
-    overflow: visible !important;
-  }
-
-  /* User info display */
-  .desktop-table td:first-child > div {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-  }
-
-  .desktop-table td:first-child .u-av {
-    flex-shrink: 0 !important;
-  }
-
-  .desktop-table td:first-child div[style*="font-weight:700"] {
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    line-height: 1.3 !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-  }
-
-  .desktop-table td:first-child div[style*="font-size:10px"] {
-    font-size: 10px !important;
-    line-height: 1.2 !important;
-    margin-top: 2px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  /* Email column */
-  .desktop-table th:nth-child(2),
-  .desktop-table td:nth-child(2) {
-    width: 180px !important;
-    min-width: 180px !important;
-    font-size: 11px !important;
-  }
-
-  /* University column */
-  .desktop-table th:nth-child(3),
-  .desktop-table td:nth-child(3) {
-    width: 140px !important;
-    min-width: 140px !important;
-    white-space: normal !important;
-    word-break: break-word !important;
-    font-size: 12px !important;
-  }
-
-  /* Role column */
-  .desktop-table th:nth-child(4),
-  .desktop-table td:nth-child(4) {
-    width: 90px !important;
-    min-width: 90px !important;
-  }
-
-  /* Status column */
-  .desktop-table th:nth-child(5),
-  .desktop-table td:nth-child(5) {
-    width: 90px !important;
-    min-width: 90px !important;
-  }
-
-  /* Actions column - keep visible */
-  .desktop-table th:last-child,
-  .desktop-table td:last-child {
-    width: 120px !important;
-    min-width: 120px !important;
-    position: sticky !important;
-    right: 0 !important;
+  /* Hide table and show mobile cards */
+  .desktop-table { display: none !important; }
+  .mobile-card-list { display: flex !important; flex-direction: column; gap: 12px; margin-top: 12px; width: 100%; padding: 0 4px; }
+  .mob-item-card { 
     background: var(--sf) !important;
-    box-shadow: -2px 0 4px rgba(0,0,0,0.05) !important;
+    border: 1.5px solid var(--bd) !important;
+    border-radius: 16px !important;
+    padding: 16px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03) !important;
+    transition: all 0.2s ease !important;
+    margin-bottom: 0 !important;
+  }
+  html.dark .mob-item-card {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
   }
 
   /* Smooth scrolling for tabs */
