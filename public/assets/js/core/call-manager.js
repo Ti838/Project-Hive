@@ -462,6 +462,20 @@ class CallManager {
       isInitiator: false
     };
 
+    // Show browser notification first
+    this.showBrowserNotification(data);
+
+    // If not on messages page, auto-navigate
+    const currentPage = window.location.pathname;
+    if (!currentPage.includes('messages.html')) {
+      console.log('[Call] 🚀 Auto-navigating to messages page...');
+      // Store call data in sessionStorage for messages page to pick up
+      sessionStorage.setItem('pending-call', JSON.stringify(data));
+      window.location.href = '/pages/user/messages.html?incoming-call=' + data.roomId;
+      return;
+    }
+
+    // Already on messages page - show modal directly
     const modal = document.getElementById('incoming-call-modal');
     const callerNameEl = document.getElementById('incoming-caller-name');
     const callTypeEl = document.getElementById('incoming-call-type');
@@ -602,7 +616,88 @@ class CallManager {
       this.ringtoneContext = null;
     }
   }
+
+  /**
+   * Request browser notification permission
+   */
+  async requestNotificationPermission() {
+    if (!('Notification' in window)) {
+      console.log('[Call] Browser notifications not supported');
+      return false;
+    }
+
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+
+    if (Notification.permission !== 'denied') {
+      const permission = await Notification.requestPermission();
+      return permission === 'granted';
+    }
+
+    return false;
+  }
+
+  /**
+   * Show browser notification for incoming call
+   */
+  showBrowserNotification(data) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') {
+      console.log('[Call] Notifications not available or not permitted');
+      return;
+    }
+
+    const title = `${data.callerName} is calling...`;
+    const body = data.isVoiceOnly ? 'Audio call' : 'Video call';
+
+    try {
+      const notification = new Notification(title, {
+        body: body,
+        icon: '/favicon.png',
+        badge: '/favicon.png',
+        tag: 'incoming-call-' + data.roomId,
+        requireInteraction: true, // Keep notification until user interacts
+        vibrate: [200, 100, 200, 100, 200], // Vibration pattern (mobile)
+        silent: false
+      });
+
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+        // Navigate to messages if not already there
+        if (!window.location.pathname.includes('messages.html')) {
+          window.location.href = '/pages/user/messages.html?incoming-call=' + data.roomId;
+        }
+      };
+
+      // Auto-close notification after 30 seconds
+      setTimeout(() => notification.close(), 30000);
+
+      console.log('[Call] 🔔 Browser notification shown');
+    } catch (err) {
+      console.error('[Call] Error showing notification:', err);
+    }
+  }
 }
 
 // Global instance
 window.callManager = new CallManager();
+
+// Request notification permission on first load (non-intrusive)
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+      if (window.callManager && !sessionStorage.getItem('ph-notification-requested')) {
+        window.callManager.requestNotificationPermission();
+        sessionStorage.setItem('ph-notification-requested', 'true');
+      }
+    }, 3000); // Wait 3 seconds after page load
+  });
+} else {
+  setTimeout(() => {
+    if (window.callManager && !sessionStorage.getItem('ph-notification-requested')) {
+      window.callManager.requestNotificationPermission();
+      sessionStorage.setItem('ph-notification-requested', 'true');
+    }
+  }, 3000);
+}

@@ -354,6 +354,7 @@ const PHSidebar = (() => {
       try { initGlobalSearch(base); } catch(_) {}
       try { if (typeof initGlobalProfile === 'function') initGlobalProfile(base); } catch(_) {}
       try { initGlobalRealtime(base); } catch(_) {}
+      try { initGlobalCallManager(base); } catch(_) {} // Initialize call manager globally
     };
 
     if (document.getElementById('ph-sidebar')) {
@@ -548,7 +549,7 @@ const PHSidebar = (() => {
     input.addEventListener('keydown', (e) => {
       const rows = Array.from(body.querySelectorAll('.ph-search-row'));
       const selectedIndex = rows.findIndex(r => r.classList.contains('selected'));
-      
+
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         if (rows.length === 0) return;
@@ -588,7 +589,7 @@ const PHSidebar = (() => {
         const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
           ? (location.port === '3000' ? 'http://localhost:5000' : '')
           : 'https://projecthive-backend.onrender.com';
-          
+
         const r = await fetch(apiBase + `/api/users/global-search?q=${encodeURIComponent(q)}`, {
           headers: { Authorization: 'Bearer ' + tk }
         });
@@ -615,10 +616,10 @@ const PHSidebar = (() => {
         items.forEach((item) => {
           const initials = ((item.title || '')[0] || '?').toUpperCase();
           const avBg = item.avatarColor || '#6366f1';
-          const avatarHtml = item.avatar 
+          const avatarHtml = item.avatar
             ? `<img src="${item.avatar}" class="w-8 h-8 rounded-full object-cover">`
             : `<div class="ph-search-row-avatar" style="background:${avBg}">${initials}</div>`;
-            
+
           html += `
             <div class="ph-search-row" onclick="(${redirectFn.toString()})('${item.id}', '${base}')">
               ${item.type === 'user' ? avatarHtml : `<span class="material-symbols-outlined text-indigo-500">${item.type === 'team' ? 'groups' : item.type === 'project' ? 'rocket_launch' : 'newspaper'}</span>`}
@@ -646,7 +647,7 @@ const PHSidebar = (() => {
       });
 
       body.innerHTML = html;
-      
+
       // Auto-select first item
       const firstRow = body.querySelector('.ph-search-row');
       if (firstRow) firstRow.classList.add('selected');
@@ -765,9 +766,9 @@ const PHSidebar = (() => {
     function setupSockets(token) {
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
         ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
-      
+
       const socket = io(apiBase, { auth: { token }, transports: ['websocket', 'polling'] });
-      
+
       socket.on('notification:new', (notif) => {
         playNotificationSound();
         if (typeof PHToast !== 'undefined' && PHToast.info) {
@@ -778,8 +779,8 @@ const PHSidebar = (() => {
       socket.on('call:incoming', (data) => {
         playCallSound();
         // Check if already on messages page
-        if (location.pathname.includes('/messages')) return; 
-        
+        if (location.pathname.includes('/messages')) return;
+
         if (typeof PHToast !== 'undefined' && PHToast.info) {
           PHToast.info(
             `<div style="display:flex;align-items:center;gap:12px;">
@@ -1028,16 +1029,16 @@ const PHSidebar = (() => {
     if (window.innerWidth <= 768) {
       const avatar = document.getElementById('feed-avatar');
       const hamburgerSlot = document.getElementById('ph-hamburger-slot');
-      
+
       if (avatar && hamburgerSlot) {
         // Move avatar to the left slot
         hamburgerSlot.innerHTML = '';
         hamburgerSlot.appendChild(avatar);
-        
+
         // Bind drawer opening to Avatar
         avatar.style.cursor = 'pointer';
         avatar.onclick = PHSidebar.openDrawer;
-        
+
         // Remove standard hamburger button if it exists
         const oldHamburger = document.getElementById('ph-hamburger-btn') || document.querySelector('.ph-hamburger');
         if (oldHamburger) oldHamburger.style.display = 'none';
@@ -1097,7 +1098,7 @@ const PHSidebar = (() => {
       pb.id = 'ph-progress-bar';
       document.body.appendChild(pb);
     }
-    
+
     // Inject transition CSS dynamically
     const style = document.createElement('style');
     style.textContent = `
@@ -1148,20 +1149,20 @@ const PHSidebar = (() => {
       try {
         const url = new URL(href, window.location.href);
         if (url.origin !== window.location.origin) return; // same origin only
-        
+
         e.preventDefault();
-        
+
         // Show progress bar
         pb.style.transition = 'width 0.4s cubic-bezier(0.1, 0.8, 0.1, 1)';
         pb.style.opacity = '1';
         pb.style.width = '75%';
-        
+
         // Fade out current content page instead of body
         const pageEl = document.querySelector('.ph-page') || document.querySelector('.ph-main');
         if (pageEl) {
           pageEl.classList.add('ph-page-exit');
         }
-        
+
         // Navigate to the link after the content completes fade-out (200ms)
         setTimeout(() => {
           pb.style.width = '100%';
@@ -1246,7 +1247,7 @@ const PHSidebar = (() => {
             <span class="material-symbols-outlined" style="font-size:16px;">close</span>
           </button>
         </div>
-        
+
         <!-- Profile Header Info (Overlapping) -->
         <div style="padding:16px 24px;border-bottom:1px solid var(--bd, rgba(255,255,255,0.08));position:relative;flex-shrink:0;">
           <!-- Avatar container -->
@@ -1254,12 +1255,12 @@ const PHSidebar = (() => {
             <img id="gp-avatar" style="display:none;width:100%;height:100%;object-fit:cover;">
             <span id="gp-initials">?</span>
           </div>
-          
+
           <!-- Action Buttons -->
           <div id="gp-actions" style="display:flex;justify-content:flex-end;gap:8px;height:36px;align-items:center;">
             <!-- CONNECT, MESSAGE etc -->
           </div>
-          
+
           <!-- Name and Meta -->
           <div style="margin-top:16px;">
             <div style="display:flex;align-items:center;gap:8px;">
@@ -1273,7 +1274,7 @@ const PHSidebar = (() => {
             </div>
           </div>
         </div>
-        
+
         <!-- Profile Details Body (Scrollable) -->
         <div style="padding:24px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:20px;" id="gp-body">
           <!-- Bio -->
@@ -1281,7 +1282,7 @@ const PHSidebar = (() => {
             <h4 style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin:0 0 6px 0;">About</h4>
             <p id="gp-bio" style="font-size:13px;color:var(--tx,#374151);margin:0;line-height:1.5;white-space:pre-wrap;">No bio provided.</p>
           </div>
-          
+
           <!-- Skills -->
           <div id="gp-section-skills">
             <h4 style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin:0 0 8px 0;">Skills & Expertise</h4>
@@ -1289,7 +1290,7 @@ const PHSidebar = (() => {
               <!-- Badges -->
             </div>
           </div>
-          
+
           <!-- Contact & Socials -->
           <div id="gp-section-contact">
             <h4 style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#9ca3af;margin:0 0 8px 0;">Links & Contacts</h4>
@@ -1297,7 +1298,7 @@ const PHSidebar = (() => {
               <!-- Social rows -->
             </div>
           </div>
-          
+
           <!-- Lock Screen State -->
           <div id="gp-lock-screen" style="display:none;padding:32px 16px;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;">
             <span class="material-symbols-outlined" style="font-size:48px;color:#9ca3af">lock</span>
@@ -1531,9 +1532,9 @@ const PHSidebar = (() => {
         ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
       const r = await fetch(`${apiBase}/api/friends/request`, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + tk 
+          Authorization: 'Bearer ' + tk
         },
         body: JSON.stringify({ friendId: uid })
       });
@@ -1561,13 +1562,13 @@ const PHSidebar = (() => {
       const tk = localStorage.getItem('access_token');
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
         ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
-      
+
       const endpoint = action === 'accept' ? `/api/friends/accept` : `/api/friends/decline`;
       const r = await fetch(apiBase + endpoint, {
         method: 'POST',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          Authorization: 'Bearer ' + tk 
+          Authorization: 'Bearer ' + tk
         },
         body: JSON.stringify({ requestId: reqId })
       });
@@ -2001,6 +2002,108 @@ const PHSidebar = (() => {
     if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
     }
+  }
+
+  // ── Global Call Manager (Works on ALL pages) ──
+  function initGlobalCallManager(base) {
+    // First, ensure socket.io is loaded
+    if (!window.io) {
+      console.log('[PHSidebar] Socket.io not loaded, loading script...');
+      const socketScript = document.createElement('script');
+      socketScript.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
+      socketScript.onload = () => {
+        console.log('[PHSidebar] ✅ Socket.io loaded');
+        loadCallManager();
+      };
+      socketScript.onerror = () => {
+        console.error('[PHSidebar] ❌ Failed to load Socket.io');
+      };
+      document.head.appendChild(socketScript);
+      return;
+    }
+
+    loadCallManager();
+  }
+
+  function loadCallManager() {
+    // Skip if call manager script hasn't loaded yet
+    if (!window.callManager) {
+      console.log('[PHSidebar] Call manager not loaded yet, will load script...');
+
+      // Dynamically load call-manager.js script
+      const script = document.createElement('script');
+      script.src = '/assets/js/core/call-manager.js';
+      script.onload = () => {
+        console.log('[PHSidebar] ✅ Call manager script loaded');
+        setupCallManager();
+      };
+      script.onerror = () => {
+        console.error('[PHSidebar] ❌ Failed to load call manager script');
+      };
+      document.head.appendChild(script);
+      return;
+    }
+
+    setupCallManager();
+  }
+
+  function setupCallManager() {
+    if (!window.io || !window.callManager) {
+      console.log('[PHSidebar] Socket.io or call manager not available');
+      return;
+    }
+
+    // Check if socket is already initialized
+    if (window.globalSocket) {
+      console.log('[PHSidebar] Using existing global socket');
+      window.callManager.setSocket(window.globalSocket);
+      return;
+    }
+
+    // Initialize socket connection
+    const tk = localStorage.getItem('access_token');
+    if (!tk) {
+      console.log('[PHSidebar] No auth token, skipping call manager initialization');
+      return;
+    }
+
+    const BACKEND = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? (location.port === '3000' ? 'http://localhost:5000' : 'http://localhost:5000')
+      : 'https://projecthive-backend.onrender.com';
+
+    console.log('[PHSidebar] 🔌 Connecting global socket for call manager...');
+
+    const socket = window.io(BACKEND, {
+      transports: ['websocket', 'polling'],
+      auth: { token: tk },
+      reconnection: true,
+      reconnectionAttempts: Infinity,
+      reconnectionDelay: 1000
+    });
+
+    socket.on('connect', () => {
+      console.log('[PHSidebar] ✅ Global socket connected:', socket.id);
+      window.globalSocket = socket;
+
+      // Initialize call manager with this socket
+      window.callManager.setSocket(socket);
+      console.log('[PHSidebar] ✅ Call manager initialized globally');
+    });
+
+    socket.on('disconnect', () => {
+      console.log('[PHSidebar] ⚠️ Global socket disconnected');
+    });
+
+    socket.on('connect_error', (err) => {
+      console.error('[PHSidebar] Socket connection error:', err.message);
+    });
+
+    // Heartbeat to keep connection alive
+    setInterval(() => {
+      if (socket.connected) {
+        socket.emit('heartbeat');
+      }
+    }, 25000); // Every 25 seconds
   }
 
   return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest, showLogoutModal, openLightbox, closeLightbox };
