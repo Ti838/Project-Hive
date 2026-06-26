@@ -476,11 +476,12 @@ export async function getMe(req, res, next) {
 // Returns the Supabase Google OAuth URL for the frontend to redirect to
 export async function googleInitiate(req, res, next) {
   try {
-    const appUrl = process.env.NODE_ENV === 'production'
-      ? (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || process.env.APP_URL_PROD || process.env.APP_URL)
-      : (process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5000');
+    // Force production URL when NODE_ENV is production
+    const redirectTo = process.env.NODE_ENV === 'production'
+      ? 'https://projecthive-bd.vercel.app/pages/auth/callback.html'
+      : 'http://localhost:5000/pages/auth/callback.html';
 
-    const redirectTo = `${appUrl.replace(/\/$/, '')}/pages/auth/callback.html`;
+    console.log('[ProjectHive] 🔑 Google OAuth — NODE_ENV:', process.env.NODE_ENV);
     console.log('[ProjectHive] 🔑 Google OAuth — redirectTo:', redirectTo);
 
     if (!supabase) {
@@ -507,6 +508,7 @@ export async function googleInitiate(req, res, next) {
     }
 
     console.log('[ProjectHive] ✅ Google OAuth URL generated successfully');
+    console.log('[ProjectHive] 🔗 OAuth URL:', data.url);
     res.json({ url: data.url });
   } catch (error) {
     console.error('[ProjectHive] Google OAuth initiate catch error:', error?.message || error);
