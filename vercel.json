@@ -1,21 +1,31 @@
 {
   "rewrites": [
-    { "source": "/dashboard", "destination": "/pages/user/dashboard.html" },
     { "source": "/login", "destination": "/pages/auth/login.html" },
     { "source": "/register", "destination": "/pages/auth/register.html" },
+    { "source": "/forgot-password", "destination": "/pages/auth/forgot-password.html" },
+    { "source": "/reset-password", "destination": "/pages/auth/reset-password.html" },
+    { "source": "/verify-email", "destination": "/pages/auth/verify-email.html" },
     { "source": "/auth/callback", "destination": "/pages/auth/callback.html" },
+    { "source": "/dashboard", "destination": "/pages/user/dashboard.html" },
     { "source": "/feed", "destination": "/pages/user/feed.html" },
     { "source": "/messages", "destination": "/pages/user/messages.html" },
-    { "source": "/profile", "destination": "/pages/user/profile.html" },
-    { "source": "/showcase", "destination": "/pages/user/showcase.html" },
-    { "source": "/generator", "destination": "/pages/user/generator.html" },
     { "source": "/people", "destination": "/pages/user/people.html" },
     { "source": "/teams", "destination": "/pages/user/teams.html" },
+    { "source": "/teams/create", "destination": "/pages/user/teams-create.html" },
+    { "source": "/settings", "destination": "/pages/user/settings.html" },
     { "source": "/notifications", "destination": "/pages/user/notifications.html" },
-    { "source": "/help", "destination": "/pages/info/help.html" },
-    { "source": "/about", "destination": "/pages/info/about.html" },
+    { "source": "/profile", "destination": "/pages/user/profile/view.html" },
+    { "source": "/profile/edit", "destination": "/pages/user/profile/edit.html" },
+    { "source": "/showcase", "destination": "/pages/user/projects/showcase.html" },
+    { "source": "/generator", "destination": "/pages/user/projects/generator.html" },
+    { "source": "/saved", "destination": "/pages/user/saved.html" },
+    { "source": "/admin", "destination": "/pages/admin/login.html" },
     { "source": "/admin/login", "destination": "/pages/admin/login.html" },
-    { "source": "/admin/dashboard", "destination": "/pages/admin/dashboard.html" }
+    { "source": "/admin/dashboard", "destination": "/pages/admin/dashboard.html" },
+    { "source": "/about", "destination": "/pages/info/about.html" },
+    { "source": "/help", "destination": "/pages/info/help.html" },
+    { "source": "/terms", "destination": "/pages/info/terms.html" },
+    { "source": "/privacy", "destination": "/pages/info/privacy.html" }
   ],
   "headers": [
     {

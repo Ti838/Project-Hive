@@ -111,7 +111,7 @@ async function processUserSession(session) {
     document.getElementById('msg').textContent = 'Signed in as ' + (backendData.user?.email || '') + '. Redirecting…';
     document.getElementById('spinner').style.borderTopColor = '#10b981';
 
-    setTimeout(() => window.location.href = '/pages/user/dashboard.html', 1000);
+    setTimeout(() => window.location.href = '/dashboard', 1000);
   } else {
     console.error('❌ Backend error:', backendData.error);
     showError(backendData.error || 'Sign-in failed. Please try again.');
