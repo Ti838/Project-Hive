@@ -12,7 +12,7 @@
       }
     })()
   </script>
-  
+
   <!-- CDNs & Fonts -->
   <link rel="icon" href="/favicon.png?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,13 +51,13 @@
       }
     }
   </script>
-  
+
   <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
   <link rel="stylesheet" href="/assets/css/ph-design.css">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/assets/js/core/ph-toast.js"></script>
   <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
-  
+
   <script>
     window._jitsiLoaded = false;
     function loadJitsiAPI() {
@@ -142,21 +142,21 @@
 
   <!-- Primary 3-Column Container -->
   <div class="ml-[260px] h-screen flex flex-col max-md:ml-0 overflow-hidden">
-    
+
     <!-- Topbar/Header -->
     <header class="h-16 bg-white dark:bg-darkSurface-panel border-b border-gray-200 dark:border-darkSurface-border flex items-center px-6 gap-4 shrink-0 z-30 shadow-sm">
       <div id="ph-hamburger-slot" class="md:hidden"></div>
-      
+
       <button onclick="history.back()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card transition-all shrink-0 text-gray-600 dark:text-gray-400 hover:text-indigo-500" title="Go Back">
         <span class="material-symbols-outlined text-[20px]">arrow_back</span>
       </button>
-      
+
       <div class="flex items-center gap-2">
         <span class="material-symbols-outlined text-indigo-500 text-2xl font-bold">hub</span>
         <h1 class="font-heading font-bold text-lg tracking-wide hidden sm:block">ProjectHive Collaboration</h1>
         <h1 class="font-heading font-bold text-base tracking-wide sm:hidden">Hive Space</h1>
       </div>
-      
+
       <!-- Quick Info Stats -->
       <div class="hidden lg:flex items-center gap-5 ml-8 pl-8 border-l border-gray-200 dark:border-darkSurface-border">
         <div class="flex items-center gap-2">
@@ -164,7 +164,7 @@
           <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">Real-Time Connected</span>
         </div>
       </div>
-      
+
       <button onclick="openNewConv()" class="ml-auto flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.98] text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-all shadow-md shadow-indigo-600/20">
         <span class="material-symbols-outlined text-sm font-bold">add_comment</span>
         <span>New Chat</span>
@@ -176,7 +176,7 @@
 
       <!-- COLUMN 2: MIDDLE PANEL (Chat List) -->
       <aside class="msg-conv-panel w-[340px] shrink-0 bg-white dark:bg-darkSurface-panel border-r border-gray-200 dark:border-darkSurface-border flex flex-col overflow-hidden">
-        
+
         <!-- Search bar -->
         <div class="p-4 border-b border-gray-100 dark:border-darkSurface-border/50">
           <div class="relative flex items-center">
@@ -231,7 +231,7 @@
 
       <!-- COLUMN 3: RIGHT PANEL (Conversation area) -->
       <main class="msg-chat-area flex-1 flex flex-col overflow-hidden bg-gray-50 dark:bg-darkSurface-bg">
-        
+
         <!-- Active Chat Header -->
         <div id="chat-hdr" class="h-16 bg-white dark:bg-darkSurface-panel border-b border-gray-200 dark:border-darkSurface-border px-6 flex items-center justify-between shrink-0 shadow-sm z-10">
           <div class="msg-back-btn flex items-center gap-2 md:hidden">
@@ -332,14 +332,14 @@
 
         <!-- Message composer area -->
         <div id="chat-input-area" class="hidden p-4 bg-white dark:bg-darkSurface-panel border-t border-gray-200 dark:border-darkSurface-border flex items-center gap-3 relative">
-          
+
           <!-- Attachment Menu Trigger -->
           <!-- Real Media Attachment -->
           <input type="file" id="real-file-inp" class="hidden" accept="image/*,video/*,audio/*,application/pdf" onchange="handleRealFileSelect(this)">
           <button onclick="document.getElementById('real-file-inp').click()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Attach file or media">
             <span class="material-symbols-outlined text-lg">attach_file</span>
           </button>
-          
+
           <!-- Voice Record Button -->
           <button id="btn-record" onclick="toggleVoiceRecord()" class="w-10 h-10 rounded-xl bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-600 dark:text-slate-400 flex items-center justify-center active:scale-[0.95] transition-all" title="Record Voice Note">
             <span class="material-symbols-outlined text-lg" id="record-icon">mic</span>
@@ -382,11 +382,11 @@
             </div>
           </div>
 
-          
+
           <input id="msg-inp" type="text" placeholder="Type a message or drop files..."
             onkeydown="if(event.key==='Enter')sendMsg()"
             class="flex-1 bg-gray-100 dark:bg-darkSurface-card/80 border-none rounded-xl px-5 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 transition-all font-medium">
-          
+
           <button onclick="sendMsg()" class="w-11 h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl flex items-center justify-center transition-all active:scale-[0.95] shadow-md shadow-indigo-600/15">
             <span class="material-symbols-outlined text-lg font-bold">send</span>
           </button>
@@ -478,7 +478,7 @@
   <!-- Voice/Video Calling Screen (Google Meet / Discord Style) -->
   <div id="call-modal" class="fixed inset-0 bg-[#07080d] z-50 hidden flex-col transition-all duration-300">
     <div class="flex-1 flex flex-col h-full relative">
-      
+
       <!-- Top header bar -->
       <div class="absolute top-0 left-0 right-0 z-20 flex justify-between items-center p-5 bg-gradient-to-b from-black/80 to-transparent">
         <div class="flex items-center gap-3">
@@ -488,25 +488,25 @@
             <span id="call-timer" class="text-white/50 text-xs font-mono">00:00</span>
           </div>
         </div>
-        
+
         <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/5" id="call-connection-status">
           <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="call-status-dot"></span>
           <span class="text-yellow-400 text-xs font-bold" id="call-status-text">Connecting...</span>
         </div>
       </div>
-      
+
       <!-- Active Call Display Main Box -->
       <div class="flex-1 w-full flex items-center justify-center relative bg-slate-950">
-        
+
         <!-- Jitsi container -->
         <div id="jitsi-container" class="w-full h-full"></div>
-        
+
         <!-- WebRTC Video container -->
         <div id="webrtc-container" class="hidden absolute inset-0 w-full h-full relative flex items-center justify-center">
-          
+
           <!-- Remote Video (Full Screen) -->
           <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-          
+
           <!-- Voice-Only Avatar Display -->
           <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d] z-10">
             <div id="voice-avatar" class="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-extrabold shadow-2xl mb-6 relative">
@@ -522,28 +522,28 @@
               <span class="text-[10px] font-bold text-indigo-300 ml-1 uppercase tracking-widest">Voice Active</span>
             </div>
           </div>
-          
+
           <!-- Local Video (Floating Bubble) -->
           <div id="local-video-bubble" class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
             <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
           </div>
         </div>
       </div>
-      
+
       <!-- Call Control Bar -->
       <div class="absolute bottom-0 left-0 right-0 z-20 flex justify-center items-center gap-4 p-6 bg-gradient-to-t from-black/90 to-transparent">
         <button id="btn-mute" onclick="toggleMute()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Mute Microphone">
           <span class="material-symbols-outlined text-xl" id="mute-icon">mic</span>
         </button>
-        
+
         <button id="btn-camera" onclick="toggleCamera()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Toggle Camera">
           <span class="material-symbols-outlined text-xl" id="camera-icon">videocam</span>
         </button>
-        
+
         <button onclick="endCall()" class="w-16 h-16 bg-rose-600 hover:bg-rose-500 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] shadow-lg shadow-rose-600/35 border border-rose-500/30" title="End Call">
           <span class="material-symbols-outlined text-2xl font-bold">call_end</span>
         </button>
-        
+
         <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Share Screen">
           <span class="material-symbols-outlined text-xl">screen_share</span>
         </button>
@@ -554,7 +554,7 @@
   <!-- Incoming Call Modal Overlay -->
   <div id="incoming-call-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center">
     <div class="bg-white dark:bg-darkSurface-panel rounded-3xl p-8 w-[380px] max-w-[92vw] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-darkSurface-border text-center relative overflow-hidden">
-      
+
       <!-- Ringing Ring Pulsing waves -->
       <div class="relative mb-6">
         <div class="absolute inset-0 w-24 h-24 -m-2 rounded-full bg-emerald-400/20 animate-ping" style="animation-duration:1.5s"></div>
@@ -563,10 +563,10 @@
           <span class="material-symbols-outlined text-white text-3xl">phone_in_talk</span>
         </div>
       </div>
-      
+
       <h3 class="font-heading font-bold text-xl mb-1 text-gray-900 dark:text-white" id="caller-name">Incoming Call...</h3>
       <p class="text-xs text-gray-500 dark:text-slate-400 mb-8 font-medium">Your ProjectHive teammate wants to connect</p>
-      
+
       <div class="flex gap-4 w-full">
         <button onclick="declineCall()" class="flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-rose-600/20">
           <span class="material-symbols-outlined text-lg font-bold">call_end</span>
@@ -583,14 +583,14 @@
   <!-- New Conversation/Chat Search Modal -->
   <div id="nc-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden items-center justify-center">
     <div class="bg-white dark:bg-darkSurface-panel rounded-2xl w-[440px] max-h-[80vh] flex flex-col shadow-2xl border border-gray-200 dark:border-darkSurface-border overflow-hidden">
-      
+
       <div class="p-4 border-b border-gray-100 dark:border-darkSurface-border flex justify-between items-center">
         <h3 class="font-heading font-bold text-base text-gray-800 dark:text-white">Start New Collaboration</h3>
         <button onclick="closeModal()" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-darkSurface-card transition-colors">
           <span class="material-symbols-outlined">close</span>
         </button>
       </div>
-      
+
       <div class="p-4 border-b border-gray-100 dark:border-darkSurface-border">
         <div class="relative flex items-center">
           <span class="material-symbols-outlined absolute left-3.5 text-gray-400 text-lg">search</span>
@@ -598,7 +598,7 @@
             class="w-full bg-gray-100 dark:bg-darkSurface-card border-none rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white">
         </div>
       </div>
-      
+
       <div id="user-list" class="flex-1 overflow-y-auto max-h-[360px] p-2 space-y-1"></div>
     </div>
   </div>
@@ -644,7 +644,7 @@
         ? (location.port === '3000' ? 'http://localhost:5000' : '')
         : 'https://projecthive-backend.onrender.com';
       const COLS = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
-      
+
       function avC(s){
         let h = 0;
         for(const c of s||'') h = c.charCodeAt(0) + ((h<<5)-h);
@@ -700,7 +700,7 @@
       function formatMessageContent(content) {
         if (!content) return '';
         const trimmed = content.trim();
-        
+
         // 1. JSON Media check (Real Attachments) - robust multi-pass parsing
         try {
           if (trimmed.startsWith('{')) {
@@ -741,7 +741,7 @@
             }
           }
         } catch(e) {}
-        
+
         // 2. Legacy Image Check
         if (trimmed.match(/\.(jpeg|jpg|gif|png|webp)/i) || trimmed.startsWith('data:image/')) {
           return `
@@ -751,7 +751,7 @@
             </div>
           `;
         }
-        
+
         // 2. File Check
         if (trimmed.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar)/i)) {
           const ext = trimmed.split('.').pop().toUpperCase();
@@ -759,7 +759,7 @@
           let iconColor = 'text-blue-500';
           if (ext === 'PDF') { icon = 'picture_as_pdf'; iconColor = 'text-rose-500'; }
           else if (ext === 'ZIP' || ext === 'RAR') { icon = 'folder_zip'; iconColor = 'text-amber-500'; }
-          
+
           const fileName = trimmed.split('/').pop().split('\\').pop();
           return `
             <div class="flex items-center gap-3 p-3 bg-black/20 dark:bg-black/40 rounded-xl border border-slate-200/10 max-w-[260px]">
@@ -774,7 +774,7 @@
             </div>
           `;
         }
-        
+
         // 3. Link Check
         if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
           const displayUrl = trimmed.replace(/https?:\/\/(www\.)?/, '').split('/')[0];
@@ -789,7 +789,7 @@
             </div>
           `;
         }
-        
+
         // 4. Default Text
         return esc(content);
       }
@@ -835,11 +835,11 @@
           inp.value = '';
           return;
         }
-        
-        const type = file.type.startsWith('image/') ? 'image' : 
-                     file.type.startsWith('video/') ? 'video' : 
+
+        const type = file.type.startsWith('image/') ? 'image' :
+                     file.type.startsWith('video/') ? 'video' :
                      file.type.startsWith('audio/') ? 'voice' : 'file';
-                     
+
         const reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onloadend = () => {
@@ -1372,7 +1372,7 @@
         const name = `${f.firstName||''} ${f.lastName||''}`.trim()||'Teammate';
         const color = avC(name);
         const hdrStatus = getActivityStatus(f);
-        
+
         // Render Chat Header with Glass Buttons
         document.getElementById('chat-hdr').innerHTML=`
           <div class="flex items-center gap-3">
@@ -1391,7 +1391,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="flex items-center gap-1.5 sm:gap-2 msg-chat-actions shrink-0">
             ${!friendIds.has(f._id||f.id) ? `
               <button onclick="addFriendFromChat('${f._id||f.id}')" class="flex items-center gap-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-2.5 sm:px-3.5 py-2 rounded-xl transition-all shadow-sm shrink-0">
@@ -1399,7 +1399,7 @@
                 <span class="hidden sm:inline">Add Friend</span>
               </button>
             ` : ''}
-            
+
             <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Voice Call">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">call</span>
             </button>
@@ -1418,7 +1418,7 @@
           </div>`;
 
         document.getElementById('chat-input-area').classList.remove('hidden');
-        
+
         const tipEl = document.getElementById('typing-indicator');
         if (tipEl) tipEl.classList.add('hidden');
 
@@ -1429,7 +1429,7 @@
           </div>`;
 
         var friendId = f._id||conv.friendId||conv._id;
-        
+
         if (socket) {
           socket.emit('join:room', { roomId: conv._id });
         }
@@ -1450,7 +1450,7 @@
               .then(d=>{allMsgs=d.messages||d||[];renderMsgs();})
               .catch(()=>{allMsgs=[];renderMsgs();});
           });
-          
+
         hideConvPanel();
       };
 
@@ -1465,22 +1465,22 @@
             </div>`;
           return;
         }
-        
+
         let lastDateString = '';
-        
+
         const htmlContent = allMsgs.map(m=>{
           const mine = m.sender_id===ME?.id||m.sender?.id===ME?.id||m.sender===ME?.id||m._tmp;
           const ts = new Date(m.createdAt || m.created_at || Date.now()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
           const msgDate = new Date(m.createdAt || m.created_at || Date.now());
           const dateString = msgDate.toDateString();
-          
+
           let dateDividerHtml = '';
           if (dateString !== lastDateString) {
             lastDateString = dateString;
             let displayDate = msgDate.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
             if(dateString === new Date().toDateString()) displayDate = 'Today';
             else if(dateString === new Date(Date.now() - 86400000).toDateString()) displayDate = 'Yesterday';
-            
+
             dateDividerHtml = `
               <div class="flex items-center justify-center my-4 shrink-0">
                 <span class="bg-gray-200/60 dark:bg-darkSurface-card text-gray-500 dark:text-slate-400 text-[10px] px-3.5 py-1 rounded-full font-bold tracking-wider uppercase border border-gray-300/10">${displayDate}</span>
@@ -1508,7 +1508,7 @@
               </div>
             `;
           }
-          
+
           let ticksHtml = '';
           if (mine) {
             const friend = activeConv?.friend || {};
@@ -1518,7 +1518,7 @@
               const fn = friend.firstName || '';
               const ln = friend.lastName || '';
               const c = friend.avatarColor || avC(`${fn} ${ln}`);
-              const photo = friend.avatar 
+              const photo = friend.avatar
                 ? `<img src="${friend.avatar}" class="w-full h-full object-cover rounded-full">`
                 : `<span class="text-[7px] font-black text-white">${((fn[0]||'') + (ln[0]||'')).toUpperCase()}</span>`;
               ticksHtml = `<div class="w-3.5 h-3.5 rounded-full flex items-center justify-center shrink-0 ml-1.5 border border-white dark:border-darkSurface-bg shadow-sm" style="background:${friend.avatar ? 'transparent' : c};" title="Read">${photo}</div>`;
@@ -1529,7 +1529,7 @@
 
           const msgId = m.id || m._id;
           const isMine = mine;
-          
+
           // Reply quote bubble
           let replyQuoteHtml = '';
           if (m.reply_to_content) {
@@ -1550,7 +1550,7 @@
 
           return `
             ${dateDividerHtml}
-            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in group relative" 
+            <div class="flex ${mine?'justify-end':'justify-start'} bubble-in group relative"
               data-msg-id="${msgId||''}"
               data-content="${(m.content||'').replace(/"/g,'&quot;')}"
               data-mine="${mine}"
@@ -1575,7 +1575,7 @@
               </div>
             </div>`;
         }).join('');
-        
+
         container.innerHTML = `<div id="msg-content-wrapper">${htmlContent}</div>`;
         container.scrollTop = container.scrollHeight;
       }
@@ -1699,7 +1699,7 @@
         if (!ctxMsgEl) return;
         const id = ctxMsgEl.dataset.msgId;
         const content = ctxMsgEl.dataset.content;
-        
+
         // Disable editing media/attachments payloads
         if (content.startsWith('{') && (content.includes('"type":') || content.includes('"url":'))) {
           showToast('Cannot edit file attachments or voice notes', 'error');
@@ -1718,7 +1718,7 @@
         document.getElementById('reply-preview-text').textContent = 'Editing: ' + content.substring(0, 80);
         document.getElementById('reply-bar').classList.remove('hidden');
         document.getElementById('reply-bar').classList.add('flex');
-        
+
         // Customize close icon click behavior to cancel edit instead of reply
         const closeBtn = document.querySelector('#reply-bar button');
         closeBtn.onclick = function() { cancelEdit(); };
@@ -1732,7 +1732,7 @@
         const bar = document.getElementById('reply-bar');
         bar.classList.add('hidden');
         bar.classList.remove('flex');
-        
+
         // Reset close button logic back to default cancelReply
         const closeBtn = document.querySelector('#reply-bar button');
         closeBtn.onclick = function() { cancelReply(); };
@@ -2068,7 +2068,7 @@
               friendIds.add(c.friend._id || c.friend.id);
             }
           });
-          
+
           try {
             const fr = await fetch(API_BASE+'/api/friends', { headers: H });
             if (fr.ok) {
@@ -2076,7 +2076,7 @@
               (fd.friends||[]).forEach(f => friendIds.add(f.id || f._id));
             }
           } catch(e) {}
-          
+
           localStorage.setItem('ph-convs-cache', JSON.stringify(convs));
           renderConvs(convs);
 
@@ -2146,7 +2146,7 @@
           }
           activeConv = null;
         }
-        
+
         // Reset chat header and message list to empty state
         document.getElementById('chat-hdr').innerHTML = `
           <div class="msg-back-btn flex items-center gap-2 md:hidden">
@@ -2158,7 +2158,7 @@
             <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
             <span>Select a conversation to start collaborating in ProjectHive</span>
           </div>`;
-          
+
         document.getElementById('msgs').innerHTML = `
           <!-- Empty/Welcome Dashboard View -->
           <div class="flex flex-col items-center justify-center min-h-full py-8 px-6 max-w-[850px] mx-auto w-full text-center">
@@ -2225,7 +2225,7 @@
               </div>
             </div>
           </div>`;
-          
+
         document.getElementById('chat-input-area').classList.add('hidden');
         document.getElementById('typing-indicator').classList.add('hidden');
 
@@ -2346,7 +2346,7 @@
             renderTeamMsgs();
           })
           .catch(() => { allMsgs = []; renderTeamMsgs(); });
-          
+
         hideConvPanel();
       };
 
@@ -2360,9 +2360,9 @@
             </div>`;
           return;
         }
-        
+
         let lastDateString = '';
-        
+
         const htmlContent = allMsgs.map(m => {
           const sender = m.sender || {};
           const sId = sender.id || sender._id || m.sender;
@@ -2370,17 +2370,17 @@
           const senderName = mine ? '' : `${sender.first_name || sender.firstName || 'Teammate'}`;
           const ts = new Date(m.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
           const color = avC(senderName || 'X');
-          
+
           const msgDate = new Date(m.createdAt || Date.now());
           const dateString = msgDate.toDateString();
-          
+
           let dateDividerHtml = '';
           if (dateString !== lastDateString) {
             lastDateString = dateString;
             let displayDate = msgDate.toLocaleDateString([], {weekday:'long', month:'short', day:'numeric'});
             if(dateString === new Date().toDateString()) displayDate = 'Today';
             else if(dateString === new Date(Date.now() - 86400000).toDateString()) displayDate = 'Yesterday';
-            
+
             dateDividerHtml = `
               <div class="flex items-center justify-center my-4 shrink-0">
                 <span class="bg-gray-200/60 dark:bg-darkSurface-card text-gray-500 dark:text-slate-400 text-[10px] px-3.5 py-1 rounded-full font-bold tracking-wider uppercase border border-gray-300/10">${displayDate}</span>
@@ -2421,7 +2421,7 @@
               </div>
             </div>`;
         }).join('');
-        
+
         container.innerHTML = `<div id="msg-content-wrapper">${htmlContent}</div>`;
         container.scrollTop = container.scrollHeight;
       }
@@ -2539,7 +2539,13 @@
           ? (location.port === '3000' ? 'http://localhost:5000' : '/')
           : 'https://projecthive-backend.onrender.com';
         socket = io(SOCKET_URL,{auth:{token:TK},transports:['websocket','polling']});
-        
+
+        // Initialize Call Manager with socket
+        if (window.callManager) {
+          window.callManager.setSocket(socket);
+          console.log('[Messages] Call Manager initialized with socket');
+        }
+
         socket.on('connect', () => {
           if (activeConv) {
             socket.emit('join:room', { roomId: activeConv._id });
@@ -2568,12 +2574,12 @@
         socket.on('message:received', data=>{
           const senderId = data.sender?.id||data.sender?._id||data.sender;
           const isSelf = senderId===ME?.id;
-          
+
           if (!isSelf) {
             playMessageSound();
             // Browser Push Notification
-            const senderName = data.sender?.firstName 
-              ? `${data.sender.firstName} ${data.sender.lastName||''}`.trim() 
+            const senderName = data.sender?.firstName
+              ? `${data.sender.firstName} ${data.sender.lastName||''}`.trim()
               : 'New Message';
             showBrowserNotification(senderName, data.content || '📎 Attachment', data.sender?.avatar || null);
           }
@@ -2707,7 +2713,7 @@
           }
           document.getElementById('incoming-call-modal').classList.replace('hidden', 'flex');
           startRingtone();
-          
+
           // Auto Ring Timeout
           setTimeout(() => {
             const modal = document.getElementById('incoming-call-modal');
@@ -2763,7 +2769,7 @@
         inpEl.addEventListener('input', () => {
           if (!activeConv || !socket) return;
           socket.emit('typing:start', { roomId: activeConv._id });
-          
+
           clearTimeout(typingTimeout);
           typingTimeout = setTimeout(() => {
             socket.emit('typing:stop', { roomId: activeConv._id });
@@ -2801,7 +2807,7 @@
 
       let jitsiApiInstance = null;
       let activeCallRoom = null;
-      
+
       // WebRTC Engine Configuration
       let localStream = null;
       let peerConnection = null;
@@ -3072,7 +3078,7 @@
           if (localBubble) localBubble.classList.add('hidden');
           if (callTypeIcon) callTypeIcon.textContent = 'call';
           if (camBtn) camBtn.style.display = 'none';
-          
+
           const f = activeConv?.friend || {};
           const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
           const voiceAvText = document.getElementById('voice-avatar-text');
@@ -3318,7 +3324,7 @@
             <span class="material-symbols-outlined text-4xl animate-spin text-indigo-500">sync</span>
             <span class="text-xs font-bold">Mounting media container...</span>
           </div>`;
-        
+
         await loadJitsiAPI();
         if (!window.JitsiMeetExternalAPI) {
           container.innerHTML = `<div class="flex items-center justify-center h-full text-rose-500 font-bold text-sm">Failed to join streaming instance. Refresh page.</div>`;
@@ -3358,7 +3364,7 @@
 
         // Resolve target ID before clearing state!
         var callFriendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
-        
+
         if (socket && activeCallRoom && callFriendId) {
           var _callType = currentVoiceOnly ? 'voice' : 'video';
           socket.emit('call:hangup', { roomId: activeCallRoom, targetId: callFriendId });
@@ -3526,9 +3532,70 @@
         activeCallRoom = null;
         incomingCallerId = null;
       };
+
+      // ============================================
+      //    NEW WEBRTC CALL FUNCTIONS
+      // ============================================
+
+      /**
+       * Start video call with current conversation friend
+       */
+      window.startCall = async function() {
+        if (!activeConv || !activeConv.friend) {
+          PHToast.show('Please select a conversation first', 'error');
+          return;
+        }
+
+        const friend = activeConv.friend;
+        const targetUser = {
+          id: friend._id || friend.id,
+          name: friend.firstName || friend.lastName
+            ? `${friend.firstName||''} ${friend.lastName||''}`.trim()
+            : 'User',
+          first_name: friend.firstName || 'User',
+          last_name: friend.lastName || ''
+        };
+
+        console.log('[Messages] Starting video call with:', targetUser);
+
+        if (window.callManager) {
+          await window.callManager.initiateCall(targetUser, true); // true = video call
+        } else {
+          PHToast.show('Call manager not initialized', 'error');
+        }
+      };
+
+      /**
+       * Start audio-only call with current conversation friend
+       */
+      window.startVoiceCall = async function() {
+        if (!activeConv || !activeConv.friend) {
+          PHToast.show('Please select a conversation first', 'error');
+          return;
+        }
+
+        const friend = activeConv.friend;
+        const targetUser = {
+          id: friend._id || friend.id,
+          name: friend.firstName || friend.lastName
+            ? `${friend.firstName||''} ${friend.lastName||''}`.trim()
+            : 'User',
+          first_name: friend.firstName || 'User',
+          last_name: friend.lastName || ''
+        };
+
+        console.log('[Messages] Starting audio call with:', targetUser);
+
+        if (window.callManager) {
+          await window.callManager.initiateCall(targetUser, false); // false = audio only
+        } else {
+          PHToast.show('Call manager not initialized', 'error');
+        }
+      };
+
     })();
   </script>
-  
+
   <script>
     function showConvPanel() {
       document.querySelector('.msg-conv-panel')?.classList.remove('hidden-mobile');
@@ -3540,7 +3607,7 @@
         document.body.classList.add('chat-active-mobile');
       }
     }
-    
+
     // Bind click handlers to hide conversation list panel on small mobile devices
     const list = document.getElementById('conv-list');
     if (list) {
@@ -3586,6 +3653,133 @@
       msgInp?.addEventListener('blur', resetKeyboardOffset);
     })();
   </script>
+
+  <!-- ============================================ -->
+  <!--          WebRTC CALL UI MODALS              -->
+  <!-- ============================================ -->
+
+  <!-- Incoming Call Modal -->
+  <div id="incoming-call-modal" class="fixed inset-0 z-[999] hidden flex items-center justify-center bg-black/80 backdrop-blur-md">
+    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl shadow-2xl p-8 w-[90%] max-w-sm text-center">
+      <!-- Caller Avatar/Icon -->
+      <div class="relative mb-6">
+        <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl scale-150 animate-pulse"></div>
+        <div class="relative w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl">
+          <span class="material-symbols-outlined text-white text-5xl">person</span>
+        </div>
+      </div>
+
+      <!-- Caller Info -->
+      <h3 id="incoming-caller-name" class="font-heading font-bold text-2xl text-gray-900 dark:text-white mb-2">
+        Unknown Caller
+      </h3>
+      <p id="incoming-call-type" class="text-sm text-gray-500 dark:text-slate-400 mb-8">
+        Audio Call
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-center gap-6">
+        <!-- Decline Button -->
+        <button onclick="window.callManager.declineCall()" class="group flex flex-col items-center gap-2">
+          <div class="w-16 h-16 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
+            <span class="material-symbols-outlined text-white text-3xl">call_end</span>
+          </div>
+          <span class="text-xs font-semibold text-gray-600 dark:text-slate-400">Decline</span>
+        </button>
+
+        <!-- Accept Button -->
+        <button onclick="window.callManager.acceptCall()" class="group flex flex-col items-center gap-2">
+          <div class="w-16 h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95 animate-pulse">
+            <span class="material-symbols-outlined text-white text-3xl">call</span>
+          </div>
+          <span class="text-xs font-semibold text-gray-600 dark:text-slate-400">Accept</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calling Modal (Waiting for answer) -->
+  <div id="calling-modal" class="fixed inset-0 z-[999] hidden flex items-center justify-center bg-black/80 backdrop-blur-md">
+    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl shadow-2xl p-8 w-[90%] max-w-sm text-center">
+      <!-- Target Avatar/Icon -->
+      <div class="relative mb-6">
+        <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl scale-150 animate-pulse"></div>
+        <div class="relative w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl">
+          <span class="material-symbols-outlined text-white text-5xl">person</span>
+        </div>
+      </div>
+
+      <!-- Target Info -->
+      <h3 id="calling-target-name" class="font-heading font-bold text-2xl text-gray-900 dark:text-white mb-2">
+        Calling...
+      </h3>
+      <p class="text-sm text-gray-500 dark:text-slate-400 mb-8 animate-pulse">
+        Ringing...
+      </p>
+
+      <!-- Hang Up Button -->
+      <button onclick="window.callManager.endCall()" class="mx-auto flex flex-col items-center gap-2">
+        <div class="w-16 h-16 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
+          <span class="material-symbols-outlined text-white text-3xl">call_end</span>
+        </div>
+        <span class="text-xs font-semibold text-gray-600 dark:text-slate-400">Cancel</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- In-Call Modal (Active call) -->
+  <div id="in-call-modal" class="fixed inset-0 z-[999] hidden flex flex-col bg-gradient-to-br from-gray-900 to-black">
+    <!-- Remote Video (full screen) -->
+    <div class="flex-1 relative flex items-center justify-center bg-black">
+      <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
+
+      <!-- Remote user info overlay -->
+      <div class="absolute top-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-6 py-3 rounded-2xl">
+        <h3 id="in-call-remote-name" class="font-heading font-bold text-white text-lg text-center">
+          Connected
+        </h3>
+        <p id="call-timer" class="text-sm text-gray-300 text-center font-mono">
+          00:00
+        </p>
+      </div>
+
+      <!-- Local Video (Picture-in-Picture) -->
+      <div class="absolute top-6 right-6 w-32 h-40 rounded-2xl overflow-hidden shadow-2xl bg-gray-800 border-2 border-white/20">
+        <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
+      </div>
+    </div>
+
+    <!-- Call Controls -->
+    <div class="bg-black/80 backdrop-blur-lg border-t border-white/10 p-6 flex items-center justify-center gap-4">
+      <!-- Mute Button -->
+      <button id="btn-mute" onclick="window.callManager.toggleMute()" class="flex flex-col items-center gap-1.5 group">
+        <div class="w-14 h-14 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95 shadow-lg">
+          <span id="mute-icon" class="material-symbols-outlined text-white text-2xl">mic</span>
+        </div>
+        <span class="text-[10px] font-semibold text-gray-400 group-hover:text-white transition-colors">Mute</span>
+      </button>
+
+      <!-- Video Toggle Button -->
+      <button id="btn-toggle-video" onclick="window.callManager.toggleVideo()" class="flex flex-col items-center gap-1.5 group">
+        <div class="w-14 h-14 rounded-full bg-gray-700 hover:bg-gray-600 flex items-center justify-center transition-all active:scale-95 shadow-lg">
+          <span id="video-icon" class="material-symbols-outlined text-white text-2xl">videocam</span>
+        </div>
+        <span class="text-[10px] font-semibold text-gray-400 group-hover:text-white transition-colors">Video</span>
+      </button>
+
+      <!-- Hang Up Button -->
+      <button onclick="window.callManager.endCall()" class="flex flex-col items-center gap-1.5 group">
+        <div class="w-16 h-16 rounded-full bg-rose-500 hover:bg-rose-600 flex items-center justify-center transition-all active:scale-95 shadow-xl">
+          <span class="material-symbols-outlined text-white text-3xl">call_end</span>
+        </div>
+        <span class="text-[10px] font-semibold text-white">End Call</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Load Call Manager Script -->
+  <script src="/assets/js/core/call-manager.js"></script>
+
   <script src="/assets/js/core/info-modal.js"></script>
 </body>
 </html>
