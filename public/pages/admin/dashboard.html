@@ -665,25 +665,10 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   var isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
 
   if (isMobileDevice) {
-    // Clear admin tokens
+    // Clear admin tokens and redirect to blocking page
     localStorage.removeItem('admin_token');
     localStorage.removeItem('access_token');
-
-    // Get current theme preference
-    var isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && matchMedia('(prefers-color-scheme:dark)').matches);
-
-    var bgColor = isDark ? '#07080f' : '#f0f2ff';
-    var cardBg = isDark ? 'rgba(11,13,23,0.95)' : 'rgba(255,255,255,0.95)';
-    var textColor = isDark ? '#e2e8f0' : '#0f172a';
-    var subColor = isDark ? '#8b93b8' : '#64748b';
-    var borderColor = isDark ? 'rgba(99,102,241,0.25)' : 'rgba(99,102,241,0.2)';
-    var infoBg = isDark ? 'rgba(99,102,241,0.1)' : 'rgba(99,102,241,0.08)';
-    var infoBorder = isDark ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)';
-    var infoText = isDark ? '#818cf8' : '#6366f1';
-    var shadowColor = isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.15)';
-
-    document.documentElement.innerHTML = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>Admin Access Restricted</title><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:'+bgColor+';font-family:Inter,system-ui,sans-serif;padding:24px 20px;transition:background .3s}.container{max-width:400px;width:100%;text-align:center}.card{background:'+cardBg+';backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1.5px solid '+borderColor+';border-radius:24px;padding:32px 24px;box-shadow:0 20px 40px '+shadowColor+';transition:all .3s}.icon-shield{margin:0 auto 20px;width:56px;height:56px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(239,68,68,0.1);border:2px solid rgba(239,68,68,0.2)}.badge{display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;padding:6px 14px;border-radius:999px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#ef4444;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}.pulse{width:6px;height:6px;border-radius:50%;background:#ef4444;animation:pulse 2s ease-in-out infinite}@keyframes pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}h1{font-size:24px;margin:0 0 12px;font-weight:900;color:'+textColor+';line-height:1.2}p{margin:0 0 24px;color:'+subColor+';line-height:1.6;font-size:15px}.info-box{background:'+infoBg+';border:1.5px solid '+infoBorder+';border-radius:16px;padding:16px;margin-bottom:24px;text-align:left}.info-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}.info-title{color:'+infoText+';font-size:13px;font-weight:700}.info-list{margin:0;padding-left:20px;color:'+subColor+';font-size:13px;line-height:1.8}.btn-home{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#6366f1,#7c3aed);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:14px;text-decoration:none;transition:transform .2s,box-shadow .2s}.btn-home:active{transform:scale(0.98)}</style></head><body><div class="container"><div class="card"><div class="icon-shield"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div><div class="badge"><span class="pulse"></span>ACCESS RESTRICTED</div><h1>Admin Panel<br>Desktop Only</h1><p>For security and workflow efficiency, ProjectHive Admin Panel requires a desktop computer.</p><div class="info-box"><div class="info-header"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="'+infoText+'" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span class="info-title">Requirements</span></div><ul class="info-list"><li>Desktop or Laptop Computer</li><li>Modern Web Browser</li><li>Mouse & Keyboard</li></ul></div><a href="/" class="btn-home"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Back to Home</a></div></div></body>';
-    document.close();
+    window.location.href = '/pages/admin/mobile-blocked.html';
   }
 })();
 </script></head>
