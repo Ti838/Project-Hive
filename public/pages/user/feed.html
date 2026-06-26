@@ -200,8 +200,14 @@
         margin: 0 !important;
       }
 
-      /* HIDE RIGHT SIDEBAR ON MOBILE */
-      aside.w-\[320px\] {
+      /* HIDE RIGHT SIDEBAR ON MOBILE - All sidebar cards */
+      aside {
+        display: none !important;
+      }
+
+      /* Also hide by specific classes */
+      .sb-card,
+      .w-\[320px\] {
         display: none !important;
       }
 
