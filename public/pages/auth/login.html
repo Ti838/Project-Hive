@@ -195,6 +195,40 @@ window.signInWithGoogle = async function(){
   }
 };
 
+// Email/Password Login - exposed globally
+window.handleLogin = async function(e){
+  btn.disabled=true;
+  txt.textContent='Connecting to Google…';
+
+  try{
+    const redirectTo = window.location.origin + '/pages/auth/callback.html';
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
+      }
+    });
+
+    if (error) {
+      console.error('Supabase OAuth error:', error);
+      showAlert('Could not start Google sign-in: ' + error.message);
+      btn.disabled=false;
+      txt.textContent='Continue with Google';
+    }
+    // Browser will redirect automatically, no need to handle success here
+  }catch(e){
+    console.error('Google sign-in error:', e);
+    showAlert('Could not reach authentication service. Please try again.');
+    btn.disabled=false;
+    txt.textContent='Continue with Google';
+  }
+};
+
 
 
 const sunSvg='<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
