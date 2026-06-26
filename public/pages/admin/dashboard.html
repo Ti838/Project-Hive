@@ -187,7 +187,7 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   .srch{width:100%;min-width:0;font-size:16px}
 
   /* Table rows → show on desktop, hide on mobile */
-  .desktop-table{display:block !important}
+  .desktop-table{display:block !important; visibility:visible !important; opacity:1 !important}
 
   /* Maintenance banner */
   .maint-banner{flex-direction:column;align-items:flex-start;gap:10px;padding:12px}
@@ -217,15 +217,18 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   .sb-collapse-btn:hover{background:var(--ac);color:#fff;border-color:var(--ac);transform:scale(1.1)}
 
   /* Desktop: Show tables, hide mobile cards */
-  .desktop-table { display: block !important; }
-  .mobile-card-list { display: none !important; }
+  .desktop-table { display: block !important; visibility: visible !important; }
+  .mobile-card-list { display: none !important; visibility: hidden !important; }
 
   /* Desktop: Stats grid - 4 columns */
-  .stat-grid { grid-template-columns: repeat(4, 1fr) !important; gap: 14px !important; }
-  .stat-card { padding: 20px !important; }
+  .stat-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 14px !important; }
+  .stat-card { padding: 20px !important; display: block !important; }
 
   /* Desktop: Reports content proper width */
   #reports-content { max-width: 100% !important; }
+
+  /* Desktop: Force table display */
+  #sec-au table, #sec-rp table, #sec-u table, #sec-pr table { display: table !important; width: 100% !important; }
 }
   .sb-collapse-btn svg{transition:transform .3s ease}
   .sidebar-collapsed .sb-collapse-btn svg{transform:rotate(180deg)}
