@@ -480,7 +480,7 @@ export async function googleInitiate(req, res, next) {
       ? (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || process.env.APP_URL_PROD || process.env.APP_URL)
       : (process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5000');
 
-    const redirectTo = `${appUrl.replace(/\/$/, '')}/auth/callback`;
+    const redirectTo = `${appUrl.replace(/\/$/, '')}/pages/auth/callback.html`;
     console.log('[ProjectHive] 🔑 Google OAuth — redirectTo:', redirectTo);
 
     if (!supabase) {
@@ -709,7 +709,7 @@ export async function googleCodeExchange(req, res, next) {
 
     if (exchErr || !sessionData?.session) {
       console.error('[ProjectHive] PKCE exchange error:', exchErr?.message || 'No session returned');
-      
+
       // Fallback: Try using Supabase REST API directly
       try {
         const tokenRes = await fetch(`${process.env.SUPABASE_URL}/auth/v1/token?grant_type=pkce`, {
