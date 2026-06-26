@@ -78,27 +78,65 @@ function showError(msg) {
 
 async function handleCallback() {
   try {
-    // Parse URL hash for OAuth tokens
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const error = hashParams.get('error');
+    // PKCE flow: Check for authorization code in URL query params
+    const queryParams = new URLSearchParams(window.location.search);
+    const code = queryParams.get('code');
+    const error = queryParams.get('error');
 
     if (error) {
-      showError('Google sign-in was cancelled or failed: ' + (hashParams.get('error_description') || error));
+      showError('Google sign-in was cancelled or failed: ' + (queryParams.get('error_description') || error));
       return;
     }
 
+    if (code) {
+      console.log('✅ Authorization code found (PKCE flow), exchanging with backend...');
+
+      // Send code to backend for exchange
+      const res = await fetch(BACKEND + '/auth/google/code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.accessToken) {
+        // Store platform tokens
+        localStorage.setItem('access_token', data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
+        if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
+
+        console.log('✅ Sign-in successful via PKCE flow!');
+
+        document.getElementById('title').textContent = 'Welcome back!';
+        document.getElementById('msg').textContent = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
+        document.getElementById('spinner').style.borderTopColor = '#10b981';
+
+        setTimeout(function() {
+          window.location.href = '/pages/user/dashboard.html';
+        }, 1000);
+        return;
+      } else {
+        console.error('Backend code exchange error:', data.error);
+        showError(data.error || 'Code exchange failed. Please try again.');
+        return;
+      }
+    }
+
+    // Fallback: Implicit flow (URL hash with tokens)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const access_token = hashParams.get('access_token');
     const refresh_token = hashParams.get('refresh_token');
 
     if (!access_token) {
-      console.error('No access token in URL hash');
-      showError('No authentication token received. Please try again.');
+      console.error('No authorization code or access token found');
+      showError('No authentication data received. Please try again.');
       return;
     }
 
-    console.log('✅ Tokens found in URL, verifying with Supabase...');
+    console.log('✅ Tokens found in URL hash (implicit flow), verifying with Supabase...');
 
-    // Verify token with Supabase REST API (no SDK needed)
+    // Verify token with Supabase REST API
     const userRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
       headers: {
         'Authorization': 'Bearer ' + access_token,

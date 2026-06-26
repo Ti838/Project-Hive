@@ -489,6 +489,7 @@ export async function googleInitiate(req, res, next) {
       return res.status(500).json({ error: 'Authentication service not configured.' });
     }
 
+    // Use PKCE flow instead of implicit flow for better security and reliability
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -497,8 +498,10 @@ export async function googleInitiate(req, res, next) {
         skipBrowserRedirect: true,
         queryParams: {
           access_type: 'offline',
-          prompt: 'select_account',
+          prompt: 'consent', // Force consent to get fresh tokens
         },
+        // Enable PKCE flow
+        flowType: 'pkce',
       },
     });
 
@@ -507,7 +510,7 @@ export async function googleInitiate(req, res, next) {
       return res.status(500).json({ error: 'Failed to generate Google OAuth URL. ' + (error?.message || '') });
     }
 
-    console.log('[ProjectHive] ✅ Google OAuth URL generated successfully');
+    console.log('[ProjectHive] ✅ Google OAuth URL generated successfully (PKCE flow)');
     console.log('[ProjectHive] 🔗 OAuth URL:', data.url);
     res.json({ url: data.url });
   } catch (error) {
