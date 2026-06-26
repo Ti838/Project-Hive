@@ -2727,45 +2727,30 @@
           endCall();
         });
 
-        socket.on('call:accepted', data => {
+        socket.on('call:accepted', async data => {
           stopOutgoingRing();
           setCallConnectionStatus('connecting');
-          // Caller side: open the WebRTC call screen now that receiver accepted
-          document.getElementById('call-modal').classList.replace('hidden', 'flex');
-          document.getElementById('jitsi-container').classList.add('hidden');
-          document.getElementById('webrtc-container').classList.remove('hidden');
+          // ⚡ KEY FIX: NOW initiate the WebRTC offer — receiver is ready!
+          if (pendingCallTarget) {
+            await initiateWebRTCCall(pendingCallTarget, pendingCallVoiceOnly);
+            pendingCallTarget = null;
+          }
         });
 
         socket.on('call:declined', data => {
-          stopOutgoingRing(); // caller ring stops when declined
+          stopOutgoingRing();
+          pendingCallTarget = null;
           showToast('Call was declined', 'info');
           endCall();
         });
 
-
         socket.on('call:hungup', data => {
           stopRingtone();
-          showToast('Communication ended', 'info');
-          
-          if (localStream) {
-            localStream.getTracks().forEach(track => track.stop());
-            localStream = null;
-          }
-          if (peerConnection) {
-            peerConnection.close();
-            peerConnection = null;
-          }
-          isWebRTCCall = false;
-          pendingSdpOffer = null;
-          document.getElementById('webrtc-container').classList.add('hidden');
-          document.getElementById('jitsi-container').classList.remove('hidden');
-
-          if (jitsiApiInstance) {
-            jitsiApiInstance.dispose();
-            jitsiApiInstance = null;
-          }
-          document.getElementById('call-modal').classList.replace('flex', 'hidden');
-          activeCallRoom = null;
+          stopOutgoingRing();
+          pendingCallTarget = null;
+          showToast('Call ended', 'info');
+          // ⚡ KEY FIX: call endCall() to cleanly tear down everything
+          endCall();
         });
 
       } // end if (socket)
@@ -2943,6 +2928,10 @@
         }
       }
 
+      // Store pending call info until receiver accepts
+      let pendingCallTarget = null;
+      let pendingCallVoiceOnly = false;
+
       window.startCall = async function() {
         if (!activeConv) return;
         if (!checkCallCapability()) return;
@@ -2954,7 +2943,7 @@
         const roomId = 'ProjectHive-' + [ME.id, friendId].sort().join('-');
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
 
-        // Open call modal immediately for caller
+        // Open call modal — show waiting UI for caller
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
@@ -2968,7 +2957,9 @@
 
         activeCallRoom = roomId;
         pendingIceCandidates = [];
-        initiateWebRTCCall(friendId, false);
+        // ⚡ KEY FIX: Store target — start WebRTC ONLY after call:accepted
+        pendingCallTarget = friendId;
+        pendingCallVoiceOnly = false;
       };
 
       window.startVoiceCall = async function() {
@@ -2982,7 +2973,6 @@
         const roomId = 'ProjectHive-voice-' + [ME.id, friendId].sort().join('-');
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
 
-        // Open call modal immediately for caller
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
@@ -2996,7 +2986,9 @@
 
         activeCallRoom = roomId;
         pendingIceCandidates = [];
-        initiateWebRTCCall(friendId, true);
+        // ⚡ KEY FIX: Store target — start WebRTC ONLY after call:accepted
+        pendingCallTarget = friendId;
+        pendingCallVoiceOnly = true;
       };
 
       let isMuted = false;
@@ -3260,6 +3252,16 @@
 
         if (signal.sdp) {
           if (peerConnection) {
+            // ⚡ Only process if signalingState allows it
+            const state = peerConnection.signalingState;
+            if (signal.sdp.type === 'offer' && state !== 'stable') {
+              console.warn('[WebRTC] Ignoring offer in state:', state);
+              return;
+            }
+            if (signal.sdp.type === 'answer' && state !== 'have-local-offer') {
+              console.warn('[WebRTC] Ignoring answer in state:', state);
+              return;
+            }
             peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp))
               .then(async () => {
                 if (signal.sdp.type === 'offer') {
@@ -3267,16 +3269,23 @@
                   await peerConnection.setLocalDescription(answer);
                   socket.emit('webrtc:signal', { targetId: data.senderId, signal: { sdp: peerConnection.localDescription } });
                 }
-              });
+                // Flush any queued ICE candidates now that remote is set
+                for (const c of pendingIceCandidates) {
+                  try { await peerConnection.addIceCandidate(new RTCIceCandidate(c)); } catch(e){}
+                }
+                pendingIceCandidates = [];
+              })
+              .catch(e => console.error('[WebRTC] setRemoteDescription error:', e));
           } else {
+            // PC not ready yet — store offer
             pendingSdpOffer = signal.sdp;
           }
         } else if (signal.candidate) {
-          if (peerConnection) {
+          if (peerConnection && peerConnection.remoteDescription) {
             peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
-              .catch(e => console.error('[WebRTC] ICE placement error:', e));
+              .catch(e => console.warn('[WebRTC] ICE add error:', e));
           } else {
-            // Bug 1 fix: queue ICE candidates when peerConnection not yet created (ringing phase)
+            // Queue until remote description is set
             pendingIceCandidates.push(signal.candidate);
           }
         }
