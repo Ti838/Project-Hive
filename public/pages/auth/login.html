@@ -99,7 +99,7 @@ tailwind.config = {
 
     <div id="alert" class="hidden rounded-[10px] text-[13px] mb-4 px-3.5 py-2.5"></div>
 
-    <form id="login-form" onsubmit="handleLogin(event)">
+    <form id="login-form">
       <div class="mb-4">
         <label for="email" class="block text-[13px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Email address</label>
         <div class="relative">
@@ -195,8 +195,62 @@ window.signInWithGoogle = async function(){
   }
 };
 
-// Email/Password Login - exposed globally
-window.handleLogin = async function(e){
+// Email/Password Login - using addEventListener instead of onsubmit
+async function handleLogin(e){
+  e.preventDefault();
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  if(!email||!password){showAlert('Please fill in all fields.');return;}
+
+  lastEmail=email;
+  const btn=document.getElementById('submit-btn');
+  const txt=document.getElementById('btn-text');
+  btn.disabled=true;
+  txt.innerHTML='<span class="spinner"></span>';
+
+  try{
+    const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
+      ?(window.location.port==='3000'?'http://localhost:5000/api':'/api')
+      :'https://projecthive-backend.onrender.com/api';
+    const res=await fetch(`${BACKEND}/auth/login`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email,password})
+    });
+    const data=await res.json();
+
+    if(res.ok&&data.accessToken){
+      localStorage.setItem('access_token',data.accessToken);
+      if(data.refreshToken)localStorage.setItem('refresh_token',data.refreshToken);
+      if(data.user)localStorage.setItem('user_data',JSON.stringify(data.user));
+      showAlert('Login successful! Redirecting…','ok');
+      setTimeout(()=>{window.location.href='/dashboard';},900);
+    }else if(data.requiresVerification){
+      lastEmail=email;
+      document.getElementById('verify-banner').classList.remove('hidden');
+      document.getElementById('verify-banner').classList.add('block');
+      showAlert(data.error||'Please verify your email first.','warn');
+      btn.disabled=false;txt.textContent='Sign In';
+    }else{
+      showAlert(data.message||data.error||'Invalid email or password.');
+      btn.disabled=false;txt.textContent='Sign In';
+    }
+  }catch(err){
+    showAlert('Could not connect to server. Please try again.');
+    btn.disabled=false;txt.textContent='Sign In';
+  }
+}
+
+// Attach event listener to form
+document.addEventListener('DOMContentLoaded', function() {
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+});
+
+// Also expose globally as fallback
+window.handleLogin = handleLogin;
   btn.disabled=true;
   txt.textContent='Connecting to Google…';
 
