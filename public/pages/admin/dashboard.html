@@ -1267,10 +1267,40 @@ window.addEventListener('resize', () => {
     background-attachment: local, local, scroll, scroll;
   }
 
-  /* Card tables */
-  .card table {
-    /* Better touch targets */
-    min-width: 100% !important;
+  /* Fix table layout and text wrapping */
+  .desktop-table table {
+    table-layout: auto !important;
+    min-width: 650px !important;
+  }
+
+  .desktop-table th,
+  .desktop-table td {
+    white-space: normal !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    min-width: 80px !important;
+    vertical-align: middle !important;
+  }
+
+  /* User column - wider for names */
+  .desktop-table th:first-child,
+  .desktop-table td:first-child {
+    min-width: 140px !important;
+  }
+
+  /* Email column */
+  .desktop-table th:nth-child(2),
+  .desktop-table td:nth-child(2) {
+    min-width: 180px !important;
+    font-size: 11px !important;
+  }
+
+  /* University column - normal wrapping */
+  .desktop-table th:nth-child(3),
+  .desktop-table td:nth-child(3) {
+    min-width: 120px !important;
+    max-width: 150px !important;
+    white-space: normal !important;
   }
 
   /* Smooth scrolling for tabs */
