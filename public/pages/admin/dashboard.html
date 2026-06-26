@@ -1291,6 +1291,170 @@ window.addEventListener('resize', () => {
     width: 100% !important;
   }
 
+  /* All sections - consistent styling */
+  .section {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Stats cards on dashboard */
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .stat-card {
+    padding: 12px 10px !important;
+  }
+
+  .stat-n {
+    font-size: 22px !important;
+  }
+
+  .stat-l {
+    font-size: 10px !important;
+  }
+
+  .stat-delta {
+    font-size: 9px !important;
+  }
+
+  /* Analytics grid */
+  .analytics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  /* System grid */
+  .sys-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .sys-card {
+    padding: 14px 12px !important;
+  }
+
+  .sys-row {
+    padding: 10px 0 !important;
+    flex-wrap: wrap !important;
+  }
+
+  .sys-label {
+    font-size: 13px !important;
+  }
+
+  .sys-desc {
+    font-size: 10px !important;
+  }
+
+  /* Maintenance banner */
+  .maint-banner {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 10px 12px !important;
+    gap: 8px !important;
+  }
+
+  .maint-banner .btn {
+    width: 100% !important;
+  }
+
+  /* Charts - make responsive */
+  .chart-bars {
+    height: 70px !important;
+  }
+
+  /* Audit log section */
+  #sec-au .card-hdr {
+    flex-wrap: wrap !important;
+  }
+
+  #sec-au .srch {
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+
+  /* Email blast section */
+  #sec-em textarea {
+    min-height: 120px !important;
+    font-size: 14px !important;
+  }
+
+  #sec-em input[type="text"] {
+    font-size: 14px !important;
+  }
+
+  #sec-em .btn {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 10px !important;
+  }
+
+  /* Reports section */
+  #sec-rp .card {
+    padding: 12px !important;
+  }
+
+  /* Better button sizing */
+  .btn {
+    min-height: 44px !important;
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+  }
+
+  /* Badges - consistent sizing */
+  .badge {
+    font-size: 10px !important;
+    padding: 3px 8px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Action buttons in tables */
+  .act {
+    font-size: 10px !important;
+    padding: 6px 10px !important;
+    min-height: 36px !important;
+    white-space: nowrap !important;
+  }
+
+  .act-row {
+    gap: 4px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  /* Toggles - better touch targets */
+  .toggle {
+    min-width: 44px !important;
+    min-height: 28px !important;
+  }
+
+  /* Empty states */
+  .empty {
+    padding: 30px 20px !important;
+    font-size: 12px !important;
+  }
+
+  /* Topbar buttons - hide text on small screens */
+  .topbar-right .btn span {
+    display: none !important;
+  }
+
+  .topbar-right .btn svg {
+    margin: 0 !important;
+  }
+
+  /* Better spacing for wrench/refresh icons */
+  .topbar-right {
+    gap: 6px !important;
+  }
+
+  .topbar-right .btn {
+    padding: 8px !important;
+    min-width: 44px !important;
+  }
+
   /* Better table scrolling on mobile */
   .desktop-table {
     overflow-x: auto !important;
