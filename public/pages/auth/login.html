@@ -142,7 +142,15 @@ tailwind.config = {
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/api.js"></script>
 <script src="/assets/js/core/auth.js"></script>
-<script>
+<script type="module">
+// Import Supabase client
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'https://iekfvgjxkmgduxdvkuxf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBlcmJhc2UsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQxNDk4NjIxLCJleHAiOjIwNTY4NTg2MjF9.s73x7IQtdae7TPD0AoJmH9m6lp0SKQPV5Ozr9v5nACg';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 if(typeof Auth!=='undefined'&&Auth.isAuthenticated()){window.location.href='/dashboard';}
 
 let lastEmail = '';
@@ -151,25 +159,41 @@ const BACKEND_BASE=(window.location.hostname==='localhost'||window.location.host
   ?(window.location.port==='3000'?'http://localhost:5000/api':'/api')
   :'https://projecthive-backend.onrender.com/api';
 
-async function signInWithGoogle(){
+// Modern Google OAuth with Supabase SDK (frontend-initiated)
+window.signInWithGoogle = async function(){
   const btn=document.getElementById('google-btn');
   const txt=document.getElementById('google-btn-text');
   btn.disabled=true;
   txt.textContent='Connecting to Google…';
+
   try{
-    const res=await fetch(BACKEND_BASE+'/auth/google');
-    const data=await res.json();
-    if(data.url){
-      window.location.href=data.url;
-    }else{
-      showAlert(data.error||'Could not start Google sign-in.');
-      btn.disabled=false;txt.textContent='Continue with Google';
+    const redirectTo = window.location.origin + '/pages/auth/callback.html';
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
+      }
+    });
+
+    if (error) {
+      console.error('Supabase OAuth error:', error);
+      showAlert('Could not start Google sign-in: ' + error.message);
+      btn.disabled=false;
+      txt.textContent='Continue with Google';
     }
+    // Browser will redirect automatically, no need to handle success here
   }catch(e){
-    showAlert('Could not reach server. Please try again.');
-    btn.disabled=false;txt.textContent='Continue with Google';
+    console.error('Google sign-in error:', e);
+    showAlert('Could not reach authentication service. Please try again.');
+    btn.disabled=false;
+    txt.textContent='Continue with Google';
   }
-}
+};
 
 
 

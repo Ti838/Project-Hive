@@ -57,14 +57,17 @@
   <button class="retry-btn" id="retry-btn">Back to Login</button>
 </div>
 
-<script>
-(function(){
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const SUPABASE_URL = 'https://iekfvgjxkmgduxdvkuxf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBlcmJhc2UsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQxNDk4NjIxLCJleHAiOjIwNTY4NTg2MjF9.s73x7IQtdae7TPD0AoJmH9m6lp0SKQPV5Ozr9v5nACg';
 
 const BACKEND = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
   ? (location.port==='3000' ? 'http://localhost:5000/api' : '/api')
   : 'https://projecthive-backend.onrender.com/api';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function showError(msg) {
   document.getElementById('spinner').style.display = 'none';
@@ -78,81 +81,25 @@ function showError(msg) {
 
 async function handleCallback() {
   try {
-    // PKCE flow: Check for authorization code in URL query params
-    const queryParams = new URLSearchParams(window.location.search);
-    const code = queryParams.get('code');
-    const error = queryParams.get('error');
+    console.log('🔄 Handling OAuth callback...');
+
+    // Get session from URL (Supabase handles hash parsing automatically)
+    const { data, error } = await supabase.auth.getSession();
 
     if (error) {
-      showError('Google sign-in was cancelled or failed: ' + (queryParams.get('error_description') || error));
+      console.error('❌ Session error:', error);
+      showError('Could not retrieve session: ' + error.message);
       return;
     }
 
-    if (code) {
-      console.log('✅ Authorization code found (PKCE flow), exchanging with backend...');
-
-      // Send code to backend for exchange
-      const res = await fetch(BACKEND + '/auth/google/code', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
-      });
-
-      const data = await res.json();
-
-      if (res.ok && data.accessToken) {
-        // Store platform tokens
-        localStorage.setItem('access_token', data.accessToken);
-        if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
-        if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
-
-        console.log('✅ Sign-in successful via PKCE flow!');
-
-        document.getElementById('title').textContent = 'Welcome back!';
-        document.getElementById('msg').textContent = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
-        document.getElementById('spinner').style.borderTopColor = '#10b981';
-
-        setTimeout(function() {
-          window.location.href = '/pages/user/dashboard.html';
-        }, 1000);
-        return;
-      } else {
-        console.error('Backend code exchange error:', data.error);
-        showError(data.error || 'Code exchange failed. Please try again.');
-        return;
-      }
-    }
-
-    // Fallback: Implicit flow (URL hash with tokens)
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const access_token = hashParams.get('access_token');
-    const refresh_token = hashParams.get('refresh_token');
-
-    if (!access_token) {
-      console.error('No authorization code or access token found');
-      showError('No authentication data received. Please try again.');
+    if (!data.session) {
+      console.error('❌ No session found');
+      showError('No authentication session found. Please try again.');
       return;
     }
 
-    console.log('✅ Tokens found in URL hash (implicit flow), verifying with Supabase...');
-
-    // Verify token with Supabase REST API
-    const userRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
-      headers: {
-        'Authorization': 'Bearer ' + access_token,
-        'apikey': SUPABASE_ANON_KEY
-      }
-    });
-
-    if (!userRes.ok) {
-      const errText = await userRes.text();
-      console.error('Supabase user fetch failed:', userRes.status, errText);
-      showError('Could not verify Google session. Please try again.');
-      return;
-    }
-
-    const user = await userRes.json();
-    console.log('✅ User verified with Supabase:', user.email);
+    console.log('✅ Session retrieved successfully');
+    const user = data.session.user;
 
     // Extract user info
     const userData = {
@@ -163,7 +110,7 @@ async function handleCallback() {
       avatar: user.user_metadata?.avatar_url || null
     };
 
-    console.log('📤 Sending user data to backend...');
+    console.log('📤 Sending user data to backend:', userData.email);
 
     // Send to backend to create/update user and get platform JWT
     const res = await fetch(BACKEND + '/auth/google/callback', {
@@ -172,29 +119,29 @@ async function handleCallback() {
       body: JSON.stringify(userData)
     });
 
-    const data = await res.json();
+    const backendData = await res.json();
 
-    if (res.ok && data.accessToken) {
+    if (res.ok && backendData.accessToken) {
       // Store platform tokens
-      localStorage.setItem('access_token', data.accessToken);
-      if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
-      if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
+      localStorage.setItem('access_token', backendData.accessToken);
+      if (backendData.refreshToken) localStorage.setItem('refresh_token', backendData.refreshToken);
+      if (backendData.user) localStorage.setItem('user_data', JSON.stringify(backendData.user));
 
       console.log('✅ Sign-in successful!');
 
       document.getElementById('title').textContent = 'Welcome back!';
-      document.getElementById('msg').textContent = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
+      document.getElementById('msg').textContent = 'Signed in as ' + (backendData.user?.email || '') + '. Redirecting…';
       document.getElementById('spinner').style.borderTopColor = '#10b981';
 
       setTimeout(function() {
         window.location.href = '/pages/user/dashboard.html';
       }, 1000);
     } else {
-      console.error('Backend error:', data.error);
-      showError(data.error || 'Sign-in failed. Please try again.');
+      console.error('❌ Backend error:', backendData.error);
+      showError(backendData.error || 'Sign-in failed. Please try again.');
     }
   } catch(e) {
-    console.error('Callback error:', e);
+    console.error('❌ Callback error:', e);
     showError('Could not complete sign-in: ' + e.message);
   }
 }
@@ -204,7 +151,6 @@ handleCallback();
 document.getElementById('retry-btn').addEventListener('click', function() {
   window.location.href = '/login';
 });
-})();
 </script>
 </body>
 </html>
