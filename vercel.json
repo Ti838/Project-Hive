@@ -1,65 +1,39 @@
 {
-  "buildCommand": "echo 'Static site'",
-  "outputDirectory": "public",
-  "installCommand": "echo 'No install needed'",
-  "framework": null,
-  "regions": ["sin1"],
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/pages/user/dashboard.html" },
+    { "source": "/login", "destination": "/pages/auth/login.html" },
+    { "source": "/register", "destination": "/pages/auth/register.html" },
+    { "source": "/auth/callback", "destination": "/pages/auth/callback.html" },
+    { "source": "/feed", "destination": "/pages/user/feed.html" },
+    { "source": "/messages", "destination": "/pages/user/messages.html" },
+    { "source": "/profile", "destination": "/pages/user/profile.html" },
+    { "source": "/showcase", "destination": "/pages/user/showcase.html" },
+    { "source": "/generator", "destination": "/pages/user/generator.html" },
+    { "source": "/people", "destination": "/pages/user/people.html" },
+    { "source": "/teams", "destination": "/pages/user/teams.html" },
+    { "source": "/notifications", "destination": "/pages/user/notifications.html" },
+    { "source": "/help", "destination": "/pages/info/help.html" },
+    { "source": "/about", "destination": "/pages/info/about.html" },
+    { "source": "/admin/login", "destination": "/pages/admin/login.html" },
+    { "source": "/admin/dashboard", "destination": "/pages/admin/dashboard.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Strict-Transport-Security", "value": "max-age=31536000; includeSubDomains; preload" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=*, microphone=*, geolocation=()" }
-      ]
-    },
-    {
-      "source": "/assets/js/:path*",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/assets/css/:path*",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
-      ]
-    },
-    {
-      "source": "/assets/images/:path*",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
-      ]
-    },
-    {
-      "source": "/assets/svg/:path*",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=86400" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
       ]
     }
-  ],
-  "rewrites": [
-    { "source": "/login",         "destination": "/pages/auth/login.html" },
-    { "source": "/register",      "destination": "/pages/auth/register.html" },
-    { "source": "/forgot-password", "destination": "/pages/auth/forgot-password.html" },
-    { "source": "/reset-password",  "destination": "/pages/auth/reset-password.html" },
-    { "source": "/verify-email",    "destination": "/pages/auth/verify-email.html" },
-    { "source": "/dashboard",     "destination": "/pages/user/dashboard.html" },
-    { "source": "/feed",          "destination": "/pages/user/feed.html" },
-    { "source": "/messages",      "destination": "/pages/user/messages.html" },
-    { "source": "/notifications", "destination": "/pages/user/notifications.html" },
-    { "source": "/people",        "destination": "/pages/user/people.html" },
-    { "source": "/teams",         "destination": "/pages/user/teams.html" },
-    { "source": "/teams/create",  "destination": "/pages/user/teams-create.html" },
-    { "source": "/profile",       "destination": "/pages/user/profile/edit.html" },
-    { "source": "/profile/view",  "destination": "/pages/user/profile/view.html" },
-    { "source": "/settings",      "destination": "/pages/user/settings.html" },
-    { "source": "/showcase",      "destination": "/pages/user/projects/showcase.html" },
-    { "source": "/generator",     "destination": "/pages/user/projects/generator.html" },
-    { "source": "/admin",         "destination": "/pages/admin/login.html" },
-    { "source": "/admin/dashboard", "destination": "/pages/admin/dashboard.html" }
   ]
 }
