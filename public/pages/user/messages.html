@@ -2543,13 +2543,22 @@
         // Initialize Call Manager with socket
         if (window.callManager) {
           window.callManager.setSocket(socket);
-          console.log('[Messages] Call Manager initialized with socket');
+          console.log('[Messages] ✅ Call Manager initialized with socket');
+          console.log('[Messages] Socket ID:', socket.id);
+          console.log('[Messages] Socket connected:', socket.connected);
+        } else {
+          console.warn('[Messages] ⚠️ Call Manager not found!');
         }
 
         socket.on('connect', () => {
+          console.log('[Messages] 🟢 Socket connected:', socket.id);
           if (activeConv) {
             socket.emit('join:room', { roomId: activeConv._id });
           }
+        });
+
+        socket.on('disconnect', (reason) => {
+          console.log('[Messages] 🔴 Socket disconnected:', reason);
         });
 
        function playMessageSound() {
