@@ -99,7 +99,7 @@ tailwind.config = {
 
     <div id="alert" class="hidden rounded-[10px] text-[13px] mb-4 px-3.5 py-2.5"></div>
 
-    <form id="login-form" onsubmit="handleLogin(event)">
+    <form id="login-form" onsubmit="return handleLogin(event);">
       <div class="mb-4">
         <label for="email" class="block text-[13px] font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Email address</label>
         <div class="relative">
@@ -300,10 +300,11 @@ async function resendVerification(){
 async function handleLogin(e){
   console.log('🔐 handleLogin called');
   e.preventDefault();
+  e.stopPropagation();
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('password').value;
   console.log('📧 Email:', email, '| Password length:', password?.length);
-  if(!email||!password){showAlert('Please fill in all fields.');return;}
+  if(!email||!password){showAlert('Please fill in all fields.');return false;}
 
   lastEmail=email;
   const btn=document.getElementById('submit-btn');
@@ -351,7 +352,22 @@ async function handleLogin(e){
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Sign In';
   }
+  return false;
 }
+
+// Attach event listener on page load
+document.addEventListener('DOMContentLoaded', function(){
+  const form = document.getElementById('login-form');
+  if(form){
+    console.log('✅ Form found, attaching event listener');
+    form.addEventListener('submit', function(e){
+      console.log('📝 Form submit event triggered');
+      handleLogin(e);
+    });
+  }else{
+    console.error('❌ Login form not found!');
+  }
+});
 </script>
 </body>
 </html>
