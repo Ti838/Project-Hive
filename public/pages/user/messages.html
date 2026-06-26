@@ -2556,41 +2556,32 @@
             socket.emit('join:room', { roomId: activeConv._id });
           }
 
-          // Check if there's a pending call from another page
+          // Check if there's a pending call from another page.
           const pendingCall = sessionStorage.getItem('pending-call');
           if (pendingCall) {
-            console.log('[Messages] 📞 Processing pending call from another page');
+            console.log('[Messages] Processing pending call from another page');
             try {
               const callData = JSON.parse(pendingCall);
+              const isFresh = !callData.receivedAt || (Date.now() - callData.receivedAt) < 45000;
               sessionStorage.removeItem('pending-call');
-
-              // Show incoming call modal
-              setTimeout(() => {
-                if (window.callManager) {
-                  // Store call data
-                  window.callManager.currentCall = {
-                    roomId: callData.roomId,
-                    callerId: callData.callerId,
-                    callerName: callData.callerName,
-                    isVideoCall: callData.isWebRTC && !callData.isVoiceOnly,
-                    isInitiator: false
-                  };
-
-                  // Show modal directly (we're already on messages page)
-                  const modal = document.getElementById('incoming-call-modal');
-                  const callerNameEl = document.getElementById('incoming-caller-name');
-                  const callTypeEl = document.getElementById('incoming-call-type');
-
-                  if (callerNameEl) callerNameEl.textContent = callData.callerName;
-                  if (callTypeEl) callTypeEl.textContent = callData.isVoiceOnly ? 'Audio Call' : 'Video Call';
-                  if (modal) modal.classList.remove('hidden');
-
-                  // Play ringtone
-                  window.callManager.playRingtone();
-
-                  console.log('[Messages] ✅ Pending call modal shown');
-                }
-              }, 500); // Small delay to ensure page is ready
+              if (isFresh && callData.roomId && (callData.callerId || callData.teamId)) {
+                activeCallRoom = callData.roomId;
+                incomingCallIsWebRTC = !!callData.isWebRTC;
+                incomingCallIsVoiceOnly = !!callData.isVoiceOnly;
+                incomingCallerId = callData.callerId || callData.teamId || null;
+                const callerNameEl = document.getElementById('caller-name');
+                if (callerNameEl) callerNameEl.textContent = callData.callerName || 'Teammate';
+                const modal = document.getElementById('incoming-call-modal');
+                if (modal) modal.classList.replace('hidden', 'flex');
+                startRingtone();
+                setTimeout(() => {
+                  const currentModal = document.getElementById('incoming-call-modal');
+                  if (currentModal && !currentModal.classList.contains('hidden') && activeCallRoom === callData.roomId) {
+                    declineCall();
+                    showToast('Missed call from workspace', 'info');
+                  }
+                }, 30000);
+              }
             } catch (err) {
               console.error('[Messages] Error processing pending call:', err);
             }
@@ -3653,66 +3644,6 @@
         }
         activeCallRoom = null;
         incomingCallerId = null;
-      };
-
-      // ============================================
-      //    NEW WEBRTC CALL FUNCTIONS
-      // ============================================
-
-      /**
-       * Start video call with current conversation friend
-       */
-      window.startCall = async function() {
-        if (!activeConv || !activeConv.friend) {
-          PHToast.show('Please select a conversation first', 'error');
-          return;
-        }
-
-        const friend = activeConv.friend;
-        const targetUser = {
-          id: friend._id || friend.id,
-          name: friend.firstName || friend.lastName
-            ? `${friend.firstName||''} ${friend.lastName||''}`.trim()
-            : 'User',
-          first_name: friend.firstName || 'User',
-          last_name: friend.lastName || ''
-        };
-
-        console.log('[Messages] Starting video call with:', targetUser);
-
-        if (window.callManager) {
-          await window.callManager.initiateCall(targetUser, true); // true = video call
-        } else {
-          PHToast.show('Call manager not initialized', 'error');
-        }
-      };
-
-      /**
-       * Start audio-only call with current conversation friend
-       */
-      window.startVoiceCall = async function() {
-        if (!activeConv || !activeConv.friend) {
-          PHToast.show('Please select a conversation first', 'error');
-          return;
-        }
-
-        const friend = activeConv.friend;
-        const targetUser = {
-          id: friend._id || friend.id,
-          name: friend.firstName || friend.lastName
-            ? `${friend.firstName||''} ${friend.lastName||''}`.trim()
-            : 'User',
-          first_name: friend.firstName || 'User',
-          last_name: friend.lastName || ''
-        };
-
-        console.log('[Messages] Starting audio call with:', targetUser);
-
-        if (window.callManager) {
-          await window.callManager.initiateCall(targetUser, false); // false = audio only
-        } else {
-          PHToast.show('Call manager not initialized', 'error');
-        }
       };
 
     })();

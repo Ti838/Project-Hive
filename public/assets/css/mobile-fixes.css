@@ -22,13 +22,13 @@
     max-width: 100vw !important;
   }
 
-  /* Ensure all containers respect viewport */
-  main, section, article, div {
+  /* Ensure page-level containers respect viewport without breaking nested UI */
+  main, section, article, .ph-page, .ph-content, .ml-\[260px\] {
     max-width: 100vw !important;
   }
 
   /* Text content - prevent overflow */
-  h1, h2, h3, h4, h5, h6, p, span, div, a {
+  h1, h2, h3, h4, h5, h6, p, a, button, label {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
     word-break: break-word !important;
@@ -57,13 +57,13 @@
     overflow-x: hidden !important;
   }
 
-  /* Flex containers */
-  .flex, .flex-row {
+  /* Only known filter/action rows should wrap; core app bars and chat rows stay stable */
+  .top-row, .search-card, .stats, .sum-card, .card-hdr, .post-actions, .pv-actions {
     flex-wrap: wrap !important;
   }
 
   /* Grid layouts */
-  .grid {
+  .grid:not(.quick-actions):not(.stats):not(.sum-card) {
     grid-template-columns: 1fr !important;
   }
 
@@ -352,9 +352,9 @@
     padding: 12px 16px !important;
   }
 
-  /* Remove hover states on touch devices */
-  *:hover {
-    background-color: inherit !important;
+  /* Keep touch interactions responsive without overriding component colors */
+  button:hover, a:hover, .chip:hover, .tab:hover {
+    filter: brightness(0.98);
   }
 
   /* Better active states */

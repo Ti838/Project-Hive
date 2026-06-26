@@ -244,6 +244,35 @@ export function handleCallHangup(socket, data) {
   targetSockets.forEach(s => s.emit('call:hungup', { roomId }));
 }
 
+// WebRTC Signal Relay - Forward offer/answer/ICE candidates between peers
+export function handleWebRTCSignal(socket, data) {
+  const { targetId, signal } = data;
+
+  if (!targetId || !signal) {
+    console.warn('[WebRTC] Invalid signal data:', { targetId: !!targetId, signal: !!signal });
+    return;
+  }
+
+  // Get all sockets for target user
+  const targetSockets = getUserSockets(targetId);
+
+  if (targetSockets.length > 0) {
+    const payload = {
+      senderId: socket.userId, // Important: include sender ID
+      signal: signal
+    };
+
+    // Forward signal to all target user's sockets
+    targetSockets.forEach(s => {
+      s.emit('webrtc:signal', payload);
+    });
+
+    console.log('[WebRTC] Signal relayed:', signal.sdp ? signal.sdp.type : 'ICE candidate', 'to', targetSockets.length, 'sockets');
+  } else {
+    console.warn('[WebRTC] Target user offline:', targetId);
+  }
+}
+
 // ── Group Call: notify all team members ──────────────────────────────────────
 export async function handleGroupCallInitiate(socket, data) {
   const { roomId, teamId, callerName } = data;

@@ -58,6 +58,16 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
+// Block admin UI on phones and tablets. Admin is intentionally desktop-only.
+const adminMobileBlockHtml = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Desktop Only - ProjectHive</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font-family:Inter,system-ui,sans-serif;padding:24px;text-align:center}.box{max-width:420px}.badge{display:inline-flex;margin-bottom:16px;padding:6px 10px;border-radius:999px;background:#ef44441f;color:#fca5a5;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}h1{font-size:24px;margin:0 0 10px}p{margin:0;color:#94a3b8;line-height:1.6}</style></head><body><main class="box"><div class="badge">Restricted</div><h1>Admin is available on PC only</h1><p>For security and accuracy, ProjectHive admin tools are blocked on mobile devices. Please open this page from a desktop or laptop browser.</p></main></body></html>`;
+app.use((req, res, next) => {
+  const isAdminPath = req.path === '/admin' || req.path.startsWith('/admin/') || req.path.startsWith('/pages/admin/');
+  if (!isAdminPath) return next();
+  const ua = req.get('user-agent') || '';
+  const isMobileUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua);
+  if (isMobileUa) return res.status(403).type('html').send(adminMobileBlockHtml);
+  next();
+});
 // Serve static frontend files from /public
 const publicDir = path.resolve(__dirname, '..', 'public');
 app.use(express.static(publicDir));

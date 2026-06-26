@@ -1,0 +1,465 @@
+/* ProjectHive user UI polish layer
+   Loaded by ph-sidebar.js for user-facing app pages. */
+:root {
+  --ph-app-max: 1180px;
+  --ph-page-pad: 24px;
+  --ph-mobile-nav-h: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.ph-page,
+.ml-\[260px\],
+div[class*="ml-[260px]"] {
+  min-width: 0;
+}
+
+.ph-page > main,
+div[class*="ml-[260px]"] > main:not(.msg-chat-area),
+.ph-content,
+.fp-wrap,
+.nt-wrap,
+.saved-wrap,
+.main-wrap,
+.project-showcase {
+  width: 100%;
+  min-width: 0;
+}
+
+.ph-topbar,
+header,
+main,
+section,
+article,
+aside,
+.ph-card,
+.ph-card-static,
+.ucard,
+.team-card,
+.project-card,
+.n-card,
+.post-card,
+.feed-card-shadow {
+  min-width: 0;
+}
+
+.ph-topbar h1,
+header h1,
+.ph-page-title,
+.ucard-name,
+.mob-item-name,
+.n-msg,
+.card-title,
+.post-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ph-topbar input,
+header input,
+.ph-input,
+.fi,
+.s-inp,
+textarea,
+select {
+  min-width: 0;
+}
+
+img,
+video,
+iframe,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+/* Desktop refinement */
+@media (min-width: 769px) {
+  .ph-page > main,
+  .ph-content,
+  .fp-wrap,
+  .nt-wrap,
+  .saved-wrap,
+  .main-wrap,
+  .project-showcase {
+    max-width: var(--ph-app-max);
+  }
+
+  .ph-topbar {
+    gap: 14px;
+  }
+
+  .ph-card,
+  .ph-card-static,
+  .ucard,
+  .team-card,
+  .project-card,
+  .n-card,
+  .post-card {
+    border-radius: 14px;
+  }
+
+  .ph-btn,
+  .ph-btn-outline,
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Mobile app shell */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: var(--ph-mobile-nav-h) !important;
+  }
+
+  .ph-page,
+  .ml-\[260px\],
+  div[class*="ml-[260px]"] {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+
+  .ph-page > main,
+  div[class*="ml-[260px]"] > main:not(.msg-chat-area),
+  .ph-content,
+  .fp-wrap,
+  .nt-wrap,
+  .saved-wrap,
+  .main-wrap,
+  .project-showcase {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-bottom: calc(var(--ph-mobile-nav-h) + 12px) !important;
+  }
+
+  .ph-topbar,
+  header.h-16,
+  header.ph-topbar,
+  div.ph-topbar {
+    height: auto !important;
+    min-height: 56px !important;
+    padding: 8px 14px !important;
+    gap: 10px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .ph-topbar h1,
+  header h1 {
+    font-size: 15px !important;
+    line-height: 1.25 !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  }
+
+  .ph-topbar > div,
+  header > div,
+  .topbar-right {
+    min-width: 0 !important;
+  }
+
+  .ph-topbar input,
+  header input,
+  #dash-search,
+  #search,
+  #conv-search,
+  #s-inp {
+    width: 100% !important;
+    max-width: min(52vw, 240px) !important;
+    font-size: 16px !important;
+  }
+
+  .hero,
+  .st-hero {
+    padding: 28px 16px 64px !important;
+    border-radius: 0 0 22px 22px !important;
+  }
+
+  .hero h1,
+  .hero h2,
+  .hero div[style*="font-size:28px"],
+  .hero div[style*="font-size:26px"] {
+    font-size: 24px !important;
+    line-height: 1.15 !important;
+  }
+
+  .fp-wrap,
+  .nt-wrap {
+    margin-top: -42px !important;
+  }
+
+  .search-card,
+  .top-row,
+  .stats,
+  .sum-card,
+  .card-hdr,
+  .pv-actions,
+  .post-actions,
+  .st-layout,
+  .av-row {
+    flex-wrap: wrap !important;
+  }
+
+  .search-card,
+  .sum-card,
+  .ph-card,
+  .ph-card-static,
+  .ucard,
+  .team-card,
+  .project-card,
+  .n-card,
+  .post-card,
+  .fc,
+  .gen-card,
+  .gen-result {
+    border-radius: 14px !important;
+  }
+
+  .ph-card,
+  .ph-card-static,
+  .post-card,
+  .fc-body,
+  .gen-card,
+  .gen-result {
+    padding: 16px !important;
+  }
+
+  .stats,
+  .sum-card,
+  .teams-stats,
+  .quick-actions,
+  .analytics-grid,
+  .ph-stats,
+  .pv-2col,
+  .sys-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  #fp-grid,
+  #grid,
+  #projects-grid,
+  .teams-grid,
+  .projects-grid,
+  .grid.grid-cols-1,
+  .grid[class*="grid-cols"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stat,
+  .sum-item,
+  .ph-stat-card {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+
+  .tabs,
+  .tabs-wrap,
+  #post-type-selector,
+  .filter-row,
+  .chip-row,
+  .msg-chat-actions {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  .tabs::-webkit-scrollbar,
+  .tabs-wrap::-webkit-scrollbar,
+  #post-type-selector::-webkit-scrollbar,
+  .msg-chat-actions::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .tab,
+  .chip,
+  .post-type-btn,
+  .stab,
+  .filter-btn {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  .ph-btn,
+  .ph-btn-outline,
+  .btn-add,
+  .mark-btn,
+  .save-btn,
+  button,
+  a[role="button"] {
+    min-height: 42px;
+    touch-action: manipulation;
+  }
+
+  .modal,
+  [id$="-modal"] {
+    max-width: 100vw !important;
+  }
+
+  [id$="-modal"] > div,
+  .modal > div {
+    width: min(calc(100vw - 24px), 560px) !important;
+    max-height: calc(100vh - 32px) !important;
+    overflow-y: auto !important;
+  }
+
+  .ai-popup {
+    width: calc(100vw - 24px) !important;
+    right: 12px !important;
+    left: 12px !important;
+    bottom: calc(var(--ph-mobile-nav-h) + 10px) !important;
+    max-height: min(68vh, 560px) !important;
+  }
+
+  #ph-bottom-nav {
+    height: var(--ph-mobile-nav-h) !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    padding-top: 6px !important;
+    align-items: flex-start !important;
+  }
+
+  .ph-bn-item {
+    min-width: 0 !important;
+    min-height: 54px !important;
+    padding: 6px 2px !important;
+  }
+
+  .ph-bn-item span {
+    max-width: 52px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ph-bn-center {
+    width: 52px !important;
+    height: 52px !important;
+    top: -10px !important;
+  }
+
+  table {
+    display: table;
+  }
+
+  .table-wrap,
+  .desktop-table,
+  .overflow-x-auto {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}
+
+/* Messages need a controlled app-like layout. */
+@media (max-width: 768px) {
+  body:has(.msg-layout) {
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .msg-layout,
+  .msg-chat-area,
+  .msg-conv-panel {
+    min-width: 0 !important;
+  }
+
+  .msg-layout {
+    height: calc(100vh - 64px) !important;
+    overflow: hidden !important;
+  }
+
+  .msg-conv-panel {
+    width: 100% !important;
+    max-width: 100vw !important;
+    flex: 0 0 100% !important;
+  }
+
+  .msg-conv-panel.hidden-mobile {
+    display: none !important;
+  }
+
+  .msg-chat-area {
+    width: 100% !important;
+    flex: 1 1 auto !important;
+  }
+
+  body.chat-active-mobile .msg-chat-area {
+    display: flex !important;
+  }
+
+  #chat-hdr {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    gap: 8px !important;
+  }
+
+  #chat-input-area {
+    max-width: 100vw !important;
+    min-width: 0 !important;
+  }
+
+  #chat-input-area #msg-inp {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  #call-modal,
+  #incoming-call-modal {
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .stats,
+  .sum-card,
+  .teams-stats,
+  .quick-actions,
+  .analytics-grid,
+  .ph-stats,
+  .pv-2col,
+  .sys-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ph-topbar input,
+  header input,
+  #dash-search,
+  #search,
+  #conv-search,
+  #s-inp {
+    max-width: 44vw !important;
+  }
+
+  .hero,
+  .st-hero {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .ucard-foot,
+  .mob-item-actions,
+  .post-actions {
+    flex-direction: column !important;
+  }
+
+  .ucard-foot > *,
+  .mob-item-actions > *,
+  .post-actions > * {
+    width: 100% !important;
+  }
+}

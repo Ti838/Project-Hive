@@ -28,6 +28,15 @@ const PHSidebar = (() => {
 
 
 
+
+  function ensureUserPolishStyles() {
+    if (document.getElementById('ph-user-polish-css')) return;
+    const link = document.createElement('link');
+    link.id = 'ph-user-polish-css';
+    link.rel = 'stylesheet';
+    link.href = '/assets/css/user-polish.css?v=1';
+    document.head.appendChild(link);
+  }
   function svgIcon(d, fill = 'none') {
     const attrs = fill === 'currentColor'
       ? `fill="currentColor"`
@@ -296,6 +305,7 @@ const PHSidebar = (() => {
   }
 
   function init(active, base = '../../') {
+    ensureUserPolishStyles();
     // Theme init first (idempotent) — supports 'system', 'dark', 'light'
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -776,20 +786,32 @@ const PHSidebar = (() => {
       });
 
       socket.on('call:incoming', (data) => {
-        playCallSound();
-        // Check if already on messages page
+        const callData = {
+          roomId: data.roomId,
+          callerId: data.callerId || data.teamId || '',
+          callerName: data.callerName || 'Someone',
+          isWebRTC: !!data.isWebRTC,
+          isVoiceOnly: !!data.isVoiceOnly,
+          isGroup: !!data.isGroup,
+          teamId: data.teamId || null,
+          receivedAt: Date.now()
+        };
+        // Messages page owns the full incoming modal/ringtone flow.
         if (location.pathname.includes('/messages')) return;
+        try { sessionStorage.setItem('pending-call', JSON.stringify(callData)); } catch(_) {}
+        playCallSound();
 
+        const answerHref = `/messages?chat=${encodeURIComponent(callData.callerId || callData.teamId || '')}&incoming=1`;
         if (typeof PHToast !== 'undefined' && PHToast.info) {
           PHToast.info(
             `<div style="display:flex;align-items:center;gap:12px;">
               <span class="material-symbols-outlined" style="font-size:28px;color:#10b981;">call</span>
               <div>
-                <strong>Incoming Call</strong><br/>
-                <span style="font-size:12px">${data.callerName||'Someone'} is calling you.</span><br/>
-                <a href="/messages?chat=${data.callerId||data.teamId}" style="display:inline-block;margin-top:6px;background:#10b981;color:#fff;padding:4px 12px;border-radius:6px;text-decoration:none;font-weight:700;font-size:12px">Answer Call</a>
+                <strong>Incoming ${callData.isVoiceOnly ? 'Voice' : 'Video'} Call</strong><br/>
+                <span style="font-size:12px">${callData.callerName} is calling you.</span><br/>
+                <a href="${answerHref}" style="display:inline-flex;align-items:center;gap:6px;margin-top:6px;background:#10b981;color:#fff;padding:7px 12px;border-radius:8px;text-decoration:none;font-weight:800;font-size:12px">Answer Call</a>
               </div>
-            </div>`, 15000
+            </div>`, 30000
           );
         }
       });
