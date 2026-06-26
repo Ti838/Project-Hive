@@ -479,19 +479,19 @@
   <div id="call-modal" class="fixed inset-0 bg-[#07080d] z-50 hidden flex-col transition-all duration-300">
     <div class="flex-1 flex flex-col h-full relative">
 
-      <!-- Top header bar -->
-      <div class="absolute top-0 left-0 right-0 z-20 flex justify-between items-center p-5 bg-gradient-to-b from-black/80 to-transparent">
-        <div class="flex items-center gap-3">
-          <span class="material-symbols-outlined text-white/90 text-2xl" id="call-type-icon">videocam</span>
+      <!-- Top header bar - Mobile Responsive -->
+      <div class="absolute top-0 left-0 right-0 z-20 flex justify-between items-center p-3 sm:p-5 bg-gradient-to-b from-black/80 to-transparent">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <span class="material-symbols-outlined text-white/90 text-xl sm:text-2xl" id="call-type-icon">videocam</span>
           <div>
-            <span class="text-white font-bold text-sm block font-heading">ProjectHive Call room</span>
-            <span id="call-timer" class="text-white/50 text-xs font-mono">00:00</span>
+            <span class="text-white font-bold text-xs sm:text-sm block font-heading truncate max-w-[150px] sm:max-w-none">ProjectHive Call</span>
+            <span id="call-timer" class="text-white/50 text-[10px] sm:text-xs font-mono">00:00</span>
           </div>
         </div>
 
-        <div class="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/5" id="call-connection-status">
-          <span class="w-2 h-2 rounded-full bg-yellow-400 animate-pulse" id="call-status-dot"></span>
-          <span class="text-yellow-400 text-xs font-bold" id="call-status-text">Connecting...</span>
+        <div class="flex items-center gap-1.5 sm:gap-2 bg-black/40 backdrop-blur-md px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full border border-white/5" id="call-connection-status">
+          <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-yellow-400 animate-pulse" id="call-status-dot"></span>
+          <span class="text-yellow-400 text-[10px] sm:text-xs font-bold" id="call-status-text">Connecting...</span>
         </div>
       </div>
 
@@ -507,45 +507,45 @@
           <!-- Remote Video (Full Screen) -->
           <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
 
-          <!-- Voice-Only Avatar Display -->
-          <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d] z-10">
-            <div id="voice-avatar" class="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-extrabold shadow-2xl mb-6 relative">
+          <!-- Voice-Only Avatar Display - Mobile Responsive -->
+          <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d] z-10 px-4">
+            <div id="voice-avatar" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl sm:text-4xl font-extrabold shadow-2xl mb-4 sm:mb-6 relative">
               <span id="voice-avatar-text">?</span>
               <div class="absolute inset-0 rounded-full border-4 border-indigo-400/30 animate-ping" style="animation-duration:2s"></div>
             </div>
-            <div id="voice-caller-name" class="text-white text-xl font-heading font-bold mb-2">Connecting Voice...</div>
-            <div class="flex items-center gap-1.5 bg-indigo-950/40 px-4 py-2 rounded-full border border-indigo-500/20">
-              <div class="w-1.5 h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.8s"></div>
-              <div class="w-1.5 h-6 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.6s;animation-delay:0.1s"></div>
-              <div class="w-1.5 h-3 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.9s;animation-delay:0.2s"></div>
-              <div class="w-1.5 h-5 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.7s;animation-delay:0.3s"></div>
-              <span class="text-[10px] font-bold text-indigo-300 ml-1 uppercase tracking-widest">Voice Active</span>
+            <div id="voice-caller-name" class="text-white text-base sm:text-xl font-heading font-bold mb-2 text-center">Connecting Voice...</div>
+            <div class="flex items-center gap-1.5 bg-indigo-950/40 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-indigo-500/20">
+              <div class="w-1 sm:w-1.5 h-3 sm:h-4 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.8s"></div>
+              <div class="w-1 sm:w-1.5 h-4 sm:h-6 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.6s;animation-delay:0.1s"></div>
+              <div class="w-1 sm:w-1.5 h-2 sm:h-3 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.9s;animation-delay:0.2s"></div>
+              <div class="w-1 sm:w-1.5 h-3 sm:h-5 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.7s;animation-delay:0.3s"></div>
+              <span class="text-[9px] sm:text-[10px] font-bold text-indigo-300 ml-1 uppercase tracking-widest">Voice Active</span>
             </div>
           </div>
 
-          <!-- Local Video (Floating Bubble) -->
-          <div id="local-video-bubble" class="absolute bottom-24 right-5 w-32 h-44 md:w-40 md:h-56 rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
+          <!-- Local Video (Floating Bubble) - Mobile Responsive -->
+          <div id="local-video-bubble" class="absolute bottom-20 sm:bottom-24 right-3 sm:right-5 w-24 h-32 sm:w-32 sm:h-44 md:w-40 md:h-56 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
             <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
           </div>
         </div>
       </div>
 
-      <!-- Call Control Bar -->
-      <div class="absolute bottom-0 left-0 right-0 z-20 flex justify-center items-center gap-4 p-6 bg-gradient-to-t from-black/90 to-transparent">
-        <button id="btn-mute" onclick="toggleMute()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Mute Microphone">
-          <span class="material-symbols-outlined text-xl" id="mute-icon">mic</span>
+      <!-- Call Control Bar - Mobile Responsive with safe area -->
+      <div class="absolute bottom-0 left-0 right-0 z-20 flex justify-center items-center gap-2 sm:gap-4 p-4 sm:p-6 pb-safe bg-gradient-to-t from-black/90 to-transparent">
+        <button id="btn-mute" onclick="toggleMute()" class="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation" title="Mute Microphone">
+          <span class="material-symbols-outlined text-lg sm:text-xl" id="mute-icon">mic</span>
         </button>
 
-        <button id="btn-camera" onclick="toggleCamera()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Toggle Camera">
-          <span class="material-symbols-outlined text-xl" id="camera-icon">videocam</span>
+        <button id="btn-camera" onclick="toggleCamera()" class="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation" title="Toggle Camera">
+          <span class="material-symbols-outlined text-lg sm:text-xl" id="camera-icon">videocam</span>
         </button>
 
-        <button onclick="endCall()" class="w-16 h-16 bg-rose-600 hover:bg-rose-500 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] shadow-lg shadow-rose-600/35 border border-rose-500/30" title="End Call">
-          <span class="material-symbols-outlined text-2xl font-bold">call_end</span>
+        <button onclick="endCall()" class="w-14 h-14 sm:w-16 sm:h-16 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] shadow-lg shadow-rose-600/35 border border-rose-500/30 touch-manipulation" title="End Call">
+          <span class="material-symbols-outlined text-xl sm:text-2xl font-bold">call_end</span>
         </button>
 
-        <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-12 h-12 bg-white/10 hover:bg-white/20 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10" title="Share Screen">
-          <span class="material-symbols-outlined text-xl">screen_share</span>
+        <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation" title="Share Screen">
+          <span class="material-symbols-outlined text-lg sm:text-xl">screen_share</span>
         </button>
       </div>
     </div>
