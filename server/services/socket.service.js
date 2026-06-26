@@ -155,7 +155,19 @@ export function broadcastToRoom(io, roomId, event, data) {
 
 export async function handleCallInitiate(socket, data) {
   const { roomId, targetId, callerName, isWebRTC, isVoiceOnly } = data;
-  if (!roomId || !targetId) return;
+
+  console.log('[Call] 📞 Call initiation request:', {
+    from: socket.userId,
+    to: targetId,
+    roomId,
+    isWebRTC,
+    isVoiceOnly
+  });
+
+  if (!roomId || !targetId) {
+    console.error('[Call] ❌ Missing roomId or targetId');
+    return;
+  }
 
   // Server-side friend-gating: verify friendship before allowing call
   try {
@@ -167,15 +179,26 @@ export async function handleCallInitiate(socket, data) {
       .maybeSingle();
 
     if (!friendship) {
+      console.warn('[Call] ⚠️ Not friends:', socket.userId, '->', targetId);
       socket.emit('call:error', { message: 'You must be friends to call this person' });
       return;
     }
+
+    console.log('[Call] ✅ Friendship verified');
   } catch (e) {
+    console.error('[Call] ⚠️ Friendship check error:', e.message);
     // If DB check fails, allow the call (fail-open for UX)
   }
 
   // Emit call:incoming to ALL sockets of the target user (mobile + PC = both ring)
   const targetSockets = getUserSockets(targetId);
+
+  console.log('[Call] Target user sockets:', {
+    targetId,
+    socketCount: targetSockets.length,
+    socketIds: targetSockets.map(s => s.id)
+  });
+
   if (targetSockets.length > 0) {
     const payload = {
       roomId,
@@ -184,9 +207,18 @@ export async function handleCallInitiate(socket, data) {
       isWebRTC: !!isWebRTC,
       isVoiceOnly: !!isVoiceOnly
     };
-    targetSockets.forEach(s => s.emit('call:incoming', payload));
+
+    console.log('[Call] 📤 Emitting call:incoming to', targetSockets.length, 'sockets');
+
+    targetSockets.forEach(s => {
+      s.emit('call:incoming', payload);
+      console.log('[Call] 📨 Sent to socket:', s.id);
+    });
+
+    console.log('[Call] ✅ Call notification sent successfully');
   } else {
     // Target user is offline
+    console.warn('[Call] ❌ Target user offline:', targetId);
     socket.emit('call:error', { message: 'User is currently offline' });
   }
 }
