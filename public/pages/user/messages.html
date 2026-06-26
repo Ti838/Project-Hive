@@ -552,29 +552,29 @@
   </div>
 
   <!-- Incoming Call Modal Overlay -->
-  <div id="incoming-call-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center">
-    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl p-8 w-[380px] max-w-[92vw] flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-darkSurface-border text-center relative overflow-hidden">
+  <div id="incoming-call-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden items-center justify-center px-4">
+    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl p-6 sm:p-8 w-full max-w-sm flex flex-col items-center justify-center shadow-2xl border border-gray-100 dark:border-darkSurface-border text-center relative overflow-hidden">
 
       <!-- Ringing Ring Pulsing waves -->
       <div class="relative mb-6">
-        <div class="absolute inset-0 w-24 h-24 -m-2 rounded-full bg-emerald-400/20 animate-ping" style="animation-duration:1.5s"></div>
-        <div class="absolute inset-0 w-24 h-24 -m-2 rounded-full bg-emerald-400/10 animate-ping" style="animation-duration:2s;animation-delay:.3s"></div>
-        <div class="relative w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/35 ringing-vibrate">
-          <span class="material-symbols-outlined text-white text-3xl">phone_in_talk</span>
+        <div class="absolute inset-0 w-20 h-20 sm:w-24 sm:h-24 -m-2 rounded-full bg-emerald-400/20 animate-ping" style="animation-duration:1.5s"></div>
+        <div class="absolute inset-0 w-20 h-20 sm:w-24 sm:h-24 -m-2 rounded-full bg-emerald-400/10 animate-ping" style="animation-duration:2s;animation-delay:.3s"></div>
+        <div class="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-lg shadow-emerald-500/35 ringing-vibrate">
+          <span class="material-symbols-outlined text-white text-2xl sm:text-3xl">phone_in_talk</span>
         </div>
       </div>
 
-      <h3 class="font-heading font-bold text-xl mb-1 text-gray-900 dark:text-white" id="caller-name">Incoming Call...</h3>
-      <p class="text-xs text-gray-500 dark:text-slate-400 mb-8 font-medium">Your ProjectHive teammate wants to connect</p>
+      <h3 class="font-heading font-bold text-lg sm:text-xl mb-1 text-gray-900 dark:text-white truncate max-w-full px-2" id="caller-name">Incoming Call...</h3>
+      <p class="text-xs text-gray-500 dark:text-slate-400 mb-6 sm:mb-8 font-medium">Your ProjectHive teammate wants to connect</p>
 
-      <div class="flex gap-4 w-full">
-        <button onclick="declineCall()" class="flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-rose-600/20">
+      <div class="flex gap-3 sm:gap-4 w-full">
+        <button onclick="declineCall()" class="flex-1 py-3 sm:py-3.5 bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-rose-600/20 touch-manipulation">
           <span class="material-symbols-outlined text-lg font-bold">call_end</span>
-          <span>Decline</span>
+          <span class="text-sm sm:text-base">Decline</span>
         </button>
-        <button onclick="acceptCall()" class="flex-1 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20">
+        <button onclick="acceptCall()" class="flex-1 py-3 sm:py-3.5 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-bold rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 touch-manipulation">
           <span class="material-symbols-outlined text-lg font-bold">call</span>
-          <span>Accept</span>
+          <span class="text-sm sm:text-base">Accept</span>
         </button>
       </div>
     </div>
@@ -3706,141 +3706,6 @@
   <!-- ============================================ -->
   <!--          WebRTC CALL UI MODALS              -->
   <!-- ============================================ -->
-
-  <!-- Incoming Call Modal -->
-  <div id="incoming-call-modal" class="fixed inset-0 z-[999] hidden flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
-    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm text-center animate-[slideUp_0.3s_ease-out]">
-      <!-- Caller Avatar/Icon -->
-      <div class="relative mb-6">
-        <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl scale-150 animate-pulse"></div>
-        <div class="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl">
-          <span class="material-symbols-outlined text-white text-4xl sm:text-5xl">person</span>
-        </div>
-      </div>
-
-      <!-- Caller Info -->
-      <h3 id="incoming-caller-name" class="font-heading font-bold text-xl sm:text-2xl text-gray-900 dark:text-white mb-2 truncate px-4">
-        Unknown Caller
-      </h3>
-      <p id="incoming-call-type" class="text-sm text-gray-500 dark:text-slate-400 mb-8">
-        Audio Call
-      </p>
-
-      <!-- Action Buttons -->
-      <div class="flex items-center justify-center gap-8 sm:gap-6">
-        <!-- Decline Button -->
-        <button onclick="window.callManager.declineCall()" class="group flex flex-col items-center gap-2 touch-manipulation">
-          <div class="w-16 h-16 sm:w-16 sm:h-16 rounded-full bg-rose-500 hover:bg-rose-600 active:bg-rose-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
-            <span class="material-symbols-outlined text-white text-2xl sm:text-3xl">call_end</span>
-          </div>
-          <span class="text-xs font-semibold text-gray-600 dark:text-slate-400">Decline</span>
-        </button>
-
-        <!-- Accept Button -->
-        <button onclick="window.callManager.acceptCall()" class="group flex flex-col items-center gap-2 touch-manipulation">
-          <div class="w-16 h-16 sm:w-16 sm:h-16 rounded-full bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95 animate-pulse">
-            <span class="material-symbols-outlined text-white text-2xl sm:text-3xl">call</span>
-          </div>
-          <span class="text-xs font-semibold text-gray-600 dark:text-slate-400">Accept</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <style>
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px) scale(0.95);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
-    }
-  </style>
-
-  <!-- Calling Modal (Waiting for answer) -->
-  <div id="calling-modal" class="fixed inset-0 z-[999] hidden flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
-    <div class="bg-white dark:bg-darkSurface-panel rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-sm text-center animate-[slideUp_0.3s_ease-out]">
-      <!-- Target Avatar/Icon -->
-      <div class="relative mb-6">
-        <div class="absolute inset-0 bg-indigo-500/20 rounded-full blur-2xl scale-150 animate-pulse"></div>
-        <div class="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-xl">
-          <span class="material-symbols-outlined text-white text-4xl sm:text-5xl">person</span>
-        </div>
-      </div>
-
-      <!-- Target Info -->
-      <h3 id="calling-target-name" class="font-heading font-bold text-xl sm:text-2xl text-gray-900 dark:text-white mb-2 truncate px-4">
-        Calling...
-      </h3>
-      <p class="text-sm text-gray-500 dark:text-slate-400 mb-8 animate-pulse">
-        Ringing...
-      </p>
-
-      <!-- Hang Up Button -->
-      <button onclick="window.callManager.endCall()" class="mx-auto flex flex-col items-center gap-2 touch-manipulation">
-        <div class="w-16 h-16 sm:w-16 sm:h-16 rounded-full bg-rose-500 hover:bg-rose-600 active:bg-rose-700 flex items-center justify-center shadow-lg hover:shadow-xl transition-all active:scale-95">
-          <span class="material-symbols-outlined text-white text-2xl sm:text-3xl">call_end</span>
-        </div>
-        <span class="text-xs font-semibold text-gray-600 dark:text-slate-400">Cancel</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- In-Call Modal (Active call) -->
-  <div id="in-call-modal" class="fixed inset-0 z-[999] hidden flex flex-col bg-gradient-to-br from-gray-900 to-black">
-    <!-- Remote Video (full screen) -->
-    <div class="flex-1 relative flex items-center justify-center bg-black">
-      <video id="remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-
-      <!-- Remote user info overlay -->
-      <div class="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-xl sm:rounded-2xl">
-        <h3 id="in-call-remote-name" class="font-heading font-bold text-white text-base sm:text-lg text-center truncate max-w-[200px] sm:max-w-none">
-          Connected
-        </h3>
-        <p id="call-timer" class="text-xs sm:text-sm text-gray-300 text-center font-mono">
-          00:00
-        </p>
-      </div>
-
-      <!-- Local Video (Picture-in-Picture) - Responsive sizing -->
-      <div class="absolute top-4 sm:top-6 right-3 sm:right-6 w-24 h-32 sm:w-32 sm:h-40 rounded-xl sm:rounded-2xl overflow-hidden shadow-2xl bg-gray-800 border-2 border-white/20">
-        <video id="local-video" autoplay playsinline muted class="w-full h-full object-cover"></video>
-      </div>
-    </div>
-
-    <!-- Call Controls - Mobile optimized -->
-    <div class="bg-black/80 backdrop-blur-lg border-t border-white/10 p-4 sm:p-6 flex items-center justify-center gap-3 sm:gap-4 pb-safe">
-      <!-- Mute Button -->
-      <button id="btn-mute" onclick="window.callManager.toggleMute()" class="flex flex-col items-center gap-1 sm:gap-1.5 group touch-manipulation">
-        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-700 hover:bg-gray-600 active:bg-gray-500 flex items-center justify-center transition-all active:scale-95 shadow-lg">
-          <span id="mute-icon" class="material-symbols-outlined text-white text-xl sm:text-2xl">mic</span>
-        </div>
-        <span class="text-[9px] sm:text-[10px] font-semibold text-gray-400 group-hover:text-white transition-colors">Mute</span>
-      </button>
-
-      <!-- Video Toggle Button -->
-      <button id="btn-toggle-video" onclick="window.callManager.toggleVideo()" class="flex flex-col items-center gap-1 sm:gap-1.5 group touch-manipulation">
-        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gray-700 hover:bg-gray-600 active:bg-gray-500 flex items-center justify-center transition-all active:scale-95 shadow-lg">
-          <span id="video-icon" class="material-symbols-outlined text-white text-xl sm:text-2xl">videocam</span>
-        </div>
-        <span class="text-[9px] sm:text-[10px] font-semibold text-gray-400 group-hover:text-white transition-colors">Video</span>
-      </button>
-
-      <!-- Hang Up Button - Larger for easy tapping -->
-      <button onclick="window.callManager.endCall()" class="flex flex-col items-center gap-1 sm:gap-1.5 group touch-manipulation">
-        <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-rose-500 hover:bg-rose-600 active:bg-rose-700 flex items-center justify-center transition-all active:scale-95 shadow-xl">
-          <span class="material-symbols-outlined text-white text-2xl sm:text-3xl">call_end</span>
-        </div>
-        <span class="text-[9px] sm:text-[10px] font-semibold text-white">End Call</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Load Call Manager Script -->
-  <script src="/assets/js/core/call-manager.js"></script>
 
   <script src="/assets/js/core/info-modal.js"></script>
 </body>

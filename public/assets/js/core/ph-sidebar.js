@@ -354,7 +354,6 @@ const PHSidebar = (() => {
       try { initGlobalSearch(base); } catch(_) {}
       try { if (typeof initGlobalProfile === 'function') initGlobalProfile(base); } catch(_) {}
       try { initGlobalRealtime(base); } catch(_) {}
-      try { initGlobalCallManager(base); } catch(_) {} // Initialize call manager globally
     };
 
     if (document.getElementById('ph-sidebar')) {
@@ -2002,108 +2001,6 @@ const PHSidebar = (() => {
     if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');
     }
-  }
-
-  // ── Global Call Manager (Works on ALL pages) ──
-  function initGlobalCallManager(base) {
-    // First, ensure socket.io is loaded
-    if (!window.io) {
-      console.log('[PHSidebar] Socket.io not loaded, loading script...');
-      const socketScript = document.createElement('script');
-      socketScript.src = 'https://cdn.socket.io/4.7.5/socket.io.min.js';
-      socketScript.onload = () => {
-        console.log('[PHSidebar] ✅ Socket.io loaded');
-        loadCallManager();
-      };
-      socketScript.onerror = () => {
-        console.error('[PHSidebar] ❌ Failed to load Socket.io');
-      };
-      document.head.appendChild(socketScript);
-      return;
-    }
-
-    loadCallManager();
-  }
-
-  function loadCallManager() {
-    // Skip if call manager script hasn't loaded yet
-    if (!window.callManager) {
-      console.log('[PHSidebar] Call manager not loaded yet, will load script...');
-
-      // Dynamically load call-manager.js script
-      const script = document.createElement('script');
-      script.src = '/assets/js/core/call-manager.js';
-      script.onload = () => {
-        console.log('[PHSidebar] ✅ Call manager script loaded');
-        setupCallManager();
-      };
-      script.onerror = () => {
-        console.error('[PHSidebar] ❌ Failed to load call manager script');
-      };
-      document.head.appendChild(script);
-      return;
-    }
-
-    setupCallManager();
-  }
-
-  function setupCallManager() {
-    if (!window.io || !window.callManager) {
-      console.log('[PHSidebar] Socket.io or call manager not available');
-      return;
-    }
-
-    // Check if socket is already initialized
-    if (window.globalSocket) {
-      console.log('[PHSidebar] Using existing global socket');
-      window.callManager.setSocket(window.globalSocket);
-      return;
-    }
-
-    // Initialize socket connection
-    const tk = localStorage.getItem('access_token');
-    if (!tk) {
-      console.log('[PHSidebar] No auth token, skipping call manager initialization');
-      return;
-    }
-
-    const BACKEND = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-      ? (location.port === '3000' ? 'http://localhost:5000' : 'http://localhost:5000')
-      : 'https://projecthive-backend.onrender.com';
-
-    console.log('[PHSidebar] 🔌 Connecting global socket for call manager...');
-
-    const socket = window.io(BACKEND, {
-      transports: ['websocket', 'polling'],
-      auth: { token: tk },
-      reconnection: true,
-      reconnectionAttempts: Infinity,
-      reconnectionDelay: 1000
-    });
-
-    socket.on('connect', () => {
-      console.log('[PHSidebar] ✅ Global socket connected:', socket.id);
-      window.globalSocket = socket;
-
-      // Initialize call manager with this socket
-      window.callManager.setSocket(socket);
-      console.log('[PHSidebar] ✅ Call manager initialized globally');
-    });
-
-    socket.on('disconnect', () => {
-      console.log('[PHSidebar] ⚠️ Global socket disconnected');
-    });
-
-    socket.on('connect_error', (err) => {
-      console.error('[PHSidebar] Socket connection error:', err.message);
-    });
-
-    // Heartbeat to keep connection alive
-    setInterval(() => {
-      if (socket.connected) {
-        socket.emit('heartbeat');
-      }
-    }, 25000); // Every 25 seconds
   }
 
   return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest, showLogoutModal, openLightbox, closeLightbox };
