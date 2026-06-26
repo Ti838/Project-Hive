@@ -90,16 +90,42 @@ async function handleCallback() {
       return;
     }
 
-    // Get the session from Supabase (handles the OAuth callback automatically)
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // Parse the hash fragment to check if tokens are present
+    const access_token = hashParams.get('access_token');
+    const refresh_token = hashParams.get('refresh_token');
 
-    if (sessionError || !session) {
-      console.error('Session error:', sessionError);
-      showError('Could not retrieve Google session. Please try again.');
-      return;
+    let session;
+
+    if (access_token) {
+      console.log('✅ Tokens found in URL hash, setting session...');
+
+      // Set the session from the hash tokens
+      const { data, error: sessionError } = await supabase.auth.setSession({
+        access_token,
+        refresh_token
+      });
+
+      if (sessionError || !data.session) {
+        console.error('Session set error:', sessionError);
+        showError('Could not set Google session. Please try again.');
+        return;
+      }
+
+      session = data.session;
+      console.log('✅ Supabase session set successfully:', session.user.email);
+    } else {
+      // No tokens in hash, try to get existing session
+      const { data, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !data.session) {
+        console.error('Session error:', sessionError);
+        showError('Could not retrieve Google session. Please try again.');
+        return;
+      }
+
+      session = data.session;
+      console.log('✅ Supabase session retrieved:', session.user.email);
     }
-
-    console.log('✅ Supabase session retrieved:', session.user.email);
 
     // Extract user info from Supabase session
     const user = session.user;
