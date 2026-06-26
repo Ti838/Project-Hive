@@ -36,15 +36,17 @@ class CallManager {
   setupSocketListeners() {
     if (!this.socket) return;
 
+    console.log('[Call Manager] Setting up socket listeners...');
+
     // Incoming call notification
     this.socket.on('call:incoming', (data) => {
-      console.log('[Call] Incoming call:', data);
+      console.log('[Call] 🔔 Incoming call received:', data);
       this.showIncomingCallModal(data);
     });
 
     // Call accepted by remote user
     this.socket.on('call:accepted', async (data) => {
-      console.log('[Call] Call accepted:', data);
+      console.log('[Call] ✅ Call accepted:', data);
       if (this.currentCall && this.currentCall.roomId === data.roomId) {
         await this.createPeerConnection();
         await this.createOffer();
@@ -53,23 +55,25 @@ class CallManager {
 
     // Call declined by remote user
     this.socket.on('call:declined', (data) => {
-      console.log('[Call] Call declined:', data);
+      console.log('[Call] ❌ Call declined:', data);
       this.endCall();
       PHToast.show('Call declined', 'info');
     });
 
     // Remote user hung up
     this.socket.on('call:hungup', (data) => {
-      console.log('[Call] Remote user hung up:', data);
+      console.log('[Call] 📞 Remote user hung up:', data);
       this.endCall();
       PHToast.show('Call ended', 'info');
     });
 
     // WebRTC signaling messages (offer/answer/ICE candidates)
     this.socket.on('webrtc:signal', async (data) => {
-      console.log('[Call] WebRTC signal received:', data.signal.type);
+      console.log('[Call] 📡 WebRTC signal received:', data.signal.type);
       await this.handleSignal(data);
     });
+
+    console.log('[Call Manager] ✅ Socket listeners registered');
   }
 
   /**
