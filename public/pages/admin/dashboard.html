@@ -1256,6 +1256,39 @@ window.addEventListener('resize', () => {
     width: 100% !important;
     /* Prevent card content from creating horizontal scroll */
     overflow: hidden !important;
+    /* No extra margin */
+    margin-top: 0 !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Hide duplicate card title - topbar shows section name */
+  .card-title {
+    display: none !important;
+  }
+
+  /* Card header - compact, no title */
+  .card-hdr {
+    padding: 10px 12px !important;
+    position: sticky !important;
+    top: 56px !important;
+    background: var(--sf) !important;
+    z-index: 50 !important;
+    border-bottom: 1.5px solid var(--bd) !important;
+    margin: 0 !important;
+    /* Stack vertically */
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  /* Full width search and tabs */
+  .card-hdr > div {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .tabs, .srch {
+    width: 100% !important;
   }
 
   /* Better table scrolling on mobile */
