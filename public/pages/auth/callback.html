@@ -57,111 +57,96 @@
   <button class="retry-btn" id="retry-btn">Back to Login</button>
 </div>
 
-<script>
-(function(){
-  const BACKEND = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
-    ? (location.port==='3000' ? 'http://localhost:5000/api' : '/api')
-    : 'https://projecthive-backend.onrender.com/api';
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-  function showError(msg) {
-    document.getElementById('spinner').style.display = 'none';
-    document.getElementById('title').textContent = 'Sign-in failed';
-    document.getElementById('msg').textContent = 'Something went wrong during Google sign-in.';
-    const eb = document.getElementById('err-box');
-    eb.textContent = msg;
-    eb.style.display = 'block';
-    document.getElementById('retry-btn').style.display = 'inline-block';
-  }
+const SUPABASE_URL = 'https://iekfvgjxkmgduxdvkuxf.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBlcmJhc2UsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQxNDk4NjIxLCJleHAiOjIwNTY4NTg2MjF9.s73x7IQtdae7TPD0AoJmH9m6lp0SKQPV5Ozr9v5nACg';
 
-  async function handleCallback() {
-    // Supabase puts the session in the URL hash fragment after OAuth redirect
-    // Format: #access_token=...&refresh_token=...&token_type=bearer
-    const hash = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
+const BACKEND = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? (location.port==='3000' ? 'http://localhost:5000/api' : '/api')
+  : 'https://projecthive-backend.onrender.com/api';
 
-    // Also check query string (some flows use ?code= instead)
-    const query = new URLSearchParams(window.location.search);
-    const code  = query.get('code');
-    const error = query.get('error') || params.get('error');
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function showError(msg) {
+  document.getElementById('spinner').style.display = 'none';
+  document.getElementById('title').textContent = 'Sign-in failed';
+  document.getElementById('msg').textContent = 'Something went wrong during Google sign-in.';
+  const eb = document.getElementById('err-box');
+  eb.textContent = msg;
+  eb.style.display = 'block';
+  document.getElementById('retry-btn').style.display = 'inline-block';
+}
+
+async function handleCallback() {
+  try {
+    // Check for OAuth callback in URL hash
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const error = hashParams.get('error');
 
     if (error) {
-      showError('Google sign-in was cancelled or failed: ' + (query.get('error_description') || error));
+      showError('Google sign-in was cancelled or failed: ' + (hashParams.get('error_description') || error));
       return;
     }
 
-    let access_token  = params.get('access_token');
-    let refresh_token = params.get('refresh_token');
+    // Get the session from Supabase (handles the OAuth callback automatically)
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    // If we have a code (PKCE flow), send it to the server for exchange
-    // The server initiated the OAuth flow, so only it has the code_verifier
-    if (code && !access_token) {
-      try {
-        const codeRes = await fetch(BACKEND + '/auth/google/code', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code })
-        });
-        const codeData = await codeRes.json();
-        if (codeRes.ok && codeData.accessToken) {
-          // Server exchanged code and returned platform JWT directly
-          localStorage.setItem('access_token', codeData.accessToken);
-          if (codeData.refreshToken) localStorage.setItem('refresh_token', codeData.refreshToken);
-          if (codeData.user) localStorage.setItem('user_data', JSON.stringify(codeData.user));
-          document.getElementById('title').textContent = 'Welcome back!';
-          document.getElementById('msg').textContent = 'Signed in as ' + (codeData.user?.email || '') + '. Redirecting…';
-          document.getElementById('spinner').style.borderTopColor = '#10b981';
-          setTimeout(() => window.location.href = '/pages/user/dashboard.html', 1000);
-          return;
-        } else {
-          showError(codeData.error || 'Code exchange failed.');
-          return;
-        }
-      } catch(e) {
-        showError('Code exchange failed: ' + e.message);
-        return;
-      }
-    }
-
-    if (!access_token) {
-      showError('No authentication token received. Please try again.');
+    if (sessionError || !session) {
+      console.error('Session error:', sessionError);
+      showError('Could not retrieve Google session. Please try again.');
       return;
     }
 
-    // Send Supabase token to our backend → get platform JWT
-    try {
-      const res = await fetch(BACKEND + '/auth/google/callback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token, refresh_token })
-      });
+    console.log('✅ Supabase session retrieved:', session.user.email);
 
-      const data = await res.json();
+    // Extract user info from Supabase session
+    const user = session.user;
+    const userData = {
+      email: user.email,
+      googleId: user.id,
+      firstName: user.user_metadata?.given_name || user.user_metadata?.full_name?.split(' ')[0] || 'User',
+      lastName: user.user_metadata?.family_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+      avatar: user.user_metadata?.avatar_url || null,
+      supabaseAccessToken: session.access_token,
+      supabaseRefreshToken: session.refresh_token
+    };
 
-      if (res.ok && data.accessToken) {
-        localStorage.setItem('access_token', data.accessToken);
-        if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
-        if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
+    // Send to backend to create/update user and get platform JWT
+    const res = await fetch(BACKEND + '/auth/google/callback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(userData)
+    });
 
-        document.getElementById('title').textContent = 'Welcome back!';
-        document.getElementById('msg').textContent   = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
-        document.getElementById('spinner').style.borderTopColor = '#10b981';
+    const data = await res.json();
 
-        setTimeout(() => window.location.href = '/pages/user/dashboard.html', 1000);
-      } else {
-        showError(data.error || 'Sign-in failed. Please try again.');
-      }
-    } catch(e) {
-      showError('Could not reach the server. Please check your connection.');
+    if (res.ok && data.accessToken) {
+      // Store platform tokens
+      localStorage.setItem('access_token', data.accessToken);
+      if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
+      if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
+
+      document.getElementById('title').textContent = 'Welcome back!';
+      document.getElementById('msg').textContent = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
+      document.getElementById('spinner').style.borderTopColor = '#10b981';
+
+      setTimeout(() => window.location.href = '/pages/user/dashboard.html', 1000);
+    } else {
+      showError(data.error || 'Sign-in failed. Please try again.');
     }
+  } catch(e) {
+    console.error('Callback error:', e);
+    showError('Could not complete sign-in: ' + e.message);
   }
+}
 
-  handleCallback();
+handleCallback();
 
-  // Bug 3 fix: use addEventListener instead of inline onclick (CSP-safe)
-  document.getElementById('retry-btn').addEventListener('click', function() {
-    window.location.href = '/login';
-  });
-})();
+document.getElementById('retry-btn').addEventListener('click', function() {
+  window.location.href = '/login';
+});
 </script>
 </body>
 </html>

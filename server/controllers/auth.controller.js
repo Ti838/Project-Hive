@@ -517,73 +517,23 @@ export async function googleInitiate(req, res, next) {
 }
 
 // ─── GOOGLE OAUTH — CALLBACK ──────────────────────────────────────────────────
-// Called by the frontend /auth/callback page with the Supabase session tokens
+// Called by the frontend /auth/callback page with user data from Supabase session
 export async function googleCallback(req, res, next) {
   try {
-    const { access_token, refresh_token } = req.body;
+    const { email, googleId, firstName, lastName, avatar, supabaseAccessToken } = req.body;
 
-    if (!access_token) {
-      console.error('[ProjectHive] Google callback: missing access_token in body. Keys:', Object.keys(req.body));
-      return res.status(400).json({ error: 'Missing Supabase access token.' });
+    if (!email || !googleId) {
+      console.error('[ProjectHive] Google callback: missing required fields. Keys:', Object.keys(req.body));
+      return res.status(400).json({ error: 'Missing required user data.' });
     }
 
-    console.log('[ProjectHive] 🔑 Google callback: verifying Supabase token (length:', access_token.length, ')');
-
-    // Bug 2 fix: Use direct REST API call instead of supabaseAdmin.auth.getUser()
-    // supabaseAdmin.auth.getUser() can fail when verifying tokens issued by a
-    // different Supabase client instance (client-side anon key vs server service role)
-    let sbUser;
-    try {
-      const userRes = await fetch(`${process.env.SUPABASE_URL}/auth/v1/user`, {
-        headers: {
-          'Authorization': `Bearer ${access_token}`,
-          'apikey': process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY
-        }
-      });
-
-      if (!userRes.ok) {
-        const errBody = await userRes.text();
-        console.error('[ProjectHive] Supabase token verify failed:', userRes.status, errBody);
-        return res.status(401).json({ error: 'Invalid or expired Google session.' });
-      }
-
-      sbUser = await userRes.json();
-      console.log('[ProjectHive] ✅ Supabase token verified for:', sbUser.email);
-    } catch (fetchErr) {
-      console.error('[ProjectHive] Supabase REST verify error:', fetchErr.message);
-      // Fallback to SDK method
-      try {
-        const { data: { user: sdkUser }, error: verifyError } = await supabaseAdmin.auth.getUser(access_token);
-        if (verifyError || !sdkUser) {
-          console.error('[ProjectHive] Supabase SDK fallback also failed:', verifyError);
-          return res.status(401).json({ error: 'Invalid or expired Google session.' });
-        }
-        sbUser = sdkUser;
-        console.log('[ProjectHive] ✅ SDK fallback verified for:', sbUser.email);
-      } catch (sdkErr) {
-        console.error('[ProjectHive] SDK fallback threw:', sdkErr.message);
-        return res.status(401).json({ error: 'Authentication verification failed.' });
-      }
-    }
-
-    const email = sbUser.email?.toLowerCase();
-    const googleId = sbUser.id; // Supabase auth user ID
-    const fullName = sbUser.user_metadata?.full_name || '';
-    const avatarUrl = sbUser.user_metadata?.avatar_url || null;
-    const firstName = sbUser.user_metadata?.given_name || fullName.split(' ')[0] || 'User';
-    const lastName  = sbUser.user_metadata?.family_name || fullName.split(' ').slice(1).join(' ') || '';
-
-    if (!email) {
-      return res.status(400).json({ error: 'Could not retrieve email from Google account.' });
-    }
-
-    console.log('[ProjectHive] 🔍 Looking up user:', email, '| googleId:', googleId);
+    console.log('[ProjectHive] 🔑 Google callback: processing user:', email, '| googleId:', googleId);
 
     // Check if user already exists (by email OR google_id)
     const { data: existingUser, error: lookupError } = await supabaseAdmin
       .from('users')
       .select('*')
-      .or(`email.eq.${email},google_id.eq.${googleId}`)
+      .or(`email.eq.${email.toLowerCase()},google_id.eq.${googleId}`)
       .single();
 
     if (lookupError && lookupError.code !== 'PGRST116') {
@@ -596,7 +546,7 @@ export async function googleCallback(req, res, next) {
     if (existingUser) {
       // Update google_id & mark verified if not already
       const updates = { google_id: googleId, is_verified: true, auth_provider: 'google' };
-      if (avatarUrl && !existingUser.avatar) updates.avatar = avatarUrl;
+      if (avatar && !existingUser.avatar) updates.avatar = avatar;
 
       const { data: updated, error: updateError } = await supabaseAdmin
         .from('users')
@@ -623,10 +573,10 @@ export async function googleCallback(req, res, next) {
         .insert({
           first_name: firstName.trim(),
           last_name: lastName.trim(),
-          email,
+          email: email.toLowerCase(),
           password_hash: passwordHash,
           google_id: googleId,
-          avatar: avatarUrl,
+          avatar: avatar,
           is_verified: true,
           auth_provider: 'google',
         })
