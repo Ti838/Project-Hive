@@ -319,6 +319,27 @@
     .sb-stat-num { background-image: linear-gradient(135deg, #6366f1, #7c3aed); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     @keyframes spin { to { transform: rotate(360deg); } }
     @keyframes slideDown { from { opacity:0; transform:translateX(-50%) translateY(-12px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+
+    /* People You Know Card Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #suggested-people-list > div {
+      animation: fadeInUp 0.4s ease-out backwards;
+    }
+
+    #suggested-people-list > div:nth-child(1) { animation-delay: 0.05s; }
+    #suggested-people-list > div:nth-child(2) { animation-delay: 0.10s; }
+    #suggested-people-list > div:nth-child(3) { animation-delay: 0.15s; }
+    #suggested-people-list > div:nth-child(4) { animation-delay: 0.20s; }
   </style>
 
   <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
@@ -547,22 +568,34 @@
       </div>
 
       <!-- ═══ People You Know ═══ -->
-      <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow">
-        <div class="px-5 py-3.5 border-b border-surface-variant flex items-center justify-between">
-          <h3 class="font-bold text-[13px] text-on-surface flex items-center gap-2">
-            <span class="w-6 h-6 rounded-lg bg-green-500 flex items-center justify-center">
-              <span class="material-symbols-outlined text-[14px] text-white">group_add</span>
+      <div class="sb-card bg-gradient-to-br from-white to-gray-50 dark:from-surface-container-lowest dark:to-surface-container-low rounded-2xl border border-surface-variant feed-card-shadow overflow-hidden">
+        <!-- Header with gradient background -->
+        <div class="px-5 py-4 bg-gradient-to-r from-green-500 to-emerald-500 dark:from-green-600 dark:to-emerald-600 flex items-center justify-between">
+          <h3 class="font-bold text-sm text-white flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg">
+              <span class="material-symbols-outlined text-[16px] text-white">group_add</span>
             </span>
-            People You Know
+            <span>People You Know</span>
           </h3>
-          <a href="/people" class="text-[10px] font-semibold text-primary hover:underline">See all</a>
+          <a href="/pages/user/people.html" class="text-[10px] font-bold text-white/90 hover:text-white hover:underline flex items-center gap-1 bg-white/10 hover:bg-white/20 px-2.5 py-1.5 rounded-lg transition-all">
+            See All
+            <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
+          </a>
         </div>
-        <div id="suggested-people-list" class="p-2.5 flex flex-col gap-1">
-          <div class="text-center text-on-surface-variant text-[12px] py-6">Loading recommendations...</div>
+
+        <!-- Suggestions List -->
+        <div id="suggested-people-list" class="p-3 flex flex-col gap-2">
+          <div class="text-center text-on-surface-variant text-[12px] py-8 flex flex-col items-center gap-2">
+            <span class="material-symbols-outlined text-4xl text-gray-300 dark:text-gray-600 animate-pulse">people</span>
+            <span>Loading recommendations...</span>
+          </div>
         </div>
-        <a href="/people" class="flex items-center justify-center gap-1.5 text-primary text-[11px] font-bold py-3 border-t border-surface-variant hover:bg-primary/5 transition-colors">
+
+        <!-- Footer CTA -->
+        <a href="/pages/user/people.html" class="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 text-[11px] font-bold py-3.5 border-t border-surface-variant bg-green-50/50 dark:bg-green-950/20 hover:bg-green-100 dark:hover:bg-green-950/40 transition-all group">
+          <span class="material-symbols-outlined text-[16px] group-hover:scale-110 transition-transform">explore</span>
           Discover More People
-          <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          <span class="material-symbols-outlined text-[14px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
         </a>
       </div>
 
@@ -1020,29 +1053,58 @@
         const users = (data.users || data || []).filter(u => u.id !== ME.id && u._id !== ME.id);
         const el = document.getElementById('suggested-people-list');
         if (!users.length) {
-          el.innerHTML = '<div class="text-center py-4 text-xs text-on-surface-variant">No recommendations available.</div>';
+          el.innerHTML = `<div class="text-center py-8 flex flex-col items-center gap-3">
+            <span class="material-symbols-outlined text-5xl text-gray-300 dark:text-gray-600">person_search</span>
+            <p class="text-xs text-on-surface-variant">No recommendations available.</p>
+          </div>`;
           return;
         }
         el.innerHTML = users.slice(0, 4).map(u => {
           const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'User';
           const color = getAvatarColor(name);
           const initials = getInitials(u.firstName, u.lastName);
-          return `<div class="flex items-center justify-between p-2 rounded-xl hover:bg-surface-container-low transition-all">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs shrink-0" style="background:${color}">${initials}</div>
-              <div class="min-w-0">
-                <p class="font-semibold text-xs text-on-surface truncate">${escapeHtml(name)}</p>
-                <p class="text-[10px] text-on-surface-variant truncate">${escapeHtml(u.university || '')}</p>
+          const university = u.university || 'Student';
+
+          return `<div class="group flex items-center justify-between p-3 rounded-xl hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-950/20 dark:hover:to-emerald-950/20 border border-transparent hover:border-green-200 dark:hover:border-green-800 transition-all duration-300 cursor-pointer">
+            <div class="flex items-center gap-3 min-w-0" onclick="window.location.href='/pages/user/profile/view.html?id=${u.id || u._id}'">
+              <!-- Avatar with hover effect -->
+              <div class="relative shrink-0">
+                <div class="w-11 h-11 rounded-full flex items-center justify-center font-bold text-white text-sm shadow-md group-hover:shadow-lg transition-shadow" style="background:${color}">
+                  ${initials}
+                </div>
+                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white dark:border-surface-container-lowest rounded-full"></span>
+              </div>
+
+              <!-- User Info -->
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-sm text-on-surface truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                  ${escapeHtml(name)}
+                </p>
+                <p class="text-[11px] text-on-surface-variant truncate flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[12px]">school</span>
+                  ${escapeHtml(university)}
+                </p>
               </div>
             </div>
-            <button onclick="sendFriendRequest('${u.id || u._id}')" class="text-primary hover:text-primary-dark p-1 rounded-full hover:bg-primary/5 shrink-0 transition-colors" title="Connect">
-              <span class="material-symbols-outlined text-[18px]">person_add</span>
+
+            <!-- Connect Button -->
+            <button onclick="event.stopPropagation(); sendFriendRequest('${u.id || u._id}')"
+              class="shrink-0 w-9 h-9 rounded-xl bg-green-500 hover:bg-green-600 text-white flex items-center justify-center shadow-md hover:shadow-lg active:scale-95 transition-all group/btn"
+              title="Send Friend Request">
+              <span class="material-symbols-outlined text-[18px] group-hover/btn:scale-110 transition-transform">person_add</span>
             </button>
           </div>`;
         }).join('');
       }
 
       window.sendFriendRequest = async function(friendId) {
+        const btn = event.target.closest('button');
+        const originalHTML = btn.innerHTML;
+
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">progress_activity</span>';
+
         try {
           const r = await fetch(API_BASE + '/api/friends/request', {
             method: 'POST',
@@ -1050,13 +1112,26 @@
             body: JSON.stringify({ friendId })
           });
           if (r.ok) {
-            showToast('Friend request sent!', 'success');
-            loadSuggestions();
+            // Success animation
+            btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span>';
+            btn.classList.remove('bg-green-500', 'hover:bg-green-600');
+            btn.classList.add('bg-emerald-500');
+
+            showToast('Friend request sent! 🎉', 'success');
+
+            // Reload after delay
+            setTimeout(() => {
+              loadSuggestions();
+            }, 1000);
           } else {
             const err = await r.json();
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
             showToast(err.error || 'Failed to send request', 'error');
           }
         } catch(e) {
+          btn.disabled = false;
+          btn.innerHTML = originalHTML;
           showToast('Connection error', 'error');
         }
       }
