@@ -220,12 +220,13 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   .desktop-table { display: block !important; visibility: visible !important; }
   .mobile-card-list { display: none !important; visibility: hidden !important; }
 
-  /* Desktop: Stats grid - 4 columns */
-  .stat-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 14px !important; }
-  .stat-card { padding: 20px !important; display: block !important; }
+  /* Desktop: Stats grid - 4 columns FULL WIDTH */
+  .stat-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 14px !important; width: 100% !important; max-width: 100% !important; }
+  .stat-card { padding: 20px !important; display: block !important; width: 100% !important; }
 
   /* Desktop: Reports content proper width */
-  #reports-content { max-width: 100% !important; }
+  #reports-content { max-width: 100% !important; width: 100% !important; }
+  #reports-content > div { width: 100% !important; max-width: 100% !important; }
 
   /* Desktop: Force table display */
   #sec-au table, #sec-rp table, #sec-u table, #sec-pr table { display: table !important; width: 100% !important; }
@@ -1376,7 +1377,7 @@ function renderReports() {
   const todayUsers = AU.filter(u => { const d = new Date(u.createdAt); return Date.now() - d < 86400000; }).length;
 
   el.innerHTML = `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px">
+    <div class="stat-grid" style="width:100%">
       <div class="stat-card"><div class="stat-n" style="font-size:22px">${totalUsers}</div><div class="stat-l">Total Users</div></div>
       <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--red)">${bannedUsers}</div><div class="stat-l">Banned Users</div></div>
       <div class="stat-card"><div class="stat-n" style="font-size:22px;color:var(--ac)">${adminUsers}</div><div class="stat-l">Admin Users</div></div>
