@@ -1,8 +1,8 @@
 # WebRTC Real-Time Audio/Video Calling System
 
 ## 🎯 Overview
+You can talk bu video and audio call
 
-ProjectHive এখন সম্পূর্ণ **WebRTC-based real-time audio and video calling** support করে! এই implementation আপনাকে সরাসরি microphone এবং camera ব্যবহার করে কথা বলতে এবং video call করতে দেয়।
 
 ## ✨ Features
 
