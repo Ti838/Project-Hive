@@ -3481,61 +3481,134 @@
       let ringtoneAudio = null;
       let outgoingRingtone = null;
 
+      // Professional incoming ringtone (Messenger/WhatsApp style)
       function startRingtone() {
         stopRingtone();
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.value = 440;
-          gain.gain.value = 0.15;
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.start();
-          let on = true;
+          let currentOsc = null;
+          let cycleCount = 0;
+
+          // Play a pleasant melody sequence
+          function playMelody() {
+            // Stop previous oscillator
+            if (currentOsc) {
+              try { currentOsc.stop(); } catch(_) {}
+            }
+
+            // Melody notes (frequencies in Hz) - pleasant ascending pattern
+            const melody = [
+              { freq: 659, duration: 0.15 },  // E5
+              { freq: 880, duration: 0.15 },  // A5
+              { freq: 1047, duration: 0.3 },  // C6
+              { pause: 0.4 }                   // Short pause
+            ];
+
+            let noteIndex = 0;
+            const playNote = () => {
+              if (noteIndex >= melody.length) {
+                cycleCount++;
+                if (cycleCount < 8) { // Repeat 8 times then stop
+                  setTimeout(playMelody, 800); // Pause between cycles
+                }
+                return;
+              }
+
+              const note = melody[noteIndex];
+              noteIndex++;
+
+              if (note.pause) {
+                setTimeout(playNote, note.pause * 1000);
+                return;
+              }
+
+              const osc = ctx.createOscillator();
+              const gain = ctx.createGain();
+
+              osc.type = 'sine';
+              osc.frequency.value = note.freq;
+
+              // Smooth envelope (fade in/out)
+              gain.gain.setValueAtTime(0, ctx.currentTime);
+              gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02);
+              gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + note.duration);
+
+              osc.connect(gain);
+              gain.connect(ctx.destination);
+
+              osc.start(ctx.currentTime);
+              osc.stop(ctx.currentTime + note.duration);
+
+              currentOsc = osc;
+              setTimeout(playNote, note.duration * 1000);
+            };
+
+            playNote();
+          }
+
+          playMelody();
+
           ringtoneAudio = {
-            ctx, osc, gain,
-            interval: setInterval(() => {
-              on = !on;
-              gain.gain.value = on ? 0.15 : 0;
-            }, 600),
+            ctx,
             stop() {
-              clearInterval(this.interval);
-              try { osc.stop(); ctx.close(); } catch(_){}
+              cycleCount = 999; // Stop future cycles
+              if (currentOsc) {
+                try { currentOsc.stop(); } catch(_) {}
+              }
+              try { ctx.close(); } catch(_) {}
             }
           };
         } catch(_) {}
       }
 
-      // Outgoing call ring (lower tone, slower pulse — like a phone dialing out)
+      // Outgoing call ring (professional "ringing" sound - double beep pattern)
       function startOutgoingRing() {
         stopOutgoingRing();
         try {
           const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          let phase = 0;
-          outgoingRingtone = {
-            ctx,
-            interval: setInterval(() => {
-              phase++;
-              // Two beeps then pause: beep-beep...pause
-              if (phase === 1 || phase === 3) {
+          let cycleCount = 0;
+
+          function playRing() {
+            if (cycleCount >= 15) return; // Stop after 15 cycles (~30 seconds)
+
+            // Double beep pattern (beep-beep...pause)
+            const beeps = [
+              { freq: 440, delay: 0, duration: 0.3 },
+              { freq: 440, delay: 0.4, duration: 0.3 }
+            ];
+
+            beeps.forEach(beep => {
+              setTimeout(() => {
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
+
                 osc.type = 'sine';
-                osc.frequency.value = 380;
-                gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                osc.frequency.value = beep.freq;
+
+                // Smooth envelope
+                gain.gain.setValueAtTime(0, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + beep.duration);
+
                 osc.connect(gain);
                 gain.connect(ctx.destination);
+
                 osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.35);
-              }
-              if (phase >= 8) phase = 0; // reset cycle (8 * 200ms = 1.6s cycle)
-            }, 200),
+                osc.stop(ctx.currentTime + beep.duration);
+              }, beep.delay * 1000);
+            });
+
+            cycleCount++;
+            setTimeout(playRing, 2000); // Repeat every 2 seconds
+          }
+
+          playRing();
+
+          outgoingRingtone = {
+            ctx,
             stop() {
-              clearInterval(this.interval);
-              try { ctx.close(); } catch(_){}
+              cycleCount = 999; // Stop future cycles
+              try { ctx.close(); } catch(_) {}
             }
           };
         } catch(_) {}
