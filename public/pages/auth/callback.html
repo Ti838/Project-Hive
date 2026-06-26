@@ -79,11 +79,76 @@ function showError(msg) {
   document.getElementById('retry-btn').style.display = 'inline-block';
 }
 
+async function processUserSession(session) {
+  const user = session.user;
+
+  const userData = {
+    email: user.email,
+    googleId: user.id,
+    firstName: user.user_metadata?.given_name || user.user_metadata?.full_name?.split(' ')[0] || 'User',
+    lastName: user.user_metadata?.family_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+    avatar: user.user_metadata?.avatar_url || null
+  };
+
+  console.log('📤 Sending user data to backend:', userData.email);
+
+  const res = await fetch(BACKEND + '/auth/google/callback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData)
+  });
+
+  const backendData = await res.json();
+
+  if (res.ok && backendData.accessToken) {
+    localStorage.setItem('access_token', backendData.accessToken);
+    if (backendData.refreshToken) localStorage.setItem('refresh_token', backendData.refreshToken);
+    if (backendData.user) localStorage.setItem('user_data', JSON.stringify(backendData.user));
+
+    console.log('✅ Sign-in successful!');
+
+    document.getElementById('title').textContent = 'Welcome back!';
+    document.getElementById('msg').textContent = 'Signed in as ' + (backendData.user?.email || '') + '. Redirecting…';
+    document.getElementById('spinner').style.borderTopColor = '#10b981';
+
+    setTimeout(() => window.location.href = '/pages/user/dashboard.html', 1000);
+  } else {
+    console.error('❌ Backend error:', backendData.error);
+    showError(backendData.error || 'Sign-in failed. Please try again.');
+  }
+}
+
 async function handleCallback() {
   try {
     console.log('🔄 Handling OAuth callback...');
+    console.log('📍 URL:', window.location.href);
 
-    // Get session from URL (Supabase handles hash parsing automatically)
+    // Check for hash params first (implicit flow)
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+
+    if (accessToken) {
+      console.log('✅ Found tokens in hash, setting session...');
+
+      const { data: sessionData, error: setError } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+
+      if (setError || !sessionData.session) {
+        console.error('❌ Failed to set session:', setError);
+        showError('Could not establish session: ' + (setError?.message || 'Unknown error'));
+        return;
+      }
+
+      console.log('✅ Session set from hash');
+      await processUserSession(sessionData.session);
+      return;
+    }
+
+    // Fallback: Check existing session
+    console.log('🔍 No hash tokens, checking existing session...');
     const { data, error } = await supabase.auth.getSession();
 
     if (error) {
@@ -98,48 +163,9 @@ async function handleCallback() {
       return;
     }
 
-    console.log('✅ Session retrieved successfully');
-    const user = data.session.user;
+    console.log('✅ Session retrieved');
+    await processUserSession(data.session);
 
-    // Extract user info
-    const userData = {
-      email: user.email,
-      googleId: user.id,
-      firstName: user.user_metadata?.given_name || user.user_metadata?.full_name?.split(' ')[0] || 'User',
-      lastName: user.user_metadata?.family_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-      avatar: user.user_metadata?.avatar_url || null
-    };
-
-    console.log('📤 Sending user data to backend:', userData.email);
-
-    // Send to backend to create/update user and get platform JWT
-    const res = await fetch(BACKEND + '/auth/google/callback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(userData)
-    });
-
-    const backendData = await res.json();
-
-    if (res.ok && backendData.accessToken) {
-      // Store platform tokens
-      localStorage.setItem('access_token', backendData.accessToken);
-      if (backendData.refreshToken) localStorage.setItem('refresh_token', backendData.refreshToken);
-      if (backendData.user) localStorage.setItem('user_data', JSON.stringify(backendData.user));
-
-      console.log('✅ Sign-in successful!');
-
-      document.getElementById('title').textContent = 'Welcome back!';
-      document.getElementById('msg').textContent = 'Signed in as ' + (backendData.user?.email || '') + '. Redirecting…';
-      document.getElementById('spinner').style.borderTopColor = '#10b981';
-
-      setTimeout(function() {
-        window.location.href = '/pages/user/dashboard.html';
-      }, 1000);
-    } else {
-      console.error('❌ Backend error:', backendData.error);
-      showError(backendData.error || 'Sign-in failed. Please try again.');
-    }
   } catch(e) {
     console.error('❌ Callback error:', e);
     showError('Could not complete sign-in: ' + e.message);
@@ -148,9 +174,7 @@ async function handleCallback() {
 
 handleCallback();
 
-document.getElementById('retry-btn').addEventListener('click', function() {
-  window.location.href = '/login';
-});
+document.getElementById('retry-btn').addEventListener('click', () => window.location.href = '/login');
 </script>
 </body>
 </html>
