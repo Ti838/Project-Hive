@@ -298,9 +298,11 @@ async function resendVerification(){
 }
 
 async function handleLogin(e){
+  console.log('🔐 handleLogin called');
   e.preventDefault();
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('password').value;
+  console.log('📧 Email:', email, '| Password length:', password?.length);
   if(!email||!password){showAlert('Please fill in all fields.');return;}
 
   lastEmail=email;
@@ -313,30 +315,39 @@ async function handleLogin(e){
     const BACKEND=(window.location.hostname==='localhost'||window.location.hostname==='127.0.0.1')
       ?(window.location.port==='3000'?'http://localhost:5000/api':'/api')
       :'https://projecthive-backend.onrender.com/api';
+    console.log('🌐 Backend URL:', BACKEND);
+    console.log('📡 Sending login request...');
     const res=await fetch(`${BACKEND}/auth/login`,{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email,password})
     });
+    console.log('📡 Response status:', res.status);
     const data=await res.json();
+    console.log('📦 Response data:', data);
 
     if(res.ok&&data.accessToken){
+      console.log('✅ Login successful! Token:', data.accessToken.substring(0, 30) + '...');
       localStorage.setItem('access_token',data.accessToken);
       if(data.refreshToken)localStorage.setItem('refresh_token',data.refreshToken);
       if(data.user)localStorage.setItem('user_data',JSON.stringify(data.user));
       showAlert('Login successful! Redirecting…','ok');
+      console.log('🔄 Redirecting to /dashboard in 900ms...');
       setTimeout(()=>{window.location.href='/dashboard';},900);
     }else if(data.requiresVerification){
+      console.log('⚠️  Email verification required');
       lastEmail=email;
       document.getElementById('verify-banner').classList.remove('hidden');
       document.getElementById('verify-banner').classList.add('block');
       showAlert(data.error||'Please verify your email first.','warn');
       btn.disabled=false;txt.textContent='Sign In';
     }else{
+      console.error('❌ Login failed:', data.message || data.error);
       showAlert(data.message||data.error||'Invalid email or password.');
       btn.disabled=false;txt.textContent='Sign In';
     }
   }catch(err){
+    console.error('❌ Network error:', err);
     showAlert('Could not connect to server. Please try again.');
     btn.disabled=false;txt.textContent='Sign In';
   }
