@@ -132,6 +132,42 @@
         margin: 0 !important;
       }
     }
+
+    /* ==========================================================================
+       MOBILE RESPONSIVE FIXES - Navigation & Chat Header
+       ========================================================================== */
+    @media (max-width: 768px) {
+      /* Fix header/navigation overlap */
+      header {
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(10px) !important;
+        -webkit-backdrop-filter: blur(10px) !important;
+      }
+
+      html.dark header {
+        background: rgba(17, 19, 30, 0.95) !important;
+      }
+
+      /* Ensure chat layout doesn't go under header */
+      .msg-layout {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+      }
+
+      /* Chat messages area proper spacing */
+      #msgs {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
+      /* Chat input area above bottom nav */
+      #chat-input-area {
+        bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+        z-index: 50 !important;
+      }
+    }
   </style>
 </head>
 
