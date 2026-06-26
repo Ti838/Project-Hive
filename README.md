@@ -19,10 +19,6 @@
 | 🌐 **Frontend** | <https://projecthive-bd.vercel.app> |
 | ⚙️ **Backend API** | <https://projecthive-backend.onrender.com/api> |
 | 🔌 **Socket.IO** | `wss://projecthive-backend.onrender.com` |
-| 🗄️ **Supabase** | <https://supabase.com/dashboard/project/iekfvgjxkmgduxdvkuxf> |
-| 📧 **Brevo Dashboard** | <https://app.brevo.com> |
-| 🚀 **Render Dashboard** | <https://dashboard.render.com/web/srv-d8mhi8rtqb8s73c3n5qg> |
-| 🟣 **Vercel Dashboard** | <https://vercel.com/aloneboy0022ti-gmailcoms-projects/projecthive> |
 | 🔑 **Admin Panel** | <https://projecthive-bd.vercel.app/pages/admin/login.html> |
 
 ---
