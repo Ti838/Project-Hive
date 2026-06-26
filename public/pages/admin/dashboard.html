@@ -228,6 +228,10 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   #reports-content { max-width: 100% !important; width: 100% !important; }
   #reports-content > div { width: 100% !important; max-width: 100% !important; }
 
+  /* Desktop: Email Blast form full width */
+  #sec-em .card { max-width: 100% !important; width: 100% !important; }
+  #sec-em textarea { width: 100% !important; min-height: 200px !important; }
+
   /* Desktop: Force table display */
   #sec-au table, #sec-rp table, #sec-u table, #sec-pr table { display: table !important; width: 100% !important; }
 }
@@ -858,7 +862,7 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
       <div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Send Email Blast</div>
     </div>
     <div style="padding:20px">
-      <div style="display:flex;flex-direction:column;gap:14px;max-width:600px">
+      <div style="display:flex;flex-direction:column;gap:14px;max-width:100%;width:100%">
         <div>
           <label style="font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:block">Target Audience</label>
           <select id="blast-target" class="srch" style="width:100%">
