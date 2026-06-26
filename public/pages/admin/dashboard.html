@@ -1215,13 +1215,8 @@ async function doOut(){
   localStorage.removeItem('access_token');
   sessionStorage.clear();
 
-  // Show success message briefly
-  showToast('✓ Signed out successfully', 'success');
-
-  // Redirect to admin login page after a brief delay
-  setTimeout(() => {
-    window.location.href = '/pages/admin/login.html';
-  }, 500);
+  // Redirect to admin login page immediately
+  window.location.href = '/pages/admin/login.html';
 }
 
 // â•â• Custom Themed Dialog Modal System â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
