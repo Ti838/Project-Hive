@@ -57,17 +57,14 @@
   <button class="retry-btn" id="retry-btn">Back to Login</button>
 </div>
 
-<script type="module">
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
+<script>
+(function(){
 const SUPABASE_URL = 'https://iekfvgjxkmgduxdvkuxf.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBlcmJhc2UsInJvbGUiOiJhbm9uIiwiaWF0IjoxNzQxNDk4NjIxLCJleHAiOjIwNTY4NTg2MjF9.s73x7IQtdae7TPD0AoJmH9m6lp0SKQPV5Ozr9v5nACg';
 
 const BACKEND = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
   ? (location.port==='3000' ? 'http://localhost:5000/api' : '/api')
   : 'https://projecthive-backend.onrender.com/api';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function showError(msg) {
   document.getElementById('spinner').style.display = 'none';
@@ -81,7 +78,7 @@ function showError(msg) {
 
 async function handleCallback() {
   try {
-    // Check for OAuth callback in URL hash
+    // Parse URL hash for OAuth tokens
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const error = hashParams.get('error');
 
@@ -90,54 +87,45 @@ async function handleCallback() {
       return;
     }
 
-    // Parse the hash fragment to check if tokens are present
     const access_token = hashParams.get('access_token');
     const refresh_token = hashParams.get('refresh_token');
 
-    let session;
-
-    if (access_token) {
-      console.log('✅ Tokens found in URL hash, setting session...');
-
-      // Set the session from the hash tokens
-      const { data, error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token
-      });
-
-      if (sessionError || !data.session) {
-        console.error('Session set error:', sessionError);
-        showError('Could not set Google session. Please try again.');
-        return;
-      }
-
-      session = data.session;
-      console.log('✅ Supabase session set successfully:', session.user.email);
-    } else {
-      // No tokens in hash, try to get existing session
-      const { data, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !data.session) {
-        console.error('Session error:', sessionError);
-        showError('Could not retrieve Google session. Please try again.');
-        return;
-      }
-
-      session = data.session;
-      console.log('✅ Supabase session retrieved:', session.user.email);
+    if (!access_token) {
+      console.error('No access token in URL hash');
+      showError('No authentication token received. Please try again.');
+      return;
     }
 
-    // Extract user info from Supabase session
-    const user = session.user;
+    console.log('✅ Tokens found in URL, verifying with Supabase...');
+
+    // Verify token with Supabase REST API (no SDK needed)
+    const userRes = await fetch(SUPABASE_URL + '/auth/v1/user', {
+      headers: {
+        'Authorization': 'Bearer ' + access_token,
+        'apikey': SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!userRes.ok) {
+      const errText = await userRes.text();
+      console.error('Supabase user fetch failed:', userRes.status, errText);
+      showError('Could not verify Google session. Please try again.');
+      return;
+    }
+
+    const user = await userRes.json();
+    console.log('✅ User verified with Supabase:', user.email);
+
+    // Extract user info
     const userData = {
       email: user.email,
       googleId: user.id,
       firstName: user.user_metadata?.given_name || user.user_metadata?.full_name?.split(' ')[0] || 'User',
       lastName: user.user_metadata?.family_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-      avatar: user.user_metadata?.avatar_url || null,
-      supabaseAccessToken: session.access_token,
-      supabaseRefreshToken: session.refresh_token
+      avatar: user.user_metadata?.avatar_url || null
     };
+
+    console.log('📤 Sending user data to backend...');
 
     // Send to backend to create/update user and get platform JWT
     const res = await fetch(BACKEND + '/auth/google/callback', {
@@ -154,12 +142,17 @@ async function handleCallback() {
       if (data.refreshToken) localStorage.setItem('refresh_token', data.refreshToken);
       if (data.user) localStorage.setItem('user_data', JSON.stringify(data.user));
 
+      console.log('✅ Sign-in successful!');
+
       document.getElementById('title').textContent = 'Welcome back!';
       document.getElementById('msg').textContent = 'Signed in as ' + (data.user?.email || '') + '. Redirecting…';
       document.getElementById('spinner').style.borderTopColor = '#10b981';
 
-      setTimeout(() => window.location.href = '/pages/user/dashboard.html', 1000);
+      setTimeout(function() {
+        window.location.href = '/pages/user/dashboard.html';
+      }, 1000);
     } else {
+      console.error('Backend error:', data.error);
       showError(data.error || 'Sign-in failed. Please try again.');
     }
   } catch(e) {
@@ -173,6 +166,7 @@ handleCallback();
 document.getElementById('retry-btn').addEventListener('click', function() {
   window.location.href = '/login';
 });
+})();
 </script>
 </body>
 </html>
