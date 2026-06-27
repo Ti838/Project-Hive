@@ -2881,10 +2881,9 @@
         socket.on('call:accepted', async data => {
           stopOutgoingRing();
           setCallConnectionStatus('connecting');
-          // ⚡ KEY FIX: NOW initiate the WebRTC offer — receiver is ready!
-          if (pendingCallTarget) {
-            await initiateWebRTCCall(pendingCallTarget, pendingCallVoiceOnly);
-            pendingCallTarget = null;
+          // Caller opens Jitsi now that receiver accepted
+          if (activeCallRoom) {
+            await openJitsiFrame(activeCallRoom, pendingCallVoiceOnly);
           }
         });
 
@@ -3085,61 +3084,55 @@
 
       window.startCall = async function() {
         if (!activeConv) return;
-        if (!checkCallCapability()) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call!', 'error');
           return;
         }
-        const roomId = 'ProjectHive-' + [ME.id, friendId].sort().join('-');
+        // Use safe alphanumeric room ID for Jitsi
+        const roomId = 'PH-' + [ME.id, friendId].sort().join('x').replace(/[^a-zA-Z0-9]/g, '');
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
 
-        // Open call modal — show waiting UI for caller
+        // Show waiting UI while receiver picks up
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
         setupVoiceOnlyUI(false);
-
-        if (socket) {
-          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: false });
-        }
         startOutgoingRing();
         setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
 
         activeCallRoom = roomId;
-        pendingIceCandidates = [];
-        // ⚡ KEY FIX: Store target — start WebRTC ONLY after call:accepted
-        pendingCallTarget = friendId;
         pendingCallVoiceOnly = false;
+
+        if (socket) {
+          // isWebRTC: false → both sides will use Jitsi
+          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: false, isVoiceOnly: false });
+        }
       };
 
       window.startVoiceCall = async function() {
         if (!activeConv) return;
-        if (!checkCallCapability()) return;
         var friendId = activeConv.friend?._id || activeConv.friend?.id || activeConv.friendId;
         if (!friendIds.has(friendId)) {
           showToast('You must be friends first to call!', 'error');
           return;
         }
-        const roomId = 'ProjectHive-voice-' + [ME.id, friendId].sort().join('-');
+        const roomId = 'PH-' + [ME.id, friendId].sort().join('x').replace(/[^a-zA-Z0-9]/g, '') + 'voice';
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
 
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
         setupVoiceOnlyUI(true);
-
-        if (socket) {
-          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: true, isVoiceOnly: true });
-        }
         startOutgoingRing();
         setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
 
         activeCallRoom = roomId;
-        pendingIceCandidates = [];
-        // ⚡ KEY FIX: Store target — start WebRTC ONLY after call:accepted
-        pendingCallTarget = friendId;
         pendingCallVoiceOnly = true;
+
+        if (socket) {
+          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: false, isVoiceOnly: true });
+        }
       };
 
       let isMuted = false;
@@ -3752,16 +3745,12 @@
         stopOutgoingRing();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
-          // Bug #6 fix: use stored callerId instead of activeConv which may point to wrong person
           var friendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (socket) {
             socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
           }
-          if (incomingCallIsWebRTC) {
-            await acceptWebRTCCall(friendId, incomingCallIsVoiceOnly);
-          } else {
-            await openJitsiFrame(activeCallRoom, incomingCallIsVoiceOnly);
-          }
+          // Always use Jitsi — works on all networks, no TURN needed
+          await openJitsiFrame(activeCallRoom, incomingCallIsVoiceOnly);
         }
       };
 
