@@ -2016,9 +2016,7 @@ const PHSidebar = (() => {
     _origInit(active, base);
     startKeepAlive();
     initLightbox();
-    if (active === 'dashboard') {
-      initGlobalAIPopup();
-    }
+    initGlobalAIPopup();
     // D4: Restore sidebar collapse state from localStorage (desktop only)
     if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');

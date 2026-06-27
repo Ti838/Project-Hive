@@ -6,6 +6,14 @@
 /* ─── Fonts ─── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* ─── ph-page-bg (body-level background class) ─── */
+.ph-page-bg {
+  background: var(--bg);
+  color: var(--tx);
+  min-height: 100vh;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
 /* ─── Variables ─── */
 :root {
   --bg:       #F0F2F9;
@@ -463,4 +471,116 @@ input, select, textarea { font-size: 16px; }
 @media (min-width: 769px) {
   input, select, textarea { font-size: inherit; }
 }
+
+/* ══════════════════════════════════════════
+   PAGE-SPECIFIC FIXES — Settings, Teams, Feed
+   ══════════════════════════════════════════ */
+
+/* ── ph-page-bg dark mode ── */
+html.dark .ph-page-bg {
+  background: var(--bg);
+  color: var(--tx);
+}
+
+/* ── Settings: Make tabs sticky so they stay visible while scrolling ── */
+.tabs-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  transition: background .25s, border-color .25s;
+}
+.tabs-wrap::-webkit-scrollbar { display: none; }
+
+/* ── Settings: max-width wrapper for tabs on wide screens ── */
+.tabs-wrap {
+  background: var(--sf);
+  border-bottom: 1.5px solid var(--bd);
+}
+
+/* ── Teams: Stats grid responsive — 3-col desktop → 1-col mobile ── */
+.teams-stats {
+  grid-template-columns: repeat(3, 1fr) !important;
+}
+@media (max-width: 900px) {
+  .teams-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+@media (max-width: 640px) {
+  .teams-stats {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  .teams-stats .ph-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* ── Teams: Topbar search responsive ── */
+@media (max-width: 640px) {
+  .ph-topbar > div[style*="position:relative"] {
+    flex: 1 !important;
+  }
+  .ph-topbar > div[style*="position:relative"] input {
+    width: 100% !important;
+  }
+}
+
+/* ── Teams: Grid responsive — 3-col → 2-col → 1-col ── */
+.teams-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+@media (max-width: 640px) {
+  .teams-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+/* ── Feed: Constrain post composer width on ultra-wide ── */
+.feed-composer-wrap,
+section.bg-surface-container-lowest {
+  max-width: 680px;
+  width: 100%;
+}
+
+/* ── Feed: Fix main content centering ── */
+main.ml-\\[260px\\] {
+  min-width: 0;
+}
+
+/* ── All pages: Smooth color transitions on theme switch ── */
+.tabs-wrap, .stab, .fc, .main-wrap, .fi, .save-btn, .tog-row,
+.teams-stats .ph-card, .teams-grid .team-card {
+  transition: background-color .25s ease, border-color .25s ease, color .25s ease;
+}
+
+/* ── Teams/Settings: Better card spacing on tablet ── */
+@media (max-width: 768px) {
+  .main-wrap {
+    padding: 0 14px 80px !important;
+  }
+  .fc {
+    border-radius: 16px !important;
+    transform: none !important; /* disable hover lift on touch devices */
+  }
+  .fc:hover {
+    transform: none !important;
+  }
+  .tabs-wrap {
+    top: 56px; /* account for collapsed mobile topbar height */
+  }
+}
+
+/* ── Feed: Mobile bottom padding (above bottom nav bar) ── */
+@media (max-width: 768px) {
+  main[class*="pt-"] {
+    padding-bottom: 80px !important;
+  }
+}
+
 

@@ -18,22 +18,28 @@
 <div class="ph-page">
 
 <!-- Topbar -->
-<div class="ph-topbar">
-  <span class="ms" style="color:var(--ac)">diversity_3</span>
-  <h1 style="font-size:18px;font-weight:800;margin:0;flex:1">Find Teams</h1>
-  <div style="position:relative">
+<div class="ph-topbar" style="gap:12px;flex-wrap:wrap">
+  <span class="ms" style="color:var(--ac);flex-shrink:0">diversity_3</span>
+  <h1 style="font-size:18px;font-weight:800;margin:0;flex:1;min-width:0">Find Teams</h1>
+  <div style="position:relative;flex:1;max-width:240px;min-width:140px">
     <span class="ms" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:18px">search</span>
-    <input id="search" type="text" placeholder="Search teams…" oninput="search(this.value)" class="ph-input" style="padding-left:40px;width:220px;height:40px;border-radius:999px">
+    <input id="search" type="text" placeholder="Search teams…" oninput="window.search(this.value)" class="ph-input" style="padding-left:40px;width:100%;height:40px;border-radius:999px">
   </div>
-  <a href="/teams/create" class="ph-btn" style="height:40px;border-radius:999px;text-decoration:none">
-    <span class="ms" style="font-size:18px">add</span> Create Team
+  <a href="/teams/create" class="ph-btn" style="height:40px;border-radius:999px;text-decoration:none;flex-shrink:0;padding:0 16px">
+    <span class="ms" style="font-size:18px">add</span>
+    <span class="hide-xs">Create Team</span>
   </a>
 </div>
+<style>
+  @media(max-width:480px){ .hide-xs{ display:none; } }
+</style>
+
 
 <main style="max-width:1100px;margin:0 auto;padding:32px 24px">
 
   <!-- Stats row -->
-  <div class="grid teams-stats" style="grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px">
+  <div class="grid teams-stats" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px">
+
     <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
       <div style="width:48px;height:48px;border-radius:14px;background:var(--ac-light);color:var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">diversity_3</span></div>
       <div><div class="ph-label" style="margin:0 0 2px">Total Teams</div><div style="font-size:26px;font-weight:800" id="st-total">—</div></div>
@@ -62,7 +68,13 @@
 (function(){
   const TK=localStorage.getItem('access_token');
   if(!TK){location.href='/login';return;}
-  try{const p=JSON.parse(atob(TK.split('.')[1]));if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='/login';return;}}catch(e){location.href='/login';return;}
+  let myId='';
+  try{
+    const p=JSON.parse(atob(TK.split('.')[1]));
+    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='/login';return;}
+    myId=p.sub||p.id||p.userId||'';
+    window._myId=myId;
+  }catch(e){location.href='/login';return;}
   PHSidebar.init('teams','../../');
 
   const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
@@ -75,18 +87,21 @@
   function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
   let teams=[],myIds=new Set(),myTeamRoles=new Map();
-  window.teams = teams; // expose for edit modal
+  window.teams = teams;   // expose for edit modal
+  window.myIds = myIds;   // expose for details modal
+  window.myTeamRoles = myTeamRoles;
 
 
   function render(list){
     const g=document.getElementById('grid');
     if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block;margin-bottom:12px">group_off</span>No teams found.<br><a href="/teams/create" style="color:var(--ac);text-decoration:underline;font-weight:600">Create the first one!</a></div>`;return;}
     g.innerHTML=list.map(t=>{
-      const name=t.name||'Team';const c=col(name);const isMine=myIds.has(t._id);
+      const tid=t._id||t.id;
+      const name=t.name||'Team';const c=col(name);const isMine=myIds.has(tid);
       const members=t.members?.length||t.memberCount||0;
       const tags=(t.tags||t.skills||[]).slice(0,3);const isOpen=t.isOpen!==false;
-      const isLeader=myTeamRoles.get(t._id)==='leader';
-      return `<div id="team-card-${t._id}" class="team-card ph-card" style="overflow:hidden;cursor:pointer;transition:transform .2s" onclick="openTeamDetailsModal('${t._id}',event)" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+      const isLeader=myTeamRoles.get(tid)==='leader';
+      return `<div id="team-card-${tid}" class="team-card ph-card" style="overflow:hidden;cursor:pointer;transition:transform .2s" onclick="openTeamDetailsModal('${tid}',event)" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
         <!-- Banner -->
         <div style="height:80px;background:linear-gradient(135deg,${c}30,${c}55);position:relative;display:flex;align-items:center;justify-content:center">
           <div style="width:52px;height:52px;border-radius:14px;background:${c};color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px ${c}60">${ini(name)}</div>
@@ -103,12 +118,12 @@
               ? isLeader
                 ? `<div style="display:flex;gap:6px;align-items:center">
                      <span style="font-size:11px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:3px"><span class="ms" style="font-size:14px">star</span>Leader</span>
-                     <button onclick="event.stopPropagation();editTeam('${t._id}')" style="padding:5px 10px;font-size:11px;border-radius:7px;background:var(--ac-light);color:var(--ac);border:1px solid var(--bd);cursor:pointer;font-weight:700">Edit</button>
-                     <button onclick="event.stopPropagation();deleteTeam('${t._id}','${esc(name)}',this)" style="padding:5px 10px;font-size:11px;border-radius:7px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);cursor:pointer;font-weight:700">Delete</button>
+                     <button onclick="event.stopPropagation();editTeam('${tid}')" style="padding:5px 10px;font-size:11px;border-radius:7px;background:var(--ac-light);color:var(--ac);border:1px solid var(--bd);cursor:pointer;font-weight:700">Edit</button>
+                     <button onclick="event.stopPropagation();deleteTeam('${tid}','${esc(name)}',this)" style="padding:5px 10px;font-size:11px;border-radius:7px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);cursor:pointer;font-weight:700">Delete</button>
                    </div>`
-                : `<button onclick="event.stopPropagation();leaveTeam('${t._id}',this)" class="ph-btn" style="padding:5px 14px;font-size:12px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
+                : `<button onclick="event.stopPropagation();leaveTeam('${tid}',this)" class="ph-btn" style="padding:5px 14px;font-size:12px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
               : isOpen
-                ?`<button onclick="event.stopPropagation();join('${t._id}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
+                ?`<button onclick="event.stopPropagation();join('${tid}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
                 :`<span style="font-size:12px;color:var(--sub)">Members only</span>`
             }
           </div>
@@ -283,6 +298,22 @@
 <script src="/assets/js/core/info-modal.js"></script>
 <script>
 (function(){
+  // Resolve myId from JWT (set by first IIFE) or re-parse
+  let myId = window._myId || '';
+  if (!myId) {
+    try {
+      const tk = localStorage.getItem('access_token');
+      if (tk) { const p = JSON.parse(atob(tk.split('.')[1])); myId = p.sub||p.id||p.userId||''; }
+    } catch(e) {}
+  }
+
+  // Also get H and API_BASE for modal requests
+  const _TK = localStorage.getItem('access_token');
+  const H = { Authorization: 'Bearer ' + _TK, 'Content-Type': 'application/json' };
+  const API_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port==='3000'?'http://localhost:5000':'')
+    : 'https://projecthive-backend.onrender.com';
+
   window.closeTeamDetailsModal = function() {
     document.getElementById('team-details-modal').style.display = 'none';
   };
@@ -301,9 +332,9 @@
 
       document.getElementById('td-title').textContent = t.name || 'Team Details';
 
-      // Check current user role
+      // Check current user role — myId from JWT
       const isLeader = t.leader_id === myId;
-      const isMember = myIds.has(t.id || t._id);
+      const isMember = (window.myIds||new Set()).has(t.id || t._id);
 
       // Members list markup
       const membersHTML = (t.team_members || []).map(m => {

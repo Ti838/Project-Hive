@@ -446,19 +446,20 @@
           <p class="font-label-md text-label-md text-on-surface" id="feed-username">—</p>
           <p class="text-[11px] text-on-surface-variant" id="feed-role">Student</p>
         </div>
-        <div id="feed-avatar" class="w-10 h-10 rounded-full border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">?</div>
+        <div id="feed-avatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">?</div>
       </div>
     </div>
   </header>
 
   <!-- MAIN CONTENT WRAPPER -->
-  <main class="ml-[260px] pt-[96px] flex flex-col lg:flex-row justify-center lg:items-start gap-8 min-h-screen max-md:ml-0 max-md:pb-20 px-2 sm:px-4 md:px-8 pb-8 max-w-full overflow-x-hidden">
+  <main class="ml-[260px] pt-[96px] flex flex-col lg:flex-row justify-center lg:items-start gap-8 min-h-screen max-md:ml-0 max-md:pb-20 px-2 sm:px-4 md:px-8 pb-8 max-w-full overflow-x-hidden" style="box-sizing:border-box">
+
     <!-- Center Content: Post Creator + Feed List -->
     <div class="flex-1 max-w-full sm:max-w-[680px] min-w-0 flex flex-col w-full">
       <!-- Welcome/Post Creator Card -->
       <section class="bg-surface-container-lowest p-6 rounded-2xl feed-card-shadow border border-surface-variant mb-6">
         <div class="flex gap-4 mb-4">
-          <div id="creator-avatar" class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0">?</div>
+          <div id="creator-avatar" class="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center font-bold text-white text-sm shrink-0">?</div>
           <div class="flex-1 relative">
             <textarea id="post-text" rows="3" class="w-full bg-surface-container-low border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-primary outline-none resize-none text-on-surface placeholder:text-outline" placeholder="What's on your mind? Share an achievement or update..."></textarea>
             <div id="mention-popover" class="absolute left-0 right-0 top-[100%] bg-surface-container-lowest border border-surface-variant rounded-xl shadow-xl z-50 hidden max-h-48 overflow-y-auto divide-y divide-surface-variant/40"></div>
