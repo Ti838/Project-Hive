@@ -38,7 +38,6 @@
 | 🚀 **Showcase** | Submit and browse student projects |
 | 📰 **Social Feed** | Posts, achievements, polls, @mentions, reactions, comments |
 | 🤖 **AI Generator** | Groq (primary) + Gemini (fallback) — chat, idea generation, image analysis |
-| 🛡️ **CAPTCHA** | Cloudflare Turnstile bot protection on auth pages |
 | 👑 **Admin Panel** | Industrial-grade control center — user/team/project management, maintenance mode, system flags |
 
 ---
