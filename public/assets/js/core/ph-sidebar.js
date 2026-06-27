@@ -1790,14 +1790,14 @@ const PHSidebar = (() => {
   window.closeLightbox = closeLightbox;
 
   // ══ Global AI Popup (available on all authenticated pages) ════════════════
-  function initGlobalAIPopup() {
+  function initGlobalAIPopup(showFab = true) {
     if (document.getElementById('ai-popup') || document.getElementById('ph-global-ai')) return;
 
     const wrap = document.createElement('div');
     wrap.id = 'ph-global-ai';
     wrap.innerHTML = `
       <div id="ai-fab-wrap">
-        <button id="ai-fab-btn" type="button" title="AI Assistant" aria-label="Open AI Assistant">
+        <button id="ai-fab-btn" type="button" title="AI Assistant" aria-label="Open AI Assistant"${!showFab ? ' style="display:none !important;"' : ''}>
           <span class="ai-fab-glow"></span>
           <svg id="ai-icon-open" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>
           <svg id="ai-icon-close" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" style="display:none"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1855,6 +1855,8 @@ const PHSidebar = (() => {
       const iconClose = document.getElementById('ai-icon-close');
       if (iconOpen) iconOpen.style.display = open ? 'none' : 'block';
       if (iconClose) iconClose.style.display = open ? 'block' : 'none';
+      const wrap = document.getElementById('ai-fab-wrap');
+      if (wrap) { if (open) { wrap.style.setProperty('display', 'flex', 'important'); } else { wrap.style.removeProperty('display'); } }
       if (open) {
         document.body.classList.add('modal-open');
         setTimeout(() => document.getElementById('ai-input')?.focus(), 180);
@@ -2016,7 +2018,7 @@ const PHSidebar = (() => {
     _origInit(active, base);
     startKeepAlive();
     initLightbox();
-    initGlobalAIPopup();
+    initGlobalAIPopup(active === 'dashboard');
     // D4: Restore sidebar collapse state from localStorage (desktop only)
     if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
       document.documentElement.classList.add('sidebar-collapsed');

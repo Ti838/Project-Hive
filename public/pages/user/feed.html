@@ -159,6 +159,16 @@
 
     /* Reaction Picker Style - LinkedIn Style Smooth Popover */
     .reaction-trigger { position: relative; }
+    .reaction-picker::before {
+      content: '';
+      position: absolute;
+      bottom: -25px;
+      left: 0;
+      right: 0;
+      height: 30px;
+      background: transparent;
+      z-index: -1;
+    }
     .reaction-picker {
       position: absolute;
       bottom: 115%;

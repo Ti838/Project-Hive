@@ -654,6 +654,8 @@ body, header, aside, main, section, .bg-surface-container-lowest,
       if(fabBtn) fabBtn.classList.toggle('is-open',open);
       if(iconOpen) iconOpen.style.display=open?'none':'block';
       if(iconClose) iconClose.style.display=open?'block':'none';
+      const wrap = document.getElementById('ai-fab-wrap');
+      if(wrap) { if(open) { wrap.style.setProperty('display', 'flex', 'important'); } else { wrap.style.removeProperty('display'); } }
       if(open) setTimeout(()=>document.getElementById('ai-input')?.focus(),200);
     } catch(err) { console.error('[ProjectHive] AI popup error:', err); }
   };
