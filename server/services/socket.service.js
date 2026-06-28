@@ -145,8 +145,12 @@ export function handleTyping(socket, io, data) {
 }
 
 export function broadcastNotification(io, recipientId, notification) {
-  const userSocket = getUserSocket(recipientId);
-  if (userSocket) userSocket.emit('notification:new', notification);
+  const userSockets = getUserSockets(recipientId);
+  userSockets.forEach(socket => {
+    try {
+      socket.emit('notification:new', notification);
+    } catch (_) {}
+  });
 }
 
 export function broadcastToRoom(io, roomId, event, data) {

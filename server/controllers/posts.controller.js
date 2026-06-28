@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import { getIo } from '../services/socket.service.js';
+import { getIo, broadcastNotification } from '../services/socket.service.js';
 
 // ── Helper: normalize post data ───────────────────────────────────────────────
 function normPost(p) {
@@ -195,6 +195,24 @@ export async function reactToPost(req, res, next) {
 
     // No existing → add
     await supabaseAdmin.from('post_reactions').insert({ post_id: postId, user_id: userId, type });
+
+    // Notify post author (if different from reactor)
+    try {
+      const { data: post } = await supabaseAdmin.from('posts').select('author_id, content').eq('id', postId).single();
+      if (post && post.author_id !== userId) {
+        const { data: reactor } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
+        const reactorName = reactor ? `${reactor.first_name} ${reactor.last_name}`.trim() : 'Someone';
+        const reactionEmojis = { like: '❤️', celebrate: '🎉', insightful: '💡', support: '👏' };
+        const notifMsg = `${reactorName} reacted ${reactionEmojis[type] || ''} to your post`;
+        broadcastNotification(getIo(), post.author_id, {
+          type: 'friend',
+          title: 'New Reaction',
+          message: notifMsg,
+          metadata: { postId },
+        });
+      }
+    } catch(_) {}
+
     res.json({ action: 'added', type });
   } catch (err) { next(err); }
 }
@@ -244,20 +262,48 @@ export async function addComment(req, res, next) {
       .single();
 
     if (error) throw error;
-    res.status(201).json({
-      comment: {
-        id: comment.id,
-        content: comment.content,
-        createdAt: comment.created_at,
-        author: {
-          id: comment.author.id,
-          firstName: comment.author.first_name,
-          lastName: comment.author.last_name,
-          avatar: comment.author.avatar,
-          onlineStatus: comment.author.online_status,
-        },
+    const result = {
+      id: comment.id,
+      content: comment.content,
+      createdAt: comment.created_at,
+      author: {
+        id: comment.author.id,
+        firstName: comment.author.first_name,
+        lastName: comment.author.last_name,
+        avatar: comment.author.avatar,
+        onlineStatus: comment.author.online_status,
+      },
+    };
+
+    // Broadcast comment to all connected clients (real-time feed update)
+    try {
+      getIo()?.emit('post:comment', { postId: req.params.id, comment: result, authorId: req.user.id });
+    } catch(_) {}
+
+    // Notify post author (if different from commenter)
+    try {
+      const { data: post } = await supabaseAdmin.from('posts').select('author_id').eq('id', req.params.id).single();
+      if (post && post.author_id !== req.user.id) {
+        const commenterName = `${comment.author.first_name} ${comment.author.last_name}`.trim();
+        const notifMsg = `${commenterName} commented on your post`;
+        await supabaseAdmin.from('notifications').insert({
+          user_id: post.author_id,
+          type: 'message',
+          title: 'New Comment',
+          message: notifMsg,
+          data: { postId: req.params.id },
+          is_read: false,
+        });
+        broadcastNotification(getIo(), post.author_id, {
+          type: 'message',
+          title: 'New Comment',
+          message: notifMsg,
+          metadata: { postId: req.params.id },
+        });
       }
-    });
+    } catch(_) {}
+
+    res.status(201).json({ comment: result });
   } catch (err) { next(err); }
 }
 
@@ -271,6 +317,11 @@ export async function deleteComment(req, res, next) {
       return res.status(403).json({ error: 'Not authorized' });
 
     await supabaseAdmin.from('post_comments').delete().eq('id', req.params.cid);
+
+    try {
+      getIo()?.emit('post:comment-deleted', { postId: req.params.id, commentId: req.params.cid });
+    } catch(_) {}
+
     res.json({ message: 'Comment deleted' });
   } catch (err) { next(err); }
 }

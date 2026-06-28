@@ -198,7 +198,20 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
   // ─── Load from API ─────────────────────────────────────────────────────────
   fetch(API_BASE+'/api/notifications?limit=60',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
-    if(d){ all=d.notifications||d||[]; }
+    if(d){
+      // Normalize API response fields (Supabase snake_case → camelCase)
+      const raw = d.notifications||d||[];
+      all = raw.map(n => ({
+        _id:       n.id || n._id,
+        id:        n.id || n._id,
+        type:      n.type || 'default',
+        title:     n.title || 'Notification',
+        message:   n.message || '',
+        read:      n.read ?? n.is_read ?? false,
+        createdAt: n.createdAt || n.created_at,
+        metadata:  n.metadata || n.data || {},
+      }));
+    }
     stats();render(all);
   }).catch(()=>{ all=[];stats();render(all); });
 
@@ -206,13 +219,26 @@ body{background:var(--bg);color:var(--tx);margin:0}
   try {
     const socket = io(API_BASE, { auth:{token:TK}, transports:['websocket','polling'] });
     socket.on('notification:new', (notif) => {
-      if(!notif||!notif._id) return;
-      if(all.find(n=>n._id===notif._id)) return; // dedup
-      all.unshift(notif);
+      if(!notif) return;
+      // Normalize: Supabase returns `id` (UUID), not `_id` (MongoDB)
+      // Also normalize snake_case DB fields to camelCase for the render fn
+      const normalized = {
+        _id:       notif.id || notif._id || Date.now().toString(),
+        id:        notif.id || notif._id,
+        type:      notif.type || 'default',
+        title:     notif.title || 'Notification',
+        message:   notif.message || '',
+        read:      notif.read ?? notif.is_read ?? false,
+        createdAt: notif.createdAt || notif.created_at || new Date().toISOString(),
+        metadata:  notif.metadata || notif.data || {},
+      };
+      // Dedup by id
+      if(all.find(n=>n._id===normalized._id || n.id===normalized.id)) return;
+      all.unshift(normalized);
       stats();
       const list = currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab);
       render(list);
-      PHToast?.success('\uD83D\uDD14 ' + (notif.message||'New notification').substring(0,60));
+      PHToast?.success('\uD83D\uDD14 ' + (normalized.message||'New notification').substring(0,60));
     });
   } catch(e) {
     console.warn('[Notifications] Socket error:', e.message);

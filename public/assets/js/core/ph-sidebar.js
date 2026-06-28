@@ -783,6 +783,17 @@ const PHSidebar = (() => {
         if (typeof PHToast !== 'undefined' && PHToast.info) {
           PHToast.info(`<strong>${notif.title||'Notification'}</strong><br/><span style="font-size:12px">${notif.message||''}</span>`);
         }
+        // Update topbar bell red dot
+        const topbarBadge = document.getElementById('topbar-unread');
+        if (topbarBadge) topbarBadge.classList.remove('hidden');
+
+        // Update sidebar badge
+        const notifBadge = document.getElementById('notif-badge');
+        if (notifBadge) {
+          const cur = parseInt(notifBadge.textContent) || 0;
+          notifBadge.textContent = cur + 1;
+          notifBadge.classList.remove('hidden');
+        }
       });
 
       socket.on('call:incoming', (data) => {

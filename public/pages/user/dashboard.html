@@ -206,6 +206,7 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 </style>
 
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/api.js"></script>
 <script src="/assets/js/core/auth.js"></script>
@@ -1161,6 +1162,78 @@ body, header, aside, main, section, .bg-surface-container-lowest,
   }
 
   document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', load) : load();
+
+  /* ── Socket.IO: Live notification badge + new post banner ────────────────── */
+  try {
+    if (typeof io !== 'undefined') {
+      const SOCKET_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+        ? (location.port === '3000' ? 'http://localhost:5000' : '')
+        : 'https://projecthive-backend.onrender.com';
+      const socket = io(SOCKET_URL, { auth: { token: TK }, transports: ['websocket', 'polling'] });
+
+      // Live notification badge on topbar bell icon
+      socket.on('notification:new', (notif) => {
+        if (!notif) return;
+        const msg = notif.message || notif.title || 'New notification';
+        const type = notif.type || 'default';
+
+        // Show red dot on topbar bell
+        const badge = document.getElementById('topbar-unread');
+        if (badge) badge.classList.remove('hidden');
+
+        // Update the sidebar notification badge count
+        const notifBadge = document.getElementById('notif-badge');
+        if (notifBadge) {
+          const cur = parseInt(notifBadge.textContent) || 0;
+          notifBadge.textContent = cur + 1;
+          notifBadge.classList.remove('hidden');
+        }
+
+        // Prepend to the dashboard notification list
+        const list = document.getElementById('notif-list');
+        if (list) {
+          const iconMap = { team:'group', friend:'person_add', message:'chat', project:'folder_special', system:'info' };
+          const colorMap = { team:'#3b82f6', friend:'#f59e0b', message:'#10b981', project:'#8b5cf6', system:'#6366f1' };
+          const ic = iconMap[type] || 'circle_notifications';
+          const co = colorMap[type] || '#6366f1';
+          const item = document.createElement('div');
+          item.className = 'flex items-start gap-3 px-4 py-3 border-l-2 hover:bg-primary/5 transition-colors';
+          item.style.borderLeftColor = co;
+          item.innerHTML = `
+            <span class="material-symbols-outlined text-[18px] mt-0.5 shrink-0" style="color:${co}">${ic}</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-[12px] font-bold text-on-surface truncate">${notif.title || 'New notification'}</p>
+              <p class="text-[11px] text-on-surface-variant line-clamp-2">${msg}</p>
+              <p class="text-[10px] text-on-surface-variant mt-0.5">Just now</p>
+            </div>`;
+          // Remove "loading" placeholder if present
+          const placeholder = list.querySelector('.text-center');
+          if (placeholder) placeholder.remove();
+          list.insertBefore(item, list.firstChild);
+        }
+
+        // Toast
+        PHToast?.info(`🔔 ${msg.substring(0, 60)}`);
+      });
+
+      // Live new post banner (like feed page)
+      let newPostCount = 0;
+      socket.on('post:new', () => {
+        newPostCount++;
+        const feedEl = document.getElementById('recent-feed-list');
+        if (!feedEl) return;
+        let banner = document.getElementById('dash-new-post-banner');
+        if (!banner) {
+          banner = document.createElement('div');
+          banner.id = 'dash-new-post-banner';
+          banner.style.cssText = 'margin:8px 16px;padding:8px 12px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.3);border-radius:10px;font-size:12px;font-weight:700;color:#6366f1;cursor:pointer;text-align:center;';
+          banner.onclick = () => { window.location.href = '/feed'; };
+          feedEl.parentNode.insertBefore(banner, feedEl);
+        }
+        banner.textContent = `🆕 ${newPostCount} new post${newPostCount !== 1 ? 's' : ''} — View Feed`;
+      });
+    }
+  } catch(e) { console.warn('[Dashboard] Socket error:', e); }
 
   /* Live clock for right sidebar */
   function updateClock(){

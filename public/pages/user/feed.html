@@ -1583,7 +1583,7 @@
 
             <button onclick="toggleCommentsSection('${p.id}')" data-comment-btn class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs text-on-surface-variant hover:text-primary transition-all">
               <span class="material-symbols-outlined text-[18px]">chat_bubble</span>
-              <span>Comment (${p.commentsCount || 0})</span>
+              <span>Comment (<span id="comment-count-${p.id}">${p.commentsCount || 0}</span>)</span>
             </button>
 
             <button onclick="sharePost('${p.id}')" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-surface-container-low text-xs text-on-surface-variant hover:text-primary transition-all" title="Copy link to post">
@@ -1879,9 +1879,11 @@
             inp.value = '';
             loadComments(postId);
             // Update comment count badge in action row without full reload
-            const card = document.getElementById(`post-card-${postId}`);
-            const countSpan = card?.querySelector(`[data-comment-btn]`);
-            if (countSpan) countSpan.textContent = 'Comment (' + ((parseInt(countSpan.textContent.replace(/\D/g,''))||0)+1) + ')';
+            const countEl = document.getElementById(`comment-count-${postId}`);
+            if (countEl) {
+              const cur = parseInt(countEl.textContent) || 0;
+              countEl.textContent = cur + 1;
+            }
           }
         } catch(e) {}
       }
@@ -1958,6 +1960,85 @@
               ${newPostsCount} new post${newPostsCount!==1?'s':''} — Click to refresh
             </div>`;
           });
+
+          // Real-time comment count update (no refresh needed)
+          socket.on('post:comment', ({ postId, comment }) => {
+            if (!postId) return;
+            const countEl = document.getElementById(`comment-count-${postId}`);
+            if (countEl) {
+              const cur = parseInt(countEl.textContent) || 0;
+              countEl.textContent = cur + 1;
+            }
+            // Also update in allLoadedPosts array
+            const post = allLoadedPosts.find(p => p.id === postId);
+            if (post) post.commentsCount = (post.commentsCount || 0) + 1;
+
+            // Live append comment if section open
+            const listEl = document.getElementById(`comments-list-${postId}`);
+            if (listEl && comment) {
+              const isHidden = document.getElementById(`comments-section-${postId}`)?.classList.contains('hidden');
+              if (!isHidden) {
+                // Remove placeholder if present
+                if (listEl.innerHTML.includes('No comments yet') || listEl.innerHTML.includes('Loading comments')) {
+                  listEl.innerHTML = '';
+                }
+                // Avoid duplicates
+                if (listEl.querySelector(`[data-comment-id="${comment.id}"]`)) return;
+
+                const name = `${comment.author?.firstName || ''} ${comment.author?.lastName || ''}`.trim() || 'User';
+                const color = getAvatarColor(name);
+                const initials = getInitials(comment.author?.firstName, comment.author?.lastName);
+                const isOwn = comment.author?.id === ME.id || comment.author?.id === ME._id;
+                const commenterId = comment.author?.id || comment.author?._id;
+
+                const html = `<div data-comment-id="${comment.id}" class="flex items-start gap-2.5 p-2 rounded-xl bg-surface-container-low">
+                  <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-white text-[10px] shrink-0 cursor-pointer overflow-hidden" style="background:${color}" onclick="showUserProfile('${commenterId}')" title="View Profile">
+                    ${comment.author?.avatar ? `<img src="${comment.author.avatar}" class="w-full h-full object-cover">` : initials}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                      <span class="font-bold text-[11px] text-on-surface hover:text-primary cursor-pointer transition-colors" onclick="showUserProfile('${commenterId}')" title="View Profile">${escapeHtml(name)}</span>
+                      <div class="flex items-center gap-1.5">
+                        <span class="text-[9px] text-on-surface-variant">${formatTimeAgo(comment.createdAt)}</span>
+                        ${isOwn ? `<button onclick="openEditComment('${postId}','${comment.id}',this)" class="text-outline hover:text-primary text-[11px] px-1 rounded hover:bg-primary/5 transition-colors" title="Edit Comment"><span class="material-symbols-outlined text-[12px]">edit</span></button><button onclick="deleteComment('${postId}', '${comment.id}')" class="text-outline hover:text-error text-[10px]" title="Delete Comment">✕</button>` : ''}
+                      </div>
+                    </div>
+                    <p class="text-xs text-on-surface mt-0.5 leading-relaxed">${escapeHtml(comment.content)}</p>
+                  </div>
+                </div>`;
+                listEl.insertAdjacentHTML('beforeend', html);
+                listEl.scrollTop = listEl.scrollHeight;
+              }
+            }
+          });
+
+          // Real-time comment deletion update
+          socket.on('post:comment-deleted', ({ postId, commentId }) => {
+            if (!postId || !commentId) return;
+            const countEl = document.getElementById(`comment-count-${postId}`);
+            if (countEl) {
+              const cur = parseInt(countEl.textContent) || 0;
+              countEl.textContent = Math.max(0, cur - 1);
+            }
+            const post = allLoadedPosts.find(p => p.id === postId);
+            if (post) post.commentsCount = Math.max(0, (post.commentsCount || 1) - 1);
+
+            const commentEl = document.querySelector(`#comments-list-${postId} [data-comment-id="${commentId}"]`);
+            if (commentEl) {
+              commentEl.remove();
+              const listEl = document.getElementById(`comments-list-${postId}`);
+              if (listEl && listEl.children.length === 0) {
+                listEl.innerHTML = '<div class="text-center py-2 text-xs text-on-surface-variant">No comments yet. Be the first to share!</div>';
+              }
+            }
+          });
+
+          // Real-time notification badge on topbar bell
+          socket.on('notification:new', () => {
+            const badge = document.getElementById('topbar-unread');
+            if (badge) badge.classList.remove('hidden');
+          });
+
         } catch(e) {}
       }
 

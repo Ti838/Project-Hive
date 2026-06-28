@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { broadcastNotification, getIo } from '../services/socket.service.js';
 
 function sanitizeSearch(input) {
   if (!input || typeof input !== 'string') return '';
@@ -136,14 +137,22 @@ export async function postJoinRequest(req, res, next) {
     const { data: jr, error } = await supabaseAdmin.from('join_requests').insert({ team_id: teamId, user_id: userId, message }).select().single();
     if (error) throw error;
 
-    // Notify team leader
+    // Notify team leader — DB + live socket
     const { data: applicant } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
+    const notifTitle = `New join request`;
+    const notifMsg = `${applicant?.first_name} ${applicant?.last_name} requested to join ${team.name}`;
     await supabaseAdmin.from('notifications').insert({
       user_id: team.leader_id,
-      type: 'join_request',
-      title: `New join request`,
-      message: `${applicant?.first_name} ${applicant?.last_name} requested to join ${team.name}`,
+      type: 'team',
+      title: notifTitle,
+      message: notifMsg,
       data: { teamId, userId },
+    });
+    broadcastNotification(getIo(), team.leader_id, {
+      type: 'team',
+      title: notifTitle,
+      message: notifMsg,
+      metadata: { teamId, userId },
     });
 
     res.status(201).json({ message: 'Join request submitted', joinRequest: jr });
@@ -166,14 +175,22 @@ export async function acceptJoinRequest(req, res, next) {
     await supabaseAdmin.from('team_members').insert({ team_id: teamId, user_id: jr.user_id, role: 'member' });
     await supabaseAdmin.from('join_requests').update({ status: 'accepted' }).eq('id', requestId);
 
-    // Notify applicant
+    // Notify applicant — DB + live socket
     const { data: team } = await supabaseAdmin.from('teams').select('name').eq('id', teamId).single();
+    const acceptTitle = 'Join Request Accepted!';
+    const acceptMsg = `You were accepted to join ${team?.name}`;
     await supabaseAdmin.from('notifications').insert({
       user_id: jr.user_id,
-      type: 'team_update',
-      title: 'Join Request Accepted!',
-      message: `You were accepted to join ${team?.name}`,
+      type: 'team',
+      title: acceptTitle,
+      message: acceptMsg,
       data: { teamId },
+    });
+    broadcastNotification(getIo(), jr.user_id, {
+      type: 'team',
+      title: acceptTitle,
+      message: acceptMsg,
+      metadata: { teamId },
     });
 
     // Update stats
@@ -283,14 +300,22 @@ export async function kickMember(req, res, next) {
 
     await supabaseAdmin.from('team_members').delete().eq('team_id', teamId).eq('user_id', memberId);
 
-    // Notify kicked user
+    // Notify kicked user — DB + live socket
     const { data: team } = await supabaseAdmin.from('teams').select('name').eq('id', teamId).single();
+    const kickTitle = 'Removed from Team';
+    const kickMsg = `You have been removed from ${team?.name || 'a team'}`;
     await supabaseAdmin.from('notifications').insert({
       user_id: memberId,
-      type: 'team_update',
-      title: 'Removed from Team',
-      message: `You have been removed from ${team?.name || 'a team'}`,
+      type: 'team',
+      title: kickTitle,
+      message: kickMsg,
       data: { teamId },
+    });
+    broadcastNotification(getIo(), memberId, {
+      type: 'team',
+      title: kickTitle,
+      message: kickMsg,
+      metadata: { teamId },
     });
 
     // Update member stats

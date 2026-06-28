@@ -43,10 +43,13 @@ export async function sendFriendRequest(req, res, next) {
     });
 
     broadcastNotification(getIo(), receiverId, {
-      type: 'friend_request',
+      id: request.id,
+      type: 'friend',
       title,
       message,
-      requestId: request.id,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      metadata: { senderId, requestId: request.id },
     });
 
     res.status(201).json({ message: 'Friend request sent', request });
@@ -85,9 +88,13 @@ export async function acceptFriendRequest(req, res, next) {
     });
 
     broadcastNotification(getIo(), request.from_user_id, {
-      type: 'friend_accepted',
+      id: `friend_accepted_${request.id}_${Date.now()}`,
+      type: 'friend',
       title,
       message,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      metadata: { accepterId: userId },
     });
 
     res.json({ message: 'Friend request accepted' });
