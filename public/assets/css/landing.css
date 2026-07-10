@@ -598,3 +598,37 @@ a { color: inherit; text-decoration: none; }
   .ln-reveal { transition: none; opacity: 1; transform: none; }
   .ln-browser:hover { transform: none; }
 }
+
+/* Desktop Viewport Spacing & Padding Optimization */
+@media (min-width: 1025px) {
+  .ln-hero {
+    padding: calc(var(--nav-h) + 24px) 0 48px !important;
+  }
+  .ln-hero-grid {
+    gap: 48px !important;
+  }
+  .ln-features {
+    padding: 64px 0 40px !important;
+  }
+  .ln-section-title {
+    margin-bottom: 36px !important;
+  }
+  .ln-bento {
+    gap: 16px !important;
+  }
+  .ln-how {
+    padding: 48px 0 !important;
+  }
+  .ln-how-grid {
+    gap: 16px !important;
+  }
+  .ln-step {
+    padding: 24px !important;
+  }
+  .ln-cta {
+    padding: 48px 32px !important;
+  }
+  .ln-cta-box {
+    padding: 48px 40px !important;
+  }
+}

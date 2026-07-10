@@ -80,6 +80,10 @@ svg {
 
 /* Desktop refinement */
 @media (min-width: 769px) {
+  :root {
+    --ph-app-max: 1360px;
+  }
+
   .ph-page > main,
   .ph-content,
   .fp-wrap,
@@ -88,6 +92,112 @@ svg {
   .main-wrap,
   .project-showcase {
     max-width: var(--ph-app-max);
+  }
+
+  /* Compact spacing for page top padding */
+  .ph-page > main,
+  div[class*="ml-[260px]"] > main:not(.msg-chat-area) {
+    padding-top: 80px !important;
+  }
+
+  /* Tighter margins and paddings for page heroes */
+  .hero {
+    padding: 24px 32px 48px !important;
+  }
+  .fp-wrap,
+  .nt-wrap {
+    margin-top: -32px !important;
+  }
+
+  /* Dashboard Viewport Optimization */
+  main.ml-\[260px\] section.accent-gradient {
+    padding: 24px 28px !important;
+    margin-bottom: 20px !important;
+  }
+  main.ml-\[260px\] section.accent-gradient h2 {
+    font-size: 28px !important;
+    margin-bottom: 8px !important;
+  }
+  main.ml-\[260px\] section.accent-gradient p {
+    margin-bottom: 16px !important;
+    font-size: 15px !important;
+  }
+  main.ml-\[260px\] section.accent-gradient button {
+    padding: 8px 20px !important;
+    font-size: 13px !important;
+  }
+
+  /* Dashboard Stats Row Optimization */
+  main.ml-\[260px\] section.accent-gradient + section,
+  main.ml-\[260px\] section:has(#stat-teams) {
+    gap: 16px !important;
+    margin-bottom: 20px !important;
+  }
+  main.ml-\[260px\] section.accent-gradient + section > div,
+  main.ml-\[260px\] section:has(#stat-teams) > div {
+    padding: 16px 20px !important;
+  }
+  main.ml-\[260px\] section.accent-gradient + section span[id^="stat-"],
+  main.ml-\[260px\] section:has(#stat-teams) span[id^="stat-"] {
+    font-size: 28px !important;
+  }
+
+  /* Profile Progress & Quick Actions Spacing */
+  div[style*="padding:28px"] {
+    padding: 20px !important;
+  }
+  div.qa-grid {
+    gap: 10px !important;
+  }
+  .qa-card {
+    padding: 16px 12px !important;
+  }
+  .qa-ic {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 11px !important;
+    font-size: 20px !important;
+  }
+
+  /* Feed Spacing Optimization */
+  #feed-list {
+    gap: 16px !important;
+  }
+  .feed-card-shadow,
+  .post-card {
+    padding: 20px !important;
+  }
+
+  /* Teams Spacing Optimization */
+  div.ph-page main[style*="max-width:1100px"] {
+    max-width: var(--ph-app-max) !important;
+    padding: 24px !important;
+  }
+  div.ph-page main[style*="max-width:1100px"] .teams-stats {
+    margin-bottom: 20px !important;
+  }
+  .teams-grid {
+    gap: 16px !important;
+  }
+
+  /* Showcase Spacing Optimization */
+  div.ml-\[260px\] main.p-8 {
+    padding: 24px !important;
+    max-width: var(--ph-app-max) !important;
+    margin: 0 auto !important;
+  }
+  #projects-grid {
+    gap: 16px !important;
+  }
+
+  /* Saved Items Spacing Optimization */
+  .sv-wrap {
+    padding-top: 16px !important;
+    padding-bottom: 40px !important;
+  }
+  .sv-card {
+    padding: 16px 20px !important;
+    margin-bottom: 10px !important;
   }
 
   .ph-topbar {
