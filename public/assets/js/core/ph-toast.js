@@ -38,7 +38,7 @@ const PHToast = (() => {
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
-        zIndex: '9999',
+        zIndex: '1000000',
         maxWidth: '360px',
         pointerEvents: 'none',
       });

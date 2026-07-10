@@ -85,6 +85,8 @@ html.dark {
 html {
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: var(--bd2) transparent;
 }
 
 body {
@@ -134,6 +136,9 @@ body {
 .ph-card:hover {
   transform: translateY(-3px);
   box-shadow: var(--shadow-lg);
+}
+.ph-card:active {
+  transform: translateY(-1px) scale(0.995);
 }
 .ph-card-static {
   background: var(--sf);
@@ -187,6 +192,14 @@ body {
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(99,102,241,.3);
 }
+.ph-btn:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: 0 2px 8px rgba(99,102,241,.2);
+}
+.ph-btn:focus-visible {
+  outline: 2px solid var(--ac);
+  outline-offset: 2px;
+}
 .ph-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
 
 .ph-btn-outline {
@@ -207,6 +220,13 @@ body {
   line-height: 1;
 }
 .ph-btn-outline:hover { background: var(--sf2); border-color: var(--bd2); }
+.ph-btn-outline:active {
+  transform: translateY(1px) scale(0.985);
+}
+.ph-btn-outline:focus-visible {
+  outline: 2px solid var(--ac);
+  outline-offset: 2px;
+}
 
 .ph-btn-danger {
   background: var(--red);

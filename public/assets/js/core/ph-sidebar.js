@@ -304,8 +304,18 @@ const PHSidebar = (() => {
     document.body.style.overflow = '';
   }
 
+  function ensureMobileFixesStyles() {
+    if (document.getElementById('ph-mobile-fixes-css')) return;
+    const link = document.createElement('link');
+    link.id = 'ph-mobile-fixes-css';
+    link.rel = 'stylesheet';
+    link.href = '/assets/css/mobile-fixes.css?v=2';
+    document.head.appendChild(link);
+  }
+
   function init(active, base = '../../') {
     ensureUserPolishStyles();
+    ensureMobileFixesStyles();
     // Theme init first (idempotent) — supports 'system', 'dark', 'light'
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
@@ -829,18 +839,15 @@ const PHSidebar = (() => {
     }
   }
 
-  // ══ Premium Mobile Bottom Navigation Bar (with center AI button) ═══════════
+  // ══ Premium Mobile Bottom Navigation Bar ══════════════════════════════════
   function buildBottomNav(active, base) {
     if (document.getElementById('ph-bottom-nav')) return; // already injected
 
-    // 6 items: Home, Feed, [AI Center], Chat, Alerts, Profile
     const items = [
       { key: 'dashboard', href: '/dashboard', label: 'Home',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>` },
-      { key: 'feed', href: '/feed', label: 'Feed',
-        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9"/><path d="M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/></svg>` },
-      { key: 'ai-center', href: '/generator', label: 'AI', isCenter: true,
-        icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 2L13.09 8.26L19 6L15.45 11.09L22 12L15.45 12.91L19 18L13.09 15.74L12 22L10.91 15.74L5 18L8.55 12.91L2 12L8.55 11.09L5 6L10.91 8.26L12 2Z"/></svg>` },
+      { key: 'showcase', href: '/showcase', label: 'Projects',
+        icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>` },
       { key: 'messages', href: '/messages', label: 'Chat',
         icon: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>` },
       { key: 'notifications', href: '/notifications', label: 'Alerts',
@@ -854,14 +861,8 @@ const PHSidebar = (() => {
     nav.setAttribute('aria-label', 'Mobile navigation');
     nav.innerHTML = items.map(item => {
       const isActive = item.key === active;
-      if (item.isCenter) {
-        return `<button class="ph-bn-center" id="ph-bn-ai-btn" title="AI Chat" aria-label="Open AI Chat">
-          <div class="ph-bn-center-ring"></div>
-          ${item.icon}
-        </button>`;
-      }
       if (item.isSheet) {
-        return `<button class="ph-bn-item" id="ph-bn-profile-btn" data-key="profile" title="${item.label}">
+        return `<button class="ph-bn-item${active === 'profile' ? ' active' : ''}" id="ph-bn-profile-btn" data-key="profile" title="${item.label}">
           ${item.icon}
           <span>${item.label}</span>
         </button>`;
@@ -874,19 +875,6 @@ const PHSidebar = (() => {
 
     document.body.appendChild(nav);
 
-    // Wire center AI button
-    const aiBtn = document.getElementById('ph-bn-ai-btn');
-    if (aiBtn) {
-      aiBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (typeof toggleAIPopup === 'function') {
-          toggleAIPopup();
-        } else {
-          window.location.href = '/generator';
-        }
-      });
-    }
-
     // Wire Profile bottom sheet
     const profileBtn = document.getElementById('ph-bn-profile-btn');
     if (profileBtn) {
@@ -898,6 +886,14 @@ const PHSidebar = (() => {
 
     // Build profile bottom sheet HTML
     buildProfileSheet();
+  }
+
+  function showComingSoon(feature) {
+    if (typeof PHToast !== 'undefined' && PHToast.info) {
+      PHToast.info(`${feature} feature coming soon!`);
+    } else {
+      alert(`${feature} feature coming soon!`);
+    }
   }
 
   function buildProfileSheet() {
@@ -928,7 +924,7 @@ const PHSidebar = (() => {
 
     const sheet = document.createElement('div');
     sheet.id = 'ph-profile-sheet';
-    sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:var(--sf,#fff);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,1.28,.58,1);padding:0;box-shadow:0 -8px 40px rgba(0,0,0,.18);max-height:60vh;overflow-y:auto;';
+    sheet.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:99999;background:var(--sf,#fff);border-radius:20px 20px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,1.28,.58,1);padding:0;box-shadow:0 -8px 40px rgba(0,0,0,.18);max-height:85vh;overflow-y:auto;';
 
     sheet.innerHTML = `
       <div style="display:flex;justify-content:center;padding:10px 0 4px">
@@ -940,25 +936,45 @@ const PHSidebar = (() => {
         </div>
         <div style="min-width:0;flex:1">
           <div style="font-size:15px;font-weight:700;color:var(--tx,#111)">${userName}</div>
-          <div style="font-size:12px;color:var(--sub,#64748b)">Manage your account</div>
+          <div style="font-size:12px;color:var(--sub,#64748b)">ProjectHive Hub</div>
         </div>
       </div>
-      <div style="padding:8px 12px 20px">
-        <a href="/profile" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
-          <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">person</span>My Profile
+      <div style="padding:8px 12px 20px;display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;">
+        <a href="/profile" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">person</span>Profile
         </a>
-        <a href="/settings" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
-          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">settings</span>Settings
+        <a href="/teams" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">groups</span>Teams
         </a>
-        <a href="/saved" class="ph-ps-item" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600">
+        <a href="/messages" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#10b981">video_call</span>Meetings
+        </a>
+        <a href="/generator" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#f59e0b">auto_awesome</span>AI Assistant
+        </a>
+        <button onclick="PHSidebar.showComingSoon('Calendar')" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:none;background:none;text-align:left;color:var(--tx,#111);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">calendar_month</span>Calendar
+        </button>
+        <button onclick="PHSidebar.showComingSoon('Files')" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:none;background:none;text-align:left;color:var(--tx,#111);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">folder</span>Files
+        </button>
+        <button onclick="PHSidebar.showComingSoon('Tasks')" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:none;background:none;text-align:left;color:var(--tx,#111);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">task_alt</span>Tasks
+        </button>
+        <a href="/saved" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">bookmark</span>Saved
         </a>
-        <button id="ph-ps-theme" data-theme-wired="1" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:14px;font-weight:600;font-family:inherit;text-align:left;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none">
+        <a href="/settings" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">settings</span>Settings
+        </a>
+        <a href="/pages/info/help.html" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">help</span>Help
+        </a>
+        <button id="ph-ps-theme" data-theme-wired="1" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600;font-family:inherit;text-align:left;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none">
           <span class="material-symbols-outlined" id="ph-ps-theme-icon" style="font-size:20px;color:var(--sub,#64748b)">${themeIcon}</span>
           <span id="ph-ps-theme-label">${themeLabel}</span>
         </button>
-        <div style="height:1px;background:var(--bd,#e2e8f0);margin:4px 12px"></div>
-        <button id="ph-ps-logout" style="display:flex;align-items:center;gap:12px;padding:14px 12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:#ef4444;transition:background .15s;min-height:48px;font-size:14px;font-weight:700;font-family:inherit;text-align:left">
+        <button id="ph-ps-logout" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:#ef4444;transition:background .15s;min-height:48px;font-size:13px;font-weight:700;font-family:inherit;text-align:left">
           <span class="material-symbols-outlined" style="font-size:20px">logout</span>Sign Out
         </button>
       </div>
@@ -2024,11 +2040,42 @@ const PHSidebar = (() => {
   }
 
   // Auto-start keep-alive when sidebar initializes (i.e. user is on an authenticated page)
+  function initConnectionMonitor() {
+    let banner = document.getElementById('ph-conn-banner');
+    if (!banner) {
+      banner = document.createElement('div');
+      banner.id = 'ph-conn-banner';
+      banner.className = 'ph-conn-banner';
+      document.body.appendChild(banner);
+    }
+
+    function showOffline() {
+      banner.className = 'ph-conn-banner visible offline';
+      banner.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">cloud_off</span><span>Connection lost. Reconnecting...</span>';
+    }
+
+    function showOnline() {
+      banner.className = 'ph-conn-banner visible online';
+      banner.innerHTML = '<span class="material-symbols-outlined" style="font-size: 18px;">cloud_done</span><span>Connected!</span>';
+      setTimeout(() => {
+        banner.classList.remove('visible');
+      }, 2000);
+    }
+
+    window.addEventListener('offline', showOffline);
+    window.addEventListener('online', showOnline);
+
+    if (!navigator.onLine) {
+      showOffline();
+    }
+  }
+
   const _origInit = init;
   function initWithKeepAlive(active, base) {
     _origInit(active, base);
     startKeepAlive();
     initLightbox();
+    initConnectionMonitor();
     initGlobalAIPopup(active === 'dashboard');
     // D4: Restore sidebar collapse state from localStorage (desktop only)
     if (window.innerWidth >= 769 && localStorage.getItem('ph-sidebar-collapsed') === 'true') {
@@ -2036,5 +2083,5 @@ const PHSidebar = (() => {
     }
   }
 
-  return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest, showLogoutModal, openLightbox, closeLightbox };
+  return { init: initWithKeepAlive, logout, toggleTheme, openDrawer, closeDrawer, toggleCollapse, showUserProfile, closeGlobalProfile, sendFriendRequestGlobal, respondToRequest, showLogoutModal, openLightbox, closeLightbox, showComingSoon };
 })();

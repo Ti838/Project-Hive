@@ -238,7 +238,7 @@
   <div class="ph-card" style="width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:0">
     <div style="padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--sf);z-index:1">
       <h3 style="font-size:16px;font-weight:800;margin:0" id="td-title">Team Details</h3>
-      <button onclick="closeTeamDetailsModal()" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
+      <button onclick="closeTeamDetailsModal()" aria-label="Close" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
     </div>
     <div style="padding:24px;display:flex;flex-direction:column;gap:20px" id="td-content">
       <!-- Dynamic detail content -->
@@ -252,7 +252,7 @@
   <div class="ph-card" style="width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:0">
     <div style="padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--sf);z-index:1">
       <h3 style="font-size:16px;font-weight:800;margin:0">Edit Team</h3>
-      <button onclick="closeEditModal()" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
+      <button onclick="closeEditModal()" aria-label="Close" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
     </div>
     <form id="edit-team-form" style="padding:24px;display:flex;flex-direction:column;gap:16px">
       <input type="hidden" id="edit-tid">

@@ -27,7 +27,7 @@
   .save-btn { border-radius: 12px; }
 }
 </style>
-</head><body class="ph-page-bg" data-no-float-theme="1"><div id="ph-sidebar"></div><div class="ph-page"><div class="ph-topbar"><a href="/dashboard" style="color:var(--sub);display:flex;align-items:center;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--sub)'"><span style="font-family:'Material Symbols Outlined'">arrow_back</span></a><span style="font-family:'Material Symbols Outlined';color:var(--ac)">settings</span><h1 style="font-size:16px;font-weight:800;margin:0;flex:1;color:var(--tx)">Settings</h1></div>
+</head><body class="ph-page-bg" data-no-float-theme="1"><div id="ph-sidebar"></div><div class="ph-page"><div class="ph-topbar"><a href="/dashboard" aria-label="Go Back" style="color:var(--sub);display:flex;align-items:center;text-decoration:none;transition:color .15s" onmouseover="this.style.color='var(--ac)'" onmouseout="this.style.color='var(--sub)'"><span style="font-family:'Material Symbols Outlined'">arrow_back</span></a><span style="font-family:'Material Symbols Outlined';color:var(--ac)">settings</span><h1 style="font-size:16px;font-weight:800;margin:0;flex:1;color:var(--tx)">Settings</h1></div>
 
 <div class="tabs-wrap" style="margin-top: 15px;">
   <button class="stab on" onclick="showSec('account',this)"><span class="si">person</span>Account</button>
@@ -42,14 +42,14 @@
 <!-- Account -->
 <div id="sec-account" class="sec on">
 <div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(99,102,241,.1);color:#6366f1">person</div><div><h2>Account Settings</h2><p>Update your personal information</p></div></div><div class="fc-body">
-<form id="form-acc"><div style="display:grid;grid-template-columns:1fr 1fr;gap:13px"><div class="fi-wrap"><span class="fi-lbl">First Name</span><input id="s-fn" class="fi" placeholder="First name"></div><div class="fi-wrap"><span class="fi-lbl">Last Name</span><input id="s-ln" class="fi" placeholder="Last name"></div><div class="fi-wrap" style="grid-column:1/-1"><span class="fi-lbl">Email (Read-only)</span><input id="s-em" class="fi" disabled style="opacity: 0.6; cursor: not-allowed; background: var(--bg-hover);"></div><div class="fi-wrap" style="grid-column:1/-1"><span class="fi-lbl">University</span><input id="s-uni" class="fi" placeholder="Your university"></div><div class="fi-wrap" style="grid-column:1/-1"><span class="fi-lbl">Bio</span><textarea id="s-bio" rows="4" class="fi" placeholder="Tell people about yourself…"></textarea></div></div><button type="submit" id="btn-acc" class="save-btn" style="margin-top: 20px;"><span style="font-family:'Material Symbols Outlined';font-size:20px">save</span>Save Account Details</button></form>
+<form id="form-acc"><div style="display:grid;grid-template-columns:1fr 1fr;gap:13px"><div class="fi-wrap"><label for="s-fn" class="fi-lbl">First Name</label><input id="s-fn" class="fi" placeholder="First name"></div><div class="fi-wrap"><label for="s-ln" class="fi-lbl">Last Name</label><input id="s-ln" class="fi" placeholder="Last name"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-em" class="fi-lbl">Email (Read-only)</label><input id="s-em" class="fi" disabled style="opacity: 0.6; cursor: not-allowed; background: var(--bg-hover);"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-uni" class="fi-lbl">University</label><input id="s-uni" class="fi" placeholder="Your university"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-bio" class="fi-lbl">Bio</label><textarea id="s-bio" rows="4" class="fi" placeholder="Tell people about yourself…"></textarea></div></div><button type="submit" id="btn-acc" class="save-btn" style="margin-top: 20px;"><span style="font-family:'Material Symbols Outlined';font-size:20px">save</span>Save Account Details</button></form>
 </div></div>
 </div>
 
 <!-- Security -->
 <div id="sec-security" class="sec">
 <div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(16,185,129,.1);color:#10b981">lock_reset</div><div><h2>Change Password</h2><p>Use a strong unique password</p></div></div><div class="fc-body">
-<form id="form-pw"><div style="display:flex;flex-direction:column;gap:13px"><div class="fi-wrap"><span class="fi-lbl">Current Password</span><input id="s-op" type="password" class="fi" placeholder="••••••••"></div><div class="fi-wrap"><span class="fi-lbl">New Password</span><input id="s-np" type="password" class="fi" placeholder="Min. 8 characters"></div><div class="fi-wrap"><span class="fi-lbl">Confirm New Password</span><input id="s-cp" type="password" class="fi" placeholder="••••••••"></div></div><button type="submit" id="btn-pw" class="save-btn" style="margin-top: 20px; background: #10b981; border-color: #10b981;"><span style="font-family:'Material Symbols Outlined';font-size:20px">lock</span>Update Password</button></form>
+<form id="form-pw"><div style="display:flex;flex-direction:column;gap:13px"><div class="fi-wrap"><label for="s-op" class="fi-lbl">Current Password</label><input id="s-op" type="password" class="fi" placeholder="••••••••"></div><div class="fi-wrap"><label for="s-np" class="fi-lbl">New Password</label><input id="s-np" type="password" class="fi" placeholder="Min. 8 characters"></div><div class="fi-wrap"><label for="s-cp" class="fi-lbl">Confirm New Password</label><input id="s-cp" type="password" class="fi" placeholder="••••••••"></div></div><button type="submit" id="btn-pw" class="save-btn" style="margin-top: 20px; background: #10b981; border-color: #10b981;"><span style="font-family:'Material Symbols Outlined';font-size:20px">lock</span>Update Password</button></form>
 </div></div>
 </div>
 
@@ -114,7 +114,7 @@
 <div style="padding: 15px; border-radius: 12px; background: rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2);">
 <h3 style="font-size:14px;font-weight:700;color:#ef4444;margin:0 0 5px 0;">Delete Account</h3>
 <p style="font-size:12px;color:var(--sub);margin:0 0 15px 0;">Once you delete your account, all your data will be permanently removed. Please be certain.</p>
-<div class="fi-wrap" style="margin-bottom:12px"><span class="fi-lbl">Type your email to confirm</span><input id="s-del-confirm" class="fi" placeholder="your@email.com" type="email"></div>
+<div class="fi-wrap" style="margin-bottom:12px"><label for="s-del-confirm" class="fi-lbl">Type your email to confirm</label><input id="s-del-confirm" class="fi" placeholder="your@email.com" type="email"></div>
 <button type="button" id="btn-del" onclick="deleteAccount()" style="padding: 10px 16px; border-radius: 8px; background: #ef4444; color: #fff; font-size: 13px; font-weight: 700; border: none; cursor: pointer;">Delete my account</button>
 </div>
 </div></div>

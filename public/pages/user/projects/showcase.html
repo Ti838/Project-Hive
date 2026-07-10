@@ -46,7 +46,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
 <div class="ml-[260px] min-h-screen max-md:ml-0">
   <header class="sticky top-0 z-40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-8 h-16 flex items-center gap-4 max-md:px-4">
     <div id="ph-hamburger-slot"></div>
-    <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors shrink-0 text-gray-700 dark:text-gray-300" title="Go Back">
+    <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors shrink-0 text-gray-700 dark:text-gray-300" title="Go Back" aria-label="Go Back">
       <span class="material-symbols-outlined text-[20px]">arrow_back</span>
     </button>
     <span class="material-symbols-outlined text-indigo-500 hidden md:block">star</span>
@@ -88,7 +88,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
   <div class="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="p-5 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-900">
       <h3 class="font-bold">Submit Your Project</h3>
-      <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+      <button onclick="closeModal()" aria-label="Close" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>

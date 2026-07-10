@@ -252,7 +252,7 @@
     <header class="h-16 bg-white dark:bg-darkSurface-panel border-b border-gray-200 dark:border-darkSurface-border flex items-center px-6 gap-4 shrink-0 z-30 shadow-sm">
       <div id="ph-hamburger-slot" class="md:hidden"></div>
 
-      <button onclick="history.back()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card transition-all shrink-0 text-gray-600 dark:text-gray-400 hover:text-indigo-500" title="Go Back">
+      <button onclick="history.back()" class="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card transition-all shrink-0 text-gray-600 dark:text-gray-400 hover:text-indigo-500" title="Go Back" aria-label="Go Back">
         <span class="material-symbols-outlined text-[20px]">arrow_back</span>
       </button>
 
@@ -606,14 +606,10 @@
         <!-- Jitsi container -->
         <div id="jitsi-container" class="w-full h-full"></div>
 
-        <!-- WebRTC Video container -->
-        <div id="webrtc-container" class="hidden absolute inset-0 w-full h-full relative flex items-center justify-center">
-
-          <!-- Remote Video (Full Screen) -->
-          <video id="webrtc-remote-video" autoplay playsinline class="w-full h-full object-cover"></video>
-
-          <!-- Voice-Only Avatar Display - Mobile Responsive -->
-          <div id="voice-only-display" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d] z-10 px-4">
+        <!-- Calling Waiting/Ringing display -->
+        <div id="webrtc-container" class="hidden absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d]">
+          <!-- Voice-Only Avatar Display / Waiting Screen -->
+          <div id="voice-only-display" class="flex flex-col items-center justify-center px-4">
             <div id="voice-avatar" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl sm:text-4xl font-extrabold shadow-2xl mb-4 sm:mb-6 relative">
               <span id="voice-avatar-text">?</span>
               <div class="absolute inset-0 rounded-full border-4 border-indigo-400/30 animate-ping" style="animation-duration:2s"></div>
@@ -624,19 +620,14 @@
               <div class="w-1 sm:w-1.5 h-4 sm:h-6 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.6s;animation-delay:0.1s"></div>
               <div class="w-1 sm:w-1.5 h-2 sm:h-3 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.9s;animation-delay:0.2s"></div>
               <div class="w-1 sm:w-1.5 h-3 sm:h-5 bg-indigo-400 rounded-full animate-pulse" style="animation-duration:0.7s;animation-delay:0.3s"></div>
-              <span class="text-[9px] sm:text-[10px] font-bold text-indigo-300 ml-1 uppercase tracking-widest">Voice Active</span>
+              <span id="waiting-status-label" class="text-[9px] sm:text-[10px] font-bold text-indigo-300 ml-1 uppercase tracking-widest animate-pulse">Ringing</span>
             </div>
-          </div>
-
-          <!-- Local Video (Floating Bubble) - Mobile Responsive -->
-          <div id="local-video-bubble" class="absolute bottom-20 sm:bottom-24 right-3 sm:right-5 w-24 h-32 sm:w-32 sm:h-44 md:w-40 md:h-56 rounded-xl sm:rounded-2xl overflow-hidden border-2 border-white/20 shadow-2xl z-20 bg-gray-900">
-            <video id="webrtc-local-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
           </div>
         </div>
       </div>
 
       <!-- Call Control Bar - Mobile Responsive with safe area -->
-      <div class="absolute bottom-0 left-0 right-0 z-20 flex justify-center items-center gap-2 sm:gap-4 p-4 sm:p-6 pb-safe bg-gradient-to-t from-black/90 to-transparent">
+      <div id="call-control-bar" class="absolute bottom-0 left-0 right-0 z-20 flex justify-center items-center gap-2 sm:gap-4 p-4 sm:p-6 pb-safe bg-gradient-to-t from-black/90 to-transparent">
         <button id="btn-mute" onclick="toggleMute()" class="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation" title="Mute Microphone">
           <span class="material-symbols-outlined text-lg sm:text-xl" id="mute-icon">mic</span>
         </button>
@@ -2869,10 +2860,6 @@
           }, 30000);
         });
 
-        socket.on('webrtc:signal', data => {
-          handleWebRTCSignal(data);
-        });
-
         socket.on('call:error', data => {
           showToast(data.message || 'Call failed to establish', 'error');
           endCall();
@@ -2951,136 +2938,19 @@
 
       let jitsiApiInstance = null;
       let activeCallRoom = null;
-
-      // WebRTC Engine Configuration
-      let localStream = null;
-      let peerConnection = null;
-      let isWebRTCCall = false;
-      let incomingCallIsWebRTC = false;
+      let incomingCallerId = null;
       let incomingCallIsVoiceOnly = false;
-      let pendingSdpOffer = null;
-      let pendingIceCandidates = []; // Bug 1 fix: queue ICE candidates during ringing
-      let incomingCallerId = null; // Bug #6 fix: store actual caller ID from incoming event
-
-      // WebRTC ICE Server Configuration
-      // Multiple STUN servers for redundancy + static TURN as immediate fallback
-      // fetchTurnCredentials() upgrades to HMAC-signed credentials from server
-      const rtcConfig = {
-        iceServers: [
-          // Google STUN (most reliable, global)
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun1.l.google.com:19302' },
-          { urls: 'stun:stun2.l.google.com:19302' },
-          { urls: 'stun:stun3.l.google.com:19302' },
-          // Cloudflare STUN (fast, low latency)
-          { urls: 'stun:stun.cloudflare.com:3478' },
-          // Metered STUN
-          { urls: 'stun:stun.relay.metered.ca:80' },
-          // ── Static TURN fallback (works immediately, no server round-trip needed) ──
-          // These are Metered.ca Open Relay — limited but functional for most cases
-          { urls: 'turn:global.relay.metered.ca:80',      username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turn:global.relay.metered.ca:443',     username: 'openrelayproject', credential: 'openrelayproject' },
-          { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-        ],
-        iceCandidatePoolSize: 10,
-        iceTransportPolicy: 'all'  // Try direct P2P first, relay as last resort
-      };
-
-      // Upgrade to HMAC-signed TURN credentials from server (more reliable)
-      async function fetchTurnCredentials() {
-        try {
-          const API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
-            ? '/api' : 'https://projecthive-backend.onrender.com/api';
-          const res = await fetch(API + '/turn-credentials', {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('access_token') }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            if (data.iceServers && data.iceServers.length > 0) {
-              rtcConfig.iceServers = data.iceServers;
-              console.log('[WebRTC] ✅ Dynamic HMAC TURN credentials loaded (' + data.iceServers.length + ' servers)');
-            }
-          }
-        } catch(e) {
-          // Non-fatal: static TURN already set above
-          console.log('[WebRTC] ⚠️ Using static TURN fallback (server unreachable)');
-        }
-      }
-      // Try to load dynamic credentials on page load
-      fetchTurnCredentials();
-
-      // Check if browser supports WebRTC
-      function checkCallCapability() {
-        if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-          showToast('⚠️ Calling requires HTTPS. Please use the production URL.', 'error');
-          return false;
-        }
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          showToast('⚠️ Your browser does not support calling. Try Chrome or Safari.', 'error');
-          return false;
-        }
-        if (!window.RTCPeerConnection) {
-          showToast('⚠️ WebRTC not supported in this browser.', 'error');
-          return false;
-        }
-        return true;
-      }
-
-      // Safe media getter — tries ideal constraints, falls back gracefully
-      async function getMedia(voiceOnly) {
-        // Try ideal constraints first
-        const ideal = {
-          audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 48000 },
-          video: voiceOnly ? false : { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
-        };
-        try {
-          return await navigator.mediaDevices.getUserMedia(ideal);
-        } catch(err) {
-          // Camera not found or denied — fall back to audio-only for video calls
-          if (!voiceOnly && (err.name === 'NotFoundError' || err.name === 'OverconstrainedError' || err.name === 'NotReadableError')) {
-            showToast('📷 Camera unavailable — switching to voice only.', 'info');
-            return await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
-          }
-          // Re-throw for caller to handle (e.g. NotAllowedError)
-          throw err;
-        }
-      }
-
-      // Human-readable permission error handler
-      function handleMediaError(err) {
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-          if (isMobile) {
-            showToast('🎙️ Allow mic/camera: tap the lock icon in your browser address bar → Site settings → Allow.', 'error');
-          } else {
-            showToast('🎙️ Mic/Camera blocked. Click the camera icon in the address bar and allow access, then try again.', 'error');
-          }
-        } else if (err.name === 'NotFoundError') {
-          showToast('🎙️ No microphone found. Please connect a mic and try again.', 'error');
-        } else if (err.name === 'NotReadableError') {
-          showToast('🎙️ Mic/Camera already in use by another app. Close it and try again.', 'error');
-        } else {
-          showToast('⚠️ Could not access mic/camera: ' + err.message, 'error');
-        }
-      }
-
-      // Safe autoplay helper for mobile browsers
-      function safePlay(videoEl) {
-        if (!videoEl) return;
-        const p = videoEl.play();
-        if (p && typeof p.catch === 'function') {
-          p.catch(() => {
-            // Autoplay blocked — unmute and try again (mobile quirk)
-            videoEl.muted = true;
-            videoEl.play().catch(() => {});
-          });
-        }
-      }
-
-      // Store pending call info until receiver accepts
-      let pendingCallTarget = null;
       let pendingCallVoiceOnly = false;
+      let currentVoiceOnly = false;
+
+      // Safe autoplay helper for media elements
+      function safePlay(audioEl) {
+        if (!audioEl) return;
+        const p = audioEl.play();
+        if (p && typeof p.catch === 'function') {
+          p.catch(() => {});
+        }
+      }
 
       window.startCall = async function() {
         if (!activeConv) return;
@@ -3089,24 +2959,29 @@
           showToast('You must be friends first to call!', 'error');
           return;
         }
-        // Use safe alphanumeric room ID for Jitsi
         const roomId = 'PH-' + [ME.id, friendId].sort().join('x').replace(/[^a-zA-Z0-9]/g, '');
         const friendOnline = activeConv.friend?.onlineStatus === 'online';
 
-        // Show waiting UI while receiver picks up
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
+        
         setupVoiceOnlyUI(false);
         startOutgoingRing();
         setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
 
         activeCallRoom = roomId;
         pendingCallVoiceOnly = false;
+        currentVoiceOnly = false;
 
         if (socket) {
-          // isWebRTC: false → both sides will use Jitsi
-          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: false, isVoiceOnly: false });
+          socket.emit('call:initiate', {
+            roomId,
+            targetId: friendId,
+            callerName: localStorage.getItem('ph-sb-name') || 'Teammate',
+            isWebRTC: false,
+            isVoiceOnly: false
+          });
         }
       };
 
@@ -3123,65 +2998,72 @@
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
+        
         setupVoiceOnlyUI(true);
         startOutgoingRing();
         setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
 
         activeCallRoom = roomId;
         pendingCallVoiceOnly = true;
+        currentVoiceOnly = true;
 
         if (socket) {
-          socket.emit('call:initiate', { roomId, targetId: friendId, callerName: localStorage.getItem('ph-sb-name') || 'Teammate', isWebRTC: false, isVoiceOnly: true });
+          socket.emit('call:initiate', {
+            roomId,
+            targetId: friendId,
+            callerName: localStorage.getItem('ph-sb-name') || 'Teammate',
+            isWebRTC: false,
+            isVoiceOnly: true
+          });
         }
       };
 
       let isMuted = false;
       let isCameraOff = false;
-      let currentVoiceOnly = false;
+      let isSharingScreen = false;
 
-      window.toggleMute = function() {
-        if (!localStream) return;
-        isMuted = !isMuted;
-        localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
+      function updateCustomControlButtons() {
         const muteBtn = document.getElementById('btn-mute');
         const muteIcon = document.getElementById('mute-icon');
         if (muteBtn && muteIcon) {
           muteIcon.textContent = isMuted ? 'mic_off' : 'mic';
-          muteBtn.style.background = isMuted ? 'rgba(244,63,94,0.3)' : 'rgba(255,255,255,0.1)';
+          muteBtn.className = isMuted 
+            ? "w-11 h-11 sm:w-12 sm:h-12 bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-rose-500/20 shadow-lg shadow-rose-600/20 touch-manipulation" 
+            : "w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation";
         }
-      };
 
-      window.toggleCamera = function() {
-        if (!localStream) return;
-        isCameraOff = !isCameraOff;
-        localStream.getVideoTracks().forEach(t => t.enabled = !isCameraOff);
         const camBtn = document.getElementById('btn-camera');
         const camIcon = document.getElementById('camera-icon');
         if (camBtn && camIcon) {
           camIcon.textContent = isCameraOff ? 'videocam_off' : 'videocam';
-          camBtn.style.background = isCameraOff ? 'rgba(244,63,94,0.3)' : 'rgba(255,255,255,0.1)';
+          camBtn.className = isCameraOff 
+            ? "w-11 h-11 sm:w-12 sm:h-12 bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-rose-500/20 shadow-lg shadow-rose-600/20 touch-manipulation" 
+            : "w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation";
+        }
+
+        const screenBtn = document.getElementById('btn-screenshare');
+        if (screenBtn) {
+          screenBtn.className = isSharingScreen 
+            ? "w-11 h-11 sm:w-12 sm:h-12 bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-emerald-500/20 shadow-lg shadow-emerald-600/20 touch-manipulation" 
+            : "w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation";
+        }
+      }
+
+      window.toggleMute = function() {
+        if (jitsiApiInstance) {
+          jitsiApiInstance.executeCommand('toggleAudio');
         }
       };
 
-      window.toggleScreenShare = async function() {
-        if (!peerConnection || !localStream) return;
-        try {
-          const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-          const screenTrack = screenStream.getVideoTracks()[0];
-          const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-          if (sender) {
-            await sender.replaceTrack(screenTrack);
-            document.getElementById('webrtc-local-video').srcObject = screenStream;
-            screenTrack.onended = () => {
-              const localVideoTrack = localStream.getVideoTracks()[0];
-              if (localVideoTrack && sender) {
-                sender.replaceTrack(localVideoTrack);
-                document.getElementById('webrtc-local-video').srcObject = localStream;
-              }
-            };
-          }
-        } catch(e) {
-          showToast('Screen sharing not active or cancelled', 'info');
+      window.toggleCamera = function() {
+        if (jitsiApiInstance) {
+          jitsiApiInstance.executeCommand('toggleVideo');
+        }
+      };
+
+      window.toggleScreenShare = function() {
+        if (jitsiApiInstance) {
+          jitsiApiInstance.executeCommand('toggleShareScreen');
         }
       };
 
@@ -3200,254 +3082,35 @@
           if (text) { text.textContent = 'Calling (may be offline)...'; text.className = 'text-rose-400 text-xs font-bold'; }
         } else {
           if (dot) { dot.className = 'w-2 h-2 rounded-full bg-indigo-400 animate-pulse'; }
-          if (text) { text.textContent = 'Negotiating...'; text.className = 'text-indigo-400 text-xs font-bold'; }
+          if (text) { text.textContent = 'Connecting...'; text.className = 'text-indigo-400 text-xs font-bold'; }
         }
       }
 
       function setupVoiceOnlyUI(voiceOnly) {
         currentVoiceOnly = voiceOnly;
         const voiceDisplay = document.getElementById('voice-only-display');
-        const localBubble = document.getElementById('local-video-bubble');
         const callTypeIcon = document.getElementById('call-type-icon');
+        const muteBtn = document.getElementById('btn-mute');
         const camBtn = document.getElementById('btn-camera');
+        const screenBtn = document.getElementById('btn-screenshare');
 
-        if (voiceOnly) {
-          if (voiceDisplay) voiceDisplay.classList.remove('hidden');
-          if (localBubble) localBubble.classList.add('hidden');
-          if (callTypeIcon) callTypeIcon.textContent = 'call';
-          if (camBtn) camBtn.style.display = 'none';
+        // During calling/waiting, mute, camera and screenshare are not yet active
+        if (muteBtn) muteBtn.style.display = 'none';
+        if (camBtn) camBtn.style.display = 'none';
+        if (screenBtn) screenBtn.style.display = 'none';
 
-          const f = activeConv?.friend || {};
-          const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
-          const voiceAvText = document.getElementById('voice-avatar-text');
-          const voiceCallerName = document.getElementById('voice-caller-name');
-          if (voiceAvText) voiceAvText.textContent = ini(f.firstName, f.lastName);
-          if (voiceCallerName) voiceCallerName.textContent = name;
-        } else {
-          if (voiceDisplay) voiceDisplay.classList.add('hidden');
-          if (localBubble) localBubble.classList.remove('hidden');
-          if (callTypeIcon) callTypeIcon.textContent = 'videocam';
-          if (camBtn) camBtn.style.display = '';
-        }
-      }
+        if (voiceDisplay) voiceDisplay.classList.remove('hidden');
+        if (callTypeIcon) callTypeIcon.textContent = voiceOnly ? 'call' : 'videocam';
 
-      // ─── SHARED: Creates a configured RTCPeerConnection with all event handlers ───
-      function createPeerConnection(targetUserId, voiceOnly) {
-        if (peerConnection) {
-          try { peerConnection.close(); } catch(_) {}
-          peerConnection = null;
-        }
-
-        const pc = new RTCPeerConnection(rtcConfig);
-
-        // ⚡ CRITICAL: Attach ontrack BEFORE any SDP exchange
-        pc.ontrack = (event) => {
-          console.log('[WebRTC] ✅ ontrack fired, streams:', event.streams.length);
-          const remoteVideo = document.getElementById('webrtc-remote-video');
-          if (remoteVideo && event.streams && event.streams[0]) {
-            remoteVideo.srcObject = event.streams[0];
-            remoteVideo.muted = false;
-            safePlay(remoteVideo);
-            setCallConnectionStatus('connected');
-            startCallTimer();
-          }
-        };
-
-        pc.onicecandidate = (event) => {
-          if (event.candidate && socket) {
-            socket.emit('webrtc:signal', { targetId: targetUserId, signal: { candidate: event.candidate } });
-          } else if (!event.candidate) {
-            console.log('[WebRTC] ICE gathering complete');
-          }
-        };
-
-        pc.oniceconnectionstatechange = () => {
-          const state = pc.iceConnectionState;
-          console.log('[WebRTC] ICE state:', state);
-          if (state === 'failed') {
-            console.warn('[WebRTC] ICE failed — attempting ICE restart');
-            try { pc.restartIce(); } catch(_) {}
-          }
-        };
-
-        pc.onconnectionstatechange = () => {
-          const state = pc.connectionState;
-          console.log('[WebRTC] Connection state:', state);
-          if (state === 'failed') {
-            showToast('⚠️ Call connection failed. Check your network.', 'error');
-            endCall();
-          } else if (state === 'disconnected') {
-            setCallConnectionStatus('connecting');
-            showToast('📶 Connection interrupted. Reconnecting...', 'info');
-            setTimeout(() => {
-              if (pc.connectionState === 'disconnected') {
-                showToast('📶 Call dropped due to network issue.', 'error');
-                endCall();
-              }
-            }, 12000);
-          } else if (state === 'connected') {
-            setCallConnectionStatus('connected');
-          }
-        };
-
-        return pc;
-      }
-
-      async function initiateWebRTCCall(targetUserId, voiceOnly = false) {
-        isWebRTCCall = true;
-        isMuted = false;
-        isCameraOff = false;
-
-        // Reset toggle styles
-        const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
-        const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
-        const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
-        const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
-
-        try {
-          localStream = await getMedia(voiceOnly);
-
-          // Show local preview
-          const localVideo = document.getElementById('webrtc-local-video');
-          if (localVideo) { localVideo.srcObject = localStream; localVideo.muted = true; safePlay(localVideo); }
-
-          // ⚡ Create PC first (ontrack attached inside), THEN add tracks
-          peerConnection = createPeerConnection(targetUserId, voiceOnly);
-          localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-          const offer = await peerConnection.createOffer({
-            offerToReceiveAudio: true,
-            offerToReceiveVideo: !voiceOnly
-          });
-          await peerConnection.setLocalDescription(offer);
-          if (socket) {
-            socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
-          }
-          console.log('[WebRTC] ✅ Offer sent to:', targetUserId);
-        } catch (err) {
-          console.error('[WebRTC] initiateWebRTCCall error:', err);
-          handleMediaError(err);
-          endCall();
-        }
-      }
-
-      async function acceptWebRTCCall(targetUserId, voiceOnly = false) {
-        isWebRTCCall = true;
-        isMuted = false;
-        isCameraOff = false;
-        document.getElementById('call-modal').classList.replace('hidden', 'flex');
-        document.getElementById('jitsi-container').classList.add('hidden');
-        document.getElementById('webrtc-container').classList.remove('hidden');
-
-        setCallConnectionStatus('connecting');
-        setupVoiceOnlyUI(voiceOnly);
-
-        const muteBtn = document.getElementById('btn-mute'); if(muteBtn) muteBtn.style.background = '';
-        const muteIcon = document.getElementById('mute-icon'); if(muteIcon) muteIcon.textContent = 'mic';
-        const camIcon = document.getElementById('camera-icon'); if(camIcon) camIcon.textContent = 'videocam';
-        const camBtn = document.getElementById('btn-camera'); if(camBtn) camBtn.style.background = '';
-
-        try {
-          localStream = await getMedia(voiceOnly);
-
-          const localVideo = document.getElementById('webrtc-local-video');
-          if (localVideo) { localVideo.srcObject = localStream; localVideo.muted = true; safePlay(localVideo); }
-
-          // ⚡ CRITICAL: Create PC with handlers BEFORE setting remote desc
-          peerConnection = createPeerConnection(targetUserId, voiceOnly);
-          localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-          // Process the stored SDP offer from caller
-          if (pendingSdpOffer) {
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(pendingSdpOffer));
-            pendingSdpOffer = null;
-
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            if (socket) {
-              socket.emit('webrtc:signal', { targetId: targetUserId, signal: { sdp: peerConnection.localDescription } });
-            }
-            console.log('[WebRTC] ✅ Answer sent to:', targetUserId);
-          } else {
-            console.warn('[WebRTC] ⚠️ No pending SDP offer — waiting for signal handler to process it');
-          }
-
-          // Flush any ICE candidates queued during ringing
-          for (const candidate of pendingIceCandidates) {
-            try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch(e) {
-              console.warn('[WebRTC] Queued ICE add error:', e);
-            }
-          }
-          if (pendingIceCandidates.length > 0) {
-            console.log('[WebRTC] Flushed', pendingIceCandidates.length, 'queued ICE candidates');
-          }
-          pendingIceCandidates = [];
-        } catch (err) {
-          console.error('[WebRTC] acceptWebRTCCall error:', err);
-          handleMediaError(err);
-          endCall();
-        }
-      }
-
-      function handleWebRTCSignal(data) {
-        const { signal } = data;
-        if (!signal) return;
-
-        if (signal.sdp) {
-          if (peerConnection) {
-            const state = peerConnection.signalingState;
-
-            // ⚡ Only an 'answer' arrives via signal handler for caller side
-            // Receiver side processes offer inside acceptWebRTCCall(), not here
-            if (signal.sdp.type === 'answer') {
-              if (state !== 'have-local-offer') {
-                console.warn('[WebRTC] Ignoring answer in unexpected state:', state);
-                return;
-              }
-              peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp))
-                .then(async () => {
-                  console.log('[WebRTC] ✅ Remote answer applied');
-                  // Flush queued ICE candidates
-                  for (const c of pendingIceCandidates) {
-                    try { await peerConnection.addIceCandidate(new RTCIceCandidate(c)); } catch(e){}
-                  }
-                  pendingIceCandidates = [];
-                })
-                .catch(e => console.error('[WebRTC] setRemoteDescription(answer) error:', e));
-
-            } else if (signal.sdp.type === 'offer') {
-              // Only handle re-offers (renegotiation), initial offers go to pendingSdpOffer
-              if (state !== 'stable') {
-                console.warn('[WebRTC] Ignoring re-offer in state:', state);
-                return;
-              }
-              peerConnection.setRemoteDescription(new RTCSessionDescription(signal.sdp))
-                .then(async () => {
-                  const answer = await peerConnection.createAnswer();
-                  await peerConnection.setLocalDescription(answer);
-                  if (socket) socket.emit('webrtc:signal', { targetId: data.senderId, signal: { sdp: peerConnection.localDescription } });
-                  for (const c of pendingIceCandidates) {
-                    try { await peerConnection.addIceCandidate(new RTCIceCandidate(c)); } catch(e){}
-                  }
-                  pendingIceCandidates = [];
-                })
-                .catch(e => console.error('[WebRTC] setRemoteDescription(re-offer) error:', e));
-            }
-          } else {
-            // PC not ready yet (caller's offer arrived early) — store it
-            console.log('[WebRTC] Storing pending SDP offer (PC not ready yet)');
-            pendingSdpOffer = signal.sdp;
-          }
-        } else if (signal.candidate) {
-          if (peerConnection && peerConnection.remoteDescription) {
-            peerConnection.addIceCandidate(new RTCIceCandidate(signal.candidate))
-              .catch(e => console.warn('[WebRTC] ICE add error:', e));
-          } else {
-            // Queue until remote description is set
-            pendingIceCandidates.push(signal.candidate);
-            console.log('[WebRTC] Queued ICE candidate (total:', pendingIceCandidates.length, ')');
-          }
-        }
+        const f = activeConv?.friend || {};
+        const name = `${f.firstName||''} ${f.lastName||''}`.trim() || 'Teammate';
+        const voiceAvText = document.getElementById('voice-avatar-text');
+        const voiceCallerName = document.getElementById('voice-caller-name');
+        const waitingStatusLabel = document.getElementById('waiting-status-label');
+        
+        if (voiceAvText) voiceAvText.textContent = ini(f.firstName, f.lastName);
+        if (voiceCallerName) voiceCallerName.textContent = name;
+        if (waitingStatusLabel) waitingStatusLabel.textContent = 'Ringing';
       }
 
       function startCallTimer() {
@@ -3458,19 +3121,37 @@
         if (timerEl) timerEl.textContent = '00:00';
         window._callTimerInterval = setInterval(() => {
           callSeconds++;
-          window._callSeconds = callSeconds; // track for call log
+          window._callSeconds = callSeconds;
           const m = String(Math.floor(callSeconds / 60)).padStart(2, '0');
           const s = String(callSeconds % 60).padStart(2, '0');
           if (timerEl) timerEl.textContent = m + ':' + s;
         }, 1000);
       }
 
-
       // Join embedded Jitsi call container
       async function openJitsiFrame(roomId, voiceOnly = false) {
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.remove('hidden');
         document.getElementById('webrtc-container').classList.add('hidden');
+        
+        // Show our custom control bar and reset states
+        const controlBar = document.getElementById('call-control-bar');
+        if (controlBar) {
+          controlBar.style.display = 'flex';
+          controlBar.classList.remove('hidden');
+        }
+        const muteBtn = document.getElementById('btn-mute');
+        const camBtn = document.getElementById('btn-camera');
+        const screenBtn = document.getElementById('btn-screenshare');
+        if (muteBtn) muteBtn.style.display = '';
+        if (camBtn) camBtn.style.display = '';
+        if (screenBtn) screenBtn.style.display = '';
+
+        isMuted = false;
+        isCameraOff = voiceOnly;
+        isSharingScreen = false;
+        updateCustomControlButtons();
+
         const container = document.getElementById('jitsi-container');
         container.innerHTML = `
           <div class="flex flex-col items-center justify-center h-full text-slate-400 gap-2">
@@ -3486,7 +3167,6 @@
         container.innerHTML = '';
 
         const domain = "meet.jit.si";
-        // ⚡ FIX: Sanitize roomId — Jitsi requires alphanumeric, no spaces or special chars
         const safeRoom = roomId.replace(/[^a-zA-Z0-9_-]/g, '-').replace(/-+/g, '-');
         const displayName = localStorage.getItem('ph-sb-name') || 'Teammate';
         const options = {
@@ -3507,14 +3187,27 @@
             startWithAudioMuted: false,
             enableNoisyMicDetection: false,
             disableDeepLinking: true,
+            toolbarButtons: [] // Hides native Jitsi toolbar completely
           }
         };
         jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
-        // ⚡ Handle Jitsi hangup → sync our endCall UI
         jitsiApiInstance.addEventListeners({
+          audioMuteStatusChanged: (e) => {
+            isMuted = e.muted;
+            updateCustomControlButtons();
+          },
+          videoMuteStatusChanged: (e) => {
+            isCameraOff = e.muted;
+            updateCustomControlButtons();
+          },
+          screenSharingStatusChanged: (e) => {
+            isSharingScreen = e.on;
+            updateCustomControlButtons();
+          },
           videoConferenceLeft: () => endCall(),
           readyToClose: () => endCall(),
         });
+        setCallConnectionStatus('connected');
         startCallTimer();
       }
 
@@ -3524,11 +3217,12 @@
         if (timerEl) timerEl.textContent = '00:00';
 
         if (jitsiApiInstance) {
-          jitsiApiInstance.dispose();
+          try {
+            jitsiApiInstance.dispose();
+          } catch(e) {}
           jitsiApiInstance = null;
         }
 
-        // Resolve target ID before clearing state!
         var callFriendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
 
         if (socket && activeCallRoom && callFriendId) {
@@ -3564,17 +3258,6 @@
           }
         }
 
-        if (localStream) {
-          localStream.getTracks().forEach(track => track.stop());
-          localStream = null;
-        }
-        if (peerConnection) {
-          peerConnection.close();
-          peerConnection = null;
-        }
-        isWebRTCCall = false;
-        pendingSdpOffer = null;
-        pendingIceCandidates = [];
         incomingCallerId = null;
         currentVoiceOnly = false;
         window._callSeconds = 0;
@@ -3582,24 +3265,32 @@
 
         const voiceDisplay = document.getElementById('voice-only-display');
         if (voiceDisplay) voiceDisplay.classList.add('hidden');
-        const localBubble = document.getElementById('local-video-bubble');
-        if (localBubble) localBubble.classList.remove('hidden');
 
-        // ⚡ FIX: hide both containers, modal hides last
         document.getElementById('webrtc-container').classList.add('hidden');
         document.getElementById('jitsi-container').classList.add('hidden');
 
         const modal = document.getElementById('call-modal');
         if (modal) modal.classList.replace('flex', 'hidden');
+        
+        // Show control bar & buttons back for next call
+        const controlBar = document.getElementById('call-control-bar');
+        if (controlBar) {
+          controlBar.style.display = 'flex';
+        }
+        const muteBtn = document.getElementById('btn-mute');
+        const camBtn = document.getElementById('btn-camera');
+        const screenBtn = document.getElementById('btn-screenshare');
+        if (muteBtn) muteBtn.style.display = '';
+        if (camBtn) camBtn.style.display = '';
+        if (screenBtn) screenBtn.style.display = '';
+
         stopOutgoingRing();
         stopRingtone();
       };
 
-
       let ringtoneAudio = null;
       let outgoingRingtone = null;
 
-      // Professional incoming ringtone (Messenger/WhatsApp style)
       function startRingtone() {
         stopRingtone();
         try {
@@ -3607,27 +3298,24 @@
           let currentOsc = null;
           let cycleCount = 0;
 
-          // Play a pleasant melody sequence
           function playMelody() {
-            // Stop previous oscillator
             if (currentOsc) {
               try { currentOsc.stop(); } catch(_) {}
             }
 
-            // Melody notes (frequencies in Hz) - pleasant ascending pattern
             const melody = [
-              { freq: 659, duration: 0.15 },  // E5
-              { freq: 880, duration: 0.15 },  // A5
-              { freq: 1047, duration: 0.3 },  // C6
-              { pause: 0.4 }                   // Short pause
+              { freq: 659, duration: 0.15 },
+              { freq: 880, duration: 0.15 },
+              { freq: 1047, duration: 0.3 },
+              { pause: 0.4 }
             ];
 
             let noteIndex = 0;
             const playNote = () => {
               if (noteIndex >= melody.length) {
                 cycleCount++;
-                if (cycleCount < 8) { // Repeat 8 times then stop
-                  setTimeout(playMelody, 800); // Pause between cycles
+                if (cycleCount < 8) {
+                  setTimeout(playMelody, 800);
                 }
                 return;
               }
@@ -3646,7 +3334,6 @@
               osc.type = 'sine';
               osc.frequency.value = note.freq;
 
-              // Smooth envelope (fade in/out)
               gain.gain.setValueAtTime(0, ctx.currentTime);
               gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + 0.02);
               gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + note.duration);
@@ -3669,7 +3356,7 @@
           ringtoneAudio = {
             ctx,
             stop() {
-              cycleCount = 999; // Stop future cycles
+              cycleCount = 999;
               if (currentOsc) {
                 try { currentOsc.stop(); } catch(_) {}
               }
@@ -3679,7 +3366,6 @@
         } catch(_) {}
       }
 
-      // Outgoing call ring (professional "ringing" sound - double beep pattern)
       function startOutgoingRing() {
         stopOutgoingRing();
         try {
@@ -3687,9 +3373,8 @@
           let cycleCount = 0;
 
           function playRing() {
-            if (cycleCount >= 15) return; // Stop after 15 cycles (~30 seconds)
+            if (cycleCount >= 15) return;
 
-            // Double beep pattern (beep-beep...pause)
             const beeps = [
               { freq: 440, delay: 0, duration: 0.3 },
               { freq: 440, delay: 0.4, duration: 0.3 }
@@ -3703,7 +3388,6 @@
                 osc.type = 'sine';
                 osc.frequency.value = beep.freq;
 
-                // Smooth envelope
                 gain.gain.setValueAtTime(0, ctx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + 0.02);
                 gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + beep.duration);
@@ -3717,7 +3401,7 @@
             });
 
             cycleCount++;
-            setTimeout(playRing, 2000); // Repeat every 2 seconds
+            setTimeout(playRing, 2000);
           }
 
           playRing();
@@ -3725,7 +3409,7 @@
           outgoingRingtone = {
             ctx,
             stop() {
-              cycleCount = 999; // Stop future cycles
+              cycleCount = 999;
               try { ctx.close(); } catch(_) {}
             }
           };
@@ -3749,7 +3433,6 @@
           if (socket) {
             socket.emit('call:accept', { roomId: activeCallRoom, targetId: friendId });
           }
-          // Always use Jitsi — works on all networks, no TURN needed
           await openJitsiFrame(activeCallRoom, incomingCallIsVoiceOnly);
         }
       };
@@ -3759,7 +3442,6 @@
         stopOutgoingRing();
         document.getElementById('incoming-call-modal').classList.replace('flex', 'hidden');
         if (activeCallRoom) {
-          // Bug #6 fix: use stored callerId
           var friendId = incomingCallerId || activeConv?.friend?._id || activeConv?.friend?.id || activeConv?.friendId;
           if (socket) {
             socket.emit('call:decline', { roomId: activeCallRoom, targetId: friendId });

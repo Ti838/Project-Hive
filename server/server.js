@@ -22,7 +22,7 @@ import {
   handleCallDecline,
   handleCallHangup,
   handleGroupCallInitiate,
-  handleWebRTCSignal,
+
 } from './services/socket.service.js';
 
 const PORT = process.env.PORT || 5000;
@@ -114,7 +114,6 @@ async function startServer() {
       socket.on('call:decline',  (data) => handleCallDecline(socket, data));
       socket.on('call:hangup',   (data) => handleCallHangup(socket, data));
       socket.on('call:group',    (data) => handleGroupCallInitiate(socket, data));
-      socket.on('webrtc:signal', (data) => handleWebRTCSignal(socket, data));
 
       socket.on('disconnect', (reason) => {
         handleLeaveRoom(socket);

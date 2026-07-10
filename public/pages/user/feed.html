@@ -424,7 +424,7 @@
   <header class="fixed top-0 right-0 left-[260px] h-20 bg-surface/80 backdrop-blur-md z-40 flex items-center justify-between px-10 max-md:left-0 max-md:px-4 border-b border-surface-variant/40">
     <div class="flex items-center gap-2 sm:gap-4 flex-1">
       <div id="ph-hamburger-slot"></div>
-      <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-outline-variant/20 dark:hover:bg-white/10 transition-colors shrink-0 text-on-surface dark:text-white" title="Go Back">
+      <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-outline-variant/20 dark:hover:bg-white/10 transition-colors shrink-0 text-on-surface dark:text-white" title="Go Back" aria-label="Go Back">
         <span class="material-symbols-outlined text-[20px]">arrow_back</span>
       </button>
       <div class="relative flex-1 max-w-sm hidden sm:block">
@@ -441,11 +441,11 @@
         AI Generator
       </a>
       <div class="flex items-center gap-3 pr-6 border-r border-outline-variant">
-        <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/help'" title="Help Center">
+        <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/help'" title="Help Center" aria-label="Help Center">
           <span class="material-symbols-outlined">help</span>
         </button>
         <div class="relative">
-          <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/notifications'">
+          <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/notifications'" aria-label="Notifications">
             <span class="material-symbols-outlined">notifications</span>
           </button>
           <span id="topbar-unread" class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface hidden"></span>
@@ -493,7 +493,7 @@
               <!-- Image Preview Container -->
               <div id="composer-image-preview" class="relative hidden rounded-xl overflow-hidden border border-surface-variant max-h-[180px] bg-black/5">
                 <img id="composer-preview-img" class="w-full h-full object-cover max-h-[180px]" src="">
-                <button type="button" onclick="clearAttachedImage()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors">
+                <button type="button" onclick="clearAttachedImage()" aria-label="Remove attached image" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors">
                   <span class="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
@@ -501,7 +501,7 @@
               <!-- Video Preview Container -->
               <div id="composer-video-preview" class="relative hidden rounded-xl overflow-hidden border border-surface-variant max-h-[220px] bg-black/5">
                 <video id="composer-preview-video" class="w-full h-full object-contain max-h-[220px]" controls src=""></video>
-                <button type="button" onclick="clearAttachedVideo()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors z-10">
+                <button type="button" onclick="clearAttachedVideo()" aria-label="Remove attached video" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors z-10">
                   <span class="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
@@ -516,7 +516,7 @@
                   <h4 id="composer-link-title" class="text-xs font-bold text-on-surface truncate">Link Title</h4>
                   <p id="composer-link-desc" class="text-[10px] text-on-surface-variant line-clamp-2 mt-0.5 leading-normal">Link description...</p>
                 </div>
-                <button type="button" onclick="clearScrapedLink()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors">
+                <button type="button" onclick="clearScrapedLink()" aria-label="Remove attached link preview" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors">
                   <span class="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
@@ -2293,7 +2293,7 @@
           </span>
           <h3 class="font-bold text-sm text-on-surface">Edit Post</h3>
         </div>
-        <button onclick="closeEditPost()" class="text-outline hover:text-on-surface p-1 rounded-full hover:bg-surface-container transition-colors">
+        <button onclick="closeEditPost()" aria-label="Close edit post dialog" class="text-outline hover:text-on-surface p-1 rounded-full hover:bg-surface-container transition-colors">
           <span class="material-symbols-outlined text-[20px]">close</span>
         </button>
       </div>
@@ -2307,9 +2307,8 @@
     </div>
   </div>
 
-  <!-- Lightbox Modal -->
   <div id="lightbox-modal" class="fixed inset-0 bg-black/95 z-[100] hidden flex items-center justify-center p-4 cursor-zoom-out" onclick="closeLightbox()">
-    <button class="absolute top-4 right-4 text-white hover:text-primary transition-colors">
+    <button class="absolute top-4 right-4 text-white hover:text-primary transition-colors" aria-label="Close image zoom view">
       <span class="material-symbols-outlined text-3xl">close</span>
     </button>
     <img id="lightbox-img" class="max-w-full max-h-full rounded-lg object-contain shadow-2xl" src="" alt="Zoomed attachment" onclick="event.stopPropagation()">

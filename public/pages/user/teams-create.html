@@ -178,7 +178,7 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 <main class="ml-[260px] p-margin-desktop min-h-screen max-md:ml-0 max-md:p-4 max-md:pb-20" style="max-width:900px;margin-left:260px;margin-right:auto">
 <header class="mb-stack-lg flex justify-between items-center">
 <div class="flex items-start gap-4">
-<button onclick="history.back()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors shrink-0 text-on-surface" title="Go Back">
+<button onclick="history.back()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors shrink-0 text-on-surface" title="Go Back" aria-label="Go Back">
   <span class="material-symbols-outlined text-[20px]">arrow_back</span>
 </button>
 <div>
@@ -186,7 +186,7 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 <p class="font-body-md text-body-md text-on-surface-variant">Create a new collaborative research team and start your next breakthrough.</p>
 </div>
 <div class="flex items-center gap-4">
-<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all" onclick="window.location.href='/notifications'" title="Notifications">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all" onclick="window.location.href='/notifications'" title="Notifications" aria-label="Notifications">
 <span class="material-symbols-outlined">notifications</span>
 </button>
 <div id="tc-avatar" class="h-10 w-10 rounded-full bg-primary/10 overflow-hidden border-2 border-surface-container flex items-center justify-center font-bold text-primary text-sm">?</div>
@@ -199,15 +199,15 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 <form class="space-y-6" id="hive-form">
 <div class="grid grid-cols-2 gap-6">
 <div class="col-span-2">
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Team Name</label>
+<label for="hive-name-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Team Name</label>
 <input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" id="hive-name-input" placeholder="e.g. Quantum Computing Research Lab" type="text" value="Project: Neural Synthesis"/>
 </div>
 <div class="col-span-2">
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Description</label>
+<label for="hive-desc-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Description</label>
 <textarea class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md resize-none" id="hive-desc-input" placeholder="Briefly describe the research objectives and team culture..." rows="4">Investigating the intersection of artificial neural networks and biological synaptic plasticity to develop more efficient learning algorithms.</textarea>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Category</label>
+<label for="hive-category-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Category</label>
 <select class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" id="hive-category-input">
 <option value="Computer Science">Computer Science</option>
 <option value="Biotechnology">Biotechnology</option>
@@ -217,26 +217,26 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 </select>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Max Members</label>
+<label for="hive-max-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Max Members</label>
 <input id="hive-max-input" class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" max="20" min="2" type="number" value="6"/>
 </div>
 <div class="col-span-2">
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Required Skills (Tags)</label>
+<label for="tag-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Required Skills (Tags)</label>
 <div id="tag-container" class="flex flex-wrap gap-2 p-3 border border-outline-variant bg-surface-container-lowest rounded-lg">
   <input id="tag-input" class="border-none bg-transparent p-0 focus:ring-0 font-body-sm text-body-sm flex-1 min-w-[100px]" placeholder="Type skill and press Enter..." type="text"/>
 </div>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Visibility</label>
+<label for="visibility-btn" class="block font-label-md text-label-md text-on-surface-variant mb-2">Visibility</label>
 <div class="flex items-center gap-4 py-2">
 <span class="font-body-md text-body-md">Open to Applications</span>
-<button id="visibility-btn" class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
+<button id="visibility-btn" aria-label="Toggle open to applications visibility" class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
 <div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
 </button>
 </div>
 </div>
 <div>
-<label class="block font-label-md text-label-md text-on-surface-variant mb-2">External Project Link (Optional)</label>
+<label for="hive-link-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">External Project Link (Optional)</label>
 <input id="hive-link-input" class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" placeholder="https://github.com/..." type="url"/>
 </div>
 </div>
@@ -363,7 +363,7 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
     tags.forEach(t => {
       const d = document.createElement('div');
       d.className = 'ph-tag-pill flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm';
-      d.innerHTML = `${t} <button class="material-symbols-outlined text-[14px]" type="button">close</button>`;
+      d.innerHTML = `${t} <button class="material-symbols-outlined text-[14px]" type="button" aria-label="Remove tag">close</button>`;
       d.querySelector('button').onclick = () => {
         tags = tags.filter(x => x !== t);
         renderTags();
