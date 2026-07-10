@@ -836,8 +836,62 @@ const PHSidebar = (() => {
           );
         }
       });
+
+      // ── Phase B: Real-time message badge ────────────────────────────────────
+      // Bump sidebar + bottom nav message badge when a message arrives on any page.
+      socket.on('message:received', (data) => {
+        if (location.pathname.includes('/messages')) return;
+        const msgLink = document.querySelector('.ph-sb-link[data-key="messages"]');
+        if (msgLink) {
+          let badge = msgLink.querySelector('.ph-sb-msg-badge');
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'ph-sb-msg-badge';
+            badge.style.cssText = 'margin-left:auto;min-width:18px;height:18px;border-radius:999px;background:#6366f1;color:#fff;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;';
+            msgLink.appendChild(badge);
+          }
+          badge.textContent = (parseInt(badge.textContent) || 0) + 1;
+        }
+        const bnMsg = document.querySelector('#ph-bottom-nav a[data-key="messages"]');
+        if (bnMsg) {
+          let bnBadge = bnMsg.querySelector('.ph-bn-msg-badge');
+          if (!bnBadge) {
+            bnBadge = document.createElement('span');
+            bnBadge.className = 'ph-bn-msg-badge';
+            bnBadge.style.cssText = 'position:absolute;top:4px;right:8px;min-width:16px;height:16px;border-radius:999px;background:#6366f1;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 3px;';
+            bnMsg.style.position = 'relative';
+            bnMsg.appendChild(bnBadge);
+          }
+          bnBadge.textContent = (parseInt(bnBadge.textContent) || 0) + 1;
+        }
+        if (typeof PHToast !== 'undefined' && PHToast.info && data.sender) {
+          const sn = data.sender.first_name ? (data.sender.first_name + ' ' + (data.sender.last_name || '')).trim() : 'Someone';
+          PHToast.info('<strong>' + sn + '</strong><br/><span style="font-size:12px;opacity:.85">' + (data.content || '').slice(0, 60) + '</span>', 4000);
+        }
+      });
+      window.phGlobalSocket = socket;
     }
   }
+
+  // ── Phase B: Cross-tab theme sync ─────────────────────────────────────────
+  // When theme is changed in another tab/window, sync instantly without refresh.
+  window.addEventListener('storage', (e) => {
+    if (e.key !== 'theme') return;
+    const val = e.newValue;
+    if (val === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else if (val === 'light') {
+      document.documentElement.classList.remove('dark');
+    } else {
+      if (matchMedia('(prefers-color-scheme:dark)').matches) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    try { syncThemeBtn(); } catch(_) {}
+  });
+
 
   // ══ Premium Mobile Bottom Navigation Bar ══════════════════════════════════
   function buildBottomNav(active, base) {
