@@ -342,6 +342,11 @@ async function handleLogin(e){
     btn.disabled=false;txt.textContent='Sign In';
   }
 }
+
+// Expose functions to window scope for HTML inline handlers
+window.handleLogin = handleLogin;
+window.toggleTheme = toggleTheme;
+window.resendVerification = resendVerification;
 </script>
 </body>
 </html>
