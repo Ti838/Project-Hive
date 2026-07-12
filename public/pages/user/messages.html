@@ -1505,22 +1505,7 @@
         }
       };
 
-      window.toggleChatDropdown = function(e) {
-        if (e) e.stopPropagation();
-        const dropdown = document.getElementById('chat-hdr-dropdown');
-        if (dropdown) {
-          dropdown.classList.toggle('hidden');
-        }
-      };
-      window.closeChatDropdown = function() {
-        const dropdown = document.getElementById('chat-hdr-dropdown');
-        if (dropdown) {
-          dropdown.classList.add('hidden');
-        }
-      };
-      document.addEventListener('click', () => {
-        window.closeChatDropdown();
-      });
+      // toggleChatDropdown / closeChatDropdown defined below (canonical version near openChatInfo)
 
       /* Open Direct conversation */
       window.openConv = function(conv){
