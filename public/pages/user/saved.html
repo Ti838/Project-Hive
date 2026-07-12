@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Saved â€” ProjectHive</title>
+<title>Saved — ProjectHive</title>
 <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})();</script>
 <style>html{background-color:#F0F2F9!important}html.dark{background-color:#0C0D14!important}</style>
 <link rel="icon" href="/favicon.png?v=2">
@@ -64,15 +64,15 @@
     <div class="sv-tabs">
       <button class="sv-tab active" id="tab-posts" onclick="switchTab('posts')">
         <span class="material-symbols-outlined" style="font-size:16px">article</span>Posts
-        <span class="sv-count" id="cnt-posts">â€”</span>
+        <span class="sv-count" id="cnt-posts">—</span>
       </button>
       <button class="sv-tab" id="tab-projects" onclick="switchTab('projects')">
         <span class="material-symbols-outlined" style="font-size:16px">folder_special</span>Projects
-        <span class="sv-count" id="cnt-projects">â€”</span>
+        <span class="sv-count" id="cnt-projects">—</span>
       </button>
       <button class="sv-tab" id="tab-ideas" onclick="switchTab('ideas')">
         <span class="material-symbols-outlined" style="font-size:16px">lightbulb</span>Ideas
-        <span class="sv-count" id="cnt-ideas">â€”</span>
+        <span class="sv-count" id="cnt-ideas">—</span>
       </button>
     </div>
     <div id="sv-list">
@@ -111,7 +111,7 @@
   function render() {
     const el=document.getElementById('sv-list');
     if (currentTab==='posts') {
-      if (!savedPosts.length){el.innerHTML=emptyHtml('bookmark_border','No saved posts yet','Save posts from your feed â€” click the bookmark icon on any post.','/feed','Go to Feed');return;}
+      if (!savedPosts.length){el.innerHTML=emptyHtml('bookmark_border','No saved posts yet','Save posts from your feed — click the bookmark icon on any post.','/feed','Go to Feed');return;}
       el.innerHTML=savedPosts.map(p=>postCard(p)).join('');
     } else if (currentTab==='projects') {
       if (!savedProjects.length){el.innerHTML=emptyHtml('folder_off','No saved projects yet','Explore and save projects that interest you.','/showcase','Explore Projects');return;}
@@ -134,7 +134,7 @@
     const initials=((fn[0]||'').toUpperCase()+(ln[0]||'').toUpperCase())||'?';
     const badge=TYPE_BADGE[p.postType];
     const totalReact=Object.values(p.reactions||{}).reduce((s,v)=>s+v,0);
-    const EMOJIS={like:'ðŸ‘',celebrate:'ðŸŽ‰',insightful:'ðŸ’¡',support:'ðŸ¤'};
+    const EMOJIS={like:'👍',celebrate:'🎉‰',insightful:'💡¡',support:'ðŸ¤'};
     return `<div class="sv-card" id="sv-post-${p.id}">
       <div class="sv-card-head">
         <div class="sv-avatar" style="background:${color}">${a.avatar?`<img src="${a.avatar}" alt="${name}">`:(initials)}</div>
@@ -147,7 +147,7 @@
       <div class="sv-body">${esc(p.content||'')}</div>
       ${totalReact?`<div class="sv-reactions">${Object.entries(p.reactions||{}).map(([t,c])=>EMOJIS[t]?`<span>${EMOJIS[t]} ${c}</span>`:'').join('')}</div>`:''}
       <div class="sv-foot">
-        <span style="font-size:12px;color:var(--sub)">ðŸ’¬ ${p.commentsCount||0} comment${(p.commentsCount||0)!==1?'s':''}</span>
+        <span style="font-size:12px;color:var(--sub)">💡¬ ${p.commentsCount||0} comment${(p.commentsCount||0)!==1?'s':''}</span>
         <div class="sv-foot-actions">
           <button class="sv-btn sv-btn-ghost" onclick="location.href='/feed?post=${p.id}'"><span class="material-symbols-outlined" style="font-size:15px">open_in_new</span>View</button>
           <button class="sv-btn sv-btn-danger" onclick="unsavePost('${p.id}')"><span class="material-symbols-outlined" style="font-size:15px">bookmark_remove</span>Unsave</button>

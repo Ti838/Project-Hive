@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin Panel â€” ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin Panel — ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script><style>
 :root{--bg:#f0f2ff;--sb:#fff;--sf:#fff;--bd:#dde2f5;--tx:#0f172a;--sub:#64748b;--tx2:#475569;--ac:#6366f1;--ac2:#4f46e5;--red:#dc2626;--grn:#059669;--yel:#d97706;--blu:#2563eb;--shadow:0 4px 24px rgba(0,0,0,.08)}
 html.dark{--bg:#07080f;--sb:#0b0d17;--sf:#0f1020;--bd:#1c1f35;--tx:#e2deee;--sub:#5a6080;--tx2:#8b93b8;--ac:#6366f1;--ac2:#818cf8;--red:#ef4444;--grn:#10b981;--yel:#f59e0b;--blu:#3b82f6;--shadow:0 4px 24px rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Inter",system-ui,sans-serif}
@@ -151,7 +151,7 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   /* Bottom nav visible */
   .admin-bottom-nav{display:flex}
 
-  /* Stat grid â€” 2 columns on mobile */
+  /* Stat grid — 2 columns on mobile */
   .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
   .stat-card{padding:14px 12px}
   .stat-n{font-size:20px}
@@ -159,10 +159,10 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   .stat-delta{font-size:9px}
   .stat-ic{width:34px;height:34px;margin-bottom:8px}
 
-  /* Analytics grid â€” 2 columns */
+  /* Analytics grid — 2 columns */
   .analytics-grid{grid-template-columns:repeat(2,1fr);gap:10px}
 
-  /* System grid â€” single column */
+  /* System grid — single column */
   .sys-grid{grid-template-columns:1fr;gap:12px}
 
   /* Topbar - NO hamburger space needed */
@@ -172,18 +172,18 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   .topbar-right .btn{padding:6px 10px;font-size:11px;gap:4px}
   .topbar-right .btn span,.topbar-right .btn-lbl{display:none}
 
-  /* Content area â€” add bottom padding for bottom nav */
+  /* Content area — add bottom padding for bottom nav */
   .content{padding:14px 12px;padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 
-  /* Card headers â€” stack on mobile */
+  /* Card headers — stack on mobile */
   .card-hdr{flex-direction:column;align-items:stretch;gap:10px;padding:12px}
   .card-title{font-size:12px}
 
-  /* Tabs â€” horizontally scrollable */
+  /* Tabs — horizontally scrollable */
   .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;flex-wrap:nowrap;width:100%}
   .tab{flex-shrink:0;padding:5px 10px;font-size:10px}
 
-  /* Search inputs â€” full width */
+  /* Search inputs — full width */
   .srch{width:100%;min-width:0;font-size:16px}
 
   /* Table rows → show on desktop, hide on mobile */
@@ -747,19 +747,19 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   <div class="sb-section">Manage</div>
   <button class="sb-item" id="nav-us" onclick="nav('us',this)" title="Users">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    <span>Users</span><span class="badge-cnt" id="cnt-u">â€”</span>
+    <span>Users</span><span class="badge-cnt" id="cnt-u">—</span>
   </button>
   <button class="sb-item" id="nav-tm" onclick="nav('tm',this)" title="Teams">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    <span>Teams</span><span class="badge-cnt" id="cnt-t">â€”</span>
+    <span>Teams</span><span class="badge-cnt" id="cnt-t">—</span>
   </button>
   <button class="sb-item" id="nav-pr" onclick="nav('pr',this)" title="Projects">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    <span>Projects</span><span class="badge-cnt" id="cnt-pr">â€”</span>
+    <span>Projects</span><span class="badge-cnt" id="cnt-pr">—</span>
   </button>
   <button class="sb-item" id="nav-po" onclick="nav('po',this)" title="Posts">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span>Posts</span><span class="badge-cnt" id="cnt-po">â€”</span>
+    <span>Posts</span><span class="badge-cnt" id="cnt-po">—</span>
   </button>
   <div class="sb-section">Insights</div>
   <button class="sb-item" id="nav-an" onclick="nav('an',this)" title="Analytics">
@@ -837,7 +837,7 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   </div>
 </div>
 <div id="sec-pr" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Project Management</div><div style="display:flex;gap:8px;align-items:center"><input class="srch" id="psrch" placeholder="Search projects..." oninput="rProjects()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>Project</th><th>Category</th><th>Status</th><th>Featured</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ptb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div>
-<div id="sec-us" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab active" onclick="uTab('all',this)">All</button><button class="tab" onclick="uTab('student',this)">Students</button><button class="tab" onclick="uTab('admin',this)">Admins</button><button class="tab" onclick="uTab('banned',this)">Banned</button></div><input class="srch" id="usrch" placeholder="Search users..." oninput="rUsers()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-tm" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Team Management</div><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab active" onclick="tTab('all',this)">All</button><button class="tab" onclick="tTab('open',this)">Open</button><button class="tab" onclick="tTab('closed',this)">Closed</button></div><input class="srch" id="tsrch" placeholder="Search teams..." oninput="rTeams()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-an" class="section" style="display:none"><div class="analytics-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="stat-n" id="an-u">â€”</div><div class="stat-l">Registered Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="stat-n" id="an-v">â€”</div><div class="stat-l">Verified Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="an-a">â€”</div><div class="stat-l">Admin Users</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>User Distribution by Role</div></div><div style="padding:20px"><div id="role-chart" class="chart-bars"></div><div id="role-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Team Status Breakdown</div></div><div style="padding:20px"><div id="team-chart" class="chart-bars"></div><div id="team-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div></div><div id="sec-sy" class="section" style="display:none"><div class="sys-grid"><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Controls</div><div class="sys-row"><div><div class="sys-label">Maintenance Mode</div><div class="sys-desc">Show maintenance page to all users</div></div><button class="toggle" id="maint-tog" onclick="toggleMaint()"></button></div><div class="sys-row"><div><div class="sys-label">User Registration</div><div class="sys-desc" id="reg-desc">New users can register</div></div><button class="toggle on" id="reg-tog" onclick="toggleReg()"></button></div><div class="sys-row"><div><div class="sys-label">Email Verification</div><div class="sys-desc">Require email verification on signup</div></div><button class="toggle" id="ev-tog" onclick="toggleEV()"></button></div></div><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Platform Health</div><div class="sys-row"><div><div class="sys-label">Backend API</div><div class="sys-desc">Render.com server status</div></div><span class="badge active" id="api-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking...</span></div><div class="sys-row"><div><div class="sys-label">Database</div><div class="sys-desc">Supabase PostgreSQL</div></div><span class="badge active" id="db-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking...</span></div><div class="sys-row"><div><div class="sys-label">Admin Email</div><div class="sys-desc">Configured in environment</div></div><span class="badge active"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Set</span></div></div></div></div>
+<div id="sec-us" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>User Management</div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><div class="tabs"><button class="tab active" onclick="uTab('all',this)">All</button><button class="tab" onclick="uTab('student',this)">Students</button><button class="tab" onclick="uTab('admin',this)">Admins</button><button class="tab" onclick="uTab('banned',this)">Banned</button></div><input class="srch" id="usrch" placeholder="Search users..." oninput="rUsers()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>User</th><th>Email</th><th>University</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead><tbody id="utb"><tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-tm" class="section" style="display:none"><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>Team Management</div><div style="display:flex;gap:8px;align-items:center"><div class="tabs"><button class="tab active" onclick="tTab('all',this)">All</button><button class="tab" onclick="tTab('open',this)">Open</button><button class="tab" onclick="tTab('closed',this)">Closed</button></div><input class="srch" id="tsrch" placeholder="Search teams..." oninput="rTeams()"></div></div><div class="desktop-table" style="overflow-x:auto"><table><thead><tr><th>Team</th><th>Members</th><th>Status</th><th>Category</th><th>Created</th><th>Actions</th></tr></thead><tbody id="ttb"><tr><td colspan="6"><div class="empty"><span class="spin"></span></div></td></tr></tbody></table></div></div></div><div id="sec-an" class="section" style="display:none"><div class="analytics-grid"><div class="stat-card"><div class="stat-ic" style="background:rgba(99,102,241,.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div><div class="stat-n" id="an-u">—</div><div class="stat-l">Registered Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(16,185,129,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div class="stat-n" id="an-v">—</div><div class="stat-l">Verified Users</div></div><div class="stat-card"><div class="stat-ic" style="background:rgba(245,158,11,.1)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div><div class="stat-n" id="an-a">—</div><div class="stat-l">Admin Users</div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>User Distribution by Role</div></div><div style="padding:20px"><div id="role-chart" class="chart-bars"></div><div id="role-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div><div class="card"><div class="card-hdr"><div class="card-title"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Team Status Breakdown</div></div><div style="padding:20px"><div id="team-chart" class="chart-bars"></div><div id="team-legend" style="display:flex;gap:16px;margin-top:12px;flex-wrap:wrap"></div></div></div></div><div id="sec-sy" class="section" style="display:none"><div class="sys-grid"><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>System Controls</div><div class="sys-row"><div><div class="sys-label">Maintenance Mode</div><div class="sys-desc">Show maintenance page to all users</div></div><button class="toggle" id="maint-tog" onclick="toggleMaint()"></button></div><div class="sys-row"><div><div class="sys-label">User Registration</div><div class="sys-desc" id="reg-desc">New users can register</div></div><button class="toggle on" id="reg-tog" onclick="toggleReg()"></button></div><div class="sys-row"><div><div class="sys-label">Email Verification</div><div class="sys-desc">Require email verification on signup</div></div><button class="toggle" id="ev-tog" onclick="toggleEV()"></button></div></div><div class="sys-card"><div class="card-title" style="margin-bottom:16px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Platform Health</div><div class="sys-row"><div><div class="sys-label">Backend API</div><div class="sys-desc">Render.com server status</div></div><span class="badge active" id="api-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking...</span></div><div class="sys-row"><div><div class="sys-label">Database</div><div class="sys-desc">Supabase PostgreSQL</div></div><span class="badge active" id="db-status"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Checking...</span></div><div class="sys-row"><div><div class="sys-label">Admin Email</div><div class="sys-desc">Configured in environment</div></div><span class="badge active"><svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5"/></svg>Set</span></div></div></div></div>
 <!-- Audit Log Section -->
 <div id="sec-au" class="section" style="display:none">
   <div class="card">
@@ -943,7 +943,7 @@ const API=["localhost","127.0.0.1"].includes(location.hostname)?(location.port==
 const H={"Authorization":"Bearer "+TK,"Content-Type":"application/json"};
 const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6","#ef4444","#14b8a6"];
 function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
-function ago(d){if(!d)return"â€”";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
+function ago(d){if(!d)return"—";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
 let AU=[],AT=[],AP=[],APo=[],ATk=[],uf="all",tf="all",tkf="all";
 let curAdminEmail="";
 try{const p=JSON.parse(atob(TK.split(".")[1]));curAdminEmail=(p.email||"").toLowerCase().trim();}catch(e){}
@@ -1024,7 +1024,7 @@ async function loadAll(){
     ATk=tk.tickets || [];
     const bn=AU.filter(u=>u.isBanned).length;
     const vf=u=>{const e=document.getElementById(u[0]);if(e)e.textContent=u[1]};
-    [["st-u",AU.length],["st-t",AT.length],["st-p",st.totalProjects||"â€”"],["st-b",bn],
+    [["st-u",AU.length],["st-t",AT.length],["st-p",st.totalProjects||"—"],["st-b",bn],
      ["st-u-d",AU.filter(u=>{const d=new Date(u.createdAt);return Date.now()-d<86400000}).length],
      ["st-t-d",AT.filter(t=>!t.isClosed&&t.status!=="closed").length],
      ["cnt-u",AU.length],["cnt-t",AT.length],["cnt-pr",AP.length],["cnt-po",APo.length],["cnt-tk",ATk.length],
@@ -1144,7 +1144,7 @@ function rProjects(){
     const st=p.status||'active';
     return `<tr>
       <td><div style="font-weight:700">${nm}</div><div style="font-size:10px;color:var(--sub)">${(p.description||'').slice(0,50)}</div></td>
-      <td style="font-size:11px;color:var(--sub)">${p.category||'â€”'}</td>
+      <td style="font-size:11px;color:var(--sub)">${p.category||'—'}</td>
       <td><span class="badge ${st}">${st}</span></td>
       <td><span class="badge ${feat?'admin':'closed'}">${feat?'Yes':'No'}</span></td>
       <td style="font-size:11px;color:var(--sub)">${ago(p.created_at||p.createdAt)}</td>
@@ -1672,7 +1672,7 @@ rProjects = function() {
     return `
       <div class="mob-item-card">
         <div class="mob-item-top">
-          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">ðŸš€</div>
+          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">🚀</div>
           <div class="mob-item-meta">
             <div class="mob-item-name">${nm}</div>
             <div class="mob-item-sub">${(p.description||'').slice(0,60)}</div>
@@ -1681,7 +1681,7 @@ rProjects = function() {
         <div class="mob-item-badges">
           <span class="badge ${p.status||'active'}">${p.status||'active'}</span>
           ${feat ? '<span class="badge admin">⭐ Featured</span>' : ''}
-          <span class="badge" style="background:rgba(100,116,139,.1);color:var(--sub)">${p.category||'â€”'}</span>
+          <span class="badge" style="background:rgba(100,116,139,.1);color:var(--sub)">${p.category||'—'}</span>
         </div>
         <div class="mob-item-actions">
           <button class="act" title="${feat?'Unfeature':'Feature'}" onclick="featureP('${id}',${!feat})">${starI} ${feat?'Unfeature':'Feature'}</button>
@@ -1713,7 +1713,7 @@ rPostsMod = function() {
     return `
       <div class="mob-item-card">
         <div class="mob-item-top">
-          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">ðŸ’¬</div>
+          <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">💡¬</div>
           <div class="mob-item-meta">
             <div class="mob-item-name">${author}</div>
             <div class="mob-item-sub">${p.author?.email||''}</div>

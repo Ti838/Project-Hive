@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Find Teams â€” ProjectHive</title>
+<title>Find Teams — ProjectHive</title>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 
 <link rel="icon" href="/favicon.png?v=2">
@@ -42,15 +42,15 @@
 
     <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
       <div style="width:48px;height:48px;border-radius:14px;background:var(--ac-light);color:var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">diversity_3</span></div>
-      <div><div class="ph-label" style="margin:0 0 2px">Total Teams</div><div style="font-size:26px;font-weight:800" id="st-total">â€”</div></div>
+      <div><div class="ph-label" style="margin:0 0 2px">Total Teams</div><div style="font-size:26px;font-weight:800" id="st-total">—</div></div>
     </div>
     <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
       <div style="width:48px;height:48px;border-radius:14px;background:rgba(16,185,129,.12);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">how_to_reg</span></div>
-      <div><div class="ph-label" style="margin:0 0 2px">My Teams</div><div style="font-size:26px;font-weight:800" id="st-mine">â€”</div></div>
+      <div><div class="ph-label" style="margin:0 0 2px">My Teams</div><div style="font-size:26px;font-weight:800" id="st-mine">—</div></div>
     </div>
     <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
       <div style="width:48px;height:48px;border-radius:14px;background:rgba(139,92,246,.12);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">group_add</span></div>
-      <div><div class="ph-label" style="margin:0 0 2px">Open to Join</div><div style="font-size:26px;font-weight:800" id="st-open">â€”</div></div>
+      <div><div class="ph-label" style="margin:0 0 2px">Open to Join</div><div style="font-size:26px;font-weight:800" id="st-open">—</div></div>
     </div>
   </div>
 
@@ -360,7 +360,7 @@
 
       document.getElementById('td-title').textContent = t.name || 'Team Details';
 
-      // Check current user role â€” myId from JWT
+      // Check current user role — myId from JWT
       const isLeader = t.leader_id === myId;
       const isMember = (window.myIds||new Set()).has(t.id || t._id);
 

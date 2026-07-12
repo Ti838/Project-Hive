@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Profile â€” ProjectHive</title>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Profile — ProjectHive</title>
 <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
 
 <link rel="icon" href="/favicon.png?v=2">
@@ -227,7 +227,7 @@
     // Title
     document.getElementById('pv-name').textContent = name;
     document.getElementById('page-title').textContent = name;
-    document.title = name + ' â€” ProjectHive';
+    document.title = name + ' — ProjectHive';
 
     // Avatar
     const av = document.getElementById('pv-avatar');
@@ -248,7 +248,7 @@
       bEl.appendChild(bimg);
     }
 
-    // Headline â€” major + university like LinkedIn
+    // Headline — major + university like LinkedIn
     const headline = u.major ? (u.major + (u.university ? ' at ' + u.university : '')) : (u.university || 'Student');
     document.getElementById('pv-headline').textContent = headline;
 
@@ -436,8 +436,8 @@
         </div>
         <div class="pv-activity-content">${content}</div>
         <div class="pv-activity-stats">
-          ${totalReactions ? `<span>ðŸ‘ ${totalReactions}</span>` : ''}
-          ${p.commentsCount ? `<span>ðŸ’¬ ${p.commentsCount}</span>` : ''}
+          ${totalReactions ? `<span>👍 ${totalReactions}</span>` : ''}
+          ${p.commentsCount ? `<span>💡¬ ${p.commentsCount}</span>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -522,7 +522,7 @@
   window.acceptReq = async function(id) {
     try {
       const r = await fetch(API+'/api/friends/accept/'+id, { method:'POST', headers:H });
-      r.ok ? (PHToast?.success('Connected! ðŸŽ‰'), loadProfile()) : PHToast?.error('Failed');
+      r.ok ? (PHToast?.success('Connected! 🎉‰'), loadProfile()) : PHToast?.error('Failed');
     } catch(e) { PHToast?.error('Error'); }
   };
 
