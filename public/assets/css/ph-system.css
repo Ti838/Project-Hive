@@ -2881,3 +2881,246 @@ body.modal-open {
     animation: ph-ctx-slide-up 0.3s ease-out both !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE C — Desktop density & interaction quality
+   PHASE D — Mobile app-feel refinements
+   PHASE E — Accessibility & WCAG AA completion
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── E1: Global focus-visible catch-all (WCAG AA keyboard nav) ── */
+/* Every interactive element must show a visible ring when keyboard-focused */
+*:focus-visible {
+  outline: 2px solid var(--ac, #6366f1);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Override for elements that already have their own focus style */
+.ph-input:focus-visible,
+.fi:focus-visible,
+.s-inp:focus-visible,
+textarea:focus-visible {
+  outline: none; /* box-shadow focus ring already applied */
+}
+/* Sidebar links get inset ring */
+.ph-sb-link:focus-visible {
+  outline-offset: -3px;
+  border-radius: 10px;
+}
+
+/* ── E2: Skip-to-content link (screen reader / keyboard users) ── */
+.ph-skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 99999;
+  padding: 8px 16px;
+  background: var(--ac, #6366f1);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  border-radius: 0 0 10px 10px;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+.ph-skip-link:focus {
+  top: 0;
+}
+
+/* ── C1: Tighter spacing for stat rows on ultra-wide desktops ── */
+@media (min-width: 1440px) {
+  .ph-page > main,
+  .ph-content,
+  .fp-wrap,
+  .nt-wrap,
+  .saved-wrap,
+  .main-wrap {
+    max-width: 1440px;
+  }
+}
+
+/* ── C2: Topbar search — better focus state ── */
+.ph-topbar input:focus,
+header input:focus {
+  outline: 2px solid var(--ac, #6366f1);
+  outline-offset: 1px;
+  border-radius: 10px;
+}
+
+/* ── C3: Table improvements — no horizontal overflow on desktop ── */
+@media (min-width: 769px) {
+  .ph-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+  }
+  .ph-table td,
+  .ph-table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 280px;
+  }
+  .ph-table td:first-child,
+  .ph-table th:first-child {
+    padding-left: 16px;
+  }
+  .ph-table td:last-child,
+  .ph-table th:last-child {
+    padding-right: 16px;
+  }
+}
+
+/* ── D1: Momentum scroll for all scrollable mobile containers ── */
+@media (max-width: 768px) {
+  .ph-sb-nav,
+  .msg-conv-list,
+  #msgs,
+  .notifications-list,
+  .projects-grid,
+  .teams-grid,
+  .feed-list,
+  [class*="overflow-y-auto"],
+  [class*="overflow-y-scroll"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* ── D2: Prevent keyboard overlap on mobile input focus ── */
+/* handled by --chat-kb-offset var in messages page JS */
+
+/* ── D3: Bottom sheet modals slide up on mobile ── */
+@media (max-width: 768px) {
+  [id$="-modal"] > div,
+  .modal > div,
+  .ph-modal > div {
+    animation: ph-ctx-slide-up 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+/* ── D4: Active press states on all tappable cards ── */
+@media (hover: none) and (pointer: coarse) {
+  .ucard:active,
+  .team-card:active,
+  .project-card:active,
+  .n-card:active,
+  .post-card:active,
+  .feed-card-shadow:active,
+  .sv-card:active,
+  .qa-card:active {
+    transform: scale(0.985);
+    transition: transform 0.1s ease;
+  }
+}
+
+/* ── C4: Card hover lift only on non-touch desktops ── */
+@media (hover: hover) and (pointer: fine) {
+  .ucard:hover,
+  .team-card:hover,
+  .project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg, 0 8px 32px rgba(99,102,241,.12));
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+}
+
+/* ── E3: Reduced motion — respect prefers-reduced-motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .ph-conn-banner {
+    transition: none !important;
+  }
+}
+
+/* ── C5: Better empty state consistency ── */
+.ph-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 12px;
+  color: var(--sub, #64748b);
+}
+.ph-empty-state .ph-empty-icon {
+  font-size: 48px;
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+.ph-empty-state .ph-empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tx2, #334155);
+}
+.ph-empty-state .ph-empty-desc {
+  font-size: 13px;
+  max-width: 320px;
+  line-height: 1.6;
+}
+
+/* ── C6: Consistent loading skeleton pulse ── */
+.ph-skeleton {
+  background: linear-gradient(90deg, var(--sf2) 25%, var(--sf3) 50%, var(--sf2) 75%);
+  background-size: 200% 100%;
+  animation: ph-shimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+/* ── D5: Mobile — prevent text size zoom on all inputs ── */
+@supports (font-size: 16px) {
+  @media (max-width: 768px) {
+    input,
+    textarea,
+    select {
+      font-size: max(16px, 1em) !important;
+    }
+  }
+}
+
+/* ── E4: High-contrast link underlines for accessibility ── */
+@media (forced-colors: active) {
+  a {
+    text-decoration: underline;
+  }
+  .ph-btn,
+  .ph-btn-outline {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* ── C7: Notification badge pulse animation ── */
+#notif-badge:not(.hidden),
+.ph-sb-msg-badge {
+  animation: ph-badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes ph-badge-pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ── D6: Pull-to-refresh visual indicator placeholder ── */
+/* Native PTR behavior is handled by browser; this prevents jarring overscroll */
+@media (max-width: 768px) {
+  body {
+    overscroll-behavior-y: none;
+  }
+  .msg-layout,
+  .msg-chat-area {
+    overscroll-behavior: contain;
+  }
+}
+
+/* ── C8: Selection color follows accent ── */
+::selection {
+  background: var(--ac-light, rgba(99,102,241,0.15));
+  color: var(--ac, #6366f1);
+}
