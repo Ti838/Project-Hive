@@ -166,13 +166,14 @@
       .ml-\[260px\] {
         margin-left: 0 !important;
         padding-top: 64px !important;
+        height: 100dvh !important;
       }
 
       /* Chat layout - full height minus header */
       .msg-layout {
         padding-top: 0 !important;
         margin-top: 0 !important;
-        height: calc(100vh - 64px) !important;
+        height: calc(100dvh - 64px) !important;
       }
 
       /* Conversation list panel - hide on mobile when chat open */
@@ -255,6 +256,10 @@
         height: auto !important;
       }
 
+      body.chat-active-mobile #msgs {
+        padding-bottom: calc(80px + var(--chat-kb-offset, 0px) + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
       /* Chat input area - fixed above bottom nav, safe-area aware */
       #chat-input-area {
         position: fixed !important;
@@ -267,12 +272,16 @@
         padding: 8px 10px !important;
       }
 
+      body.chat-active-mobile #chat-input-area {
+        bottom: calc(var(--chat-kb-offset, 0px) + env(safe-area-inset-bottom, 0px)) !important;
+      }
+
       html.dark #chat-input-area {
         background: #11131e !important;
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3) !important;
       }
 
-      /* Prevent text from breaking vertically â€” scoped to text elements only */
+      /* Prevent text from breaking vertically — scoped to text elements only */
       h1, h2, h3, h4, h5, h6, p {
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;

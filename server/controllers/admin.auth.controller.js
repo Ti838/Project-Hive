@@ -86,6 +86,16 @@ export async function adminLogin(req, res) {
 
     console.log('[Admin] 👑 Admin logged in:', ADMIN_EMAIL);
 
+    // Set HTTP-only SameSite cookie
+    const isProd = process.env.NODE_ENV === 'production';
+    res.cookie('accessToken', token, {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? 'none' : 'lax',
+      path: '/',
+      maxAge: 4 * 60 * 60 * 1000 // 4 hours
+    });
+
     return res.json({
       ok: true,
       message: 'Admin login successful.',
@@ -100,8 +110,14 @@ export async function adminLogin(req, res) {
 
 // Middleware: verify admin token for protected routes
 export function requireAdminToken(req, res, next) {
+  let token = null;
   const auth = req.headers.authorization || '';
-  const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
+  if (auth.startsWith('Bearer ')) {
+    token = auth.slice(7);
+  } else if (req.cookies && req.cookies.accessToken) {
+    token = req.cookies.accessToken;
+  }
+
   if (!token) return res.status(401).json({ error: 'Admin token required.' });
   try {
     const secret  = getJwtSecret();

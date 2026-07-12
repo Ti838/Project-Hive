@@ -2,6 +2,22 @@
  * Auth Module - Handles authentication state and utilities
  */
 
+// Global fetch interceptor to always include credentials (cookies) for API calls
+(function() {
+  const originalFetch = window.fetch;
+  window.fetch = function(url, options = {}) {
+    const isApiCall = typeof url === 'string' && (
+      url.includes('/api/') || 
+      url.startsWith('http://localhost:5000') || 
+      url.startsWith('https://projecthive-backend.onrender.com')
+    );
+    if (isApiCall) {
+      options.credentials = 'include';
+    }
+    return originalFetch(url, options);
+  };
+})();
+
 const Auth = (() => {
     /**
      * Check if user is authenticated (has valid, non-expired token)

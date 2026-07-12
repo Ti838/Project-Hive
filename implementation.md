@@ -315,3 +315,26 @@ The center AI button in bottom nav works correctly:
 | `generator.html` | 3 | Results container `max-width: 800px` |
 | `teams-create.html` | 3 | Form `max-width: 700px` |
 | `saved.html` | 3 | Tab transition animation |
+
+### Phase 15: Cookie Authentication & Advanced Mobile Layout Hardening ✅ COMPLETED
+* **JWT Cookie Storage:** Migrated manual login, Google OAuth, and Refresh token handshakes to set HTTP-Only, Secure, and SameSite cookies on the backend.
+* **Global Fetch Interceptor:** Injected interceptor at the core of `auth.js` to automatically attach credentials to all API calls.
+* **WebSocket Authentication:** Supported both handshake token and cookie-based authorization fallbacks in socket server middleware.
+* **Visual Viewport Keyboard Adjustment:** Added resize and scroll event listeners on Visual Viewport, dynamically adjusting `#msgs` padding-bottom and `#chat-input-area` positioning using CSS variables.
+* **100dvh Stability:** Locked layout elements to dynamic viewport heights to prevent layout breaks on mobile browsers.
+
+```mermaid
+sequenceDiagram
+    participant U as Mobile User
+    participant V as Visual Viewport
+    participant JS as Frontend (JavaScript)
+    participant CSS as layout overrides (CSS)
+
+    U->>V: Tap message input (Keyboard slides up)
+    V->>JS: Fire Visual Viewport 'resize' or 'scroll' event
+    JS->>JS: Calculate offset = innerHeight - visualViewport.height
+    JS->>CSS: Set document property --chat-kb-offset = offset
+    CSS->>CSS: Shift #chat-input-area bottom to calc(offset + safe-area)
+    CSS->>CSS: Add extra padding-bottom to #msgs to fit shifted input
+    JS->>JS: Scroll message history element to bottom
+```

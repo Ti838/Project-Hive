@@ -3,14 +3,18 @@ import { supabaseAdmin } from '../config/supabase.js';
 
 export async function authMiddleware(req, res, next) {
   try {
+    let token = null;
     const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken;
+    }
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       return res.status(401).json({ error: 'Missing authorization token' });
     }
 
-    const token = authHeader.substring(7);
-    
     try {
       const decoded = verifyAccessToken(token);
       req.user = decoded;
@@ -44,15 +48,19 @@ export async function authMiddleware(req, res, next) {
 
 export async function optionalAuthMiddleware(req, res, next) {
   try {
+    let token = null;
     const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else if (req.cookies && req.cookies.accessToken) {
+      token = req.cookies.accessToken;
+    }
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
       req.user = null;
       return next();
     }
 
-    const token = authHeader.substring(7);
-    
     try {
       const decoded = verifyAccessToken(token);
       req.user = decoded;

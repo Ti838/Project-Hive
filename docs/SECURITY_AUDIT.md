@@ -17,8 +17,8 @@ A total of **21 security vulnerabilities** were identified across **4 severity l
 |----------|-------|-------|-----------|
 | 🔴 **CRITICAL** | 5 | 5 | 0 |
 | 🟠 **HIGH** | 7 | 7 | 0 |
-| 🟡 **MEDIUM** | 6 | 6 | 0 |
-| 🔵 **LOW** | 3 | 3 | 0 |
+| 🟡 **MEDIUM** | 7 | 7 | 0 |
+| 🔵 **LOW** | 2 | 2 | 0 |
 | **Total** | **21** | **21** | **0** |
 
 ---
@@ -167,8 +167,8 @@ A total of **21 security vulnerabilities** were identified across **4 severity l
 ### 20. Tokens Stored in localStorage
 - **File:** `public/assets/js/core/api.js`
 - **OWASP:** A07:2021 – Identification and Authentication Failures
-- **Issue:** JWT tokens are stored in `localStorage`, which is accessible via XSS attacks.
-- **Status:** The XSS sanitization middleware and CSP headers now significantly mitigate this risk. Migrating to `httpOnly` cookies would require architectural changes. The current approach is acceptable with the new XSS protections in place.
+- **Issue:** JWT tokens were stored in `localStorage`, which is accessible via XSS attacks.
+- **Status:** **FULLY RESOLVED**. Migrated sensitive JWT token storage from client-side `localStorage` to secure, `HttpOnly`, `SameSite` cookies. The client only retains non-sensitive metadata for UI state tracking, eliminating token theft risks.
 
 ### 21. Console Logging of Sensitive Data
 - **Various files**
@@ -221,13 +221,36 @@ The voice/video calling system implements these security measures:
 
 > These are non-blocking enhancements to further strengthen security:
 
-1. **Migrate to httpOnly cookies** — Move JWT storage from `localStorage` to `httpOnly`, `Secure`, `SameSite=Strict` cookies to eliminate XSS-based token theft entirely.
+1. **Migrate to httpOnly cookies** — ✅ **COMPLETED**. Moved JWT storage from `localStorage` to secure, HTTP-only SameSite cookies.
 2. **Add password complexity requirements** — Currently only checks `length >= 8`. Consider requiring uppercase, number, and special character.
 3. **Rotate all exposed API keys** — The `.env` file was committed to git history at some point. All keys (Supabase, Brevo, Gemini) should be rotated.
 4. **Implement account lockout** — Lock accounts after N failed login attempts (not just rate-limit the IP).
 5. **Add audit logging** — Log security events (failed logins, role changes, admin actions) to a persistent store.
 6. **Add Supabase RLS policies for anon role** — Currently RLS only has `service_role` policies. Add restrictive `anon` role policies as defense-in-depth.
 7. **Tighten CORS** — Replace `*.vercel.app` with specific production domains only.
+
+---
+
+## 🔒 4. Secure Cookie-Based Authentication Architecture
+
+The application now uses a secure HTTP-Only SameSite cookie authentication flow:
+
+```mermaid
+sequenceDiagram
+    participant Browser as Frontend (Browser)
+    participant Server as Express Server (Backend)
+    participant DB as Supabase Database
+
+    Browser->{Server}: POST /api/auth/login (with credentials)
+    Server->>DB: Check user credentials
+    DB-->>Server: Return user data
+    Server->>Server: Generate JWT Access & Refresh Tokens
+    Server-->>Browser: Set HTTP-Only SameSite Cookies & return user info JSON
+    Note over Browser, Server: Subsequent requests automatically include cookies via interceptor
+    Browser->>Server: GET /api/users (cookie auto-attached)
+    Server->>Server: Verify accessToken from cookie
+    Server-->>Browser: Return data JSON
+```
 
 ---
 

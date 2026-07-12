@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import path from 'path';
+import cookieParser from 'cookie-parser';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 
@@ -105,6 +106,9 @@ app.use(cors(corsOptions));
 
 // Logging
 app.use(morgan('combined'));
+
+// Cookie parsing
+app.use(cookieParser());
 
 // Body parsing (15MB default — to match frontend image upload limits)
 app.use(express.json({ limit: '15mb' }));

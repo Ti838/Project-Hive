@@ -1,8 +1,24 @@
 import { verifyAccessToken } from '../utils/jwt.utils.js';
 
+function parseCookie(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+  cookieHeader.split(';').forEach(cookie => {
+    const parts = cookie.match(/(.*?)=(.*)$/);
+    if (parts) {
+      cookies[parts[1].trim()] = (parts[2] || '').trim();
+    }
+  });
+  return cookies;
+}
+
 export function socketAuthMiddleware(socket, next) {
   try {
-    const token = socket.handshake.auth.token;
+    let token = socket.handshake.auth.token;
+    if (!token && socket.handshake.headers.cookie) {
+      const parsed = parseCookie(socket.handshake.headers.cookie);
+      token = parsed.accessToken;
+    }
     
     if (!token) {
       return next(new Error('Missing authentication token'));

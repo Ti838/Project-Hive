@@ -12,6 +12,40 @@ function sanitizeUser(user) {
   return safe;
 }
 
+function setAuthCookies(res, accessToken, refreshToken) {
+  const isProd = process.env.NODE_ENV === 'production';
+  const options = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+  };
+  if (accessToken) {
+    res.cookie('accessToken', accessToken, {
+      ...options,
+      maxAge: 4 * 60 * 60 * 1000 // 4 hours
+    });
+  }
+  if (refreshToken) {
+    res.cookie('refreshToken', refreshToken, {
+      ...options,
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+  }
+}
+
+function clearAuthCookies(res) {
+  const isProd = process.env.NODE_ENV === 'production';
+  const options = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? 'none' : 'lax',
+    path: '/',
+  };
+  res.clearCookie('accessToken', options);
+  res.clearCookie('refreshToken', options);
+}
+
 // ─── REGISTER ────────────────────────────────────────────────────────────────
 export async function register(req, res, next) {
   try {
@@ -278,6 +312,8 @@ export async function login(req, res, next) {
 
     console.log('[ProjectHive] ✅ User logged in:', user.email, '| role:', user.role);
 
+    setAuthCookies(res, accessToken, refreshToken);
+
     res.json({
       message: 'Login successful',
       user: {
@@ -334,6 +370,8 @@ export async function refresh(req, res, next) {
       .update({ refresh_tokens: updatedTokens })
       .eq('id', user.id);
 
+    setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
+
     res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
@@ -365,6 +403,7 @@ export async function logout(req, res, next) {
       }
     }
 
+    clearAuthCookies(res);
     console.log('[ProjectHive] User logged out:', req.user.email);
     res.json({ message: 'Logged out successfully.' });
   } catch (error) {
@@ -623,6 +662,8 @@ export async function googleCallback(req, res, next) {
 
     console.log('[ProjectHive] ✅ Google OAuth complete for:', email);
 
+    setAuthCookies(res, accessToken, platformRefresh);
+
     res.json({
       message: 'Google sign-in successful',
       accessToken,
@@ -793,6 +834,8 @@ export async function googleCodeExchange(req, res, next) {
       .eq('id', platformUser.id);
 
     console.log('[ProjectHive] ✅ Google OAuth (code) — sign-in complete:', email);
+
+    setAuthCookies(res, accessToken, platformRefresh);
 
     res.json({
       message: 'Google sign-in successful',
