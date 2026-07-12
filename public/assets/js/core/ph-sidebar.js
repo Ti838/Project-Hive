@@ -110,18 +110,22 @@ const PHSidebar = (() => {
       if (cached) setUserUI(JSON.parse(cached));
     } catch(_) {}
 
-    // 2. Fetch fresh data from API
+    // 2. Fetch fresh — 10s timeout so Render cold-start doesn't hang sidebar forever
     try {
       const tk = localStorage.getItem('access_token');
       if (!tk) return;
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
         ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
+      const ctrl = new AbortController();
+      const toId = setTimeout(() => ctrl.abort(), 10000);
       const r = await fetch(apiBase + '/api/users/me', {
-        headers: { Authorization: 'Bearer ' + tk }
+        headers: { Authorization: 'Bearer ' + tk },
+        signal: ctrl.signal
       });
+      clearTimeout(toId);
       if (!r.ok) return;
       const u = await r.json();
-      localStorage.setItem('ph-user-cache', JSON.stringify(u)); // cache it
+      localStorage.setItem('ph-user-cache', JSON.stringify(u));
       setUserUI(u);
     } catch(_) {}
   }
@@ -133,8 +137,11 @@ const PHSidebar = (() => {
       if (!tk) return;
       const apiBase = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
         ? (location.port === '3000' ? 'http://localhost:5000' : '') : 'https://projecthive-backend.onrender.com';
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 10000);
       const r = await fetch(apiBase + '/api/messages/conversations', {
-        headers: { Authorization: 'Bearer ' + tk }
+        headers: { Authorization: 'Bearer ' + tk },
+        signal: ctrl.signal
       });
       if (!r.ok) return;
       const d = await r.json();

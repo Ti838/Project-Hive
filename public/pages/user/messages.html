@@ -2830,7 +2830,9 @@
       // â”€â”€ Team Collaboration Groups â”€â”€
       async function loadTeamConvs() {
         try {
-          const r = await fetch(API_BASE + '/api/messages/team-conversations', { headers: H });
+          const ctrl = new AbortController();
+          setTimeout(() => ctrl.abort(), 15000);
+          const r = await fetch(API_BASE + '/api/messages/team-conversations', { headers: H, signal: ctrl.signal });
           if (r.ok) {
             const d = await r.json();
             teamConvs = d.teams || [];
