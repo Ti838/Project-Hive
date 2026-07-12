@@ -190,7 +190,7 @@
         width: 100% !important;
       }
 
-      /* Chat header - no overlap, proper positioning */
+      /* Chat header - no overlap on mobile, auto height to fit all buttons */
       #chat-hdr {
         position: sticky !important;
         top: 0 !important;
@@ -198,11 +198,37 @@
         background: white !important;
         border-bottom: 1px solid rgba(229, 231, 235, 1) !important;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        height: auto !important;
+        min-height: 56px !important;
+        padding: 8px 12px !important;
+        gap: 6px !important;
+        flex-wrap: nowrap !important;
       }
 
       html.dark #chat-hdr {
         background: #11131e !important;
         border-bottom-color: #24273e !important;
+      }
+
+      /* Chat action buttons - tighter on mobile */
+      #chat-hdr .msg-chat-actions {
+        gap: 4px !important;
+        flex-shrink: 0 !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        max-width: 60vw;
+      }
+      #chat-hdr .msg-chat-actions::-webkit-scrollbar { display: none !important; }
+
+      /* Make action buttons slightly smaller on mobile */
+      #chat-hdr .msg-chat-actions button,
+      #chat-hdr .msg-chat-actions a {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        flex-shrink: 0 !important;
       }
 
       /* Messages container - proper scrolling area */
@@ -213,15 +239,16 @@
         height: auto !important;
       }
 
-      /* Chat input area - fixed above bottom nav */
+      /* Chat input area - fixed above bottom nav, safe-area aware */
       #chat-input-area {
         position: fixed !important;
-        bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
+        bottom: calc(env(safe-area-inset-bottom, 0px) + 64px) !important;
         left: 0 !important;
         right: 0 !important;
         z-index: 100 !important;
         background: white !important;
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08) !important;
+        padding: 8px 10px !important;
       }
 
       html.dark #chat-input-area {
@@ -229,12 +256,10 @@
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3) !important;
       }
 
-      /* Prevent text from breaking vertically */
-      h1, h2, h3, h4, h5, h6, p, span:not(.material-symbols-outlined), div, button {
+      /* Prevent text from breaking vertically — scoped to text elements only */
+      h1, h2, h3, h4, h5, h6, p {
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
-        white-space: normal !important;
-        writing-mode: horizontal-tb !important;
       }
     }
   </style>

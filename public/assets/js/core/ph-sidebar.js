@@ -997,8 +997,14 @@ const PHSidebar = (() => {
         <a href="/profile" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">person</span>Profile
         </a>
+        <a href="/feed" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">newspaper</span>Feed
+        </a>
         <a href="/teams" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">groups</span>Teams
+        </a>
+        <a href="/people" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:var(--ac,#6366f1)">group_add</span>People
         </a>
         <a href="/messages" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:#10b981">video_call</span>Meetings
@@ -1021,7 +1027,7 @@ const PHSidebar = (() => {
         <a href="/settings" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">settings</span>Settings
         </a>
-        <a href="/pages/info/help.html" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+        <a href="/help" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">help</span>Help
         </a>
         <button id="ph-ps-theme" data-theme-wired="1" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;width:100%;border:none;background:none;cursor:pointer;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600;font-family:inherit;text-align:left;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none;-webkit-user-select:none">
