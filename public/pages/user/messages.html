@@ -2612,6 +2612,7 @@
 
       /* Load all conversations */
       async function loadConvs(){
+        // 1. Show cached data instantly
         try {
           const cache = localStorage.getItem('ph-convs-cache');
           if (cache) {
@@ -2620,8 +2621,30 @@
           }
         } catch(e) {}
 
+        // 2. Fetch fresh — with 20s timeout for Render cold-start
         try{
-          const r = await fetch(API_BASE+'/api/messages/conversations',{headers:H});
+          const ctrl = new AbortController();
+          const toId = setTimeout(() => ctrl.abort(), 20000);
+
+          // Show waking-up hint after 4 seconds if still loading
+          const wakeHintTimer = setTimeout(() => {
+            if (!convs.length) {
+              document.getElementById('conv-list').innerHTML = `
+                <div class="flex flex-col items-center justify-center h-48 gap-3 p-4 text-center">
+                  <span class="material-symbols-outlined text-4xl text-amber-400 animate-pulse">rocket_launch</span>
+                  <p class="font-semibold text-xs text-gray-600 dark:text-slate-300">Server is waking up…</p>
+                  <p class="text-[11px] text-gray-400 dark:text-slate-500">This takes ~15 seconds on first load</p>
+                  <button onclick="loadConvs()" class="mt-1 px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all active:scale-95">
+                    Retry
+                  </button>
+                </div>`;
+            }
+          }, 4000);
+
+          const r = await fetch(API_BASE+'/api/messages/conversations', { headers: H, signal: ctrl.signal });
+          clearTimeout(toId);
+          clearTimeout(wakeHintTimer);
+
           const d = await r.json();
           convs = d.conversations||d||[];
           friendIds.clear();
@@ -2677,9 +2700,13 @@
         }catch(e){
           if (!convs.length) {
             document.getElementById('conv-list').innerHTML=`
-              <div class="flex flex-col items-center justify-center h-48 text-gray-400 dark:text-slate-500 text-sm gap-2 p-4 text-center">
-                <span class="material-symbols-outlined text-4xl text-rose-500/50">cloud_off</span>
-                <p class="font-medium text-xs">Offline Workspace</p>
+              <div class="flex flex-col items-center justify-center h-48 gap-3 p-4 text-center">
+                <span class="material-symbols-outlined text-4xl text-rose-500/60">cloud_off</span>
+                <p class="font-semibold text-xs text-gray-600 dark:text-slate-300">Could not connect</p>
+                <p class="text-[11px] text-gray-400 dark:text-slate-500">Server may be starting up</p>
+                <button onclick="loadConvs()" class="mt-1 px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all active:scale-95">
+                  Retry
+                </button>
               </div>`;
           }
         }
