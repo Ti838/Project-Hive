@@ -724,9 +724,9 @@
       <footer class="px-3 pt-1">
         <div class="flex flex-wrap gap-x-2 gap-y-1 justify-center text-[10px] text-on-surface-variant">
           <a href="javascript:void(0)" onclick="openInfoModal('about')" class="hover:text-primary hover:underline transition-colors cursor-pointer">About</a>
-          <span class="opacity-40">Â·</span>
+          <span class="opacity-40">•</span>
           <a href="javascript:void(0)" onclick="openInfoModal('privacy')" class="hover:text-primary hover:underline transition-colors cursor-pointer">Privacy</a>
-          <span class="opacity-40">Â·</span>
+          <span class="opacity-40">•</span>
           <a href="javascript:void(0)" onclick="openInfoModal('terms')" class="hover:text-primary hover:underline transition-colors cursor-pointer">Terms</a>
         </div>
         <p class="text-[10px] text-on-surface-variant/60 mt-2 font-semibold flex items-center gap-1 justify-center">
@@ -1535,7 +1535,7 @@
                   <span class="font-bold text-sm text-on-surface hover:text-primary cursor-pointer transition-colors" onclick="showUserProfile('${author.id || author._id}')" title="View Profile">${escapeHtml(name)}</span>
                   ${badgeHtml}
                 </div>
-                <p class="text-[11px] text-on-surface-variant">${escapeHtml(author.university || '')} â€¢ ${formatTimeAgo(p.createdAt)}</p>
+                <p class="text-[11px] text-on-surface-variant">${escapeHtml(author.university || '')} • ${formatTimeAgo(p.createdAt)}</p>
               </div>
             </div>
 

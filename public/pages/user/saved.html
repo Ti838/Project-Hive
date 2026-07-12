@@ -140,7 +140,7 @@
         <div class="sv-avatar" style="background:${color}">${a.avatar?`<img src="${a.avatar}" alt="${name}">`:(initials)}</div>
         <div class="sv-meta">
           <div class="sv-name" onclick="location.href='/profile?id=${a.id||a._id}'">${name}</div>
-          <div class="sv-info">${esc(a.university||'')}${a.university?' Â· ':''}${ago(p.createdAt)}</div>
+          <div class="sv-info">${esc(a.university||'')}${a.university?' • ':''}${ago(p.createdAt)}</div>
         </div>
       </div>
       ${badge?`<div class="sv-badge" style="background:${badge.bg};color:${badge.color}"><span class="material-symbols-outlined" style="font-size:12px">${badge.icon}</span>${badge.label}</div>`:''}
@@ -184,7 +184,7 @@
         <div class="sv-avatar" style="background:${domainColor}"><span class="material-symbols-outlined" style="font-size:18px;color:#fff">lightbulb</span></div>
         <div class="sv-meta">
           <div class="sv-name" style="cursor:default">${title}</div>
-          <div class="sv-info">${idea.difficulty?idea.difficulty+' Â· ':''}${idea.domain?esc(idea.domain)+' Â· ':''}${savedAt}</div>
+          <div class="sv-info">${idea.difficulty?idea.difficulty+' • ':''}${idea.domain?esc(idea.domain)+' • ':''}${savedAt}</div>
         </div>
       </div>
       <div class="sv-body" style="-webkit-line-clamp:6">${desc}</div>

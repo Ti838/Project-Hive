@@ -294,7 +294,7 @@
         <div class="pv-detail-icon"><span class="material-symbols-outlined">school</span></div>
         <div class="pv-detail-text">
           <h4>${u.university}</h4>
-          <p>${[u.major, yearText ? ys[yearText] || '' : ''].filter(Boolean).join(' Â· ')}</p>
+          <p>${[u.major, yearText ? ys[yearText] || '' : ''].filter(Boolean).join(' • ')}</p>
           ${u.createdAt || u.created_at ? `<p style="font-size:12px;color:var(--sub);margin-top:2px">Member since ${new Date(u.createdAt||u.created_at).toLocaleDateString('en-US',{month:'long',year:'numeric'})}</p>` : ''}
         </div>
       </div>`);
@@ -432,7 +432,7 @@
       return `<div class="pv-activity-item">
         <div class="pv-activity-head">
           <div class="av" style="background:${avColor}">${user.avatar ? '' : initials}</div>
-          <div class="meta"><strong>${name}</strong> posted Â· ${ago}</div>
+          <div class="meta"><strong>${name}</strong> posted • ${ago}</div>
         </div>
         <div class="pv-activity-content">${content}</div>
         <div class="pv-activity-stats">
@@ -501,7 +501,7 @@
           <div style="font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(t.name)}</div>
           <div style="font-size:11px;color:var(--sub);margin-top:2px;display:flex;align-items:center;gap:6px">
             <span class="material-symbols-outlined" style="font-size:13px">group</span>${members} member${members!==1?'s':''}
-            ${isOpen?'<span style="color:#10b981;font-weight:700">Â· Open</span>':'<span style="color:var(--sub)">Â· Closed</span>'}
+            ${isOpen?'<span style="color:#10b981;font-weight:700">• Open</span>':'<span style="color:var(--sub)">• Closed</span>'}
           </div>
         </div>
       </div>`;

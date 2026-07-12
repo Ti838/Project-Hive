@@ -87,6 +87,12 @@
   function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
   let teams=[],myIds=new Set(),myTeamRoles=new Map();
+  let pendingRequestIds = new Set();
+  try {
+    const cached = localStorage.getItem('ph-pending-request-ids');
+    if (cached) pendingRequestIds = new Set(JSON.parse(cached));
+  } catch(e) {}
+
   window.teams = teams;   // expose for edit modal
   window.myIds = myIds;   // expose for details modal
   window.myTeamRoles = myTeamRoles;
@@ -123,8 +129,10 @@
                    </div>`
                 : `<button onclick="event.stopPropagation();leaveTeam('${tid}',this)" class="ph-btn" style="padding:5px 14px;font-size:12px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
               : isOpen
-                ?`<button onclick="event.stopPropagation();join('${tid}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
-                :`<span style="font-size:12px;color:var(--sub)">Members only</span>`
+                ? pendingRequestIds.has(tid)
+                  ? `<button disabled class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px;background:var(--sf2);color:var(--sub);border:1px solid var(--bd);cursor:not-allowed">Requested</button>`
+                  : `<button onclick="event.stopPropagation();join('${tid}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
+                : `<span style="font-size:12px;color:var(--sub)">Members only</span>`
             }
           </div>
         </div>
@@ -136,10 +144,18 @@
   window.search=function(q){render(q?teams.filter(t=>(t.name||'').toLowerCase().includes(q.toLowerCase())||(t.description||'').toLowerCase().includes(q.toLowerCase())):teams);};
 
   window.join=async function(id,btn){
-    btn.disabled=true;btn.textContent='Joiningâ€¦';
+    btn.disabled=true;btn.textContent='Joining…';
     try{
       const r=await fetch(API_BASE+`/api/teams/${id}/join`,{method:'POST',headers:H});
-      if(r.ok){btn.textContent='Joined!';btn.style.background='var(--green)';myIds.add(id);PHToast?.success('Join request sent!');
+      if(r.ok){
+        btn.textContent='Requested';
+        btn.style.background='var(--sf2)';
+        btn.style.color='var(--sub)';
+        btn.style.border='1px solid var(--bd)';
+        btn.style.cursor='not-allowed';
+        pendingRequestIds.add(id);
+        localStorage.setItem('ph-pending-request-ids', JSON.stringify(Array.from(pendingRequestIds)));
+        PHToast?.success('Join request sent!');
         setTimeout(()=>load(),800);
       }
       else{const d=await r.json();PHToast?.error(d.message||d.error||'Failed');btn.textContent='Join';btn.disabled=false;}
@@ -202,6 +218,18 @@
         localStorage.setItem('ph-teams-mine-cache', JSON.stringify(mine));
         myIds=new Set(mine.map(t=>t._id||t.id));
         myTeamRoles=new Map(mine.map(t=>[t._id||t.id, t.myRole||'member']));
+
+        let changed = false;
+        myIds.forEach(id => {
+          if (pendingRequestIds.has(id)) {
+            pendingRequestIds.delete(id);
+            changed = true;
+          }
+        });
+        if (changed) {
+          localStorage.setItem('ph-pending-request-ids', JSON.stringify(Array.from(pendingRequestIds)));
+        }
+
         document.getElementById('st-mine').textContent=mine.length;
         if (tr.status==='fulfilled') render(teams);
       }

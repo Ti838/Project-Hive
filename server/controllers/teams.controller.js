@@ -383,7 +383,7 @@ export async function addMember(req, res, next) {
     await supabaseAdmin.from('team_members').insert({ team_id: teamId, user_id: userId, role: 'member' });
 
     // Delete any pending join request from this user
-    await supabaseAdmin.from('team_requests').delete().eq('team_id', teamId).eq('user_id', userId);
+    await supabaseAdmin.from('join_requests').delete().eq('team_id', teamId).eq('user_id', userId);
 
     // Notify added user
     const addTitle = 'Added to Team';

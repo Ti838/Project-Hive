@@ -1899,8 +1899,6 @@
           showToast('Cannot edit file attachments or voice notes', 'error');
           document.getElementById('msg-context-menu').classList.add('hidden');
           return;
-        }
-
         currentEditMsg = { id, content };
         cancelReply(); // Close replies if open
 
@@ -1974,9 +1972,13 @@
         }
       });
 
-      // â”€â”€â”€ CHAT INFO PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+      // ─── CHAT INFO PANEL ──────────────────────────────────────────
       window.openChatInfo = function() {
-        if (!activeConv || activeConv.type === 'team') return;
+        if (!activeConv) return;
+        if (activeConv.type === 'team') {
+          openTeamChatInfo(activeConv._id);
+          return;
+        }
         const f = activeConv.friend || {};
         const name = ((f.firstName||'') + ' ' + (f.lastName||'')).trim() || 'Teammate';
         const color = avC(name);
@@ -2036,11 +2038,392 @@
         document.getElementById('chat-info-backdrop').classList.add('hidden');
       };
 
+      window.toggleChatDropdown = function(event) {
+        if (event) event.stopPropagation();
+        const dd = document.getElementById('chat-hdr-dropdown');
+        if (dd) dd.classList.toggle('hidden');
+      };
 
+      window.closeChatDropdown = function() {
+        const dd = document.getElementById('chat-hdr-dropdown');
+        if (dd) dd.classList.add('hidden');
+      };
 
+      document.addEventListener('click', () => {
+        const dd = document.getElementById('chat-hdr-dropdown');
+        if (dd) dd.classList.add('hidden');
+      });
 
+      // --- TEAM CHAT INFO & GROUP OPTIONS ---
+      window.openTeamChatInfo = async function(teamId) {
+        if (!teamId) return;
+        const bodyEl = document.getElementById('chat-info-body');
+        bodyEl.innerHTML = `
+          <div class="flex flex-col items-center justify-center py-8 text-gray-400 dark:text-slate-500 text-sm gap-2">
+            <span class="material-symbols-outlined animate-spin text-indigo-500 text-3xl">sync</span>
+            <p class="font-medium text-xs">Loading team info...</p>
+          </div>`;
+        document.getElementById('chat-info-panel').classList.remove('translate-x-full');
+        document.getElementById('chat-info-backdrop').classList.remove('hidden');
 
-      // â”€â”€â”€ SEARCH IN CHAT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${teamId}`, { headers: H });
+          if (!res.ok) throw new Error();
+          const t = await res.json();
+
+          const isLeader = t.leader_id === ME?.id;
+          const TEAM_COLORS = ['#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6','#6366f1'];
+          const idx = teamConvs.findIndex(tc => tc._id === teamId);
+          const color = TEAM_COLORS[idx >= 0 ? idx % TEAM_COLORS.length : 0];
+
+          // Members list HTML
+          const membersHTML = (t.team_members || []).map(m => {
+            const u = m.users || m.user || {};
+            const uid = u.id || u._id || m.user_id;
+            const name = `${u.first_name || u.firstName || 'Teammate'} ${u.last_name || u.lastName || ''}`.trim();
+            const initials = ((u.first_name || u.firstName || 'M')[0] + (u.last_name || u.lastName || '')[0] || '').toUpperCase() || '?';
+            const userAvatarCol = avC(name);
+            const isMe = uid === ME?.id;
+
+            const kickBtn = (isLeader && m.role !== 'leader' && !isMe)
+              ? `<button onclick="kickTeamMember('${teamId}', '${uid}', '${esc(name)}', this)" class="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all">Kick</button>`
+              : '';
+
+            const roleText = m.role === 'leader'
+              ? '<span class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">Leader</span>'
+              : '<span class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-darkSurface-card px-1.5 py-0.5 rounded">Member</span>';
+
+            const userProfileLink = `/pages/user/profile/view.html?id=${uid}`;
+
+            return `
+              <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-darkSurface-border/40">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style="background:${userAvatarCol}">${initials}</div>
+                  <div class="min-w-0">
+                    <a href="${userProfileLink}" class="text-xs font-bold text-gray-800 dark:text-slate-200 hover:text-indigo-500 hover:underline block truncate">${esc(name)}</a>
+                    <span class="text-[10px] text-gray-400 dark:text-slate-500 truncate block">${esc(u.university || '')}</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                  ${roleText}
+                  ${kickBtn}
+                </div>
+              </div>`;
+          }).join('');
+
+          // invite section
+          let inviteHTML = '';
+          if (isLeader) {
+            const memberIds = new Set((t.team_members || []).map(m => {
+              const u = m.users || m.user || {};
+              return u.id || u._id || m.user_id;
+            }));
+
+            try {
+              const frRes = await fetch(API_BASE + '/api/friends', { headers: H });
+              if (frRes.ok) {
+                const frData = await frRes.json();
+                const friends = frData.friends || [];
+                const addableFriends = friends.filter(f => !memberIds.has(f.id || f._id));
+
+                if (addableFriends.length > 0) {
+                  const selectOptions = addableFriends.map(f => {
+                    const name = `${f.first_name || f.firstName || ''} ${f.last_name || f.lastName || ''}`.trim() || 'Friend';
+                    return `<option value="${f.id || f._id}">${esc(name)}</option>`;
+                  }).join('');
+
+                  inviteHTML = `
+                    <div class="pt-4 border-t border-gray-150 dark:border-darkSurface-border">
+                      <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-base text-indigo-500">person_add</span>
+                        <span>Add Member</span>
+                      </h4>
+                      <div class="flex gap-2">
+                        <select id="invite-friend-select" class="flex-1 text-xs bg-gray-100 dark:bg-darkSurface-card border-none rounded-xl px-3 py-2 text-gray-800 dark:text-slate-200 focus:ring-2 focus:ring-indigo-500">
+                          <option value="">Select friend...</option>
+                          ${selectOptions}
+                        </select>
+                        <button onclick="addFriendToTeam('${teamId}', this)" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all shadow-sm active:scale-95">Add</button>
+                      </div>
+                    </div>`;
+                }
+              }
+            } catch(e) {
+              console.error('[ProjectHive] Invite loading failed:', e);
+            }
+          }
+
+          // requests section
+          let requestsHTML = '';
+          if (isLeader) {
+            try {
+              const reqRes = await fetch(API_BASE + `/api/teams/${teamId}/requests`, { headers: H });
+              if (reqRes.ok) {
+                const requests = await reqRes.json();
+                const pending = requests.filter(r => r.status === 'pending');
+                if (pending.length > 0) {
+                  const reqsItems = pending.map(r => {
+                    const u = r.users || {};
+                    const reqName = `${u.first_name || u.firstName || 'Applicant'} ${u.last_name || u.lastName || ''}`.trim();
+                    return `
+                      <div class="p-3 bg-gray-50 dark:bg-darkSurface-card/50 border border-gray-100 dark:border-darkSurface-border/40 rounded-xl">
+                        <div class="flex justify-between items-start mb-2">
+                          <div>
+                            <strong class="text-xs text-gray-800 dark:text-slate-200 block truncate">${esc(reqName)}</strong>
+                            <span class="text-[10px] text-gray-400 dark:text-slate-500 truncate block">${esc(u.university || '')}</span>
+                          </div>
+                          <div class="flex gap-1">
+                            <button onclick="handleTeamRequest('${teamId}', '${r.id}', 'accept', this)" class="px-2 py-1 text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg transition-all">Accept</button>
+                            <button onclick="handleTeamRequest('${teamId}', '${r.id}', 'reject', this)" class="px-2 py-1 text-[10px] bg-gray-200 dark:bg-darkSurface-card hover:bg-gray-300 dark:hover:bg-darkSurface-hover text-gray-700 dark:text-slate-300 font-bold rounded-lg transition-all font-semibold">Reject</button>
+                          </div>
+                        </div>
+                        ${r.message ? `<p class="text-[11px] text-gray-500 dark:text-slate-400 italic mt-1 leading-snug">"${esc(r.message)}"</p>` : ''}
+                      </div>`;
+                  }).join('');
+
+                  requestsHTML = `
+                    <div class="pt-4 border-t border-gray-150 dark:border-darkSurface-border">
+                      <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 mb-2 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-base text-amber-500">group_add</span>
+                        <span>Join Requests (${pending.length})</span>
+                      </h4>
+                      <div class="space-y-2">
+                        ${reqsItems}
+                      </div>
+                    </div>`;
+                }
+              }
+            } catch(e) {}
+          }
+
+          // Action buttons
+          let actionBtnHTML = '';
+          if (isLeader) {
+            actionBtnHTML = `
+              <div class="flex flex-col gap-2 pt-4 border-t border-gray-150 dark:border-darkSurface-border">
+                <a href="/teams?tid=${teamId}" class="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border border-indigo-200 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/20 text-xs font-bold transition-all">
+                  <span class="material-symbols-outlined text-base">edit</span>
+                  Manage on Hives Page
+                </a>
+                <button onclick="deleteTeamFromChat('${teamId}', '${esc(t.name)}')" class="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white text-xs font-bold transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-base">delete_forever</span>
+                  Delete Team
+                </button>
+              </div>`;
+          } else {
+            actionBtnHTML = `
+              <div class="pt-4 border-t border-gray-150 dark:border-darkSurface-border">
+                <button onclick="leaveTeamFromChat('${teamId}', '${esc(t.name)}')" class="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white text-xs font-bold transition-all shadow-sm">
+                  <span class="material-symbols-outlined text-base">logout</span>
+                  Leave Team
+                </button>
+              </div>`;
+          }
+
+          bodyEl.innerHTML = `
+            <div class="flex flex-col items-center text-center pb-5 border-b border-gray-100 dark:border-darkSurface-border">
+              <div class="w-16 h-16 rounded-2xl flex items-center justify-center font-bold text-white text-xl shadow-md mb-3" style="background:${color}">
+                <span class="material-symbols-outlined text-3xl">groups</span>
+              </div>
+              <div class="font-heading font-bold text-base text-gray-900 dark:text-white leading-snug">${esc(t.name)}</div>
+              <div class="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mt-1">${esc(t.category || 'Project Space')}</div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-1">Description</h4>
+                <p class="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">${esc(t.description || 'No description provided.')}</p>
+              </div>
+
+              <div>
+                <h4 class="text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider mb-2">Members (${t.team_members?.length || 0})</h4>
+                <div class="max-h-60 overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                  ${membersHTML || '<div class="text-xs text-gray-400 italic">No members.</div>'}
+                </div>
+              </div>
+
+              ${inviteHTML}
+              ${requestsHTML}
+              ${actionBtnHTML}
+            </div>`;
+
+        } catch(err) {
+          bodyEl.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-8 text-rose-500 gap-2">
+              <span class="material-symbols-outlined text-3xl">error</span>
+              <p class="font-medium text-xs">Could not load team details.</p>
+            </div>`;
+        }
+      };
+
+      window.kickTeamMember = async function(teamId, memberId, memberName, btn) {
+        const ok = await phConfirm({
+          title: 'Kick Member?',
+          message: `Are you sure you want to remove ${memberName} from this team?`,
+          confirmText: 'Remove',
+          icon: 'person_remove'
+        });
+        if (!ok) return;
+
+        btn.disabled = true;
+        btn.textContent = '...';
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${teamId}/members/${memberId}`, { method: 'DELETE', headers: H });
+          const d = await res.json();
+          if (res.ok) {
+            showToast(`${memberName} kicked successfully`, 'success');
+            openTeamChatInfo(teamId);
+            if (activeConv && activeConv._id === teamId) {
+              activeConv.memberCount = Math.max(1, activeConv.memberCount - 1);
+              const countEl = document.querySelector('#chat-hdr [data-team-mbr-cnt]');
+              if (countEl) countEl.textContent = `Team Space • ${activeConv.memberCount} ${activeConv.memberCount === 1 ? 'member' : 'members'}`;
+              loadTeamConvs().then(() => {
+                if (currentTab === 'teams') renderTeamConvs(teamConvs);
+              });
+            }
+          } else {
+            showToast(d.error || 'Failed to remove member', 'error');
+            btn.disabled = false; btn.textContent = 'Kick';
+          }
+        } catch(e) {
+          showToast('Server error', 'error');
+          btn.disabled = false; btn.textContent = 'Kick';
+        }
+      };
+
+      window.addFriendToTeam = async function(teamId, btn) {
+        const select = document.getElementById('invite-friend-select');
+        const userId = select?.value;
+        if (!userId) {
+          showToast('Please select a friend to add', 'error');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '...';
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${teamId}/members`, {
+            method: 'POST',
+            headers: H,
+            body: JSON.stringify({ userId })
+          });
+          const d = await res.json();
+          if (res.ok) {
+            showToast('Member added successfully!', 'success');
+            openTeamChatInfo(teamId);
+            if (activeConv && activeConv._id === teamId) {
+              activeConv.memberCount += 1;
+              const countEl = document.querySelector('#chat-hdr [data-team-mbr-cnt]');
+              if (countEl) countEl.textContent = `Team Space • ${activeConv.memberCount} ${activeConv.memberCount === 1 ? 'member' : 'members'}`;
+              loadTeamConvs().then(() => {
+                if (currentTab === 'teams') renderTeamConvs(teamConvs);
+              });
+            }
+          } else {
+            showToast(d.error || 'Failed to add member', 'error');
+            btn.disabled = false; btn.textContent = 'Add';
+          }
+        } catch(e) {
+          showToast('Server error', 'error');
+          btn.disabled = false; btn.textContent = 'Add';
+        }
+      };
+
+      window.handleTeamRequest = async function(teamId, reqId, action, btn) {
+        btn.disabled = true;
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${teamId}/requests/${reqId}/${action}`, { method: 'POST', headers: H });
+          if (res.ok) {
+            showToast(`Request ${action}ed successfully`, 'success');
+            openTeamChatInfo(teamId);
+            if (action === 'accept' && activeConv && activeConv._id === teamId) {
+              activeConv.memberCount += 1;
+              const countEl = document.querySelector('#chat-hdr [data-team-mbr-cnt]');
+              if (countEl) countEl.textContent = `Team Space • ${activeConv.memberCount} ${activeConv.memberCount === 1 ? 'member' : 'members'}`;
+              loadTeamConvs().then(() => {
+                if (currentTab === 'teams') renderTeamConvs(teamConvs);
+              });
+            }
+          } else {
+            const d = await res.json();
+            showToast(d.error || 'Failed to update request', 'error');
+            btn.disabled = false;
+          }
+        } catch(e) {
+          showToast('Server error', 'error');
+          btn.disabled = false;
+        }
+      };
+
+      window.deleteTeamFromChat = async function(teamId, name) {
+        const ok = await phConfirm({
+          title: 'Delete Team?',
+          message: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+          confirmText: 'Delete Team',
+          icon: 'delete_forever'
+        });
+        if (!ok) return;
+
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${teamId}`, { method: 'DELETE', headers: H });
+          const d = await res.json();
+          if (res.ok) {
+            showToast('Team deleted successfully', 'success');
+            closeChatInfo();
+            activeConv = null;
+            document.getElementById('chat-hdr').innerHTML = `
+              <div class="text-sm text-gray-400 dark:text-slate-500 flex items-center gap-2.5 font-medium">
+                <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
+                <span>Select a conversation to start collaborating in ProjectHive</span>
+              </div>`;
+            document.getElementById('chat-input-area').classList.add('hidden');
+            document.getElementById('msgs').innerHTML = '';
+            loadTeamConvs().then(() => {
+              if (currentTab === 'teams') renderTeamConvs(teamConvs);
+            });
+          } else {
+            showToast(d.error || 'Failed to delete team', 'error');
+          }
+        } catch(e) {
+          showToast('Server error', 'error');
+        }
+      };
+
+      window.leaveTeamFromChat = async function(teamId, name) {
+        const ok = await phConfirm({
+          title: 'Leave Team?',
+          message: `Are you sure you want to leave "${name}"?`,
+          confirmText: 'Leave',
+          icon: 'logout'
+        });
+        if (!ok) return;
+
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${teamId}/leave`, { method: 'POST', headers: H });
+          const d = await res.json();
+          if (res.ok) {
+            showToast('Left team successfully', 'success');
+            closeChatInfo();
+            activeConv = null;
+            document.getElementById('chat-hdr').innerHTML = `
+              <div class="text-sm text-gray-400 dark:text-slate-500 flex items-center gap-2.5 font-medium">
+                <span class="material-symbols-outlined text-xl text-indigo-400">forum</span>
+                <span>Select a conversation to start collaborating in ProjectHive</span>
+              </div>`;
+            document.getElementById('chat-input-area').classList.add('hidden');
+            document.getElementById('msgs').innerHTML = '';
+            loadTeamConvs().then(() => {
+              if (currentTab === 'teams') renderTeamConvs(teamConvs);
+            });
+          } else {
+            showToast(d.error || 'Failed to leave team', 'error');
+          }
+        } catch(e) {
+          showToast('Server error', 'error');
+        }
+      };
+
+      // ─── SEARCH IN CHAT ──────────────────────────────────────────
       window.toggleChatSearch = function() {
         const bar = document.getElementById('chat-search-bar');
         bar.classList.toggle('hidden');
@@ -2464,6 +2847,7 @@
           const color = TEAM_COLORS[i % TEAM_COLORS.length];
           const last = t.lastMessage ? `${t.lastMessage.senderName}: ${t.lastMessage.content}` : 'No announcements yet';
           const isActive = activeConv && activeConv._id === t._id;
+          const mbrLabel = t.memberCount === 1 ? 'MBR' : 'MBRS';
           return `
             <div class="flex items-center gap-3.5 p-3 rounded-xl cursor-pointer transition-all duration-200 mb-1 hover:bg-gray-100 dark:hover:bg-darkSurface-hover ${isActive ? 'bg-indigo-50/70 dark:bg-indigo-950/30 border-l-[3px] border-indigo-500 pl-2' : ''}"
               onclick='openTeamConv(${JSON.stringify(t).replace(/'/g,"&#39;")})'>
@@ -2473,7 +2857,7 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span class="font-bold text-sm text-gray-800 dark:text-slate-200 truncate">${esc(t.name)}</span>
-                  <span class="text-[9px] text-gray-400 dark:text-slate-500 font-extrabold bg-indigo-500/10 px-2 py-0.5 rounded-md">${t.memberCount} MBRS</span>
+                  <span class="text-[9px] text-gray-400 dark:text-slate-500 font-extrabold bg-indigo-500/10 px-2 py-0.5 rounded-md">${t.memberCount} ${mbrLabel}</span>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-slate-400 truncate mt-0.5 font-medium">${esc(last)}</div>
               </div>
@@ -2490,30 +2874,45 @@
         activeConv = { _id: team._id, type: 'team', name: team.name, memberCount: team.memberCount };
         renderTeamConvs(teamConvs);
 
-        // Build Team Header with call shortcuts
+        // Build Team Header with call shortcuts and Messenger-style click action
         document.getElementById('chat-hdr').innerHTML = `
-          <div class="flex items-center gap-3">
-            <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="showConvPanel()">
+          <div class="flex items-center gap-3 cursor-pointer select-none" onclick="openTeamChatInfo('${team._id}')" title="View Team Info">
+            <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="event.stopPropagation(); showConvPanel()">
               <span class="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-sm shrink-0 hover:scale-105 transition-transform">
               <span class="material-symbols-outlined text-lg">groups</span>
             </div>
             <div>
-              <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight">${esc(team.name)}</div>
+              <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight hover:underline">${esc(team.name)}</div>
               <div class="text-[11px] text-gray-400 dark:text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                <span>Team Space â€¢ ${team.memberCount} members</span>
+                <span data-team-mbr-cnt="${team._id}">Team Space • ${team.memberCount} ${team.memberCount === 1 ? 'member' : 'members'}</span>
               </div>
             </div>
           </div>
-          <div class="ml-auto flex items-center gap-2">
-            <button onclick="startGroupVoiceCall()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9]" title="Group Voice Conference">
-              <span class="material-symbols-outlined text-lg">call</span>
+          <div class="ml-auto flex items-center gap-1.5 sm:gap-2 msg-chat-actions shrink-0 relative">
+            <button onclick="startGroupVoiceCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Group Voice Conference">
+              <span class="material-symbols-outlined text-[18px] sm:text-lg">call</span>
             </button>
-            <button onclick="startGroupVideoCall()" class="w-10 h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9]" title="Group Video Conference">
-              <span class="material-symbols-outlined text-lg">video_call</span>
+            <button onclick="startGroupVideoCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Group Video Conference">
+              <span class="material-symbols-outlined text-[18px] sm:text-lg">video_call</span>
             </button>
+            <button onclick="openTeamChatInfo('${team._id}')" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="Team Details">
+              <span class="material-symbols-outlined text-lg">info</span>
+            </button>
+            
+            <!-- Mobile Three-Dot Dropdown Menu Button -->
+            <button onclick="toggleChatDropdown(event)" class="md:hidden w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="More Options">
+              <span class="material-symbols-outlined text-lg font-bold">more_vert</span>
+            </button>
+
+            <!-- Dropdown Body -->
+            <div id="chat-hdr-dropdown" class="hidden absolute right-0 top-12 bg-white dark:bg-darkSurface-card border border-gray-100 dark:border-darkSurface-border rounded-xl shadow-lg py-1.5 w-44 z-[999] text-xs text-gray-700 dark:text-gray-200">
+              <a href="#" onclick="event.preventDefault(); openTeamChatInfo('${team._id}'); closeChatDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover">
+                <span class="material-symbols-outlined text-base">info</span> Team Info
+              </a>
+            </div>
           </div>`;
 
         document.getElementById('chat-input-area').classList.remove('hidden');
@@ -2912,7 +3311,7 @@
           const actStatus = getActivityStatus(convFriend || { onlineStatus: status, lastSeen });
           document.querySelectorAll(`[data-user-activity="${userId}"]`).forEach(el => {
             el.className = `shrink-0 text-[10px] activity-label ${actStatus.cssClass}`;
-            el.textContent = actStatus.isOnline ? '' : ' Â· ' + actStatus.text;
+            el.textContent = actStatus.isOnline ? '' : ' • ' + actStatus.text;
           });
 
           // Update header
@@ -3020,7 +3419,7 @@
           const status = getActivityStatus(f);
           document.querySelectorAll(`[data-user-activity="${uid}"]`).forEach(el => {
             el.className = `shrink-0 text-[10px] activity-label ${status.cssClass}`;
-            el.textContent = status.isOnline ? '' : ' Â· ' + status.text;
+            el.textContent = status.isOnline ? '' : ' • ' + status.text;
           });
         });
         const hdrEl = document.getElementById('chat-hdr-status');

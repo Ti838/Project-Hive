@@ -225,7 +225,7 @@
     const uni=document.getElementById("p-uni").value;
     const major=document.getElementById("p-major").value;
     document.getElementById("hname").textContent=(fn+" "+ln).trim()||"Your Name";
-    document.getElementById("hmeta").textContent=[uni,major].filter(Boolean).join(" Â· ")||"University Â· Major";
+    document.getElementById("hmeta").textContent=[uni,major].filter(Boolean).join(" • ")||"University • Major";
     document.getElementById("aini").textContent=((fn[0]||"")+(ln[0]||"")).toUpperCase()||"?";
     calcPct();
   };
@@ -267,7 +267,7 @@
     const hmeta=document.getElementById("hmeta");
     const fn=document.getElementById("p-fn").value;const ln=document.getElementById("p-ln").value;
     const uni=document.getElementById("p-uni").value;const major=document.getElementById("p-major").value;
-    if(hmeta)hmeta.textContent=[uni,major].filter(Boolean).join(" Â· ")||"University Â· Major";
+    if(hmeta)hmeta.textContent=[uni,major].filter(Boolean).join(" • ")||"University • Major";
   };
 
   // â”€â”€ Show cached data instantly (before Render wakes up) â”€â”€
@@ -279,7 +279,7 @@
         document.getElementById('hname').textContent = (fn + ' ' + ln).trim();
         document.getElementById('aini').textContent = ((fn[0]||'') + (ln[0]||'')).toUpperCase() || '?';
         const uni = cp.university || ''; const major = cp.major || '';
-        document.getElementById('hmeta').textContent = [uni, major].filter(Boolean).join(' Â· ') || 'University Â· Major';
+        document.getElementById('hmeta').textContent = [uni, major].filter(Boolean).join(' • ') || 'University • Major';
         document.getElementById('p-fn').value = fn;
         document.getElementById('p-ln').value = ln;
         if (uni) document.getElementById('p-uni').value = uni;
@@ -310,7 +310,7 @@
     const fn=u.firstName||"",ln=u.lastName||"";
     document.getElementById("aini").textContent=((fn[0]||"")+(ln[0]||"")).toUpperCase()||"?";
     document.getElementById("hname").textContent=(fn+" "+ln).trim()||"Your Name";
-    document.getElementById("hmeta").textContent=[u.university,u.major].filter(Boolean).join(" Â· ")||"University Â· Major";
+    document.getElementById("hmeta").textContent=[u.university,u.major].filter(Boolean).join(" • ")||"University • Major";
     calcPct();
   }).catch(()=>{renderSkills();});
 
