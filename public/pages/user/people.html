@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Find People — ProjectHive</title>
+<title>Find People â€” ProjectHive</title>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <style>
   html { background-color: #F0F2F9 !important; }
@@ -14,9 +14,9 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script>
 <link rel="stylesheet" href="/assets/css/ph-design.css">
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
 <script src="/assets/js/core/ph-toast.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 <style>
 body{background:var(--bg);color:var(--tx);margin:0}
 .hero{background:linear-gradient(135deg,#ec4899 0%,#8b5cf6 50%,#6366f1 100%);padding:40px 32px 80px;position:relative;overflow:hidden}
@@ -95,9 +95,9 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
 <div class="fp-wrap">
   <div class="stats">
-    <div class="stat"><div class="stat-ic" style="background:rgba(99,102,241,.12);color:#6366f1">people</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-total">—</div><div style="font-size:11px;color:var(--sub)">Students</div></div></div>
-    <div class="stat"><div class="stat-ic" style="background:rgba(16,185,129,.12);color:#10b981">handshake</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-friends">—</div><div style="font-size:11px;color:var(--sub)">My Friends</div></div></div>
-    <div class="stat"><div class="stat-ic" style="background:rgba(236,72,153,.12);color:#ec4899">pending</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-pending">—</div><div style="font-size:11px;color:var(--sub)">Pending</div></div></div>
+    <div class="stat"><div class="stat-ic" style="background:rgba(99,102,241,.12);color:#6366f1">people</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-total">â€”</div><div style="font-size:11px;color:var(--sub)">Students</div></div></div>
+    <div class="stat"><div class="stat-ic" style="background:rgba(16,185,129,.12);color:#10b981">handshake</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-friends">â€”</div><div style="font-size:11px;color:var(--sub)">My Friends</div></div></div>
+    <div class="stat"><div class="stat-ic" style="background:rgba(236,72,153,.12);color:#ec4899">pending</div><div><div style="font-size:20px;font-weight:800;color:var(--tx)" id="st-pending">â€”</div><div style="font-size:11px;color:var(--sub)">Pending</div></div></div>
   </div>
 
   <div class="tabs">
@@ -108,7 +108,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
   </div>
 
   <div id="search-area" class="search-card">
-    <div class="s-wrap"><span class="s-ico">search</span><input id="s-inp" class="s-inp" placeholder="Search name, university, skill…" oninput="debSearch()"></div>
+    <div class="s-wrap"><span class="s-ico">search</span><input id="s-inp" class="s-inp" placeholder="Search name, university, skillâ€¦" oninput="debSearch()"></div>
     <div style="display:flex;gap:7px;flex-wrap:wrap">
       <button class="chip on" onclick="setFilter('all',this)">All</button>
       <button class="chip" onclick="setFilter('available',this)"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span> Available</button>
@@ -241,7 +241,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
           <div class="req-av" style="background:${u.avatar ? 'transparent' : c};cursor:pointer;" onclick="showUserProfile('${uid}')" title="View Profile">${avatarHtml}</div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:800;color:var(--tx);cursor:pointer;" onclick="showUserProfile('${uid}')" title="View Profile" class="hover-primary">${nm}</div>
-            <div style="font-size:12px;color:var(--sub)">${u.university||''} ${u.major?'· '+u.major:''}</div>
+            <div style="font-size:12px;color:var(--sub)">${u.university||''} ${u.major?'Â· '+u.major:''}</div>
             <div style="font-size:12px;color:var(--ac);font-weight:600;margin-top:4px">Wants to connect with you</div>
           </div>
           <div style="display:flex;gap:8px">
@@ -294,7 +294,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
       <div class="ucard-body">
         <div>
           <div class="ucard-name" style="cursor:pointer;" onclick="showUserProfile('${id}')" title="View Profile">${nm}</div>
-          <div class="ucard-meta"><span class="sdot" style="background:${sd}"></span><span>${sl}</span>${u.university?`<span>·</span><span>${u.university}</span>`:''}</div>
+          <div class="ucard-meta"><span class="sdot" style="background:${sd}"></span><span>${sl}</span>${u.university?`<span>Â·</span><span>${u.university}</span>`:''}</div>
           ${u.mutualHtml || ''}
         </div>
         ${u.bio?`<div class="ucard-bio">${u.bio}</div>`:''}
@@ -309,13 +309,13 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
   function empty(ic,t,s){return `<div class="empty"><div class="empty-ic">${ic}</div><div style="font-size:17px;font-weight:800;color:var(--tx);margin:10px 0 6px">${t}</div><div style="font-size:13px;color:var(--sub)">${s}</div></div>`;}
 
-  // ─── Navigate to profile page ──────────────────────────────────────────────
+  // â”€â”€â”€ Navigate to profile page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   window.showUserProfile = function(uid) {
     if (!uid) return;
     window.location.href = `/profile/view?id=${uid}`;
   };
 
-  // ─── Unfriend ──────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Unfriend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   window.unfriend = async function(uid, btn) {
     if (!confirm('Remove this friend?')) return;
     btn.disabled = true;

@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Notifications — ProjectHive</title>
+<title>Notifications â€” ProjectHive</title>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <style>
   html { background-color: #F0F2F9 !important; }
@@ -12,9 +12,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/ph-design.css">
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
 <script src="/assets/js/core/ph-toast.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <style>
 body{background:var(--bg);color:var(--tx);margin:0}
@@ -68,10 +68,10 @@ body{background:var(--bg);color:var(--tx);margin:0}
 <div class="nt-wrap">
   <!-- Summary -->
   <div class="sum-card">
-    <div class="sum-item"><div class="sum-ic" style="background:rgba(99,102,241,.12);color:#6366f1">notifications</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-total">—</div><div style="font-size:11px;color:var(--sub)">Total</div></div></div>
-    <div class="sum-item"><div class="sum-ic" style="background:rgba(236,72,153,.12);color:#ec4899">mark_email_unread</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-unread">—</div><div style="font-size:11px;color:var(--sub)">Unread</div></div></div>
-    <div class="sum-item"><div class="sum-ic" style="background:rgba(16,185,129,.12);color:#10b981">group</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-team">—</div><div style="font-size:11px;color:var(--sub)">Team</div></div></div>
-    <div class="sum-item"><div class="sum-ic" style="background:rgba(245,158,11,.12);color:#f59e0b">person_add</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-friend">—</div><div style="font-size:11px;color:var(--sub)">Friends</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(99,102,241,.12);color:#6366f1">notifications</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-total">â€”</div><div style="font-size:11px;color:var(--sub)">Total</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(236,72,153,.12);color:#ec4899">mark_email_unread</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-unread">â€”</div><div style="font-size:11px;color:var(--sub)">Unread</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(16,185,129,.12);color:#10b981">group</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-team">â€”</div><div style="font-size:11px;color:var(--sub)">Team</div></div></div>
+    <div class="sum-item"><div class="sum-ic" style="background:rgba(245,158,11,.12);color:#f59e0b">person_add</div><div><div style="font-size:18px;font-weight:800;color:var(--tx)" id="s-friend">â€”</div><div style="font-size:11px;color:var(--sub)">Friends</div></div></div>
   </div>
 
   <div class="top-row">
@@ -133,7 +133,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     ub.textContent=uc?`Unread (${uc})`:'Unread';
   }
 
-  // ─── Get redirect link per notification type ──────────────────────────────
+  // â”€â”€â”€ Get redirect link per notification type â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   function getNotifLink(n) {
     const meta = n.metadata || n.data || {};
     switch(n.type) {
@@ -205,10 +205,10 @@ body{background:var(--bg);color:var(--tx);margin:0}
     PHToast?.success('All marked as read');
   };
 
-  // ─── Load from API ─────────────────────────────────────────────────────────
+  // â”€â”€â”€ Load from API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   fetch(API_BASE+'/api/notifications?limit=60',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{
     if(d){
-      // Normalize API response fields (Supabase snake_case → camelCase)
+      // Normalize API response fields (Supabase snake_case â†’ camelCase)
       const raw = d.notifications||d||[];
       all = raw.map(n => ({
         _id:       n.id || n._id,
@@ -224,7 +224,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     stats();render(all);
   }).catch(()=>{ all=[];stats();render(all); });
 
-  // ─── Socket.io: real-time notification:new ─────────────────────────────────
+  // â”€â”€â”€ Socket.io: real-time notification:new â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   try {
     const socket = io(API_BASE, { auth:{token:TK}, transports:['websocket','polling'] });
     socket.on('notification:new', (notif) => {

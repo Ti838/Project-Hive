@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>AI Project Generator — ProjectHive</title>
+<title>AI Project Generator â€” ProjectHive</title>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <style>
   html { background-color: #F0F2F9 !important; }
@@ -14,11 +14,11 @@
 <link rel="icon" href="/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/ph-design.css">
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
 <script src="/assets/js/core/ph-toast.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 <style>
-  /* ─── Hero gradient ─── */
+  /* â”€â”€â”€ Hero gradient â”€â”€â”€ */
   .hero {
     background: linear-gradient(135deg, #6366F1 0%, #7C3AED 50%, #EC4899 100%);
     border-radius: 24px;
@@ -44,7 +44,7 @@
     bottom: -50px; right: 120px;
   }
 
-  /* ─── Chip ─── */
+  /* â”€â”€â”€ Chip â”€â”€â”€ */
   .chip {
     display: inline-flex;
     align-items: center;
@@ -69,7 +69,7 @@
     box-shadow: 0 4px 12px rgba(99,102,241,.35);
   }
 
-  /* ─── Level button ─── */
+  /* â”€â”€â”€ Level button â”€â”€â”€ */
   .lvl {
     flex: 1;
     padding: 12px;
@@ -87,7 +87,7 @@
   .lvl:hover { border-color: var(--ac); color: var(--ac); }
   .lvl.on { background: var(--ac); border-color: var(--ac); color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,.3); }
 
-  /* ─── Generate Button ─── */
+  /* â”€â”€â”€ Generate Button â”€â”€â”€ */
   .gen-btn {
     width: 100%;
     padding: 16px;
@@ -121,7 +121,7 @@
   .gen-btn:disabled { opacity: .65; cursor: not-allowed; transform: none; }
   .gen-btn > * { position: relative; }
 
-  /* ─── Idea card ─── */
+  /* â”€â”€â”€ Idea card â”€â”€â”€ */
   .idea-card {
     background: var(--sf);
     border: 1.5px solid var(--bd);
@@ -149,7 +149,7 @@
   .idea-card:nth-child(4) { animation-delay: .26s; }
   .idea-card:nth-child(5) { animation-delay: .33s; }
 
-  /* ─── Spinner ─── */
+  /* â”€â”€â”€ Spinner â”€â”€â”€ */
   .spinner {
     width: 22px; height: 22px;
     border: 2.5px solid rgba(255,255,255,.3);
@@ -161,19 +161,19 @@
   }
   @keyframes sp { to { transform: rotate(360deg); } }
 
-  /* ─── Thinking dots ─── */
+  /* â”€â”€â”€ Thinking dots â”€â”€â”€ */
   .thinking { display: flex; align-items: center; justify-content: center; gap: 6px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ac); animation: bounce 1.2s ease-in-out infinite; }
   .dot:nth-child(2) { animation-delay: .2s; }
   .dot:nth-child(3) { animation-delay: .4s; }
   @keyframes bounce { 0%,60%,100% { transform: translateY(0); opacity:.5; } 30% { transform: translateY(-10px); opacity:1; } }
 
-  /* ─── Textarea ─── */
+  /* â”€â”€â”€ Textarea â”€â”€â”€ */
   textarea.ph-input { resize: none; line-height: 1.6; }
   textarea.ph-input::-webkit-scrollbar { width: 4px; }
   textarea.ph-input::-webkit-scrollbar-thumb { background: var(--bd2); border-radius: 4px; }
 
-  /* ─── Tech badge ─── */
+  /* â”€â”€â”€ Tech badge â”€â”€â”€ */
   .tech-badge {
     display: inline-flex;
     align-items: center;
@@ -187,12 +187,12 @@
     transition: background .25s, border-color .25s, color .25s;
   }
 
-  /* ─── Difficulty badge ─── */
+  /* â”€â”€â”€ Difficulty badge â”€â”€â”€ */
   .diff-easy   { background: rgba(16,185,129,.1); color: var(--green); border-color: rgba(16,185,129,.2); }
   .diff-medium { background: rgba(245,158,11,.1); color: var(--yellow); border-color: rgba(245,158,11,.2); }
   .diff-hard   { background: rgba(239,68,68,.1);  color: var(--red);   border-color: rgba(239,68,68,.2); }
 
-  /* ── Mobile touch target fix ── */
+  /* â”€â”€ Mobile touch target fix â”€â”€ */
   @media (max-width: 768px) {
     .chip {
       min-height: 44px;
@@ -238,7 +238,7 @@
       <div style="position:relative;z-index:1">
         <div style="font-size:13px;font-weight:700;opacity:.8;margin-bottom:8px;letter-spacing:.04em;text-transform:uppercase"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l.7 2.1 2.1.7-2.1.7-.7 2.1-.7-2.1-2.1-.7 2.1-.7zM19 9l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5zM5 17l.5 1.5 1.5.5-1.5.5-.5 1.5-.5-1.5-1.5-.5 1.5-.5z"/></svg></span> Powered by Google Gemini AI</div>
         <h2 style="font-size:26px;font-weight:900;margin:0 0 10px;line-height:1.2">Generate Unique Project Ideas</h2>
-        <p style="font-size:14px;opacity:.85;margin:0;line-height:1.6;max-width:480px">Select your domain and skill level — let AI craft project ideas tailored just for you. Each idea includes tech stack, difficulty, and a full description.</p>
+        <p style="font-size:14px;opacity:.85;margin:0;line-height:1.6;max-width:480px">Select your domain and skill level â€” let AI craft project ideas tailored just for you. Each idea includes tech stack, difficulty, and a full description.</p>
       </div>
       <!-- Floating icons -->
       <div style="position:absolute;right:32px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:12px;z-index:1;opacity:.6">
@@ -284,12 +284,12 @@
           <button class="lvl" data-level>
             <div style="font-size:20px;margin-bottom:4px"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V12"/><path d="M12 12C12 7 8 3 3 3s-1 6 3 8c1.5.7 4 1 6 1z"/><path d="M12 12c0-5 4-9 9-9s1 6-3 8c-1.5.7-4 1-6 1z"/></svg></span></div>
             <div>Beginner</div>
-            <div style="font-size:10px;opacity:.7;margin-top:2px">0–1 year</div>
+            <div style="font-size:10px;opacity:.7;margin-top:2px">0â€“1 year</div>
           </button>
           <button class="lvl" data-level>
             <div style="font-size:20px;margin-bottom:4px"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span></div>
             <div>Intermediate</div>
-            <div style="font-size:10px;opacity:.7;margin-top:2px">1–3 years</div>
+            <div style="font-size:10px;opacity:.7;margin-top:2px">1â€“3 years</div>
           </button>
           <button class="lvl" data-level>
             <div style="font-size:20px;margin-bottom:4px"><span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span></div>
@@ -309,7 +309,7 @@
         </div>
         <div style="font-size:12px;color:var(--sub);margin-bottom:12px">Describe your interests, team size, timeframe, or any specific requirements</div>
         <textarea id="custom-prompt" class="ph-input" rows="4"
-          placeholder="e.g. I'm interested in healthcare + machine learning. I have 2 teammates, 3 weeks to build, and I want to use React + Python. Looking for something unique that can be showcased at university…"></textarea>
+          placeholder="e.g. I'm interested in healthcare + machine learning. I have 2 teammates, 3 weeks to build, and I want to use React + Python. Looking for something unique that can be showcased at universityâ€¦"></textarea>
       </div>
 
       <!-- Generate Button -->
@@ -329,7 +329,7 @@
 
 <script>
 (function(){
-  /* ── Auth ── */
+  /* â”€â”€ Auth â”€â”€ */
   const TK = localStorage.getItem('access_token');
   if(!TK){location.href='/login';return;}
   try{
@@ -343,10 +343,10 @@
     ? (location.port === '3000' ? 'http://localhost:5000' : '')
     : 'https://projecthive-backend.onrender.com';
 
-  /* ── State ── */
+  /* â”€â”€ State â”€â”€ */
   let domains=[], level='';
 
-  /* ── Chip toggles ── */
+  /* â”€â”€ Chip toggles â”€â”€ */
   window.toggleChip=function(btn){
     btn.classList.toggle('on');
     domains=Array.from(document.querySelectorAll('#domain-grid .chip.on')).map(b=>b.textContent.trim());
@@ -357,7 +357,7 @@
     level=btn.querySelector('div:first-child+div')?.textContent||'';
   };
 
-  /* ── Idea colors ── */
+  /* â”€â”€ Idea colors â”€â”€ */
   const PALETTE=[
     {bg:'#6366F1',glow:'rgba(99,102,241,.25)'},
     {bg:'#7C3AED',glow:'rgba(124,58,237,.25)'},
@@ -366,7 +366,7 @@
     {bg:'#F59E0B',glow:'rgba(245,158,11,.25)'},
   ];
 
-  /* ── Render ideas ── */
+  /* â”€â”€ Render ideas â”€â”€ */
   function renderIdeas(ideas){
     const r=document.getElementById('results');
     if(!ideas||!ideas.length){
@@ -449,19 +449,19 @@
       </div>`;
   }
 
-  /* ── Loading state ── */
+  /* â”€â”€ Loading state â”€â”€ */
   function showLoading(){
     document.getElementById('results').innerHTML=`
       <div class="ph-card-static" style="padding:48px 24px;text-align:center">
         <div class="thinking" style="margin-bottom:20px">
           <div class="dot"></div><div class="dot"></div><div class="dot"></div>
         </div>
-        <div style="font-size:16px;font-weight:700;color:var(--tx);margin-bottom:8px">AI is thinking…</div>
+        <div style="font-size:16px;font-weight:700;color:var(--tx);margin-bottom:8px">AI is thinkingâ€¦</div>
         <div style="font-size:13px;color:var(--sub)">Crafting unique project ideas based on your selections</div>
       </div>`;
   }
 
-  /* ── No API key state ── */
+  /* â”€â”€ No API key state â”€â”€ */
   function showNoKey(){
     document.getElementById('results').innerHTML=`
       <div class="ph-card-static" style="padding:32px;border-color:rgba(245,158,11,.3)">
@@ -489,7 +489,7 @@
       </div>`;
   }
 
-  /* ── Generate ── */
+  /* â”€â”€ Generate â”€â”€ */
   window.generate=async function(){
     const custom=document.getElementById('custom-prompt').value.trim();
     if(!domains.length && !level && !custom){
@@ -498,7 +498,7 @@
     }
 
     const btn=document.getElementById('gen-btn');
-    btn.innerHTML='<div class="spinner"></div><span>Generating…</span>';
+    btn.innerHTML='<div class="spinner"></div><span>Generatingâ€¦</span>';
     btn.disabled=true;
     showLoading();
 
@@ -532,7 +532,7 @@
     btn.disabled=false;
   };
 
-  /* ── Save Idea to history ── */
+  /* â”€â”€ Save Idea to history â”€â”€ */
   window.saveIdea = function(btn, title, idx) {
     const ideas = JSON.parse(localStorage.getItem('ph-saved-ideas') || '[]');
     const idea = { title, savedAt: new Date().toISOString(), idx };
@@ -551,11 +551,11 @@
     PHToast?.success('Idea saved to your collection!');
   };
 
-  /* ── Share Idea to Feed ── */
+  /* â”€â”€ Share Idea to Feed â”€â”€ */
   window.shareIdea = async function(btn, title, desc, techStr) {
     btn.disabled = true;
-    btn.innerHTML = '<span class="ms" style="font-size:16px;animation:sp .7s linear infinite;display:inline-block">progress_activity</span>Sharing…';
-    const content = `💡 Project Idea: ${title}\n\n${desc}${techStr ? '\n\n🛠 Tech: ' + techStr : ''}\n\n#ProjectIdea #ProjectHive`;
+    btn.innerHTML = '<span class="ms" style="font-size:16px;animation:sp .7s linear infinite;display:inline-block">progress_activity</span>Sharingâ€¦';
+    const content = `ðŸ’¡ Project Idea: ${title}\n\n${desc}${techStr ? '\n\nðŸ›  Tech: ' + techStr : ''}\n\n#ProjectIdea #ProjectHive`;
     try {
       const r = await fetch(API_BASE + '/api/posts', {
         method: 'POST', headers: H,
@@ -580,7 +580,7 @@
     }
   };
 
-  /* ── XSS escape ── */
+  /* â”€â”€ XSS escape â”€â”€ */
   function esc(s){const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML;}
 })();
 
@@ -592,13 +592,13 @@
   // Theme toggle
   document.getElementById('gen-theme-btn')?.addEventListener('click', function() { PHSidebar.toggleTheme(); });
 
-  // Domain chips — event delegation
+  // Domain chips â€” event delegation
   document.getElementById('domain-grid')?.addEventListener('click', function(e) {
     const chip = e.target.closest('[data-chip]');
     if (chip) toggleChip(chip, chip.dataset.chip);
   });
 
-  // Level buttons — event delegation
+  // Level buttons â€” event delegation
   document.getElementById('level-row')?.addEventListener('click', function(e) {
     const lvl = e.target.closest('[data-level]');
     if (lvl) toggleLevel(lvl);

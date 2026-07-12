@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Project Showcase — ProjectHive</title>
+<title>Project Showcase â€” ProjectHive</title>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 <style>
   html { background-color: #F0F2F9 !important; }
@@ -13,10 +13,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
 <link rel="stylesheet" href="/assets/css/ph-design.css">
 <script src="/assets/js/core/ph-toast.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 <style>
 body{font-family:'Inter',sans-serif;}
 .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;display:inline-block;vertical-align:middle;}
@@ -54,7 +54,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
     <div class="ml-auto flex gap-3">
       <div class="relative">
         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-base">search</span>
-        <input id="search-inp" type="text" placeholder="Search projects…" oninput="doSearch(this.value)"
+        <input id="search-inp" type="text" placeholder="Search projectsâ€¦" oninput="doSearch(this.value)"
           class="bg-slate-100 dark:bg-gray-800 border-none rounded-full pl-9 pr-4 py-2 text-sm w-52 outline-none focus:ring-2 focus:ring-indigo-400 transition-all max-md:w-36">
       </div>
       <button onclick="openSubmitModal()" class="flex items-center gap-1.5 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors">
@@ -77,7 +77,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
     <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
       <div class="col-span-full flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
         <span class="material-symbols-outlined text-5xl animate-pulse">folder_open</span>
-        <p class="text-sm">Loading projects…</p>
+        <p class="text-sm">Loading projectsâ€¦</p>
       </div>
     </div>
   </main>
@@ -112,15 +112,15 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Tech Stack (comma separated)</label>
-        <input id="f-tech" type="text" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="React, Node.js, MongoDB…">
+        <input id="f-tech" type="text" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="React, Node.js, MongoDBâ€¦">
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">GitHub URL</label>
-        <input id="f-github" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://github.com/…">
+        <input id="f-github" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://github.com/â€¦">
       </div>
       <div>
         <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Live Demo URL</label>
-        <input id="f-demo" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://…">
+        <input id="f-demo" type="url" class="w-full bg-slate-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400" placeholder="https://â€¦">
       </div>
       <div class="flex items-center gap-2 mt-2">
         <input id="f-hiring" type="checkbox" class="w-4 h-4 cursor-pointer accent-indigo-500 rounded border-gray-300">
@@ -146,7 +146,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
       <!-- Dynamic loading state -->
       <div class="flex flex-col items-center justify-center py-12 text-gray-400 gap-3">
         <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
-        <p class="text-sm">Fetching project details…</p>
+        <p class="text-sm">Fetching project detailsâ€¦</p>
       </div>
     </div>
   </div>
@@ -276,7 +276,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
   document.getElementById('submit-form').onsubmit=async function(e){
     e.preventDefault();
     const btn=document.getElementById('submit-btn');
-    btn.innerHTML='<span class="material-symbols-outlined animate-spin">progress_activity</span> Submitting…';btn.disabled=true;
+    btn.innerHTML='<span class="material-symbols-outlined animate-spin">progress_activity</span> Submittingâ€¦';btn.disabled=true;
     try{
       const r=await fetch(API_BASE+'/api/projects',{method:'POST',headers:H,body:JSON.stringify({
         title:document.getElementById('f-title').value.trim(),
@@ -341,7 +341,7 @@ html.dark .dark\:border-gray-800{border-color:var(--bd,#252636)!important;}
     content.innerHTML = `
       <div class="flex flex-col items-center justify-center py-16 text-gray-400 gap-3">
         <span class="material-symbols-outlined text-4xl animate-spin">progress_activity</span>
-        <p class="text-sm">Fetching project details…</p>
+        <p class="text-sm">Fetching project detailsâ€¦</p>
       </div>`;
 
     try {

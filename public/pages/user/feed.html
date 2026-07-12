@@ -108,7 +108,7 @@
     .glass-card { background:rgba(255,255,255,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.3); }
     .feed-card-shadow { box-shadow:0 4px 20px rgba(55,48,163,.04); }
 
-    /* ═══ DARK MODE Overrides ═══ */
+    /* â•â•â• DARK MODE Overrides â•â•â• */
     :root {
       --tw-bg:    #F8FAFC;
       --tw-surf:  #FFFFFF;
@@ -371,7 +371,7 @@
       scrollbar-width: none;
     }
 
-    /* ═══ Right Sidebar Gradient Animation ═══ */
+    /* â•â•â• Right Sidebar Gradient Animation â•â•â• */
     @keyframes sidebar-gradient-shift {
       0%   { background-position: 0% 50%; }
       50%  { background-position: 100% 50%; }
@@ -407,12 +407,12 @@
     #suggested-people-list > div:nth-child(4) { animation-delay: 0.20s; }
   </style>
 
-  <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+  <link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/assets/js/core/ph-toast.js"></script>
   <script src="/assets/js/core/api.js"></script>
   <script src="/assets/js/core/auth.js"></script>
-  <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+  <script src="/assets/js/core/ph-sidebar.js?v=3"></script>
   <script src="/assets/js/mobile-inject.js"></script>
   <link rel="stylesheet" href="/assets/css/ph-design.css">
 </head>
@@ -454,7 +454,7 @@
       </div>
       <div class="flex items-center gap-3">
         <div class="text-right hidden sm:block">
-          <p class="font-label-md text-label-md text-on-surface" id="feed-username">—</p>
+          <p class="font-label-md text-label-md text-on-surface" id="feed-username">â€”</p>
           <p class="text-[11px] text-on-surface-variant" id="feed-role">Student</p>
         </div>
         <div id="feed-avatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">?</div>
@@ -602,7 +602,7 @@
     <!-- Right Sidebar Panel -->
     <aside class="w-[320px] flex-shrink-0 hidden xl:flex flex-col gap-4 sticky top-16 max-h-[calc(100vh-64px)] overflow-y-auto no-scrollbar pb-6" style="align-self: flex-start; margin-top: 0 !important;">
 
-      <!-- ═══ Profile Card ═══ -->
+      <!-- â•â•â• Profile Card â•â•â• -->
       <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow flex flex-col">
         <!-- Animated Gradient Banner -->
         <div class="sb-banner h-20 relative rounded-t-2xl overflow-hidden">
@@ -613,28 +613,28 @@
         <!-- Avatar & Info -->
         <div class="px-5 pb-4 relative flex flex-col items-center text-center -mt-9 z-10">
           <div id="sidebar-profile-avatar" class="w-[68px] h-[68px] rounded-full border-[3px] border-surface-container-lowest bg-surface-container flex items-center justify-center font-bold text-xl text-primary shadow-lg overflow-hidden shrink-0 cursor-pointer" onclick="window.location.href='/profile'">?</div>
-          <h4 id="sidebar-profile-name" class="font-bold text-sm text-on-surface mt-2.5 hover:text-primary cursor-pointer transition-colors" onclick="window.location.href='/profile'">—</h4>
-          <p id="sidebar-profile-headline" class="text-[11px] text-on-surface-variant mt-0.5 max-w-[220px] leading-relaxed line-clamp-2">—</p>
+          <h4 id="sidebar-profile-name" class="font-bold text-sm text-on-surface mt-2.5 hover:text-primary cursor-pointer transition-colors" onclick="window.location.href='/profile'">â€”</h4>
+          <p id="sidebar-profile-headline" class="text-[11px] text-on-surface-variant mt-0.5 max-w-[220px] leading-relaxed line-clamp-2">â€”</p>
           <p id="sidebar-profile-university" class="text-[10px] text-primary font-semibold mt-1 flex items-center gap-1">
             <span class="material-symbols-outlined text-[12px]">school</span>
-            <span>—</span>
+            <span>â€”</span>
           </p>
         </div>
 
         <!-- Stats -->
         <div class="mx-4 mb-4 rounded-xl grid grid-cols-2 divide-x divide-surface-variant bg-surface-container-low border border-surface-variant py-3">
           <div class="text-center px-3 cursor-pointer" onclick="window.location.href='/profile'">
-            <p id="stats-total-posts" class="text-xl font-black sb-stat-num">—</p>
+            <p id="stats-total-posts" class="text-xl font-black sb-stat-num">â€”</p>
             <p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-wider mt-0.5">Posts</p>
           </div>
           <div class="text-center px-3 cursor-pointer" onclick="window.location.href='/friends'">
-            <p id="stats-total-friends" class="text-xl font-black sb-stat-num">—</p>
+            <p id="stats-total-friends" class="text-xl font-black sb-stat-num">â€”</p>
             <p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-wider mt-0.5">Friends</p>
           </div>
         </div>
       </div>
 
-      <!-- ═══ People You Know ═══ -->
+      <!-- â•â•â• People You Know â•â•â• -->
       <div class="sb-card bg-white dark:bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow overflow-hidden">
         <!-- Header with gradient background -->
         <div class="px-5 py-4 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 flex items-center justify-between">
@@ -666,7 +666,7 @@
         </a>
       </div>
 
-      <!-- ═══ Trending in Hive ═══ -->
+      <!-- â•â•â• Trending in Hive â•â•â• -->
       <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow">
         <div class="px-5 py-3.5 border-b border-surface-variant flex items-center justify-between">
           <h3 class="font-bold text-[13px] text-on-surface flex items-center gap-2">
@@ -685,7 +685,7 @@
         </div>
       </div>
 
-      <!-- ═══ Quick Links ═══ -->
+      <!-- â•â•â• Quick Links â•â•â• -->
       <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow">
         <div class="px-5 py-3.5 border-b border-surface-variant">
           <h3 class="font-bold text-[13px] text-on-surface flex items-center gap-2">
@@ -724,13 +724,13 @@
       <footer class="px-3 pt-1">
         <div class="flex flex-wrap gap-x-2 gap-y-1 justify-center text-[10px] text-on-surface-variant">
           <a href="javascript:void(0)" onclick="openInfoModal('about')" class="hover:text-primary hover:underline transition-colors cursor-pointer">About</a>
-          <span class="opacity-40">·</span>
+          <span class="opacity-40">Â·</span>
           <a href="javascript:void(0)" onclick="openInfoModal('privacy')" class="hover:text-primary hover:underline transition-colors cursor-pointer">Privacy</a>
-          <span class="opacity-40">·</span>
+          <span class="opacity-40">Â·</span>
           <a href="javascript:void(0)" onclick="openInfoModal('terms')" class="hover:text-primary hover:underline transition-colors cursor-pointer">Terms</a>
         </div>
         <p class="text-[10px] text-on-surface-variant/60 mt-2 font-semibold flex items-center gap-1 justify-center">
-          <img src="/favicon.png?v=2" alt="PH" style="width:13px;height:13px;border-radius:2px"> ProjectHive © 2026
+          <img src="/favicon.png?v=2" alt="PH" style="width:13px;height:13px;border-radius:2px"> ProjectHive Â© 2026
         </p>
       </footer>
     </aside>
@@ -1184,7 +1184,7 @@
             btn.classList.remove('bg-green-500', 'hover:bg-green-600');
             btn.classList.add('bg-emerald-500');
 
-            showToast('Friend request sent! 🎉', 'success');
+            showToast('Friend request sent! ðŸŽ‰', 'success');
 
             // Reload after delay
             setTimeout(() => {
@@ -1426,7 +1426,7 @@
         const totalReactions = Object.values(rMap).reduce((a, b) => a + b, 0);
         if (totalReactions > 0) {
           const reactionIcons = Object.keys(rMap).map(type => {
-            const icons = { like: '👍', celebrate: '🎉', insightful: '💡', support: '🤝' };
+            const icons = { like: 'ðŸ‘', celebrate: 'ðŸŽ‰', insightful: 'ðŸ’¡', support: 'ðŸ¤' };
             return `<span title="${REACTION_LABELS[type]}">${icons[type] || ''} <span class="text-[10px] font-bold ml-0.5">${rMap[type]}</span></span>`;
           }).join(' ');
           reactionsSummaryHtml = `<div class="flex items-center gap-2 text-xs text-on-surface-variant pb-3 border-b border-surface-variant">${reactionIcons}</div>`;
@@ -1535,7 +1535,7 @@
                   <span class="font-bold text-sm text-on-surface hover:text-primary cursor-pointer transition-colors" onclick="showUserProfile('${author.id || author._id}')" title="View Profile">${escapeHtml(name)}</span>
                   ${badgeHtml}
                 </div>
-                <p class="text-[11px] text-on-surface-variant">${escapeHtml(author.university || '')} • ${formatTimeAgo(p.createdAt)}</p>
+                <p class="text-[11px] text-on-surface-variant">${escapeHtml(author.university || '')} â€¢ ${formatTimeAgo(p.createdAt)}</p>
               </div>
             </div>
 
@@ -1575,10 +1575,10 @@
               </button>
               <!-- Floating Picker -->
               <div class="reaction-picker">
-                <button onclick="reactPost('${p.id}', 'like')" class="reaction-btn" title="Like">👍</button>
-                <button onclick="reactPost('${p.id}', 'celebrate')" class="reaction-btn" title="Celebrate">🎉</button>
-                <button onclick="reactPost('${p.id}', 'insightful')" class="reaction-btn" title="Insightful">💡</button>
-                <button onclick="reactPost('${p.id}', 'support')" class="reaction-btn" title="Support">🤝</button>
+                <button onclick="reactPost('${p.id}', 'like')" class="reaction-btn" title="Like">ðŸ‘</button>
+                <button onclick="reactPost('${p.id}', 'celebrate')" class="reaction-btn" title="Celebrate">ðŸŽ‰</button>
+                <button onclick="reactPost('${p.id}', 'insightful')" class="reaction-btn" title="Insightful">ðŸ’¡</button>
+                <button onclick="reactPost('${p.id}', 'support')" class="reaction-btn" title="Support">ðŸ¤</button>
               </div>
             </div>
 
@@ -1779,7 +1779,7 @@
         } catch(e) {}
       }
 
-      // Toggle Reaction — only re-renders the affected card, not the whole feed
+      // Toggle Reaction â€” only re-renders the affected card, not the whole feed
       window.reactPost = async function(postId, type) {
         try {
           const r = await fetch(API_BASE + `/api/posts/${postId}/react`, { method: 'POST', headers: H, body: JSON.stringify({ type }) });
@@ -1856,7 +1856,7 @@
                     <span class="font-bold text-[11px] text-on-surface hover:text-primary cursor-pointer transition-colors" onclick="showUserProfile('${commenterId}')" title="View Profile">${escapeHtml(name)}</span>
                     <div class="flex items-center gap-1.5">
                       <span class="text-[9px] text-on-surface-variant">${formatTimeAgo(c.createdAt)}</span>
-                      ${isOwn ? `<button onclick="openEditComment('${postId}','${c.id}',this)" class="text-outline hover:text-primary text-[11px] px-1 rounded hover:bg-primary/5 transition-colors" title="Edit Comment"><span class="material-symbols-outlined text-[12px]">edit</span></button><button onclick="deleteComment('${postId}', '${c.id}')" class="text-outline hover:text-error text-[10px]" title="Delete Comment">✕</button>` : ''}
+                      ${isOwn ? `<button onclick="openEditComment('${postId}','${c.id}',this)" class="text-outline hover:text-primary text-[11px] px-1 rounded hover:bg-primary/5 transition-colors" title="Edit Comment"><span class="material-symbols-outlined text-[12px]">edit</span></button><button onclick="deleteComment('${postId}', '${c.id}')" class="text-outline hover:text-error text-[10px]" title="Delete Comment">âœ•</button>` : ''}
                     </div>
                   </div>
                   <p class="text-xs text-on-surface mt-0.5 leading-relaxed">${escapeHtml(c.content)}</p>
@@ -1869,7 +1869,7 @@
         }
       }
 
-      // Submit Comment — no full feed reload
+      // Submit Comment â€” no full feed reload
       window.submitComment = async function(postId) {
         const inp = document.getElementById(`comment-input-${postId}`);
         const content = inp.value.trim();
@@ -1889,7 +1889,7 @@
         } catch(e) {}
       }
 
-      // Delete Comment — no full feed reload
+      // Delete Comment â€” no full feed reload
       window.deleteComment = async function(postId, commentId) {
         if (!confirm('Delete this comment?')) return;
         try {
@@ -1958,7 +1958,7 @@
             }
             banner.innerHTML = `<div style="display:flex;align-items:center;gap:8px;background:var(--ac);color:#fff;padding:9px 20px;border-radius:30px;font-size:13px;font-weight:700;box-shadow:0 6px 24px rgba(99,102,241,.4)">
               <span class="material-symbols-outlined" style="font-size:16px">arrow_upward</span>
-              ${newPostsCount} new post${newPostsCount!==1?'s':''} — Click to refresh
+              ${newPostsCount} new post${newPostsCount!==1?'s':''} â€” Click to refresh
             </div>`;
           });
 
@@ -2001,7 +2001,7 @@
                       <span class="font-bold text-[11px] text-on-surface hover:text-primary cursor-pointer transition-colors" onclick="showUserProfile('${commenterId}')" title="View Profile">${escapeHtml(name)}</span>
                       <div class="flex items-center gap-1.5">
                         <span class="text-[9px] text-on-surface-variant">${formatTimeAgo(comment.createdAt)}</span>
-                        ${isOwn ? `<button onclick="openEditComment('${postId}','${comment.id}',this)" class="text-outline hover:text-primary text-[11px] px-1 rounded hover:bg-primary/5 transition-colors" title="Edit Comment"><span class="material-symbols-outlined text-[12px]">edit</span></button><button onclick="deleteComment('${postId}', '${comment.id}')" class="text-outline hover:text-error text-[10px]" title="Delete Comment">✕</button>` : ''}
+                        ${isOwn ? `<button onclick="openEditComment('${postId}','${comment.id}',this)" class="text-outline hover:text-primary text-[11px] px-1 rounded hover:bg-primary/5 transition-colors" title="Edit Comment"><span class="material-symbols-outlined text-[12px]">edit</span></button><button onclick="deleteComment('${postId}', '${comment.id}')" class="text-outline hover:text-error text-[10px]" title="Delete Comment">âœ•</button>` : ''}
                       </div>
                     </div>
                     <p class="text-xs text-on-surface mt-0.5 leading-relaxed">${escapeHtml(comment.content)}</p>
@@ -2059,7 +2059,7 @@
         }
       }
 
-      // ─── Feed Filter ──────────────────────────────────────────────────────
+      // â”€â”€â”€ Feed Filter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.setFeedFilter = function(filter) {
         currentFeedFilter = filter;
         const tabRecent = document.getElementById('filter-tab-recent');
@@ -2071,7 +2071,7 @@
         loadFeed();
       }
 
-      // ─── Edit Post ────────────────────────────────────────────────────────
+      // â”€â”€â”€ Edit Post â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       let editingPostId = null;
       window.openEditPost = function(postId) {
         const post = allLoadedPosts.find(p => p.id === postId);
@@ -2091,7 +2091,7 @@
         if (!content) return showToast('Content cannot be empty', 'error');
         const btn = document.getElementById('edit-post-save-btn');
         btn.disabled = true;
-        btn.innerHTML = '<span class="material-symbols-outlined text-[14px]" style="animation:spin .6s linear infinite;display:inline-block">progress_activity</span> Saving…';
+        btn.innerHTML = '<span class="material-symbols-outlined text-[14px]" style="animation:spin .6s linear infinite;display:inline-block">progress_activity</span> Savingâ€¦';
         try {
           const r = await fetch(API_BASE + `/api/posts/${editingPostId}`, { method: 'PATCH', headers: H, body: JSON.stringify({ content }) });
           if (r.ok) {
@@ -2109,7 +2109,7 @@
         btn.innerHTML = '<span class="material-symbols-outlined text-[14px]">save</span> Save';
       }
 
-      // ─── Edit Comment (inline) ────────────────────────────────────────────
+      // â”€â”€â”€ Edit Comment (inline) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       let editingComment = null;
       window.openEditComment = function(postId, commentId, btn) {
         const wrap = btn.closest('.flex.items-start.gap-2\.5.p-2');
@@ -2121,7 +2121,7 @@
         contentEl.innerHTML = `<div class="flex gap-2 mt-1 items-center">
           <input id="eci-${commentId}" value="${original.replace(/"/g,'&quot;')}" class="flex-1 bg-surface-container border-none rounded-lg px-3 py-1 text-xs outline-none focus:ring-2 focus:ring-primary text-on-surface">
           <button onclick="saveEditComment('${postId}','${commentId}')" class="bg-primary text-white px-3 py-1 rounded-lg text-xs font-bold shrink-0">Save</button>
-          <button onclick="cancelEditComment('${commentId}')" class="text-on-surface-variant px-2 py-1 rounded-lg text-xs hover:bg-surface-container transition-colors shrink-0">✕</button>
+          <button onclick="cancelEditComment('${commentId}')" class="text-on-surface-variant px-2 py-1 rounded-lg text-xs hover:bg-surface-container transition-colors shrink-0">âœ•</button>
         </div>`;
         document.getElementById(`eci-${commentId}`)?.focus();
       }

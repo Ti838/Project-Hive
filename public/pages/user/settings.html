@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Settings — ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/ph-design.css"><link rel="stylesheet" href="/assets/css/ph-system.css?v=2"><script src="/assets/js/core/ph-toast.js"></script><script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Settings â€” ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/ph-design.css"><link rel="stylesheet" href="/assets/css/ph-system.css?v=3"><script src="/assets/js/core/ph-toast.js"></script><script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 <style>
-/* ── Settings page overrides ── */
+/* â”€â”€ Settings page overrides â”€â”€ */
 .tabs-wrap {
   position: sticky;
   top: 0;
@@ -42,14 +42,14 @@
 <!-- Account -->
 <div id="sec-account" class="sec on">
 <div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(99,102,241,.1);color:#6366f1">person</div><div><h2>Account Settings</h2><p>Update your personal information</p></div></div><div class="fc-body">
-<form id="form-acc"><div style="display:grid;grid-template-columns:1fr 1fr;gap:13px"><div class="fi-wrap"><label for="s-fn" class="fi-lbl">First Name</label><input id="s-fn" class="fi" placeholder="First name"></div><div class="fi-wrap"><label for="s-ln" class="fi-lbl">Last Name</label><input id="s-ln" class="fi" placeholder="Last name"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-em" class="fi-lbl">Email (Read-only)</label><input id="s-em" class="fi" disabled style="opacity: 0.6; cursor: not-allowed; background: var(--bg-hover);"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-uni" class="fi-lbl">University</label><input id="s-uni" class="fi" placeholder="Your university"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-bio" class="fi-lbl">Bio</label><textarea id="s-bio" rows="4" class="fi" placeholder="Tell people about yourself…"></textarea></div></div><button type="submit" id="btn-acc" class="save-btn" style="margin-top: 20px;"><span style="font-family:'Material Symbols Outlined';font-size:20px">save</span>Save Account Details</button></form>
+<form id="form-acc"><div style="display:grid;grid-template-columns:1fr 1fr;gap:13px"><div class="fi-wrap"><label for="s-fn" class="fi-lbl">First Name</label><input id="s-fn" class="fi" placeholder="First name"></div><div class="fi-wrap"><label for="s-ln" class="fi-lbl">Last Name</label><input id="s-ln" class="fi" placeholder="Last name"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-em" class="fi-lbl">Email (Read-only)</label><input id="s-em" class="fi" disabled style="opacity: 0.6; cursor: not-allowed; background: var(--bg-hover);"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-uni" class="fi-lbl">University</label><input id="s-uni" class="fi" placeholder="Your university"></div><div class="fi-wrap" style="grid-column:1/-1"><label for="s-bio" class="fi-lbl">Bio</label><textarea id="s-bio" rows="4" class="fi" placeholder="Tell people about yourselfâ€¦"></textarea></div></div><button type="submit" id="btn-acc" class="save-btn" style="margin-top: 20px;"><span style="font-family:'Material Symbols Outlined';font-size:20px">save</span>Save Account Details</button></form>
 </div></div>
 </div>
 
 <!-- Security -->
 <div id="sec-security" class="sec">
 <div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(16,185,129,.1);color:#10b981">lock_reset</div><div><h2>Change Password</h2><p>Use a strong unique password</p></div></div><div class="fc-body">
-<form id="form-pw"><div style="display:flex;flex-direction:column;gap:13px"><div class="fi-wrap"><label for="s-op" class="fi-lbl">Current Password</label><input id="s-op" type="password" class="fi" placeholder="••••••••"></div><div class="fi-wrap"><label for="s-np" class="fi-lbl">New Password</label><input id="s-np" type="password" class="fi" placeholder="Min. 8 characters"></div><div class="fi-wrap"><label for="s-cp" class="fi-lbl">Confirm New Password</label><input id="s-cp" type="password" class="fi" placeholder="••••••••"></div></div><button type="submit" id="btn-pw" class="save-btn" style="margin-top: 20px; background: #10b981; border-color: #10b981;"><span style="font-family:'Material Symbols Outlined';font-size:20px">lock</span>Update Password</button></form>
+<form id="form-pw"><div style="display:flex;flex-direction:column;gap:13px"><div class="fi-wrap"><label for="s-op" class="fi-lbl">Current Password</label><input id="s-op" type="password" class="fi" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"></div><div class="fi-wrap"><label for="s-np" class="fi-lbl">New Password</label><input id="s-np" type="password" class="fi" placeholder="Min. 8 characters"></div><div class="fi-wrap"><label for="s-cp" class="fi-lbl">Confirm New Password</label><input id="s-cp" type="password" class="fi" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"></div></div><button type="submit" id="btn-pw" class="save-btn" style="margin-top: 20px; background: #10b981; border-color: #10b981;"><span style="font-family:'Material Symbols Outlined';font-size:20px">lock</span>Update Password</button></form>
 </div></div>
 </div>
 
@@ -80,7 +80,7 @@
 <div id="sec-blocked" class="sec">
 <div class="fc"><div class="fc-hdr"><div class="fhic" style="background:rgba(239,68,68,.1);color:#ef4444">block</div><div><h2>Blocked Users</h2><p>Manage people you've blocked</p></div></div><div class="fc-body">
   <div id="blocked-list" style="display:flex;flex-direction:column;gap:10px">
-    <div style="text-align:center;padding:24px;color:var(--sub)"><span style="font-family:'Material Symbols Outlined';font-size:40px;display:block;margin-bottom:8px">person_off</span><p style="font-size:13px;margin:0">Loading blocked users…</p></div>
+    <div style="text-align:center;padding:24px;color:var(--sub)"><span style="font-family:'Material Symbols Outlined';font-size:40px;display:block;margin-bottom:8px">person_off</span><p style="font-size:13px;margin:0">Loading blocked usersâ€¦</p></div>
   </div>
 </div></div>
 </div>
@@ -93,7 +93,7 @@
       <span style="font-family:'Material Symbols Outlined';font-size:28px;color:#3b82f6">computer</span>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:700;color:var(--tx)">Current Session</div>
-        <div style="font-size:11px;color:var(--sub);margin-top:2px" id="session-browser">Loading browser info…</div>
+        <div style="font-size:11px;color:var(--sub);margin-top:2px" id="session-browser">Loading browser infoâ€¦</div>
         <div style="font-size:11px;color:var(--sub);margin-top:1px" id="session-login-time"></div>
       </div>
       <span style="font-size:10px;font-weight:700;color:#10b981;background:rgba(16,185,129,.1);padding:3px 10px;border-radius:20px">Active</span>
@@ -171,7 +171,7 @@
   document.getElementById('form-acc').onsubmit = async (e) => {
     e.preventDefault();
     const btn = document.getElementById('btn-acc');
-    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Saving…';
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Savingâ€¦';
     btn.disabled = true;
     try {
       const payload = {
@@ -205,7 +205,7 @@
     if(np.length < 8) return PHToast?.error('Password must be 8+ chars');
 
     const btn = document.getElementById('btn-pw');
-    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Updating…';
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Updatingâ€¦';
     btn.disabled = true;
     try {
       const r = await fetch(API_BASE+"/api/users/me/password", {
@@ -229,7 +229,7 @@
 
   window.savePrivacy = async function() {
     const btn = document.getElementById('btn-privacy');
-    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Saving…';
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';animation:spin .7s linear infinite;display:inline-block">progress_activity</span> Savingâ€¦';
     btn.disabled = true;
     const isPublic = document.getElementById('priv-public')?.classList.contains('on') ?? true;
     try {
@@ -249,7 +249,7 @@
     btn.disabled = false;
   };
 
-  // ─── Notification Preferences ───────────────────────────────────────────────
+  // â”€â”€â”€ Notification Preferences â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Load saved prefs from localStorage
   (function loadNotifPrefs() {
     const saved = JSON.parse(localStorage.getItem('ph-notif-prefs') || '{}');
@@ -276,7 +276,7 @@
     PHToast?.success('Notification preferences saved!');
   };
 
-  // ─── Blocked Users ───────────────────────────────────────────────────────────
+  // â”€â”€â”€ Blocked Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   (function loadBlocked() {
     const el = document.getElementById('blocked-list');
     fetch(API_BASE + '/api/users/me/blocked', { headers: H })
@@ -307,7 +307,7 @@
   })();
 
   window.unblockUser = async function(uid, btn) {
-    btn.disabled = true; btn.textContent = 'Unblocking…';
+    btn.disabled = true; btn.textContent = 'Unblockingâ€¦';
     try {
       const r = await fetch(API_BASE + `/api/users/${uid}/unblock`, { method: 'POST', headers: H });
       if (r.ok) {
@@ -329,7 +329,7 @@
     if (typed.toLowerCase() !== myEmail.toLowerCase()) return PHToast?.error('Email does not match');
 
     const btn = document.getElementById('btn-del');
-    btn.disabled = true; btn.textContent = 'Deleting…';
+    btn.disabled = true; btn.textContent = 'Deletingâ€¦';
     try {
       const myId = userCache.id || userCache._id;
       const r = await fetch(API_BASE + `/api/users/${myId}`, { method: 'DELETE', headers: H });
@@ -348,7 +348,7 @@
     }
   };
 
-  // ─── SESSION DISPLAY ──────────────────────────────────
+  // â”€â”€â”€ SESSION DISPLAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   (function initSessions() {
     const el = document.getElementById('session-browser');
     const elTime = document.getElementById('session-login-time');
@@ -378,7 +378,7 @@
   window.downloadMyData = async function() {
     const btn = document.getElementById('btn-export');
     btn.disabled = true;
-    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:20px" class="animate-spin">progress_activity</span>Exporting…';
+    btn.innerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:20px" class="animate-spin">progress_activity</span>Exportingâ€¦';
     try {
       const [profileRes, postsRes, teamsRes] = await Promise.allSettled([
         fetch(API_BASE + '/api/users/me', { headers: H }),

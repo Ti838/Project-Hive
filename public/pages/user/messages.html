@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
-  <title>ProjectHive — Collaboration & Messages</title>
+  <title>ProjectHive â€” Collaboration & Messages</title>
   <script>
     (function(){
       const t = localStorage.getItem('theme');
@@ -52,11 +52,11 @@
     }
   </script>
 
-  <link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+  <link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
   <link rel="stylesheet" href="/assets/css/ph-design.css">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/assets/js/core/ph-toast.js"></script>
-  <script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+  <script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 
   <script>
     window._jitsiLoaded = false;
@@ -108,10 +108,10 @@
        PREMIUM FULL-WIDTH LAYOUT FOR DESKTOP
        ========================================================================== */
     @media (min-width: 769px) {
-      /* ── CRITICAL: Override ph-system.css D2 rule that applies max-width:1400px
+      /* â”€â”€ CRITICAL: Override ph-system.css D2 rule that applies max-width:1400px
          to all .flex-1 children of .ml-[260px] containers. On the messages page,
          .msg-layout has the flex-1 class, so it gets incorrectly centered/capped.
-         This override ensures the full chat workspace spans 100% of available width. ── */
+         This override ensures the full chat workspace spans 100% of available width. â”€â”€ */
       .msg-layout {
         max-width: none !important;
         margin-left: 0 !important;
@@ -210,7 +210,7 @@
         border-bottom-color: #24273e !important;
       }
 
-      /* Chat action buttons - tighter on mobile */
+      /* Chat action buttons - tighter on mobile, always on RIGHT */
       #chat-hdr .msg-chat-actions {
         gap: 4px !important;
         flex-shrink: 0 !important;
@@ -218,17 +218,33 @@
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
         scrollbar-width: none !important;
-        max-width: 60vw;
+        max-width: 55vw !important;
       }
       #chat-hdr .msg-chat-actions::-webkit-scrollbar { display: none !important; }
 
-      /* Make action buttons slightly smaller on mobile */
+      /* Left section (back + avatar + name) must NOT push into action buttons */
+      #chat-hdr > div:first-child {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
+      }
+
+      /* Name text must truncate, not overflow */
+      #chat-hdr .font-heading {
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+        max-width: 120px !important;
+      }
+
+      /* Make action buttons smaller on mobile */
       #chat-hdr .msg-chat-actions button,
       #chat-hdr .msg-chat-actions a {
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
         flex-shrink: 0 !important;
+        padding: 0 !important;
       }
 
       /* Messages container - proper scrolling area */
@@ -256,7 +272,7 @@
         box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3) !important;
       }
 
-      /* Prevent text from breaking vertically — scoped to text elements only */
+      /* Prevent text from breaking vertically â€” scoped to text elements only */
       h1, h2, h3, h4, h5, h6, p {
         word-wrap: break-word !important;
         overflow-wrap: break-word !important;
@@ -475,7 +491,7 @@
             <span class="material-symbols-outlined text-lg" id="record-icon">mic</span>
           </button>
 
-          <!-- Voice Recording Bar (WhatsApp style) — hidden until recording -->
+          <!-- Voice Recording Bar (WhatsApp style) â€” hidden until recording -->
           <div id="voice-rec-bar" class="hidden flex-1 items-center gap-3 px-1">
             <div class="w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse shrink-0"></div>
             <span id="voice-rec-timer" class="text-rose-500 font-mono font-bold text-sm min-w-[38px] shrink-0">0:00</span>
@@ -541,12 +557,12 @@
   <div id="msg-context-menu" class="fixed hidden z-[999] bg-white dark:bg-darkSurface-card rounded-2xl shadow-2xl border border-gray-200 dark:border-darkSurface-border py-2 min-w-[200px] overflow-hidden">
     <!-- Quick Reaction Bar -->
     <div class="flex items-center gap-1 px-3 pb-2 pt-1 border-b border-gray-100 dark:border-darkSurface-border">
-      <button onclick="contextReact('👍')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="👍">👍</button>
-      <button onclick="contextReact('❤️')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="❤️">❤️</button>
-      <button onclick="contextReact('😂')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="😂">😂</button>
-      <button onclick="contextReact('😮')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="😮">😮</button>
-      <button onclick="contextReact('😢')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="😢">😢</button>
-      <button onclick="contextReact('🔥')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="🔥">🔥</button>
+      <button onclick="contextReact('ðŸ‘')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="ðŸ‘">ðŸ‘</button>
+      <button onclick="contextReact('â¤ï¸')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="â¤ï¸">â¤ï¸</button>
+      <button onclick="contextReact('ðŸ˜‚')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="ðŸ˜‚">ðŸ˜‚</button>
+      <button onclick="contextReact('ðŸ˜®')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="ðŸ˜®">ðŸ˜®</button>
+      <button onclick="contextReact('ðŸ˜¢')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="ðŸ˜¢">ðŸ˜¢</button>
+      <button onclick="contextReact('ðŸ”¥')" class="text-xl hover:scale-125 transition-transform p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-hover" title="ðŸ”¥">ðŸ”¥</button>
     </div>
     <button onclick="contextReply()" class="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-sm font-semibold text-gray-700 dark:text-slate-200 transition-colors">
       <span class="material-symbols-outlined text-[18px] text-indigo-500">reply</span> Reply
@@ -724,7 +740,7 @@
     </div>
   </div>
 
-  <!-- Custom Confirmation Modal — replaces browser confirm() -->
+  <!-- Custom Confirmation Modal â€” replaces browser confirm() -->
   <div id="ph-confirm-modal" class="fixed inset-0 z-[9998] hidden items-center justify-center" style="background:rgba(0,0,0,0.5);backdrop-filter:blur(6px)">
     <div class="bg-white dark:bg-[#1a1b27] border border-gray-200 dark:border-[#2e2f43] rounded-2xl shadow-2xl w-[90%] max-w-[340px] overflow-hidden" style="animation:cropModalUp 0.25s cubic-bezier(0.34,1.56,0.64,1)">
       <div class="p-5 pb-3">
@@ -793,7 +809,7 @@
         }
       }
 
-      /* ─── Custom Confirmation Modal (replaces browser confirm()) ─── */
+      /* â”€â”€â”€ Custom Confirmation Modal (replaces browser confirm()) â”€â”€â”€ */
       function phConfirm({ title, message, confirmText, icon }) {
         return new Promise(resolve => {
           const modal = document.getElementById('ph-confirm-modal');
@@ -1030,7 +1046,7 @@
         if (timerEl) timerEl.textContent = '0:00';
       }
 
-      // ─── Real-time waveform using Web Audio API ───────────────────────────────
+      // â”€â”€â”€ Real-time waveform using Web Audio API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       function startWaveform(stream) {
         try {
           _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1049,7 +1065,7 @@
             bars.forEach((bar, i) => {
               // Map 16 bins to 8 bars
               const val = (dataArray[i * 2] + (dataArray[i * 2 + 1] || 0)) / 2;
-              const pct = val / 255; // 0.0 → 1.0
+              const pct = val / 255; // 0.0 â†’ 1.0
               const h = Math.max(3, Math.min(24, Math.round(pct * 24)));
               bar.style.height = h + 'px';
               bar.style.opacity = 0.4 + pct * 0.6;
@@ -1058,7 +1074,7 @@
           }
           draw();
         } catch(e) {
-          // Web Audio not supported — CSS animation stays
+          // Web Audio not supported â€” CSS animation stays
         }
       }
 
@@ -1140,39 +1156,39 @@
         document.getElementById('emoji-picker-container').classList.add('hidden');
       };
 
-      // Built-in emoji data — no CDN needed
+      // Built-in emoji data â€” no CDN needed
       const ALL_EMOJIS = [
         // Smileys
-        '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚',
-        '😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥',
-        '😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐',
-        '😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓',
-        '😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','😺',
+        'ðŸ˜€','ðŸ˜ƒ','ðŸ˜„','ðŸ˜','ðŸ˜†','ðŸ˜…','ðŸ˜‚','ðŸ¤£','ðŸ˜Š','ðŸ˜‡','ðŸ™‚','ðŸ™ƒ','ðŸ˜‰','ðŸ˜Œ','ðŸ˜','ðŸ¥°','ðŸ˜˜','ðŸ˜—','ðŸ˜™','ðŸ˜š',
+        'ðŸ˜‹','ðŸ˜›','ðŸ˜œ','ðŸ¤ª','ðŸ˜','ðŸ¤‘','ðŸ¤—','ðŸ¤­','ðŸ¤«','ðŸ¤”','ðŸ¤','ðŸ¤¨','ðŸ˜','ðŸ˜‘','ðŸ˜¶','ðŸ˜','ðŸ˜’','ðŸ™„','ðŸ˜¬','ðŸ¤¥',
+        'ðŸ˜”','ðŸ˜ª','ðŸ¤¤','ðŸ˜´','ðŸ˜·','ðŸ¤’','ðŸ¤•','ðŸ¤¢','ðŸ¤®','ðŸ¤§','ðŸ¥µ','ðŸ¥¶','ðŸ¥´','ðŸ˜µ','ðŸ¤¯','ðŸ¤ ','ðŸ¥³','ðŸ˜Ž','ðŸ¤“','ðŸ§',
+        'ðŸ˜•','ðŸ˜Ÿ','ðŸ™','ðŸ˜®','ðŸ˜¯','ðŸ˜²','ðŸ˜³','ðŸ¥º','ðŸ˜¦','ðŸ˜§','ðŸ˜¨','ðŸ˜°','ðŸ˜¥','ðŸ˜¢','ðŸ˜­','ðŸ˜±','ðŸ˜–','ðŸ˜£','ðŸ˜ž','ðŸ˜“',
+        'ðŸ˜©','ðŸ˜«','ðŸ¥±','ðŸ˜¤','ðŸ˜¡','ðŸ˜ ','ðŸ¤¬','ðŸ˜ˆ','ðŸ‘¿','ðŸ’€','â˜ ï¸','ðŸ’©','ðŸ¤¡','ðŸ‘¹','ðŸ‘º','ðŸ‘»','ðŸ‘½','ðŸ‘¾','ðŸ¤–','ðŸ˜º',
         // Gestures
-        '👋','🤚','🖐️','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍',
-        '👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💅','🤳','💪','🦾','🦵','🦶','👂','🦻',
+        'ðŸ‘‹','ðŸ¤š','ðŸ–ï¸','âœ‹','ðŸ––','ðŸ‘Œ','ðŸ¤Œ','ðŸ¤','âœŒï¸','ðŸ¤ž','ðŸ¤Ÿ','ðŸ¤˜','ðŸ¤™','ðŸ‘ˆ','ðŸ‘‰','ðŸ‘†','ðŸ–•','ðŸ‘‡','â˜ï¸','ðŸ‘',
+        'ðŸ‘Ž','âœŠ','ðŸ‘Š','ðŸ¤›','ðŸ¤œ','ðŸ‘','ðŸ™Œ','ðŸ‘','ðŸ¤²','ðŸ¤','ðŸ™','âœï¸','ðŸ’…','ðŸ¤³','ðŸ’ª','ðŸ¦¾','ðŸ¦µ','ðŸ¦¶','ðŸ‘‚','ðŸ¦»',
         // Hearts & symbols
-        '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','☮️',
-        '✝️','☪️','🕉️','✡️','🔯','🕎','☯️','🛐','⛎','♈','♉','♊','♋','♌','♍','♎','♏','♐','♑','♒','♓',
-        '🆔','⚛️','🉑','☢️','☣️','📴','📳','🈶','🈚','🈸','🈺','🈷️','✴️','🆚','💮','🉐','㊙️','㊗️','🈴','🈵',
+        'â¤ï¸','ðŸ§¡','ðŸ’›','ðŸ’š','ðŸ’™','ðŸ’œ','ðŸ–¤','ðŸ¤','ðŸ¤Ž','ðŸ’”','â£ï¸','ðŸ’•','ðŸ’ž','ðŸ’“','ðŸ’—','ðŸ’–','ðŸ’˜','ðŸ’','ðŸ’Ÿ','â˜®ï¸',
+        'âœï¸','â˜ªï¸','ðŸ•‰ï¸','âœ¡ï¸','ðŸ”¯','ðŸ•Ž','â˜¯ï¸','ðŸ›','â›Ž','â™ˆ','â™‰','â™Š','â™‹','â™Œ','â™','â™Ž','â™','â™','â™‘','â™’','â™“',
+        'ðŸ†”','âš›ï¸','ðŸ‰‘','â˜¢ï¸','â˜£ï¸','ðŸ“´','ðŸ“³','ðŸˆ¶','ðŸˆš','ðŸˆ¸','ðŸˆº','ðŸˆ·ï¸','âœ´ï¸','ðŸ†š','ðŸ’®','ðŸ‰','ãŠ™ï¸','ãŠ—ï¸','ðŸˆ´','ðŸˆµ',
         // Objects
-        '🎉','🎊','🎈','🎁','🎀','🎗️','🎟️','🎫','🎖️','🏆','🥇','🥈','🥉','⚽','🏀','🏈','⚾','🥎','🎾','🏐',
-        '🏉','🥏','🎱','🏓','🏸','🏒','🏑','🥍','🏏','🪃','🥅','⛳','🪁','🏹','🎣','🤿','🥊','🥋','🎽','🛹',
-        '🛷','⛸️','🥌','🎿','⛷️','🏂','🪂','🏋️','🤼','🤸','⛹️','🤺','🏇','🧘','🏄','🏊','🤽','🚣','🧗','🚵',
-        '🚴','🏆','🥇','🎯','🎱','🎮','🎲','🧩','🎭','🎨','🖼️','🎪','🎤','🎧','🎼','🎵','🎶','🥁','🪘','🎷',
+        'ðŸŽ‰','ðŸŽŠ','ðŸŽˆ','ðŸŽ','ðŸŽ€','ðŸŽ—ï¸','ðŸŽŸï¸','ðŸŽ«','ðŸŽ–ï¸','ðŸ†','ðŸ¥‡','ðŸ¥ˆ','ðŸ¥‰','âš½','ðŸ€','ðŸˆ','âš¾','ðŸ¥Ž','ðŸŽ¾','ðŸ',
+        'ðŸ‰','ðŸ¥','ðŸŽ±','ðŸ“','ðŸ¸','ðŸ’','ðŸ‘','ðŸ¥','ðŸ','ðŸªƒ','ðŸ¥…','â›³','ðŸª','ðŸ¹','ðŸŽ£','ðŸ¤¿','ðŸ¥Š','ðŸ¥‹','ðŸŽ½','ðŸ›¹',
+        'ðŸ›·','â›¸ï¸','ðŸ¥Œ','ðŸŽ¿','â›·ï¸','ðŸ‚','ðŸª‚','ðŸ‹ï¸','ðŸ¤¼','ðŸ¤¸','â›¹ï¸','ðŸ¤º','ðŸ‡','ðŸ§˜','ðŸ„','ðŸŠ','ðŸ¤½','ðŸš£','ðŸ§—','ðŸšµ',
+        'ðŸš´','ðŸ†','ðŸ¥‡','ðŸŽ¯','ðŸŽ±','ðŸŽ®','ðŸŽ²','ðŸ§©','ðŸŽ­','ðŸŽ¨','ðŸ–¼ï¸','ðŸŽª','ðŸŽ¤','ðŸŽ§','ðŸŽ¼','ðŸŽµ','ðŸŽ¶','ðŸ¥','ðŸª˜','ðŸŽ·',
         // Food
-        '🍕','🍔','🌮','🌯','🥗','🍜','🍝','🍱','🍣','🍦','🎂','🍰','🧁','🍩','🍪','🍫','🍬','🍭','🥤','☕',
-        '🍺','🥂','🍾','🧃','🥛','🍵','🧋','🍶','🥃','🍷','🍸','🍹','🍻','🥤','🧊','🧂','🥣','🍽️','🥢','🍴',
+        'ðŸ•','ðŸ”','ðŸŒ®','ðŸŒ¯','ðŸ¥—','ðŸœ','ðŸ','ðŸ±','ðŸ£','ðŸ¦','ðŸŽ‚','ðŸ°','ðŸ§','ðŸ©','ðŸª','ðŸ«','ðŸ¬','ðŸ­','ðŸ¥¤','â˜•',
+        'ðŸº','ðŸ¥‚','ðŸ¾','ðŸ§ƒ','ðŸ¥›','ðŸµ','ðŸ§‹','ðŸ¶','ðŸ¥ƒ','ðŸ·','ðŸ¸','ðŸ¹','ðŸ»','ðŸ¥¤','ðŸ§Š','ðŸ§‚','ðŸ¥£','ðŸ½ï¸','ðŸ¥¢','ðŸ´',
         // Nature
-        '🌸','🌺','🌹','🌷','🌻','🌼','💐','🍀','🌿','☘️','🍁','🍂','🍃','🌱','🌲','🌳','🌴','🌵','🎋','🎍',
-        '🌾','🍄','🐚','🌊','🌀','🌈','⭐','🌟','💫','✨','⚡','🔥','❄️','🌙','☀️','🌤️','⛅','🌥️','🌦️','🌧️',
+        'ðŸŒ¸','ðŸŒº','ðŸŒ¹','ðŸŒ·','ðŸŒ»','ðŸŒ¼','ðŸ’','ðŸ€','ðŸŒ¿','â˜˜ï¸','ðŸ','ðŸ‚','ðŸƒ','ðŸŒ±','ðŸŒ²','ðŸŒ³','ðŸŒ´','ðŸŒµ','ðŸŽ‹','ðŸŽ',
+        'ðŸŒ¾','ðŸ„','ðŸš','ðŸŒŠ','ðŸŒ€','ðŸŒˆ','â­','ðŸŒŸ','ðŸ’«','âœ¨','âš¡','ðŸ”¥','â„ï¸','ðŸŒ™','â˜€ï¸','ðŸŒ¤ï¸','â›…','ðŸŒ¥ï¸','ðŸŒ¦ï¸','ðŸŒ§ï¸',
         // Animals
-        '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🙈','🙉','🙊','🐔','🐧',
-        '🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🦟','🦗','🕷️','🦂',
+        'ðŸ¶','ðŸ±','ðŸ­','ðŸ¹','ðŸ°','ðŸ¦Š','ðŸ»','ðŸ¼','ðŸ¨','ðŸ¯','ðŸ¦','ðŸ®','ðŸ·','ðŸ¸','ðŸµ','ðŸ™ˆ','ðŸ™‰','ðŸ™Š','ðŸ”','ðŸ§',
+        'ðŸ¦','ðŸ¤','ðŸ¦†','ðŸ¦…','ðŸ¦‰','ðŸ¦‡','ðŸº','ðŸ—','ðŸ´','ðŸ¦„','ðŸ','ðŸ›','ðŸ¦‹','ðŸŒ','ðŸž','ðŸœ','ðŸ¦Ÿ','ðŸ¦—','ðŸ•·ï¸','ðŸ¦‚',
         // Tech & misc
-        '💻','📱','⌨️','🖥️','🖨️','🖱️','💾','💿','📀','📷','📸','📹','🎥','📡','📺','📻','🔋','🔌','💡','🔦',
-        '✅','❌','⚠️','🚫','💯','🔴','🟠','🟡','🟢','🔵','🟣','⚫','⚪','🔶','🔷','🔸','🔹','🔺','🔻','💠',
-        '🚀','✈️','🚂','🚗','🚕','🚙','🚌','🚎','🏎️','🚓','🚑','🚒','🚐','🛻','🚚','🚛','🚜','🏍️','🛵','🚲',
+        'ðŸ’»','ðŸ“±','âŒ¨ï¸','ðŸ–¥ï¸','ðŸ–¨ï¸','ðŸ–±ï¸','ðŸ’¾','ðŸ’¿','ðŸ“€','ðŸ“·','ðŸ“¸','ðŸ“¹','ðŸŽ¥','ðŸ“¡','ðŸ“º','ðŸ“»','ðŸ”‹','ðŸ”Œ','ðŸ’¡','ðŸ”¦',
+        'âœ…','âŒ','âš ï¸','ðŸš«','ðŸ’¯','ðŸ”´','ðŸŸ ','ðŸŸ¡','ðŸŸ¢','ðŸ”µ','ðŸŸ£','âš«','âšª','ðŸ”¶','ðŸ”·','ðŸ”¸','ðŸ”¹','ðŸ”º','ðŸ”»','ðŸ’ ',
+        'ðŸš€','âœˆï¸','ðŸš‚','ðŸš—','ðŸš•','ðŸš™','ðŸšŒ','ðŸšŽ','ðŸŽï¸','ðŸš“','ðŸš‘','ðŸš’','ðŸš','ðŸ›»','ðŸšš','ðŸš›','ðŸšœ','ðŸï¸','ðŸ›µ','ðŸš²',
       ];
 
       let filteredEmojis = [...ALL_EMOJIS];
@@ -1225,7 +1241,7 @@
         }
       });
 
-      // ─── Message Delete ───────────────────────────────────────────────────────
+      // â”€â”€â”€ Message Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.deleteMsg = async function(id) {
         if (!id) { showToast('Cannot delete: message ID missing', 'error'); return; }
         const ok = await phConfirm({
@@ -1249,11 +1265,11 @@
             showToast(err.error || 'Delete failed (' + res.status + ')', 'error');
           }
         } catch (e) {
-          showToast('Network error — is server online?', 'error');
+          showToast('Network error â€” is server online?', 'error');
         }
       };
 
-      // ─── Conversation Delete ──────────────────────────────────────────────────
+      // â”€â”€â”€ Conversation Delete â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.deleteConversation = async function(friendId) {
         if (!friendId || friendId === 'undefined' || friendId === 'null') {
           showToast('Cannot delete: friend ID missing', 'error');
@@ -1298,7 +1314,7 @@
             showToast(err.error || 'Delete failed (' + res.status + ')', 'error');
           }
         } catch (e) {
-          showToast('Network error — is server online?', 'error');
+          showToast('Network error â€” is server online?', 'error');
         }
       };
 
@@ -1339,23 +1355,23 @@
                 const isVoice = t.includes('"callType":"voice"') || t.includes('"callType": "voice"');
                 const isCancelled = t.includes('"cancelled"');
                 const isMissed = t.includes('"missed"');
-                const label = isVoice ? '📞 Voice Call' : '📹 Video Call';
+                const label = isVoice ? 'ðŸ“ž Voice Call' : 'ðŸ“¹ Video Call';
                 if (isMissed) return label + ' (missed)';
                 if (isCancelled) return label + ' (cancelled)';
                 return label;
               }
-              return '⚙️ System message';
+              return 'âš™ï¸ System message';
             }
-            if (t.includes('"type":"voice"') || t.includes('"type": "voice"')) return '🎤 Voice message';
-            if (t.includes('"type":"image"') || t.includes('"type": "image"')) return '📷 Photo';
-            if (t.includes('"type":"video"') || t.includes('"type": "video"')) return '🎬 Video';
-            if (t.includes('"type":"file"')  || t.includes('"type": "file"'))  return '📎 File';
+            if (t.includes('"type":"voice"') || t.includes('"type": "voice"')) return 'ðŸŽ¤ Voice message';
+            if (t.includes('"type":"image"') || t.includes('"type": "image"')) return 'ðŸ“· Photo';
+            if (t.includes('"type":"video"') || t.includes('"type": "video"')) return 'ðŸŽ¬ Video';
+            if (t.includes('"type":"file"')  || t.includes('"type": "file"'))  return 'ðŸ“Ž File';
           }
         } catch(_) {}
         return content;
       }
 
-      /* Conversation selection state — must be window.* for inline onclick access */
+      /* Conversation selection state â€” must be window.* for inline onclick access */
       window.convSelMode = false;
       window.selectedConvs = new Set(); // Set of friendIds
 
@@ -1784,7 +1800,7 @@
         }
       };
 
-      // ─── REPLY SYSTEM ────────────────────────────────────────
+      // â”€â”€â”€ REPLY SYSTEM â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
       window.replyToMsg = function(el) {
         if (!el) return;
@@ -1806,7 +1822,7 @@
         bar.classList.remove('flex');
       };
 
-      // ─── CONTEXT MENU ────────────────────────────────────────
+      // â”€â”€â”€ CONTEXT MENU â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
       window.showMsgContextMenu = function(e, el) {
         e.preventDefault();
@@ -1883,10 +1899,10 @@
 
       document.addEventListener('click', (e) => {
         document.getElementById('msg-context-menu')?.classList.add('hidden');
-        // Don't close emoji picker here — handled by the specific outside-click listener (line ~960)
+        // Don't close emoji picker here â€” handled by the specific outside-click listener (line ~960)
       });
 
-      // Delegated image lightbox handler — opens full image in global premium overlay
+      // Delegated image lightbox handler â€” opens full image in global premium overlay
       document.addEventListener('click', function(e) {
         const img = e.target.closest('[data-action="lightbox"]');
         if (!img) return;
@@ -1909,7 +1925,7 @@
         }
       });
 
-      // ─── CHAT INFO PANEL ──────────────────────────────────────
+      // â”€â”€â”€ CHAT INFO PANEL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.openChatInfo = function() {
         if (!activeConv || activeConv.type === 'team') return;
         const f = activeConv.friend || {};
@@ -1975,7 +1991,7 @@
 
 
 
-      // ─── SEARCH IN CHAT ────────────────────────────────────────
+      // â”€â”€â”€ SEARCH IN CHAT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.toggleChatSearch = function() {
         const bar = document.getElementById('chat-search-bar');
         bar.classList.toggle('hidden');
@@ -2017,7 +2033,7 @@
         }
       };
 
-      // ─── FORWARD MESSAGE ──────────────────────────────────────
+      // â”€â”€â”€ FORWARD MESSAGE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.contextForward = function() {
         document.getElementById('msg-context-menu').classList.add('hidden');
         const content = ctxMsgEl?.dataset.content || '';
@@ -2057,7 +2073,7 @@
         modal.classList.remove('flex');
       };
 
-      // ─── REACTIONS ──────────────────────────────────────────
+      // â”€â”€â”€ REACTIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       window.contextReact = async function(emoji) {
         document.getElementById('msg-context-menu').classList.add('hidden');
         const msgId = ctxMsgEl?.dataset.msgId;
@@ -2084,7 +2100,7 @@
         } catch(e) { showToast('Failed to react', 'error'); }
       };
 
-      // ─── BROWSER PUSH NOTIFICATIONS ──────────────────────────
+      // â”€â”€â”€ BROWSER PUSH NOTIFICATIONS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       (function initNotifications() {
         if (!('Notification' in window)) return;
         if (Notification.permission === 'default') {
@@ -2367,7 +2383,7 @@
         }
       };
 
-      // ── Team Collaboration Groups ──
+      // â”€â”€ Team Collaboration Groups â”€â”€
       async function loadTeamConvs() {
         try {
           const r = await fetch(API_BASE + '/api/messages/team-conversations', { headers: H });
@@ -2438,7 +2454,7 @@
               <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight">${esc(team.name)}</div>
               <div class="text-[11px] text-gray-400 dark:text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
-                <span>Team Space • ${team.memberCount} members</span>
+                <span>Team Space â€¢ ${team.memberCount} members</span>
               </div>
             </div>
           </div>
@@ -2672,15 +2688,15 @@
         // Initialize Call Manager with socket
         if (window.callManager) {
           window.callManager.setSocket(socket);
-          console.log('[Messages] ✅ Call Manager initialized with socket');
+          console.log('[Messages] âœ… Call Manager initialized with socket');
           console.log('[Messages] Socket ID:', socket.id);
           console.log('[Messages] Socket connected:', socket.connected);
         } else {
-          console.warn('[Messages] ⚠️ Call Manager not found!');
+          console.warn('[Messages] âš ï¸ Call Manager not found!');
         }
 
         socket.on('connect', () => {
-          console.log('[Messages] 🟢 Socket connected:', socket.id);
+          console.log('[Messages] ðŸŸ¢ Socket connected:', socket.id);
           if (activeConv) {
             socket.emit('join:room', { roomId: activeConv._id });
           }
@@ -2718,7 +2734,7 @@
         });
 
         socket.on('disconnect', (reason) => {
-          console.log('[Messages] 🔴 Socket disconnected:', reason);
+          console.log('[Messages] ðŸ”´ Socket disconnected:', reason);
         });
 
        function playMessageSound() {
@@ -2750,7 +2766,7 @@
             const senderName = data.sender?.firstName
               ? `${data.sender.firstName} ${data.sender.lastName||''}`.trim()
               : 'New Message';
-            showBrowserNotification(senderName, data.content || '📎 Attachment', data.sender?.avatar || null);
+            showBrowserNotification(senderName, data.content || 'ðŸ“Ž Attachment', data.sender?.avatar || null);
           }
 
           if(activeConv && (data.roomId===activeConv._id || data.roomId===[ME.id, activeConv.friendId].sort().join('_'))){
@@ -2847,7 +2863,7 @@
           const actStatus = getActivityStatus(convFriend || { onlineStatus: status, lastSeen });
           document.querySelectorAll(`[data-user-activity="${userId}"]`).forEach(el => {
             el.className = `shrink-0 text-[10px] activity-label ${actStatus.cssClass}`;
-            el.textContent = actStatus.isOnline ? '' : ' · ' + actStatus.text;
+            el.textContent = actStatus.isOnline ? '' : ' Â· ' + actStatus.text;
           });
 
           // Update header
@@ -2919,7 +2935,7 @@
           stopOutgoingRing();
           pendingCallTarget = null;
           showToast('Call ended', 'info');
-          // ⚡ KEY FIX: call endCall() to cleanly tear down everything
+          // âš¡ KEY FIX: call endCall() to cleanly tear down everything
           endCall();
         });
 
@@ -2955,7 +2971,7 @@
           const status = getActivityStatus(f);
           document.querySelectorAll(`[data-user-activity="${uid}"]`).forEach(el => {
             el.className = `shrink-0 text-[10px] activity-label ${status.cssClass}`;
-            el.textContent = status.isOnline ? '' : ' · ' + status.text;
+            el.textContent = status.isOnline ? '' : ' Â· ' + status.text;
           });
         });
         const hdrEl = document.getElementById('chat-hdr-status');
@@ -3510,7 +3526,7 @@
       });
     }
 
-    // Mobile keyboard — keep input pinned above virtual keyboard (iOS/Android)
+    // Mobile keyboard â€” keep input pinned above virtual keyboard (iOS/Android)
     (function initMobileChatKeyboard() {
       if (window.innerWidth > 768) return;
       const inputArea = document.getElementById('chat-input-area');

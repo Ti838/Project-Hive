@@ -203,14 +203,74 @@ body, header, aside, main, section, .bg-surface-container-lowest,
 .bg-surface-container-low, .bg-surface-container, header, footer {
   transition: background-color .25s ease, border-color .25s ease, color .25s ease !important;
 }
+
+/* ── Mobile Fixes ── */
+@media (max-width: 768px) {
+  /* Fixed header with solid background on mobile */
+  header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 200 !important;
+    height: 60px !important;
+    background: rgba(247,249,251,0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(200,196,213,0.5) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  html.dark header {
+    background: rgba(11,12,20,0.97) !important;
+    border-bottom-color: rgba(50,45,80,0.5) !important;
+  }
+
+  /* Push main content below fixed header */
+  main {
+    margin-left: 0 !important;
+    padding-top: 60px !important;
+    padding-bottom: 80px !important;
+  }
+
+  /* Search bar — full width, no clipping */
+  #dash-search {
+    width: 100% !important;
+    min-width: 0 !important;
+    font-size: 13px !important;
+  }
+
+  /* Hide back button on dashboard mobile (no history to go back to) */
+  header > div:first-child > button[onclick="history.back()"] {
+    display: none !important;
+  }
+
+  /* Quick actions grid — 2 cols on mobile */
+  .qa-grid, [class*="grid-cols-4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+
+  /* Dashboard content padding */
+  .max-\\[1000px\\] {
+    max-width: 100% !important;
+    padding: 16px !important;
+  }
+
+  /* Right sidebar becomes bottom section on mobile */
+  main > aside {
+    display: none !important;
+  }
+}
 </style>
 
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=2">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
 <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/api.js"></script>
 <script src="/assets/js/core/auth.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=2"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=3"></script>
 <link rel="stylesheet" href="/assets/css/ph-design.css">
 </head>
 <body class="bg-background text-on-surface min-h-screen" data-no-float-theme="1">
