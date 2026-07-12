@@ -1010,17 +1010,14 @@ const PHSidebar = (() => {
           <span class="material-symbols-outlined" style="font-size:20px;color:#10b981">video_call</span>Meetings
         </a>
         <a href="/generator" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
-          <span class="material-symbols-outlined" style="font-size:20px;color:#f59e0b">auto_awesome</span>AI Assistant
+          <span class="material-symbols-outlined" style="font-size:20px;color:#f59e0b">auto_awesome</span>AI Generator
         </a>
-        <button onclick="PHSidebar.showComingSoon('Calendar')" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:none;background:none;text-align:left;color:var(--tx,#111);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">calendar_month</span>Calendar
-        </button>
-        <button onclick="PHSidebar.showComingSoon('Files')" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:none;background:none;text-align:left;color:var(--tx,#111);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">folder</span>Files
-        </button>
-        <button onclick="PHSidebar.showComingSoon('Tasks')" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;border:none;background:none;text-align:left;color:var(--tx,#111);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer">
-          <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">task_alt</span>Tasks
-        </button>
+        <a href="/showcase" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#8b5cf6">folder_special</span>Projects
+        </a>
+        <a href="/notifications" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
+          <span class="material-symbols-outlined" style="font-size:20px;color:#3b82f6">notifications</span>Notifications
+        </a>
         <a href="/saved" class="ph-ps-item" style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:12px;text-decoration:none;color:var(--tx,#111);transition:background .15s;min-height:48px;font-size:13px;font-weight:600">
           <span class="material-symbols-outlined" style="font-size:20px;color:var(--sub,#64748b)">bookmark</span>Saved
         </a>
@@ -1039,6 +1036,7 @@ const PHSidebar = (() => {
         </button>
       </div>
     `;
+
 
     document.body.appendChild(backdrop);
     document.body.appendChild(sheet);

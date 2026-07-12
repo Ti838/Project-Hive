@@ -3107,12 +3107,9 @@ header input:focus {
   to   { transform: scale(1);   opacity: 1; }
 }
 
-/* ── D6: Pull-to-refresh visual indicator placeholder ── */
-/* Native PTR behavior is handled by browser; this prevents jarring overscroll */
+/* ── D6: Prevent jarring overscroll only in chat, NOT on body ── */
 @media (max-width: 768px) {
-  body {
-    overscroll-behavior-y: none;
-  }
+  /* body scroll must remain free — do NOT add overscroll-behavior here */
   .msg-layout,
   .msg-chat-area {
     overscroll-behavior: contain;
