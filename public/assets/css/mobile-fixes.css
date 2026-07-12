@@ -5,8 +5,13 @@
 
 /* ═══ Global Mobile Fixes ═══ */
 @media (max-width: 768px) {
-  /* Prevent horizontal scrolling */
-  html, body {
+  /* Prevent horizontal scrolling without locking vertical scroll */
+  html {
+    overflow-x: visible !important;
+    max-width: 100vw !important;
+    width: 100% !important;
+  }
+  body {
     overflow-x: hidden !important;
     max-width: 100vw !important;
     width: 100% !important;

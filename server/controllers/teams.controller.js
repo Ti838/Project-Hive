@@ -340,3 +340,72 @@ export async function deleteTeam(req, res, next) {
     res.json({ ok: true, message: 'Team deleted successfully' });
   } catch (err) { next(err); }
 }
+
+// ─── ADD MEMBER DIRECTLY (by leader) ──────────────────────────────────────────
+export async function addMember(req, res, next) {
+  try {
+    const leaderId = req.user.id;
+    const { id: teamId } = req.params;
+    const { userId } = req.body;
+
+    if (!userId) return res.status(400).json({ error: 'User ID is required' });
+
+    // Verify requester is leader
+    const { data: leaderMem } = await supabaseAdmin
+      .from('team_members').select('role').eq('team_id', teamId).eq('user_id', leaderId).single();
+    if (!leaderMem || leaderMem.role !== 'leader') {
+      return res.status(403).json({ error: 'Only team leader can add members directly' });
+    }
+
+    // Check team exists and get current size/max size
+    const { data: team } = await supabaseAdmin
+      .from('teams')
+      .select('name, max_size')
+      .eq('id', teamId)
+      .single();
+    if (!team) return res.status(404).json({ error: 'Team not found' });
+
+    // Check team capacity
+    const { count: currentCount } = await supabaseAdmin
+      .from('team_members')
+      .select('user_id', { count: 'exact', head: true })
+      .eq('team_id', teamId);
+    if (currentCount >= (team.max_size || 5)) {
+      return res.status(400).json({ error: 'Team is already at maximum capacity' });
+    }
+
+    // Check target is not already a member
+    const { data: existingMem } = await supabaseAdmin
+      .from('team_members').select('role').eq('team_id', teamId).eq('user_id', userId).maybeSingle();
+    if (existingMem) return res.status(400).json({ error: 'User is already a member of this team' });
+
+    // Add member
+    await supabaseAdmin.from('team_members').insert({ team_id: teamId, user_id: userId, role: 'member' });
+
+    // Delete any pending join request from this user
+    await supabaseAdmin.from('team_requests').delete().eq('team_id', teamId).eq('user_id', userId);
+
+    // Notify added user
+    const addTitle = 'Added to Team';
+    const addMsg = `You have been added to the team: ${team.name}`;
+    await supabaseAdmin.from('notifications').insert({
+      user_id: userId,
+      type: 'team',
+      title: addTitle,
+      message: addMsg,
+      data: { teamId },
+    });
+    broadcastNotification(getIo(), userId, {
+      type: 'team',
+      title: addTitle,
+      message: addMsg,
+      metadata: { teamId },
+    });
+
+    // Update user stats
+    const { data: u } = await supabaseAdmin.from('users').select('teams_joined').eq('id', userId).single();
+    await supabaseAdmin.from('users').update({ teams_joined: (u?.teams_joined || 0) + 1 }).eq('id', userId);
+
+    res.json({ ok: true, message: 'Member added successfully' });
+  } catch (err) { next(err); }
+}

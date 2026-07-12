@@ -24,6 +24,9 @@ router.patch('/me/password', authMiddleware, usersController.changePassword);
 // Skill endorsement — POST toggles on/off
 router.post('/:userId/skills/:skillId/endorse', authMiddleware, usersController.endorseSkill);
 
+// Support Ticket creation
+router.post('/tickets', authMiddleware, usersController.createSupportTicket);
+
 // Self account deletion (requires auth — can only delete own account)
 router.delete('/:id', authMiddleware, usersController.deleteOwnAccount);
 

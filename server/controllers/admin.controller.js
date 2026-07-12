@@ -277,3 +277,71 @@ export async function deleteAdminPost(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// ── Support Tickets ──────────────────────────────────────────────────────────
+export async function getTickets(req, res, next) {
+  try {
+    const { skip = 0, limit = 200 } = req.query;
+    const { data: tickets, error, count } = await supabaseAdmin
+      .from('support_tickets')
+      .select('id, category, subject, message, status, created_at, user_id, author:users!user_id(id, first_name, last_name, email)', { count: 'exact' })
+      .range(+skip, +skip + +limit - 1)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (error.message?.includes('does not exist')) {
+        return res.json({ tickets: [], total: 0 });
+      }
+      throw error;
+    }
+
+    const normalized = (tickets || []).map(t => ({
+      id: t.id,
+      category: t.category,
+      subject: t.subject,
+      message: t.message,
+      status: t.status,
+      createdAt: t.created_at,
+      author: t.author ? {
+        id: t.author.id,
+        firstName: t.author.first_name,
+        lastName: t.author.last_name,
+        email: t.author.email
+      } : null
+    }));
+
+    res.json({ tickets: normalized, total: count || 0 });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function resolveTicket(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { status = 'resolved' } = req.body;
+    const { data, error } = await supabaseAdmin
+      .from('support_tickets')
+      .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    res.json({ message: `Ticket status updated to ${status}`, ticket: data });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteTicket(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { error } = await supabaseAdmin.from('support_tickets').delete().eq('id', id);
+    if (error) throw error;
+    res.json({ message: 'Ticket deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+

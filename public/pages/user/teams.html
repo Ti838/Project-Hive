@@ -8,9 +8,9 @@
 <link rel="icon" href="/favicon.png?v=2">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/ph-design.css">
-<link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
+<link rel="stylesheet" href="/assets/css/ph-system.css?v=4">
 <script src="/assets/js/core/ph-toast.js"></script>
-<script src="/assets/js/core/ph-sidebar.js?v=3"></script>
+<script src="/assets/js/core/ph-sidebar.js?v=4"></script>
 
 </head>
 <body class="ph-page-bg" data-no-float-theme="1">
@@ -410,6 +410,52 @@
         } catch(e) {}
       }
 
+      // Direct friend invite section (Leader only)
+      let inviteHTML = '';
+      if (isLeader) {
+        // Find existing team member IDs
+        const memberIds = new Set((t.team_members || []).map(m => {
+          const u = m.users || m.user || {};
+          return u.id || u._id || m.user_id;
+        }));
+
+        try {
+          const frRes = await fetch(API_BASE + '/api/friends', { headers: H });
+          if (frRes.ok) {
+            const frData = await frRes.json();
+            const friends = frData.friends || [];
+            // Filter friends who are NOT already in the team
+            const addableFriends = friends.filter(f => !memberIds.has(f.id || f._id));
+            
+            let selectOptions = '<option value="">Select a friend...</option>';
+            if (addableFriends.length) {
+              selectOptions += addableFriends.map(f => {
+                const name = `${f.first_name || ''} ${f.last_name || ''}`.trim() || 'Friend';
+                return `<option value="${f.id || f._id}">${esc(name)}</option>`;
+              }).join('');
+            } else {
+              selectOptions = '<option value="">No addable friends found</option>';
+            }
+
+            inviteHTML = `
+              <div style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--bd)">
+                <h4 style="font-size:13px;font-weight:800;margin:0 0 12px;color:var(--tx);display:flex;align-items:center;gap:6px">
+                  <span class="ms" style="color:var(--ac);font-size:18px">person_add</span> Add Friend to Team
+                </h4>
+                <div style="display:flex;gap:8px">
+                  <select id="invite-friend-select" class="ph-input" style="flex:1;height:38px;padding:0 12px;font-size:13px;border-radius:8px">
+                    ${selectOptions}
+                  </select>
+                  <button onclick="inviteFriendToTeam('${t.id || t._id}', this)" class="ph-btn" style="height:38px;border-radius:8px;padding:0 16px;font-size:13px;font-weight:700">Add</button>
+                </div>
+              </div>
+            `;
+          }
+        } catch(e) {
+          console.error('[ProjectHive] Failed to load friends:', e);
+        }
+      }
+
       content.innerHTML = `
         <div>
           <h4 style="font-size:12px;font-weight:800;color:var(--sub);margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px">Description</h4>
@@ -423,11 +469,39 @@
           </div>
         </div>
 
+        ${inviteHTML}
         ${requestsHTML}
       `;
 
     } catch(err) {
       content.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)"><span class="ms" style="font-size:32px;display:block;margin-bottom:8px">error</span>Could not load details.</div>`;
+    }
+  };
+
+  window.inviteFriendToTeam = async function(teamId, btn) {
+    const select = document.getElementById('invite-friend-select');
+    const userId = select?.value;
+    if (!userId) return PHToast?.error('Please select a friend to add');
+
+    btn.disabled = true; btn.textContent = '...';
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${teamId}/members`, {
+        method: 'POST',
+        headers: H,
+        body: JSON.stringify({ userId })
+      });
+      const d = await res.json();
+      if (res.ok) {
+        PHToast?.success(d.message || 'Friend added successfully!');
+        openTeamDetailsModal(teamId); // reload modal content
+        load(); // reload team listing stats
+      } else {
+        PHToast?.error(d.error || 'Failed to add member');
+        btn.disabled = false; btn.textContent = 'Add';
+      }
+    } catch(e) {
+      PHToast?.error('Server connection failed');
+      btn.disabled = false; btn.textContent = 'Add';
     }
   };
 

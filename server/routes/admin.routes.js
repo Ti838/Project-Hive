@@ -6,6 +6,7 @@ import {
   getProjects, deleteProject, featureProject,
   getSystemFlags, updateFlags,
   getAdminPosts, deleteAdminPost,
+  getTickets, resolveTicket, deleteTicket,
 } from '../controllers/admin.controller.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
@@ -42,6 +43,11 @@ router.patch('/projects/:id/feature',   featureProject);
 // ── Posts ────────────────────────────────────────────────
 router.get('/posts',                    getAdminPosts);
 router.delete('/posts/:id',             deleteAdminPost);
+
+// ── Support Tickets ──────────────────────────────────────
+router.get('/tickets',                  getTickets);
+router.patch('/tickets/:id/resolve',    resolveTicket);
+router.delete('/tickets/:id',           deleteTicket);
 
 // ── System Flags ──────────────────────────────────────
 router.get('/flags',                    getSystemFlags);

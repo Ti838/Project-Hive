@@ -6,11 +6,16 @@
   --ph-mobile-nav-h: calc(72px + env(safe-area-inset-bottom, 0px));
 }
 
-html,
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: visible !important;
+}
+
 body {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: hidden !important;
 }
 
 .ph-page,

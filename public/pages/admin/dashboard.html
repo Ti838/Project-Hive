@@ -716,6 +716,11 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
     <span>Projects</span>
     <div class="admin-bn-dot"></div>
   </button>
+  <button class="admin-bn-item" id="bn-tk" onclick="nav('tk',document.getElementById('nav-tk'));updateBottomNav('bn-tk')" title="Tickets">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Tickets</span>
+    <div class="admin-bn-dot"></div>
+  </button>
   <button class="admin-bn-item" id="bn-sy" onclick="nav('sy',document.getElementById('nav-sy'));updateBottomNav('bn-sy')" title="System">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
     <span>System</span>
@@ -773,6 +778,10 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   <button class="sb-item" id="nav-rp" onclick="nav('rp',this)" title="Reports">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
     <span>Reports</span>
+  </button>
+  <button class="sb-item" id="nav-tk" onclick="nav('tk',this)" title="Support Tickets">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>Support Tickets</span><span class="badge-cnt" id="cnt-tk">—</span>
   </button>
   <button class="sb-item" id="nav-em" onclick="nav('em',this)" title="Email Blast">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -855,6 +864,43 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
   </div>
 </div>
 
+<!-- Support Tickets Section -->
+<div id="sec-tk" class="section" style="display:none">
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Support Tickets
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="tabs">
+          <button class="tab active" onclick="tkTab('all',this)">All</button>
+          <button class="tab" onclick="tkTab('open',this)">Open</button>
+          <button class="tab" onclick="tkTab('resolved',this)">Resolved</button>
+        </div>
+      </div>
+    </div>
+    <div class="desktop-table" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Category</th>
+            <th>Subject</th>
+            <th>Message</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tktb">
+          <tr><td colspan="7"><div class="empty"><span class="spin"></span></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- Email Blast Section -->
 <div id="sec-em" class="section" style="display:none">
   <div class="card" style="max-width:100%!important;width:100%!important">
@@ -898,7 +944,7 @@ const H={"Authorization":"Bearer "+TK,"Content-Type":"application/json"};
 const CL=["#6366f1","#7c3aed","#ec4899","#10b981","#f59e0b","#3b82f6","#ef4444","#14b8a6"];
 function avC(s){let h=0;for(const c of s||"")h=c.charCodeAt(0)+((h<<5)-h);return CL[Math.abs(h)%CL.length]}
 function ago(d){if(!d)return"â€”";const s=Math.floor((Date.now()-new Date(d))/1e3);if(s<60)return"Just now";if(s<3600)return Math.floor(s/60)+"m ago";if(s<86400)return Math.floor(s/3600)+"h ago";return new Date(d).toLocaleDateString()}
-let AU=[],AT=[],AP=[],APo=[],uf="all",tf="all";
+let AU=[],AT=[],AP=[],APo=[],ATk=[],uf="all",tf="all",tkf="all";
 let curAdminEmail="";
 try{const p=JSON.parse(atob(TK.split(".")[1]));curAdminEmail=(p.email||"").toLowerCase().trim();}catch(e){}
 // â”€â”€ Theme â”€â”€
@@ -916,17 +962,18 @@ function toggleTheme(){
   localStorage.setItem("theme",dark?"dark":"light");
   initTheme();
 }
+
 // â”€â”€ Nav â”€â”€
 function nav(id,btn){
   // Auto-close mobile menu on navigation
   document.querySelector('.sb')?.classList.remove('mob-open');
   document.querySelector('.mob-overlay')?.classList.remove('open');
 
-  const secs=["ov","us","tm","pr","po","an","sy","au","rp","em"];
+  const secs=["ov","us","tm","pr","po","an","sy","au","rp","em","tk"];
   secs.forEach(s=>{const el=document.getElementById("sec-"+s);if(el)el.style.display=s===id?"":"none"});
   document.querySelectorAll(".sb-item").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-  const titles={ov:"Control Center",us:"User Management",tm:"Team Management",pr:"Project Management",po:"Post Moderation",an:"Analytics",sy:"System",au:"Audit Log",rp:"Reports",em:"Email Blast"};
+  const titles={ov:"Control Center",us:"User Management",tm:"Team Management",pr:"Project Management",po:"Post Moderation",an:"Analytics",sy:"System",au:"Audit Log",rp:"Reports",em:"Email Blast",tk:"Support Tickets"};
   const el=document.getElementById("pg-title");if(el)el.textContent=titles[id];
   if(id==="sy"){checkHealth();const mb=document.getElementById("maint-btn");if(mb)mb.style.display="none";}
   else{const mb=document.getElementById("maint-btn");if(mb)mb.style.display="";}
@@ -934,7 +981,9 @@ function nav(id,btn){
   if(id==="po")rPostsMod();
   if(id==="au")renderAuditLog();
   if(id==="rp")renderReports();
+  if(id==="tk")rTickets();
 }
+
 // â”€â”€ Collapse â”€â”€
 function toggleCollapse() {
   const collapsed = document.documentElement.classList.toggle('sidebar-collapsed');
@@ -960,30 +1009,33 @@ async function checkHealth(){
 // â”€â”€ Load â”€â”€
 async function loadAll(){
   try{
-    const[st,us,tm,pr,po]=await Promise.all([
+    const[st,us,tm,pr,po,tk]=await Promise.all([
       fetch(API+"/api/admin/stats",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({})),
       fetch(API+"/api/admin/users?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch(API+"/api/admin/teams?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
       fetch(API+"/api/admin/projects?limit=500",{headers:H}).then(r=>r.ok?r.json():[]).catch(()=>[]),
-      fetch(API+"/api/admin/posts?limit=500",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({}))
+      fetch(API+"/api/admin/posts?limit=500",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({})),
+      fetch(API+"/api/admin/tickets?limit=500",{headers:H}).then(r=>r.ok?r.json():{}).catch(()=>({}))
     ]);
     AU=Array.isArray(us)?us:(us.users||[]);
     AT=Array.isArray(tm)?tm:(tm.teams||[]);
     AP=Array.isArray(pr)?pr:(pr.projects||[]);
     APo=po.posts || [];
+    ATk=tk.tickets || [];
     const bn=AU.filter(u=>u.isBanned).length;
     const vf=u=>{const e=document.getElementById(u[0]);if(e)e.textContent=u[1]};
     [["st-u",AU.length],["st-t",AT.length],["st-p",st.totalProjects||"â€”"],["st-b",bn],
      ["st-u-d",AU.filter(u=>{const d=new Date(u.createdAt);return Date.now()-d<86400000}).length],
      ["st-t-d",AT.filter(t=>!t.isClosed&&t.status!=="closed").length],
-     ["cnt-u",AU.length],["cnt-t",AT.length],["cnt-pr",AP.length],["cnt-po",APo.length],
+     ["cnt-u",AU.length],["cnt-t",AT.length],["cnt-pr",AP.length],["cnt-po",APo.length],["cnt-tk",ATk.length],
      ["an-u",AU.length],["an-v",AU.filter(u=>u.isVerified).length],["an-a",AU.filter(u=>u.role==="admin").length]
     ].forEach(vf);
     // Sync flags from backend
     if(st.flags){const f=st.flags;syncFlags(f);}
-    rRecent();rUsers();rTeams();rProjects();rPostsMod();
+    rRecent();rUsers();rTeams();rProjects();rPostsMod();rTickets();
   }catch(e){console.error(e)}
 }
+
 // â”€â”€ Render Recent â”€â”€
 function rRecent(){
   const el=document.getElementById("recent-wrap");if(!el)return;
@@ -1427,12 +1479,15 @@ function renderReports() {
   `;
 }
 
+
+
 function exportReport() {
   const data = {
     generatedAt: new Date().toISOString(),
-    summary: { users: AU.length, teams: AT.length, projects: AP.length, posts: APo.length, banned: AU.filter(u => u.isBanned).length },
+    summary: { users: AU.length, teams: AT.length, projects: AP.length, posts: APo.length, tickets: ATk.length, banned: AU.filter(u => u.isBanned).length },
     users: AU.map(u => ({ id: u._id, name: (u.firstName||'') + ' ' + (u.lastName||''), email: u.email, role: u.role, banned: u.isBanned, joined: u.createdAt })),
     teams: AT.map(t => ({ id: t._id || t.id, name: t.name, status: t.is_closed ? 'closed' : 'open', members: t.members?.length || 0 })),
+    tickets: ATk.map(t => ({ id: t.id, author: t.author ? `${t.author.firstName||''} ${t.author.lastName||''}`.trim() : 'Anonymous', email: t.author?.email || '', category: t.category, subject: t.subject, message: t.message, status: t.status, created: t.createdAt })),
     auditLog: auditLog.slice(0, 50)
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1673,9 +1728,117 @@ rPostsMod = function() {
   }).join('');
 };
 
+// Support Ticket functions
+function tkTab(f, btn) {
+  tkf = f;
+  btn.closest(".tabs").querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  rTickets();
+}
+
+function rTickets() {
+  const tb = document.getElementById("tktb");
+  if (!tb) return;
+  let list = ATk;
+  if (tkf !== 'all') {
+    list = list.filter(t => t.status === tkf);
+  }
+  
+  if (!list.length) {
+    tb.innerHTML = '<tr><td colspan="7"><div class="empty">No tickets found</div></td></tr>';
+    const wrap = document.getElementById('mob-tickets-wrap');
+    if (wrap) wrap.innerHTML = '<div class="empty">No tickets found</div>';
+    return;
+  }
+
+  const resolveI = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>';
+  const delI = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>';
+
+  tb.innerHTML = list.map(t => {
+    const user = t.author ? `${t.author.firstName || ''} ${t.author.lastName || ''}`.trim() : 'Anonymous';
+    const email = t.author?.email || '—';
+    const isResolved = t.status === 'resolved' || t.status === 'closed';
+
+    const actionCell = isResolved ?
+      '<span class="badge active">Resolved</span>' :
+      `<div class="act-row">
+        <button class="act g" title="Resolve" onclick="resolveTk('${t.id}')">${resolveI} Resolve</button>
+        <button class="act r" title="Delete" onclick="delTk('${t.id}')">${delI}</button>
+      </div>`;
+
+    return `<tr>
+      <td><div style="font-weight:700">${user}</div><div style="font-size:10px;color:var(--sub)">${email}</div></td>
+      <td><span class="badge admin">${t.category}</span></td>
+      <td style="font-weight:600">${t.subject}</td>
+      <td style="max-width:300px;word-break:break-word">${t.message}</td>
+      <td><span class="badge ${isResolved ? 'active' : 'banned'}">${t.status}</span></td>
+      <td style="font-size:11px;color:var(--sub)">${ago(t.createdAt)}</td>
+      <td>${actionCell}</td>
+    </tr>`;
+  }).join('');
+
+  if (isMobile()) {
+    const wrap = getMobCardContainer('sec-tk', 'mob-tickets-wrap');
+    if (!wrap) return;
+    wrap.innerHTML = list.map(t => {
+      const user = t.author ? `${t.author.firstName || ''} ${t.author.lastName || ''}`.trim() : 'Anonymous';
+      const email = t.author?.email || '';
+      const isResolved = t.status === 'resolved' || t.status === 'closed';
+      return `
+        <div class="mob-item-card">
+          <div class="mob-item-top">
+            <div class="u-av" style="width:40px;height:40px;border-radius:11px;font-size:18px;background:rgba(99,102,241,.12)">🎫</div>
+            <div class="mob-item-meta">
+              <div class="mob-item-name">${t.subject}</div>
+              <div class="mob-item-sub">By ${user} (${email})</div>
+            </div>
+            <span class="badge ${isResolved ? 'active' : 'banned'}">${t.status}</span>
+          </div>
+          <p style="font-size:12px;color:var(--tx2);margin-bottom:10px;line-height:1.6;background:var(--bg);padding:8px 10px;border-radius:9px">${t.message}</p>
+          <div class="mob-item-badges">
+            <span class="badge admin">${t.category}</span>
+            <span style="font-size:10px;color:var(--sub);margin-left:auto">${ago(t.createdAt)}</span>
+          </div>
+          <div class="mob-item-actions">
+            ${isResolved ? '' : `<button class="act g" onclick="resolveTk('${t.id}')">${resolveI} Resolve</button>`}
+            <button class="act r" onclick="delTk('${t.id}')">${delI} Delete</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+}
+
+async function resolveTk(id) {
+  if (!(await adminConfirm('Mark this ticket as resolved?', 'Resolve Ticket'))) return;
+  const r = await fetch(API + '/api/admin/tickets/' + id + '/resolve', {
+    method: 'PATCH',
+    headers: H,
+    body: JSON.stringify({ status: 'resolved' })
+  });
+  if (r.ok) {
+    adminAlert('Ticket marked as resolved!', 'Success');
+    pushAudit('RESOLVE_TICKET', 'Ticket ID: ' + id);
+    loadAll();
+  } else {
+    adminAlert('Failed to update ticket status', 'Error');
+  }
+}
+
+async function delTk(id) {
+  if (!(await adminConfirm('Delete this support ticket permanently?', 'Delete Ticket', true))) return;
+  const r = await fetch(API + '/api/admin/tickets/' + id, { method: 'DELETE', headers: H });
+  if (r.ok) {
+    adminAlert('Ticket deleted.', 'Success');
+    pushAudit('DELETE_TICKET', 'Ticket ID: ' + id);
+    loadAll();
+  } else {
+    adminAlert('Failed to delete ticket', 'Error');
+  }
+}
+
 // Re-render mobile cards on window resize
 window.addEventListener('resize', () => {
-  if (isMobile()) { rUsers(); rTeams(); rProjects(); rPostsMod(); }
+  if (isMobile()) { rUsers(); rTeams(); rProjects(); rPostsMod(); rTickets(); }
 });
 </script>
 <script src="/assets/js/mobile-inject.js"></script>

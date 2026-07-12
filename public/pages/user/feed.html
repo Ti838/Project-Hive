@@ -407,12 +407,12 @@
     #suggested-people-list > div:nth-child(4) { animation-delay: 0.20s; }
   </style>
 
-  <link rel="stylesheet" href="/assets/css/ph-system.css?v=3">
+  <link rel="stylesheet" href="/assets/css/ph-system.css?v=4">
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/assets/js/core/ph-toast.js"></script>
   <script src="/assets/js/core/api.js"></script>
   <script src="/assets/js/core/auth.js"></script>
-  <script src="/assets/js/core/ph-sidebar.js?v=3"></script>
+  <script src="/assets/js/core/ph-sidebar.js?v=4"></script>
   <script src="/assets/js/mobile-inject.js"></script>
   <link rel="stylesheet" href="/assets/css/ph-design.css">
 </head>
@@ -435,13 +435,13 @@
     <div class="flex items-center gap-4">
       <!-- AI Generator pill -->
       <a href="/generator"
-        class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-white transition-all hover:scale-105 shrink-0"
+        class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-white transition-all hover:scale-105 shrink-0"
         style="background:linear-gradient(135deg,#6366f1,#ec4899);text-decoration:none;box-shadow:0 3px 14px rgba(99,102,241,.35)"
         aria-label="AI Generator">
         <span class="material-symbols-outlined text-[15px]">auto_awesome</span>
         <span class="hidden sm:inline">AI Generator</span>
       </a>
-      <div class="flex items-center gap-3 pr-6 border-r border-outline-variant">
+      <div class="hidden md:flex items-center gap-3 pr-6 border-r border-outline-variant">
         <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/help'" title="Help Center" aria-label="Help Center">
           <span class="material-symbols-outlined">help</span>
         </button>

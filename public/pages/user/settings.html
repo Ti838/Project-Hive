@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Settings â€” ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/ph-design.css"><link rel="stylesheet" href="/assets/css/ph-system.css?v=3"><script src="/assets/js/core/ph-toast.js"></script><script src="/assets/js/core/ph-sidebar.js?v=3"></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Settings â€” ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"><link rel="stylesheet" href="/assets/css/ph-design.css"><link rel="stylesheet" href="/assets/css/ph-system.css?v=4"><script src="/assets/js/core/ph-toast.js"></script><script src="/assets/js/core/ph-sidebar.js?v=4"></script>
 <style>
 /* â”€â”€ Settings page overrides â”€â”€ */
 .tabs-wrap {
@@ -328,22 +328,68 @@
     if (!typed) return PHToast?.error('Please type your email to confirm');
     if (typed.toLowerCase() !== myEmail.toLowerCase()) return PHToast?.error('Email does not match');
 
+    if (!confirm('WARNING: Are you absolutely sure you want to permanently delete your account? This action cannot be undone and will purge all your data.')) {
+      return;
+    }
+
     const btn = document.getElementById('btn-del');
-    btn.disabled = true; btn.textContent = 'Deletingâ€¦';
+    btn.disabled = true; btn.textContent = 'Processing...';
+
+    // Create professional full screen overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.background = 'rgba(12, 13, 20, 0.95)';
+    overlay.style.zIndex = '9999';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.color = '#fff';
+    overlay.style.fontFamily = "'Inter', sans-serif";
+    overlay.style.transition = 'opacity 0.4s ease';
+    overlay.style.opacity = '0';
+
+    overlay.innerHTML = `
+      <div style="text-align:center;padding:24px">
+        <span class="material-symbols-outlined animate-spin" style="font-size:44px;color:#ef4444;margin-bottom:16px;display:block">sync</span>
+        <h2 style="font-size:18px;font-weight:800;margin:0 0 8px">Purging Your Profile</h2>
+        <p style="font-size:13px;color:#94a3b8;margin:0">Deleting posts, messages, teams and files. Please wait...</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.style.opacity = '1', 50);
+
     try {
       const myId = userCache.id || userCache._id;
       const r = await fetch(API_BASE + `/api/users/${myId}`, { method: 'DELETE', headers: H });
       if (r.ok) {
-        PHToast?.success('Account deleted. Goodbye!');
+        // Clear all data
         localStorage.clear();
-        setTimeout(() => location.href = '/login', 1500);
+        
+        // Show goodbye screen
+        setTimeout(() => {
+          overlay.innerHTML = `
+            <div style="text-align:center;padding:24px;">
+              <span class="material-symbols-outlined" style="font-size:52px;color:#ef4444;margin-bottom:16px;display:block">sentiment_very_dissatisfied</span>
+              <h2 style="font-size:20px;font-weight:900;margin:0 0 8px">Account Deleted</h2>
+              <p style="font-size:13px;color:#94a3b8;margin:0 0 20px">We are sad to see you go. Your data is deleted. Goodbye!</p>
+              <p style="font-size:12px;color:#6366f1;font-weight:700">Redirecting...</p>
+            </div>
+          `;
+          setTimeout(() => {
+            location.href = '/login';
+          }, 2000);
+        }, 1200);
       } else {
         const d = await r.json();
         PHToast?.error(d.error || 'Failed to delete account');
+        overlay.remove();
         btn.disabled = false; btn.textContent = 'Delete my account';
       }
     } catch(e) {
-      PHToast?.error('Server error');
+      PHToast?.error('Server connection error');
+      overlay.remove();
       btn.disabled = false; btn.textContent = 'Delete my account';
     }
   };

@@ -281,3 +281,20 @@ CREATE POLICY "service_role_all_comments"  ON post_comments  FOR ALL TO service_
 -- Triggers
 CREATE TRIGGER posts_updated_at BEFORE UPDATE ON posts FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- ─── SUPPORT TICKETS ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS support_tickets (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
+  category    VARCHAR(100) NOT NULL,
+  subject     VARCHAR(255) NOT NULL,
+  message     TEXT NOT NULL,
+  status      VARCHAR(50) DEFAULT 'open' CHECK (status IN ('open', 'resolved', 'closed')),
+  created_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at  TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "service_role_all_tickets" ON support_tickets FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE TRIGGER support_tickets_updated_at BEFORE UPDATE ON support_tickets FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+
