@@ -365,7 +365,17 @@ const PHSidebar = (() => {
     // ── Keep-alive: ping Render backend so it never sleeps ──
     if (!IS_DEV) {
       const BACKEND = 'https://projecthive-backend.onrender.com';
-      const ping = () => fetch(BACKEND + '/health', { signal: AbortSignal.timeout(8000) }).catch(() => {});
+      const ping = () => {
+        let signal;
+        try {
+          signal = AbortSignal.timeout(8000);
+        } catch(e) {
+          const ctrl = new AbortController();
+          setTimeout(() => ctrl.abort(), 8000);
+          signal = ctrl.signal;
+        }
+        fetch(BACKEND + '/health', { signal }).catch(() => {});
+      };
       ping(); // immediate ping on page load
       // Re-ping every 8 minutes (Render sleeps after 15min of inactivity)
       setInterval(ping, 8 * 60 * 1000);
