@@ -2612,22 +2612,26 @@
 
       /* Load all conversations */
       async function loadConvs(){
-        // 1. Show cached data instantly
+        // 1. Show cached data instantly while fresh data loads
         try {
           const cache = localStorage.getItem('ph-convs-cache');
           if (cache) {
-            convs = JSON.parse(cache);
-            renderConvs(convs);
+            const cached = JSON.parse(cache);
+            if (Array.isArray(cached) && cached.length) {
+              convs = cached;
+              renderConvs(convs);
+            }
           }
         } catch(e) {}
 
         // 2. Fetch fresh — with 20s timeout for Render cold-start
+        const ctrl = new AbortController();
+        let toId, wakeHintTimer;
         try{
-          const ctrl = new AbortController();
-          const toId = setTimeout(() => ctrl.abort(), 20000);
+          toId = setTimeout(() => ctrl.abort(), 20000);
 
-          // Show waking-up hint after 4 seconds if still loading
-          const wakeHintTimer = setTimeout(() => {
+          // Show waking-up hint after 5s if still loading and no cached data
+          wakeHintTimer = setTimeout(() => {
             if (!convs.length) {
               document.getElementById('conv-list').innerHTML = `
                 <div class="flex flex-col items-center justify-center h-48 gap-3 p-4 text-center">
@@ -2639,14 +2643,28 @@
                   </button>
                 </div>`;
             }
-          }, 4000);
+          }, 5000);
 
           const r = await fetch(API_BASE+'/api/messages/conversations', { headers: H, signal: ctrl.signal });
-          clearTimeout(toId);
-          clearTimeout(wakeHintTimer);
 
-          const d = await r.json();
-          convs = d.conversations||d||[];
+          // ── Auth failure: token expired or invalid → force re-login ──
+          if (r.status === 401) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            window.location.href = '/login';
+            return;
+          }
+
+          // ── Non-2xx (e.g. Render 502 cold-start, 429 rate-limit) ──
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+
+          let d;
+          try { d = await r.json(); } catch(_) { throw new Error('Bad JSON'); }
+
+          // Safely normalize — backend returns { conversations: [...] }
+          const fresh = Array.isArray(d) ? d : (Array.isArray(d?.conversations) ? d.conversations : []);
+          convs = fresh;
+
           friendIds.clear();
           convs.forEach(c => {
             if (c.friend && (c.friend._id || c.friend.id)) {
@@ -2668,7 +2686,7 @@
           // Deep Link direct chats
           const params = new URLSearchParams(window.location.search);
           const chatUserId = params.get('chat') || params.get('uid');
-          if (chatUserId && ME) {
+          if (chatUserId && ME && ME.id) {
             const existing = convs.find(c => c.friendId === chatUserId || (c.friend && c.friend.id === chatUserId));
             if (existing) {
               openConv(existing);
@@ -2698,17 +2716,22 @@
             }
           }
         }catch(e){
+          // Only replace UI if there's no stale cache to show
           if (!convs.length) {
+            const isAbort = e && e.name === 'AbortError';
             document.getElementById('conv-list').innerHTML=`
               <div class="flex flex-col items-center justify-center h-48 gap-3 p-4 text-center">
-                <span class="material-symbols-outlined text-4xl text-rose-500/60">cloud_off</span>
-                <p class="font-semibold text-xs text-gray-600 dark:text-slate-300">Could not connect</p>
-                <p class="text-[11px] text-gray-400 dark:text-slate-500">Server may be starting up</p>
+                <span class="material-symbols-outlined text-4xl text-rose-500/60">${isAbort ? 'timer_off' : 'cloud_off'}</span>
+                <p class="font-semibold text-xs text-gray-600 dark:text-slate-300">${isAbort ? 'Connection timed out' : 'Could not connect'}</p>
+                <p class="text-[11px] text-gray-400 dark:text-slate-500">Server may be starting up (~15s)</p>
                 <button onclick="loadConvs()" class="mt-1 px-4 py-2 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all active:scale-95">
                   Retry
                 </button>
               </div>`;
           }
+        } finally {
+          clearTimeout(toId);
+          clearTimeout(wakeHintTimer);
         }
       }
 
