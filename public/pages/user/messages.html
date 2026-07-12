@@ -57,6 +57,7 @@
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="/assets/js/core/ph-toast.js"></script>
   <script src="/assets/js/core/ph-sidebar.js?v=5"></script>
+  <script src="/assets/js/core/auth.js"></script>
 
   <script>
     window._jitsiLoaded = false;
@@ -2557,11 +2558,12 @@
           </div>`;
         try{
           const r = await fetch(API_BASE+'/api/users?limit=50',{headers:H});
+          if (!r.ok) throw new Error('HTTP ' + r.status);
           const d = await r.json();
-          allUsers = (d.users||d||[]).filter(u=>u._id!==ME?.id);
+          allUsers = (Array.isArray(d) ? d : (d.users||[])).filter(u=>u._id!==ME?.id && u.id!==ME?.id);
           renderUserList(allUsers);
         }catch(e){
-          listContainer.innerHTML=`<div class="text-center p-5 text-rose-500 font-bold text-xs">Error querying server</div>`;
+          listContainer.innerHTML=`<div class="text-center p-5 text-rose-500 font-bold text-xs">Could not load users — Retry</div>`;
         }
       }
 
