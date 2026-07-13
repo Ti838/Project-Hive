@@ -1557,19 +1557,19 @@
               </button>
             ` : ''}
 
-            <button id="voice-call-btn" onclick="startVoiceCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Voice Call">
+            <button id="voice-call-btn" onclick="startVoiceCall()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Voice Call">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">call</span>
             </button>
-            <button id="video-call-btn" onclick="startCall()" class="flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Video Call">
+            <button id="video-call-btn" onclick="startCall()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Video Call">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">video_call</span>
             </button>
-            <button onclick="deleteConversation('${f._id||f.id}')" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-rose-50 dark:hover:bg-rose-950/40 text-gray-400 hover:text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="Delete Chat">
+            <button onclick="deleteConversation('${f._id||f.id}')" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-rose-50 dark:hover:bg-rose-950/40 text-gray-400 hover:text-rose-500 rounded-xl items-center justify-center transition-all shrink-0" title="Delete Chat">
               <span class="material-symbols-outlined text-lg">delete</span>
             </button>
-            <button onclick="toggleChatSearch()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="Search in chat">
+            <button onclick="toggleChatSearch()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl items-center justify-center transition-all shrink-0" title="Search in chat">
               <span class="material-symbols-outlined text-lg">search</span>
             </button>
-            <button onclick="openChatInfo()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="Contact Info">
+            <button onclick="openChatInfo()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl items-center justify-center transition-all shrink-0" title="Contact Info">
               <span class="material-symbols-outlined text-lg">info</span>
             </button>
 
@@ -1580,8 +1580,14 @@
 
             <!-- Dropdown Body -->
             <div id="chat-hdr-dropdown" class="hidden absolute right-0 top-12 bg-white dark:bg-darkSurface-card border border-gray-100 dark:border-darkSurface-border rounded-xl shadow-lg py-1.5 w-44 z-[999] text-xs text-gray-700 dark:text-gray-200">
+              <a href="#" onclick="event.preventDefault(); startVoiceCall(); closeChatDropdown()" class="md:hidden flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-emerald-500 font-semibold">
+                <span class="material-symbols-outlined text-base">call</span> Voice Call
+              </a>
+              <a href="#" onclick="event.preventDefault(); startCall(); closeChatDropdown()" class="md:hidden flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-indigo-500 font-semibold">
+                <span class="material-symbols-outlined text-base">video_call</span> Video Call
+              </a>
               ${!friendIds.has(f._id||f.id) ? `
-                <a href="#" onclick="event.preventDefault(); addFriendFromChat('${f._id||f.id}'); closeChatDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-indigo-600 dark:text-indigo-400 font-semibold">
+                <a href="#" onclick="event.preventDefault(); addFriendFromChat('${f._id||f.id}'); closeChatDropdown()" class="md:hidden flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-indigo-600 dark:text-indigo-400 font-semibold">
                   <span class="material-symbols-outlined text-base">person_add</span> Add Friend
                 </a>
               ` : ''}
@@ -2933,13 +2939,13 @@
             </div>
           </div>
           <div class="ml-auto flex items-center gap-1.5 sm:gap-2 msg-chat-actions shrink-0 relative">
-            <button onclick="startGroupVoiceCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Group Voice Conference">
+            <button onclick="startGroupVoiceCall()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-emerald-500 hover:text-emerald-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Group Voice Conference">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">call</span>
             </button>
-            <button onclick="startGroupVideoCall()" class="w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl flex items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Group Video Conference">
+            <button onclick="startGroupVideoCall()" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-indigo-50 dark:hover:bg-indigo-950/40 text-indigo-500 hover:text-indigo-400 rounded-xl items-center justify-center transition-all active:scale-[0.9] shrink-0" title="Group Video Conference">
               <span class="material-symbols-outlined text-[18px] sm:text-lg">video_call</span>
             </button>
-            <button onclick="openTeamChatInfo('${team._id}')" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="Team Details">
+            <button onclick="openTeamChatInfo('${team._id}')" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl items-center justify-center transition-all shrink-0" title="Team Details">
               <span class="material-symbols-outlined text-lg">info</span>
             </button>
             
@@ -2950,6 +2956,12 @@
 
             <!-- Dropdown Body -->
             <div id="chat-hdr-dropdown" class="hidden absolute right-0 top-12 bg-white dark:bg-darkSurface-card border border-gray-100 dark:border-darkSurface-border rounded-xl shadow-lg py-1.5 w-44 z-[999] text-xs text-gray-700 dark:text-gray-200">
+              <a href="#" onclick="event.preventDefault(); startGroupVoiceCall(); closeChatDropdown()" class="md:hidden flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-emerald-500 font-semibold">
+                <span class="material-symbols-outlined text-base">call</span> Voice Call
+              </a>
+              <a href="#" onclick="event.preventDefault(); startGroupVideoCall(); closeChatDropdown()" class="md:hidden flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover text-indigo-500 font-semibold">
+                <span class="material-symbols-outlined text-base">video_call</span> Video Call
+              </a>
               <a href="#" onclick="event.preventDefault(); openTeamChatInfo('${team._id}'); closeChatDropdown()" class="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-50 dark:hover:bg-darkSurface-hover">
                 <span class="material-symbols-outlined text-base">info</span> Team Info
               </a>
