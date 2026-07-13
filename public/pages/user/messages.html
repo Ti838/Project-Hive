@@ -1885,6 +1885,8 @@
           showToast('Cannot edit file attachments or voice notes', 'error');
           document.getElementById('msg-context-menu').classList.add('hidden');
           return;
+        }
+
         currentEditMsg = { id, content };
         cancelReply(); // Close replies if open
 
