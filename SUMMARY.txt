@@ -12,6 +12,14 @@
   GitHub     →  https://github.com/Ti838/Project-Hive
 
 ================================================================================
+RECENT UPDATES (July 2026)
+================================================================================
+
+  - 📱 Mobile Responsiveness Perfected: Fixed overlapping headers on Feed and Dashboard pages, ensuring all content starts perfectly below fixed elements.
+  - 💬 Clean Chat Header: Refactored the mobile chat header to use a sleek Three-dots dropdown menu, hiding bulky action buttons (Call, Video, Search) into an accessible menu.
+  - 🗂️ File Structure Cleaned: Archived old Markdown documentation into `docs/archive/` and moved temporary scripts to `temp_scripts/` for a pristine root directory.
+
+================================================================================
 TECHNOLOGY STACK (CURRENT)
 ================================================================================
 
