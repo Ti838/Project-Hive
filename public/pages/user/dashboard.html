@@ -1159,13 +1159,18 @@ async function loadDropdownNotifications() {
         else if (n.type === 'message') icon = 'chat_bubble';
 
         return `
-          <div onclick="clickDropdownNotification('${n._id || n.id}', '${n.link || ''}')" class="p-3 rounded-xl border ${borderClass} hover:bg-gray-50 dark:hover:bg-darkSurface-hover cursor-pointer transition-all flex gap-3 items-start select-none text-left">
+          <div id="drop-nc-${n._id || n.id}" onclick="clickDropdownNotification('${n._id || n.id}', '${n.link || ''}')" class="p-3 rounded-xl border ${borderClass} hover:bg-gray-50 dark:hover:bg-darkSurface-hover cursor-pointer transition-all flex gap-3 items-start select-none text-left relative group">
             <span class="material-symbols-outlined text-[20px] text-indigo-500 shrink-0 mt-0.5">${icon}</span>
-            <div class="flex-1 min-w-0">
+            <div class="flex-1 min-w-0 pr-4">
               <p class="text-xs text-gray-800 dark:text-gray-200 font-semibold leading-normal line-clamp-2">${n.message || ''}</p>
               <span class="text-[10px] text-gray-400 mt-1 block">${dateStr}</span>
             </div>
-            ${isUnread ? '<span class="w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0 mt-2"></span>' : ''}
+            <div class="flex flex-col items-end justify-between self-stretch shrink-0">
+              ${isUnread ? '<span class="w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0 mt-1.5"></span>' : ''}
+              <button onclick="event.stopPropagation(); deleteDropdownNotification('${n._id || n.id}', this)" class="w-6 h-6 rounded-md hover:bg-red-500/10 text-gray-400 dark:text-gray-500 hover:text-red-500 flex items-center justify-center transition-all absolute right-2 top-2" title="Delete">
+                <span class="material-symbols-outlined text-sm">close</span>
+              </button>
+            </div>
           </div>
         `;
       }).join('');
@@ -1187,6 +1192,33 @@ window.clickDropdownNotification = async function(id, link) {
   
   if (link) {
     window.location.href = link;
+  }
+};
+
+window.deleteDropdownNotification = async function(id, btn) {
+  if (!confirm('Are you sure you want to delete this notification?')) return;
+  try {
+    const res = await fetch(API_BASE + `/api/notifications/${id}`, { method: 'DELETE', headers: H });
+    if (res.ok) {
+      PHToast?.success('Notification deleted');
+      const card = document.getElementById(`drop-nc-${id}`);
+      if (card) {
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.95)';
+        card.style.transition = 'all 0.2s ease';
+        setTimeout(() => {
+          loadDropdownNotifications();
+          if (typeof window.fetchNotifications === 'function') window.fetchNotifications();
+        }, 200);
+      } else {
+        loadDropdownNotifications();
+        if (typeof window.fetchNotifications === 'function') window.fetchNotifications();
+      }
+    } else {
+      PHToast?.error('Failed to delete notification');
+    }
+  } catch (e) {
+    PHToast?.error('An error occurred');
   }
 };
 

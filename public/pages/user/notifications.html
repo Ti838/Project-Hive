@@ -45,6 +45,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
 .sum-ic{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Outlined';font-size:18px;flex-shrink:0}
 .skel{background:linear-gradient(90deg,var(--sf2) 25%,var(--sf) 50%,var(--sf2) 75%);background-size:200%;animation:sh 1.4s infinite;border-radius:8px}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.delete-btn:hover{background:rgba(239,68,68,.1) !important;color:#ef4444 !important}
 </style>
 </head>
 <body data-no-float-theme="1">
@@ -165,7 +166,12 @@ body{background:var(--bg);color:var(--tx);margin:0}
             ${link?`<span style="font-size:10px;color:${co};font-weight:600">&#8594; Open</span>`:''}
           </div>
         </div>
-        ${ur?`<div class="n-dot" style="background:${co}"></div>`:'<span style="font-family:\'Material Symbols Outlined\';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0">check_circle</span>'}
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;margin-top:4px">
+          ${ur?`<div class="n-dot" style="background:${co}"></div>`:'<span style="font-family:\'Material Symbols Outlined\';font-size:16px;color:var(--bd2)">check_circle</span>'}
+          <button onclick="event.stopPropagation(); deleteNotif('${n._id}', this)" class="delete-btn" style="border:none;background:transparent;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:4px;border-radius:6px;transition:all 0.15s" title="Delete notification">
+            <span style="font-family:'Material Symbols Outlined';font-size:18px">delete</span>
+          </button>
+        </div>
       </div>`;
     }).join('');
   }
@@ -209,6 +215,35 @@ body{background:var(--bg);color:var(--tx);margin:0}
         PHToast?.success('All notifications marked as read');
       } else {
         PHToast?.error('Failed to mark notifications as read');
+      }
+    } catch(e) {
+      PHToast?.error('An error occurred');
+    }
+  };
+
+  window.deleteNotif = async function(id, btn){
+    if (!confirm('Are you sure you want to delete this notification?')) return;
+    try {
+      const res = await fetch(API_BASE+`/api/notifications/${id}`, { method: 'DELETE', headers: H });
+      if (res.ok) {
+        // Remove from local list
+        all = all.filter(n => n._id !== id);
+        stats();
+        // Animate removal
+        const card = document.getElementById(`nc-${id}`);
+        if (card) {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+          card.style.transition = 'all 0.2s ease';
+          setTimeout(() => {
+            render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
+          }, 200);
+        } else {
+          render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
+        }
+        PHToast?.success('Notification deleted');
+      } else {
+        PHToast?.error('Failed to delete notification');
       }
     } catch(e) {
       PHToast?.error('An error occurred');
