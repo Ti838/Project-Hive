@@ -532,3 +532,77 @@
 .ph-conn-banner.online {
   background-color: #10b981;
 }
+
+/* ═══ Chat Page Emoji Picker & Header Gap Fixes ═══ */
+@media (max-width: 768px) {
+  /* Fix active chat header layout gap - prevent 'main' padding-top rule from pushing it down */
+  main.msg-chat-area {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    margin-top: 0 !important;
+    height: 100% !important;
+  }
+
+  /* Make emoji picker actual mobile style: clean grid, fixed position, shadow */
+  #emoji-picker-container {
+    position: fixed !important;
+    bottom: 60px !important; /* aligns with bottom action bar height */
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 280px !important;
+    height: 280px !important;
+    border-radius: 20px 20px 0 0 !important;
+    border: 1px solid var(--tw-bd) !important;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15) !important;
+    background: #ffffff !important;
+    z-index: 1000 !important;
+  }
+  
+  html.dark #emoji-picker-container {
+    background: #181a2b !important;
+    border-color: #24273e !important;
+  }
+
+  #emoji-grid {
+    display: grid !important;
+    grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    padding: 12px !important;
+    max-height: 210px !important;
+    overflow-y: auto !important;
+  }
+
+  #emoji-grid button {
+    font-size: 24px !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+    transition: background 0.1s ease !important;
+  }
+  
+  #emoji-grid button:active {
+    background-color: rgba(0, 0, 0, 0.05) !important;
+  }
+  
+  html.dark #emoji-grid button:active {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+}
+
+/* Ensure grid layout is applied to emoji picker on desktop as well */
+#emoji-grid {
+  display: grid !important;
+  grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+  gap: 4px !important;
+}
+#emoji-grid button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
