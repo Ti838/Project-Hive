@@ -34,7 +34,7 @@
 | 🔔 **Notifications** | Real-time Socket.IO push notifications |
 | 🏷️ **Teams** | Create/join teams, join-request workflow, team chat |
 | 💬 **Messages** | Real-time DMs + team channels, voice messages, replies, reactions, read receipts |
-| 📞 **Voice & Video Calling** | 1:1 WebRTC calls + group Jitsi Meet, TURN relay for any network |
+| 📞 **Voice & Video Calling** | 1:1 WebRTC calls + group Jitsi Meet, TURN relay, and collaborative live whiteboard |
 | 🚀 **Showcase** | Submit and browse student projects |
 | 📰 **Social Feed** | Posts, achievements, polls, @mentions, reactions, comments |
 | 🤖 **AI Generator** | Groq (primary) + Gemini (fallback) — chat, idea generation, image analysis |
@@ -323,7 +323,7 @@ const socket = io('https://projecthive-backend.onrender.com', {
 | `user_offline` | `{ userId }` | User went offline |
 | `notification` | `{ type, message, data }` | Real-time notification |
 
-### Call Events (Client → Server)
+### Call & Whiteboard Events (Client → Server)
 
 | Event | Payload | Description |
 |-------|---------|-------------|
@@ -333,8 +333,10 @@ const socket = io('https://projecthive-backend.onrender.com', {
 | `call:hangup` | `{ roomId, targetId }` | End active call |
 | `call:group` | `{ roomId, teamId, callerName }` | Initiate group call |
 | `webrtc:signal` | `{ targetId, signal }` | WebRTC SDP/ICE signaling |
+| `whiteboard:draw` | `{ x0, y0, x1, y1, color, size, isEraser }` | Broadcast drawing strokes to peer |
+| `whiteboard:clear` | `{}` | Clear active whiteboard for both users |
 
-### Call Events (Server → Client)
+### Call & Whiteboard Events (Server → Client)
 
 | Event | Payload | Description |
 |-------|---------|-------------|
@@ -344,6 +346,8 @@ const socket = io('https://projecthive-backend.onrender.com', {
 | `call:ended` | `{ roomId }` | Call ended |
 | `call:error` | `{ message }` | Call error (offline, not friends) |
 | `webrtc:signal` | `{ senderId, signal }` | WebRTC signal relay |
+| `whiteboard:draw` | `{ x0, y0, x1, y1, color, size, isEraser }` | Sync remote drawing coordinates |
+| `whiteboard:clear` | `{}` | Clear local whiteboard canvas |
 
 ---
 
