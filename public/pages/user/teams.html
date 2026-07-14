@@ -19,20 +19,229 @@
 <div class="ph-page">
 
 <!-- Topbar -->
-<div class="ph-topbar" style="gap:12px;flex-wrap:wrap">
-  <span class="ms" style="color:var(--ac);flex-shrink:0">diversity_3</span>
-  <h1 style="font-size:18px;font-weight:800;margin:0;flex:1;min-width:0">Find Teams</h1>
-  <div style="position:relative;flex:1;max-width:240px;min-width:140px">
-    <span class="ms" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--sub);font-size:18px">search</span>
-    <input id="search" type="text" placeholder="Search teamsâ€¦" oninput="window.search(this.value)" class="ph-input" style="padding-left:40px;width:100%;height:40px;border-radius:999px">
+<div class="ph-topbar teams-topbar">
+  <div class="teams-topbar-left">
+    <span class="ms" style="color:var(--ac);flex-shrink:0">diversity_3</span>
+    <h1>Find Teams</h1>
   </div>
-  <a href="/teams/create" class="ph-btn" style="height:40px;border-radius:999px;text-decoration:none;flex-shrink:0;padding:0 16px">
+  <div class="teams-topbar-search">
+    <span class="ms">search</span>
+    <input id="search" type="text" placeholder="Search teams..." oninput="window.search(this.value)" class="ph-input">
+  </div>
+  <a href="/teams/create" class="ph-btn teams-create-btn">
     <span class="ms" style="font-size:18px">add</span>
     <span class="hide-xs">Create Team</span>
   </a>
 </div>
 <style>
-  @media(max-width:480px){ .hide-xs{ display:none; } }
+  /* Modern Topbar Styling */
+  .teams-topbar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 16px !important;
+    height: 64px !important;
+    padding: 0 24px !important;
+    background: rgba(var(--ph-card-rgb, 255, 255, 255), 0.85) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid var(--ph-border) !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+  }
+  
+  .teams-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  
+  .teams-topbar-left h1 {
+    font-size: 18px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--tx);
+  }
+  
+  .teams-topbar-search {
+    position: relative;
+    flex: 1;
+    max-width: 260px;
+    min-width: 140px;
+    transition: all 0.25s ease;
+  }
+  
+  .teams-topbar-search .ms {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--sub);
+    font-size: 18px;
+    pointer-events: none;
+  }
+  
+  .teams-topbar-search input {
+    padding-left: 40px !important;
+    width: 100% !important;
+    height: 40px !important;
+    border-radius: 999px !important;
+    font-size: 14px !important;
+    background: var(--sf) !important;
+    border: 1.5px solid var(--bd) !important;
+    transition: all 0.2s ease !important;
+  }
+  
+  .teams-topbar-search input:focus {
+    border-color: var(--ac) !important;
+    background: var(--ph-card) !important;
+    box-shadow: 0 0 0 3px rgba(var(--ac-rgb, 99, 102, 241), 0.15) !important;
+  }
+  
+  .teams-create-btn {
+    height: 40px !important;
+    border-radius: 999px !important;
+    text-decoration: none !important;
+    flex-shrink: 0 !important;
+    padding: 0 16px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    transition: all 0.2s ease !important;
+  }
+
+  /* Stats cards style */
+  .teams-stats .ph-card {
+    border-radius: 16px;
+    border: 1px solid var(--ph-border);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .teams-stats .ph-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sh-lg);
+  }
+  
+  /* Team Card Actions Touch targets */
+  .card-action-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 14px;
+    border-top: 1.5px solid var(--bd);
+    margin-top: 12px;
+  }
+  
+  .card-action-btns {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .card-action-btns button,
+  .card-action-row .ph-btn {
+    min-height: 38px !important;
+    min-width: 44px !important;
+    padding: 6px 14px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    cursor: pointer;
+  }
+
+  /* Modal Accessibility Improvements */
+  .modal-actions-container button {
+    min-height: 40px !important;
+    min-width: 44px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    border-radius: 10px !important;
+  }
+
+  /* Responsive Design Rules */
+  @media (max-width: 768px) {
+    /* Hide the auto-injected global search button on teams page */
+    .ph-mobile-search-btn {
+      display: none !important;
+    }
+    
+    .teams-topbar {
+      flex-wrap: wrap !important;
+      height: auto !important;
+      min-height: auto !important;
+      padding: 12px 16px !important;
+      gap: 12px !important;
+    }
+    
+    .teams-topbar-left {
+      order: 1 !important;
+    }
+    
+    /* Ensure the hamburger icon injected by script stays on line 1 left */
+    .teams-topbar > button:first-child,
+    .teams-topbar > .ph-hamburger-btn {
+      order: 1 !important;
+      margin-right: -4px !important;
+    }
+    
+    .teams-create-btn {
+      order: 2 !important;
+      margin-left: auto !important;
+      padding: 0 12px !important;
+      height: 38px !important;
+    }
+    
+    .teams-create-btn .hide-xs {
+      display: none !important; /* Hide label, only show plus icon */
+    }
+    
+    .teams-topbar-search {
+      order: 3 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: none !important;
+    }
+    
+    .teams-topbar-search input {
+      height: 42px !important;
+    }
+    
+    /* Stats padding & margins */
+    .teams-stats {
+      margin-bottom: 24px !important;
+      gap: 12px !important;
+    }
+    .teams-stats .ph-card {
+      padding: 14px 16px !important;
+    }
+    
+    /* Grid adjustments */
+    .teams-grid {
+      grid-template-columns: 1fr !important;
+      gap: 16px !important;
+    }
+
+    /* Modal content scrolling optimization */
+    #td-content {
+      padding: 16px 20px !important;
+      gap: 16px !important;
+    }
+  }
+
+  /* Truncation utility */
+  .text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 </style>
 
 
@@ -119,20 +328,20 @@
           <h3 style="font-size:15px;font-weight:800;margin:0 0 6px;color:var(--tx)">${esc(name)}</h3>
           <p style="font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(t.description||'No description.')}</p>
           ${tags.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${tags.map(tg=>`<span class="ph-tag">${esc(tg)}</span>`).join('')}</div>`:''}
-          <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1.5px solid var(--bd)" onclick="event.stopPropagation()">
+          <div class="card-action-row" onclick="event.stopPropagation()">
             <span style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px"><span class="ms" style="font-size:16px">group</span>${members} member${members!==1?'s':''}</span>
             ${isMine
               ? isLeader
-                ? `<div style="display:flex;gap:6px;align-items:center">
+                ? `<div class="card-action-btns">
                      <span style="font-size:11px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:3px"><span class="ms" style="font-size:14px">star</span>Leader</span>
-                     <button onclick="event.stopPropagation();editTeam('${tid}')" style="padding:5px 10px;font-size:11px;border-radius:7px;background:var(--ac-light);color:var(--ac);border:1px solid var(--bd);cursor:pointer;font-weight:700">Edit</button>
-                     <button onclick="event.stopPropagation();deleteTeam('${tid}','${esc(name)}',this)" style="padding:5px 10px;font-size:11px;border-radius:7px;background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);cursor:pointer;font-weight:700">Delete</button>
+                     <button onclick="event.stopPropagation();editTeam('${tid}')" style="background:var(--ac-light);color:var(--ac);border:1px solid var(--bd);">Edit</button>
+                     <button onclick="event.stopPropagation();deleteTeam('${tid}','${esc(name)}',this)" style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">Delete</button>
                    </div>`
-                : `<button onclick="event.stopPropagation();leaveTeam('${tid}',this)" class="ph-btn" style="padding:5px 14px;font-size:12px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
+                : `<button onclick="event.stopPropagation();leaveTeam('${tid}',this)" class="ph-btn" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
               : isOpen
                 ? pendingRequestIds.has(tid)
-                  ? `<button disabled class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px;background:var(--sf2);color:var(--sub);border:1px solid var(--bd);cursor:not-allowed">Requested</button>`
-                  : `<button onclick="event.stopPropagation();join('${tid}',this)" class="ph-btn" style="padding:6px 16px;font-size:12px;border-radius:8px">Join</button>`
+                  ? `<button disabled class="ph-btn" style="background:var(--sf2);color:var(--sub);border:1px solid var(--bd);cursor:not-allowed">Requested</button>`
+                  : `<button onclick="event.stopPropagation();join('${tid}',this)" class="ph-btn">Join</button>`
                 : `<span style="font-size:12px;color:var(--sub)">Members only</span>`
             }
           </div>
@@ -345,14 +554,21 @@
 
   window.closeTeamDetailsModal = function() {
     document.getElementById('team-details-modal').style.display = 'none';
+    document.body.style.overflow = ''; // Unlock body scroll
   };
+
+  // Close modal when clicking outside
+  document.getElementById('team-details-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeTeamDetailsModal();
+  });
 
   window.openTeamDetailsModal = async function(id, ev) {
     if (ev) ev.stopPropagation();
     const modal = document.getElementById('team-details-modal');
     const content = document.getElementById('td-content');
     modal.style.display = 'flex';
-    content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)"><span class="ms animate-spin" style="font-size:32px;display:block;margin-bottom:8px">progress_activity</span>Loading detailsâ€¦</div>`;
+    document.body.style.overflow = 'hidden'; // Lock body scroll
+    content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)"><span class="ms animate-spin" style="font-size:32px;display:block;margin-bottom:8px">progress_activity</span>Loading details...</div>`;
 
     try {
       const res = await fetch(API_BASE + `/api/teams/${id}`, { headers: H });
@@ -375,21 +591,21 @@
         
         // Show kick button if current user is leader and target is not leader
         const kickBtn = (isLeader && m.role !== 'leader') 
-          ? `<button onclick="kickUser('${t.id || t._id}', '${uid}', '${esc(name)}', this)" style="padding:4px 8px;font-size:11px;border-radius:6px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);cursor:pointer;font-weight:700">Kick</button>` 
+          ? `<button onclick="kickUser('${t.id || t._id}', '${uid}', '${esc(name)}', this)" style="padding:6px 12px;font-size:12px;min-height:36px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);cursor:pointer;font-weight:700">Kick</button>` 
           : '';
 
         return `
-          <div style="display:flex;align-items:center;justify-content:between;padding:10px 0;border-bottom:1.5px solid var(--bd)">
-            <div style="display:flex;align-items:center;gap:10px;flex:1">
-              <div style="width:32px;height:32px;border-radius:50%;background:${userAvatarCol};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1.5px solid var(--bd)">
+            <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+              <div style="width:36px;height:36px;border-radius:50%;background:${userAvatarCol};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">
                 ${(u.first_name || 'M')[0].toUpperCase()}
               </div>
-              <div>
-                <a href="/profile?id=${uid}" style="font-size:13px;font-weight:700;color:var(--tx);text-decoration:none">${esc(name)}</a>
-                <div style="font-size:11px;color:var(--sub)">${esc(u.university || t.leader?.university || '')}</div>
+              <div style="min-width:0">
+                <a href="/profile?id=${uid}" class="text-truncate" style="display:block;font-size:13px;font-weight:700;color:var(--tx);text-decoration:none">${esc(name)}</a>
+                <div class="text-truncate" style="font-size:11px;color:var(--sub)">${esc(u.university || t.leader?.university || '')}</div>
               </div>
             </div>
-            <div style="display:flex;align-items:center;gap:10px">
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
               ${roleText}
               ${kickBtn}
             </div>
@@ -422,9 +638,9 @@
                               <strong style="font-size:13px;color:var(--tx)">${esc(reqName)}</strong>
                               <span style="font-size:11px;color:var(--sub);display:block">${esc(u.university || '')}</span>
                             </div>
-                            <div style="display:flex;gap:6px">
-                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'accept', this)" style="padding:5px 10px;font-size:11px;border-radius:6px;background:var(--ac);color:#fff;border:none;cursor:pointer;font-weight:700">Accept</button>
-                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'reject', this)" style="padding:5px 10px;font-size:11px;border-radius:6px;background:var(--sf);color:var(--sub);border:1.5px solid var(--bd);cursor:pointer;font-weight:700">Reject</button>
+                            <div style="display:flex;gap:8px">
+                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'accept', this)" style="padding:6px 12px;font-size:12px;min-height:36px;border-radius:8px;background:var(--ac);color:#fff;border:none;cursor:pointer;font-weight:700">Accept</button>
+                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'reject', this)" style="padding:6px 12px;font-size:12px;min-height:36px;border-radius:8px;background:var(--sf);color:var(--sub);border:1.5px solid var(--bd);cursor:pointer;font-weight:700">Reject</button>
                             </div>
                           </div>
                           ${r.message ? `<p style="margin:0;font-size:12px;color:var(--sub);font-style:italic">"${esc(r.message)}"</p>` : ''}
@@ -588,10 +804,12 @@
     thumb.style.left = isOpen ? '23px' : '3px';
     const modal = document.getElementById('edit-team-modal');
     modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden'; // Lock body scroll
   };
 
   window.closeEditModal = function() {
     document.getElementById('edit-team-modal').style.display = 'none';
+    document.body.style.overflow = ''; // Unlock body scroll
   };
 
   window.toggleEditOpen = function() {

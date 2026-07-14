@@ -59,9 +59,11 @@
   - [x] Input area accessible
 
 - [x] **teams.html** & **teams-create.html**
-  - [x] Team cards responsive
-  - [x] Grid collapses to 1 column
-  - [x] Modals fit screen
+  - [x] Team cards responsive (grid collapses to 1 column on mobile)
+  - [x] Resolved topbar search injection & layout overlaps
+  - [x] Modals fit screen as sleek bottom sheets on mobile
+  - [x] Added modal body-scroll lock and click-outside dismissal
+  - [x] Enlarged action buttons to 44px+ touch targets for better accessibility
 
 - [x] **profile/** (view.html, edit.html)
   - [x] Header responsive
@@ -104,11 +106,14 @@
    - `MOBILE_RESPONSIVE_COMPLETE.md` - This file
 
 ### Modified Files
-1. **`/pages/admin/dashboard.html`**
+1. **`/public/pages/user/teams.html`**
+   - Redesigned topbar flex layout, hid injected search clashes on mobile, optimized stats card padding, stack cards dynamically, lock/unlock body overflow scroll on modals, and enlarged buttons for accessibility.
+
+2. **`/pages/admin/dashboard.html`**
    - Removed duplicate "More" button from bottom nav
    - Added "Projects" and "Analytics" to bottom nav
 
-2. **`/pages/user/feed.html`**
+3. **`/pages/user/feed.html`**
    - Fixed `overflow-x: hidden` on html/body
    - Added comprehensive mobile CSS
    - Fixed container max-width

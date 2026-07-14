@@ -15,6 +15,7 @@
 RECENT UPDATES (July 2026)
 ================================================================================
 
+  - 👥 Teams Mobile-First Redesign: Optimized the teams discovery topbar layout, resolved double-search button clashes, collapsed card grids dynamically to 1-column on mobile, improved touch target sizes to 44px+ for card and modal actions, and implemented iOS-friendly scroll-locking and outside click dismissal for the details drawer.
   - 📱 Mobile Dashboard & Feed Redesign: Revamped mobile top bars, added dynamic greetings based on time of day, synchronized desktop and mobile notification dots/lists in real-time, and made the Stories row visible on both desktop and mobile as a premium card row.
   - 🎨 Real-time Collaborative Whiteboard: Added a fully responsive, normalized 1:1 drawing board inside call/video chat screens using Socket.IO events, including Pen, Eraser, Clear, brush sizes, and 5 colors.
   - 💬 Clean Chat Header: Refactored the mobile chat header to use a sleek Three-dots dropdown menu, hiding bulky action buttons (Call, Video, Search) into an accessible menu.

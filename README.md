@@ -32,7 +32,7 @@
 | ⚙️ **Settings** | Account info, password change, notification preferences, theme, privacy |
 | 👥 **Find People** | Discover students, send/accept friend requests, filter by skill |
 | 🔔 **Notifications** | Real-time Socket.IO push notifications |
-| 🏷️ **Teams** | Create/join teams, join-request workflow, team chat |
+| 🏷️ **Teams** | Create/join teams, join-request workflow, team chat, and fully responsive mobile layouts |
 | 💬 **Messages** | Real-time DMs + team channels, voice messages, replies, reactions, read receipts |
 | 📞 **Voice & Video Calling** | 1:1 WebRTC calls + group Jitsi Meet, TURN relay, and collaborative live whiteboard |
 | 🚀 **Showcase** | Submit and browse student projects |
