@@ -199,11 +199,20 @@ body{background:var(--bg);color:var(--tx);margin:0}
   window.readN=function(id,el){window.handleNotifClick(id,'',el);};
 
   window.markAll=async function(){
-    try{await fetch(API_BASE+'/api/notifications/read-all',{method:'PUT',headers:H});}catch(e){}
-    all.forEach(n=>n.read=true);
-    stats();
-    render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
-    PHToast?.success('All marked as read');
+    if (!confirm('Are you sure you want to mark all notifications as read?')) return;
+    try {
+      const res = await fetch(API_BASE+'/api/notifications/read-all',{method:'PUT',headers:H});
+      if (res.ok) {
+        all.forEach(n=>n.read=true);
+        stats();
+        render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
+        PHToast?.success('All notifications marked as read');
+      } else {
+        PHToast?.error('Failed to mark notifications as read');
+      }
+    } catch(e) {
+      PHToast?.error('An error occurred');
+    }
   };
 
   // â”€â”€â”€ Load from API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

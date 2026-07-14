@@ -1313,6 +1313,7 @@
           }
         } catch(e) {}
       }
+      window.loadTopbarNotifications = loadTopbarNotifications;
 
       // Bookmark state (localStorage as cache, API as source of truth)
       function getBookmarks() { try { return JSON.parse(localStorage.getItem('ph_bookmarks') || '[]'); } catch(e) { return []; } }
@@ -2906,7 +2907,7 @@
     } catch (e) {}
     
     toggleNotificationDropdown();
-    if (typeof loadTopbarNotifications === 'function') loadTopbarNotifications();
+    if (typeof window.loadTopbarNotifications === 'function') window.loadTopbarNotifications();
     
     if (link) {
       window.location.href = link;
@@ -2914,12 +2915,13 @@
   };
 
   window.markAllNotificationsAsRead = async function() {
+    if (!confirm('Are you sure you want to mark all notifications as read?')) return;
     try {
       const r = await fetch(API_BASE + '/api/notifications/read-all', { method: 'PUT', headers: H });
       if (r.ok) {
         PHToast?.success('All marked as read');
         loadDropdownNotifications();
-        if (typeof loadTopbarNotifications === 'function') loadTopbarNotifications();
+        if (typeof window.loadTopbarNotifications === 'function') window.loadTopbarNotifications();
       }
     } catch (e) {}
   };

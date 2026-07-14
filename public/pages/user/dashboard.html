@@ -896,6 +896,7 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
         document.getElementById('notif-list').innerHTML = '<div class="text-center text-on-surface-variant text-[12px] py-6">Could not load.</div>';
       }
     }
+    window.fetchNotifications = fetchNotifications;
 
     async function fetchOnlineFriends() {
       try {
@@ -1075,11 +1076,21 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
 
   /* Mark all read */
   document.getElementById('notif-mark-all')?.addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to mark all notifications as read?')) return;
     try {
-      await fetch(API_BASE+'/api/notifications/read-all', {method:'PUT', headers:H});
-      document.querySelectorAll('#notif-list .border-l-secondary').forEach(el => el.classList.remove('border-l-2','border-l-secondary'));
-      PHToast?.success('All notifications marked as read');
-    } catch(e) {}
+      const res = await fetch(API_BASE+'/api/notifications/read-all', {method:'PUT', headers:H});
+      if (res.ok) {
+        PHToast?.success('All notifications marked as read');
+        await fetchNotifications();
+        if (typeof loadDropdownNotifications === 'function') {
+          loadDropdownNotifications();
+        }
+      } else {
+        PHToast?.error('Failed to mark notifications as read');
+      }
+    } catch(e) {
+      PHToast?.error('An error occurred');
+    }
   });
 })();
 
@@ -1166,7 +1177,7 @@ window.clickDropdownNotification = async function(id, link) {
   } catch (e) {}
   
   toggleNotificationDropdown();
-  if (typeof fetchNotifications === 'function') fetchNotifications();
+  if (typeof window.fetchNotifications === 'function') window.fetchNotifications();
   
   if (link) {
     window.location.href = link;
@@ -1174,12 +1185,13 @@ window.clickDropdownNotification = async function(id, link) {
 };
 
 window.markAllNotificationsAsRead = async function() {
+  if (!confirm('Are you sure you want to mark all notifications as read?')) return;
   try {
     const r = await fetch(API_BASE + '/api/notifications/read-all', { method: 'PUT', headers: H });
     if (r.ok) {
       PHToast?.success('All marked as read');
       loadDropdownNotifications();
-      if (typeof fetchNotifications === 'function') fetchNotifications();
+      if (typeof window.fetchNotifications === 'function') window.fetchNotifications();
     }
   } catch (e) {}
 };

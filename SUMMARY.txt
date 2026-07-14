@@ -15,6 +15,7 @@
 RECENT UPDATES (July 2026)
 ================================================================================
 
+  - 🔔 Notification Clear & Sync Polish: Added confirmation dialogs to all "Mark all read" actions (dashboard widget, topbar dropdown, dedicated notifications page). Resolved Javascript scoping issues that prevented topbar badges, dropdown lists, and dashboard widgets from updating synchronously when clearing/marking notifications.
   - 👥 Teams Mobile-First Redesign: Optimized the teams discovery topbar layout, resolved double-search button clashes, collapsed card grids dynamically to 1-column on mobile, improved touch target sizes to 44px+ for card and modal actions, and implemented iOS-friendly scroll-locking and outside click dismissal for the details drawer.
   - 📱 Mobile Dashboard & Feed Redesign: Revamped mobile top bars, added dynamic greetings based on time of day, synchronized desktop and mobile notification dots/lists in real-time, and made the Stories row visible on both desktop and mobile as a premium card row.
   - 🎨 Real-time Collaborative Whiteboard: Added a fully responsive, normalized 1:1 drawing board inside call/video chat screens using Socket.IO events, including Pen, Eraser, Clear, brush sizes, and 5 colors.
