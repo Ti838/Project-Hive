@@ -115,6 +115,14 @@ async function startServer() {
       socket.on('call:hangup',   (data) => handleCallHangup(socket, data));
       socket.on('call:group',    (data) => handleGroupCallInitiate(socket, data));
 
+      // Whiteboard Events
+      socket.on('whiteboard:draw',  (data) => {
+        if (socket.roomId) socket.to(socket.roomId).emit('whiteboard:draw', data);
+      });
+      socket.on('whiteboard:clear', () => {
+        if (socket.roomId) socket.to(socket.roomId).emit('whiteboard:clear');
+      });
+
       socket.on('disconnect', (reason) => {
         handleLeaveRoom(socket);
         unregisterUserSocket(socket);

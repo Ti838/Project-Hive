@@ -656,6 +656,54 @@
 
         <!-- Jitsi container -->
         <div id="jitsi-container" class="w-full h-full"></div>
+        <!-- Real-Time Collaborative Whiteboard Overlay -->
+        <div id="whiteboard-container" class="hidden absolute inset-0 w-full h-full bg-[#181926]/90 backdrop-blur-md z-30 flex flex-col p-4">
+          <!-- Toolbar -->
+          <div class="flex flex-wrap items-center justify-between gap-3 p-3 bg-black/40 backdrop-blur-md rounded-2xl border border-white/10 mb-4 select-none shrink-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <div class="flex items-center gap-1.5 mr-2">
+                <span class="material-symbols-outlined text-indigo-400 text-[20px] font-bold">edit_note</span>
+                <span class="text-white text-xs font-bold font-heading">Live Board</span>
+              </div>
+              
+              <!-- Tools -->
+              <button onclick="setWhiteboardTool('pen')" id="wb-tool-pen" class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center transition-all hover:bg-indigo-500" title="Pen Tool">
+                <span class="material-symbols-outlined text-[18px]">draw</span>
+              </button>
+              <button onclick="setWhiteboardTool('eraser')" id="wb-tool-eraser" class="w-8 h-8 rounded-lg text-white/70 hover:bg-white/10 flex items-center justify-center transition-all" title="Eraser Tool">
+                <span class="material-symbols-outlined text-[18px]">backspace</span>
+              </button>
+              <button onclick="clearWhiteboardLocalAndRemote()" class="w-8 h-8 rounded-lg text-rose-400 hover:bg-rose-950/20 flex items-center justify-center transition-all" title="Clear All">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+              </button>
+
+              <!-- Colors -->
+              <div class="flex items-center gap-1.5 ml-2 pl-2 border-l border-white/10">
+                <button onclick="setWhiteboardColor('#ffffff')" class="w-5 h-5 rounded-full border border-white/40 bg-white" title="White"></button>
+                <button onclick="setWhiteboardColor('#ff4b4b')" class="w-5 h-5 rounded-full bg-rose-500" title="Red"></button>
+                <button onclick="setWhiteboardColor('#10b981')" class="w-5 h-5 rounded-full bg-emerald-500" title="Green"></button>
+                <button onclick="setWhiteboardColor('#3b82f6')" class="w-5 h-5 rounded-full bg-blue-500" title="Blue"></button>
+                <button onclick="setWhiteboardColor('#f59e0b')" class="w-5 h-5 rounded-full bg-amber-500" title="Yellow"></button>
+              </div>
+
+              <!-- Stroke Width -->
+              <div class="flex items-center gap-2 ml-2 pl-2 border-l border-white/10 text-white/50 text-[10px] font-bold">
+                <span>Size:</span>
+                <input type="range" id="wb-size-slider" min="2" max="20" value="4" oninput="setWhiteboardSize(this.value)" class="w-16 h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                <span id="wb-size-label" class="w-8">4px</span>
+              </div>
+            </div>
+
+            <button onclick="toggleWhiteboard()" class="px-3.5 py-1.5 bg-white/10 hover:bg-white/20 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1 border border-white/5">
+              <span class="material-symbols-outlined text-[15px]">close</span> Close Board
+            </button>
+          </div>
+
+          <!-- Canvas container -->
+          <div class="flex-1 w-full relative bg-black/60 rounded-3xl border border-white/5 overflow-hidden">
+            <canvas id="whiteboard-canvas" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+          </div>
+        </div>
 
         <!-- Calling Waiting/Ringing display -->
         <div id="webrtc-container" class="hidden absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-b from-[#0e0f18] to-[#07080d]">
@@ -693,6 +741,9 @@
 
         <button id="btn-screenshare" onclick="toggleScreenShare()" class="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation" title="Share Screen">
           <span class="material-symbols-outlined text-lg sm:text-xl">screen_share</span>
+        </button>
+        <button id="btn-whiteboard" onclick="toggleWhiteboard()" class="w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation" title="Live Whiteboard">
+          <span class="material-symbols-outlined text-lg sm:text-xl">edit_note</span>
         </button>
       </div>
     </div>
@@ -3423,6 +3474,47 @@
           endCall();
         });
 
+
+        // Whiteboard socket listeners
+        socket.on('whiteboard:draw', (data) => {
+          const canvas = document.getElementById('whiteboard-canvas');
+          if (!canvas) return;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+          
+          const container = document.getElementById('whiteboard-container');
+          if (container && container.classList.contains('hidden')) {
+            container.classList.replace('hidden', 'flex');
+            initWhiteboard();
+          }
+
+          const x0 = data.x0 * canvas.width;
+          const y0 = data.y0 * canvas.height;
+          const x1 = data.x1 * canvas.width;
+          const y1 = data.y1 * canvas.height;
+
+          ctx.beginPath();
+          ctx.moveTo(x0, y0);
+          ctx.lineTo(x1, y1);
+          ctx.strokeStyle = data.color;
+          ctx.lineWidth = data.size;
+          
+          if (data.isEraser) {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.lineWidth = data.size * 2.5;
+          } else {
+            ctx.globalCompositeOperation = 'source-over';
+          }
+          
+          ctx.stroke();
+          ctx.closePath();
+          ctx.globalCompositeOperation = 'source-over';
+        });
+
+        socket.on('whiteboard:clear', () => {
+          if (typeof clearWhiteboardLocal === 'function') clearWhiteboardLocal();
+        });
+
       } // end if (socket)
       }catch(e){}
 
@@ -3803,7 +3895,11 @@
         document.getElementById('jitsi-container').classList.add('hidden');
 
         const modal = document.getElementById('call-modal');
+        
         if (modal) modal.classList.replace('flex', 'hidden');
+        const wbContainer = document.getElementById('whiteboard-container');
+        if (wbContainer) wbContainer.classList.replace('flex', 'hidden');
+        if (typeof clearWhiteboardLocal === 'function') clearWhiteboardLocal();
         
         // Show control bar & buttons back for next call
         const controlBar = document.getElementById('call-control-bar');
@@ -3956,6 +4052,194 @@
       function stopRingtone() {
         if (ringtoneAudio) { ringtoneAudio.stop(); ringtoneAudio = null; }
       }
+
+      
+      // ── Whiteboard Logic ──
+      let wbCanvas, wbCtx;
+      let wbDrawing = false;
+      let wbColor = '#ffffff';
+      let wbSize = 4;
+      let wbTool = 'pen'; // 'pen' or 'eraser'
+      let wbLastX = 0;
+      let wbLastY = 0;
+
+      window.toggleWhiteboard = function() {
+        const container = document.getElementById('whiteboard-container');
+        if (!container) return;
+        
+        if (container.classList.contains('hidden')) {
+          container.classList.replace('hidden', 'flex');
+          initWhiteboard();
+        } else {
+          container.classList.replace('flex', 'hidden');
+        }
+      };
+
+      window.setWhiteboardTool = function(tool) {
+        wbTool = tool;
+        document.getElementById('wb-tool-pen').className = tool === 'pen' 
+          ? 'w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center transition-all'
+          : 'w-8 h-8 rounded-lg text-white/70 hover:bg-white/10 flex items-center justify-center transition-all';
+        document.getElementById('wb-tool-eraser').className = tool === 'eraser'
+          ? 'w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center transition-all'
+          : 'w-8 h-8 rounded-lg text-white/70 hover:bg-white/10 flex items-center justify-center transition-all';
+      };
+
+      window.setWhiteboardColor = function(color) {
+        wbColor = color;
+        setWhiteboardTool('pen');
+      };
+
+      window.setWhiteboardSize = function(size) {
+        wbSize = parseInt(size);
+        const lbl = document.getElementById('wb-size-label');
+        if (lbl) lbl.textContent = size + 'px';
+      };
+
+      function initWhiteboard() {
+        wbCanvas = document.getElementById('whiteboard-canvas');
+        if (!wbCanvas) return;
+        wbCtx = wbCanvas.getContext('2d');
+        
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        wbCanvas.addEventListener('mousedown', startDrawing);
+        wbCanvas.addEventListener('mousemove', draw);
+        wbCanvas.addEventListener('mouseup', stopDrawing);
+        wbCanvas.addEventListener('mouseout', stopDrawing);
+
+        wbCanvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        wbCanvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        wbCanvas.addEventListener('touchend', stopDrawing, { passive: false });
+      }
+
+      function resizeCanvas() {
+        if (!wbCanvas || !wbCtx) return;
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = wbCanvas.width;
+        tempCanvas.height = wbCanvas.height;
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCtx.drawImage(wbCanvas, 0, 0);
+
+        const rect = wbCanvas.parentElement.getBoundingClientRect();
+        wbCanvas.width = rect.width;
+        wbCanvas.height = rect.height;
+
+        wbCtx.drawImage(tempCanvas, 0, 0);
+        
+        wbCtx.lineCap = 'round';
+        wbCtx.lineJoin = 'round';
+      }
+
+      function startDrawing(e) {
+        wbDrawing = true;
+        const coords = getCoords(e);
+        wbLastX = coords.x;
+        wbLastY = coords.y;
+      }
+
+      function getCoords(e) {
+        const rect = wbCanvas.getBoundingClientRect();
+        if (e.touches && e.touches.length > 0) {
+          return {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+          };
+        }
+        return {
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
+        };
+      }
+
+      function draw(e) {
+        if (!wbDrawing || !wbCanvas) return;
+        e.preventDefault();
+        
+        const coords = getCoords(e);
+        const x = coords.x;
+        const y = coords.y;
+
+        const drawData = {
+          x0: wbLastX / wbCanvas.width,
+          y0: wbLastY / wbCanvas.height,
+          x1: x / wbCanvas.width,
+          y1: y / wbCanvas.height,
+          color: wbTool === 'eraser' ? '#000000' : wbColor,
+          size: wbSize,
+          isEraser: wbTool === 'eraser'
+        };
+
+        drawSegment(
+          wbLastX, 
+          wbLastY, 
+          x, 
+          y, 
+          drawData.color, 
+          drawData.size, 
+          drawData.isEraser
+        );
+
+        if (socket && socket.connected) {
+          socket.emit('whiteboard:draw', drawData);
+        }
+
+        wbLastX = x;
+        wbLastY = y;
+      }
+
+      function drawSegment(x0, y0, x1, y1, color, size, isEraser) {
+        if (!wbCtx) return;
+        wbCtx.beginPath();
+        wbCtx.moveTo(x0, y0);
+        wbCtx.lineTo(x1, y1);
+        wbCtx.strokeStyle = color;
+        wbCtx.lineWidth = size;
+        
+        if (isEraser) {
+          wbCtx.globalCompositeOperation = 'destination-out';
+          wbCtx.lineWidth = size * 2.5;
+        } else {
+          wbCtx.globalCompositeOperation = 'source-over';
+        }
+        
+        wbCtx.stroke();
+        wbCtx.closePath();
+        wbCtx.globalCompositeOperation = 'source-over';
+      }
+
+      function stopDrawing() {
+        wbDrawing = false;
+      }
+
+      function handleTouchStart(e) {
+        if (e.touches.length === 1) {
+          e.preventDefault();
+          startDrawing(e);
+        }
+      }
+
+      function handleTouchMove(e) {
+        if (e.touches.length === 1) {
+          e.preventDefault();
+          draw(e);
+        }
+      }
+
+      window.clearWhiteboardLocal = function() {
+        if (!wbCanvas || !wbCtx) return;
+        wbCtx.clearRect(0, 0, wbCanvas.width, wbCanvas.height);
+      };
+
+      window.clearWhiteboardLocalAndRemote = function() {
+        clearWhiteboardLocal();
+        if (socket && socket.connected) {
+          socket.emit('whiteboard:clear');
+        }
+      };
+
+
 
       window.acceptCall = async function() {
         stopRingtone();

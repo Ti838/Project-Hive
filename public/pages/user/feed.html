@@ -212,7 +212,7 @@
       }
 
       /* Header - Fixed at top, proper spacing */
-      header {
+      header.fixed {
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
@@ -422,7 +422,8 @@
 
   <!-- TOP BAR -->
   <header class="fixed top-0 right-0 left-[260px] h-20 bg-surface/80 backdrop-blur-md z-40 flex items-center justify-between px-10 max-md:left-0 max-md:px-4 border-b border-surface-variant/40">
-    <div class="flex items-center gap-2 sm:gap-4 flex-1">
+    <!-- Desktop Left: Back button + Search -->
+    <div class="flex items-center gap-2 sm:gap-4 flex-1 max-md:hidden">
       <div id="ph-hamburger-slot"></div>
       <button onclick="history.back()" class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-outline-variant/20 dark:hover:bg-white/10 transition-colors shrink-0 text-on-surface dark:text-white" title="Go Back" aria-label="Go Back">
         <span class="material-symbols-outlined text-[20px]">arrow_back</span>
@@ -432,7 +433,15 @@
         <input id="feed-search" class="w-full bg-surface-container-low border-none rounded-pill pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary text-body-sm transition-all" placeholder="Search feed posts..." type="text"/>
       </div>
     </div>
-    <div class="flex items-center gap-4">
+
+    <!-- Mobile Left: Brand Logo & Title -->
+    <div class="flex items-center gap-2 md:hidden">
+      <span class="material-symbols-outlined text-primary text-[24px] font-bold">hub</span>
+      <span class="font-heading font-extrabold text-[18px] text-primary tracking-tight">ProjectHive</span>
+    </div>
+
+    <!-- Desktop Right: AI Generator, Help, Notifications, User Avatar -->
+    <div class="flex items-center gap-4 max-md:hidden">
       <!-- AI Generator pill -->
       <a href="/generator"
         class="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-[11px] font-bold text-white transition-all hover:scale-105 shrink-0"
@@ -460,6 +469,22 @@
         <div id="feed-avatar" class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">?</div>
       </div>
     </div>
+
+    <!-- Mobile Right: Search, Notifications, Chat Shortcuts -->
+    <div class="flex items-center gap-1.5 md:hidden">
+      <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="document.getElementById('ph-search-backdrop').style.display='flex'; document.getElementById('ph-search-input').focus();" title="Search" aria-label="Search">
+        <span class="material-symbols-outlined text-[22px]">search</span>
+      </button>
+      <div class="relative">
+        <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="window.location.href='/notifications'" title="Notifications" aria-label="Notifications">
+          <span class="material-symbols-outlined text-[22px]">notifications</span>
+        </button>
+        <span id="topbar-unread-mobile" class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border border-surface hidden"></span>
+      </div>
+      <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="window.location.href='/messages'" title="Messages" aria-label="Messages">
+        <span class="material-symbols-outlined text-[22px]">chat_bubble</span>
+      </button>
+    </div>
   </header>
 
   <!-- MAIN CONTENT WRAPPER -->
@@ -467,7 +492,6 @@
 
     <!-- ═══ MOBILE-ONLY: Compact top section (below fixed header) ═══ -->
     <div class="md:hidden w-full -mx-2 px-0">
-
       <!-- Compact Post Bar -->
       <div class="flex items-center gap-2.5 px-3 py-2.5 bg-[var(--tw-surf)] border-b border-[var(--tw-bd)]">
         <div id="mob-creator-av" onclick="document.getElementById('post-text').focus();window.scrollTo(0,document.getElementById('post-text').getBoundingClientRect().top+window.scrollY-120);"
@@ -481,28 +505,32 @@
           <span class="material-symbols-outlined text-[20px] text-emerald-500">image</span>
         </button>
       </div>
+    </div>
 
-      <!-- Stories Row -->
-      <div class="bg-[var(--tw-surf)] border-b border-[var(--tw-bd)] px-2 py-2.5">
-        <div id="mob-stories-row" class="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+    <!-- Center Content: Post Creator + Feed List -->
+    <div class="flex-1 max-w-full sm:max-w-[680px] min-w-0 flex flex-col w-full">
+      <!-- Stories Row (Visible on both Desktop and Mobile) -->
+      <div class="bg-surface-container-lowest p-4 rounded-2xl feed-card-shadow border border-surface-variant mb-6">
+        <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-3 flex items-center gap-2 select-none">
+          <span class="material-symbols-outlined text-[18px] text-primary">history_toggle_off</span>
+          Stories
+        </h3>
+        <div id="mob-stories-row" class="flex gap-3 overflow-x-auto no-scrollbar pb-0.5">
           <!-- Create Story Card (always first) -->
           <div onclick="openStoryCreator()" class="flex flex-col items-center gap-1 shrink-0 cursor-pointer">
-            <div class="w-[72px] h-[112px] rounded-xl bg-[var(--tw-surf2)] border border-[var(--tw-bd)] flex items-end justify-center relative overflow-hidden">
+            <div class="w-[72px] h-[112px] rounded-xl bg-surface-container-low border border-surface-variant flex items-end justify-center relative overflow-hidden transition-all hover:scale-105 active:scale-95">
               <div id="mob-story-self-av" class="w-full h-[80px] object-cover absolute top-0 left-0 bg-primary/10 flex items-center justify-center font-bold text-primary text-2xl overflow-hidden"></div>
-              <div class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-[var(--tw-surf)] z-10">
+              <div class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-surface z-10">
                 <span class="material-symbols-outlined text-white text-[14px] font-bold">add</span>
               </div>
             </div>
-            <span class="text-[10px] font-semibold text-[var(--tw-tx)] text-center leading-tight w-[72px] truncate">Create</span>
+            <span class="text-[10px] font-semibold text-on-surface text-center leading-tight w-[72px] truncate">Create Story</span>
           </div>
           <!-- Dynamic story cards injected here by JS -->
           <div id="mob-story-cards" class="flex gap-2"></div>
         </div>
       </div>
-    </div>
 
-    <!-- Center Content: Post Creator + Feed List -->
-    <div class="flex-1 max-w-full sm:max-w-[680px] min-w-0 flex flex-col w-full">
       <!-- Welcome/Post Creator Card -->
       <section class="bg-surface-container-lowest p-6 rounded-2xl feed-card-shadow border border-surface-variant mb-6">
         <div class="flex gap-4 mb-4">
@@ -1277,9 +1305,13 @@
             const list = d.notifications || d || [];
             const unread = list.filter(n => !n.read).length;
             const dot = document.getElementById('topbar-unread');
-            if (dot) {
-              if (unread > 0) dot.classList.remove('hidden');
-              else dot.classList.add('hidden');
+            const dotMob = document.getElementById('topbar-unread-mobile');
+            if (unread > 0) {
+              if (dot) dot.classList.remove('hidden');
+              if (dotMob) dotMob.classList.remove('hidden');
+            } else {
+              if (dot) dot.classList.add('hidden');
+              if (dotMob) dotMob.classList.add('hidden');
             }
           }
         } catch(e) {}
@@ -2070,11 +2102,10 @@
             }
           });
 
-          // Real-time notification badge on topbar bell
-          socket.on('notification:new', () => {
             const badge = document.getElementById('topbar-unread');
+            const badgeMob = document.getElementById('topbar-unread-mobile');
             if (badge) badge.classList.remove('hidden');
-          });
+            if (badgeMob) badgeMob.classList.remove('hidden');
 
         } catch(e) {}
       }

@@ -116,7 +116,7 @@
   }
 
   /* Feed header */
-  header {
+  header.fixed {
     padding-left: 8px !important;
     padding-right: 8px !important;
   }
@@ -334,7 +334,7 @@
 /* ═══ Landscape Mobile ═══ */
 @media (max-width: 768px) and (orientation: landscape) {
   /* Reduce header height in landscape */
-  header {
+  header.fixed {
     height: 56px !important;
   }
 
