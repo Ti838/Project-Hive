@@ -2825,6 +2825,12 @@
   })();
 
   // ── Notification Dropdown / Bottom Sheet Logic ────────
+  const TK = localStorage.getItem('access_token');
+  const H = { Authorization: 'Bearer ' + TK };
+  const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
+
   window.toggleNotificationDropdown = function() {
     const dropdown = document.getElementById('notification-dropdown');
     const backdrop = document.getElementById('notification-dropdown-backdrop');
