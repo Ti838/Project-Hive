@@ -30,3 +30,12 @@ CREATE INDEX IF NOT EXISTS idx_story_views_story ON story_views(story_id);
 
 -- Auto-delete expired stories (optional: can also filter in query)
 -- Supabase doesn't have built-in cron, so we filter expires_at > now() in queries
+
+-- Row Level Security
+ALTER TABLE stories       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE story_views   ENABLE ROW LEVEL SECURITY;
+
+-- Allow service_role bypass (our backend uses service role)
+CREATE POLICY "service_role_all_stories"     ON stories     FOR ALL TO service_role USING (true) WITH CHECK (true);
+CREATE POLICY "service_role_all_story_views" ON story_views FOR ALL TO service_role USING (true) WITH CHECK (true);
+
