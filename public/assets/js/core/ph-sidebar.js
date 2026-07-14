@@ -1132,6 +1132,8 @@ const PHSidebar = (() => {
   function injectHamburger(base) {
     // Only show on mobile
     if (window.innerWidth > 768) return;
+    // Skip pages that opt-out of the avatar drawer
+    if (document.body.hasAttribute('data-no-avatar-drawer')) return;
 
     // Look for an existing hamburger slot first
     const slot = document.getElementById('ph-hamburger-slot');
@@ -1166,6 +1168,8 @@ const PHSidebar = (() => {
   /** Set up LinkedIn-style mobile header: Move Avatar to left and bind to drawer */
   function setupMobileHeader() {
     if (window.innerWidth <= 768) {
+      // Skip on pages that opt-out of avatar drawer (e.g. feed uses bottom nav)
+      if (document.body.hasAttribute('data-no-avatar-drawer')) return;
       const avatar = document.getElementById('feed-avatar');
       const hamburgerSlot = document.getElementById('ph-hamburger-slot');
 

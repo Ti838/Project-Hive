@@ -416,7 +416,7 @@
   <script src="/assets/js/mobile-inject.js"></script>
   <link rel="stylesheet" href="/assets/css/ph-design.css">
 </head>
-<body class="bg-background text-on-surface min-h-screen" data-no-float-theme="1">
+<body class="bg-background text-on-surface min-h-screen" data-no-float-theme="1" data-no-avatar-drawer="1">
   <!-- Sidebar -->
   <div id="ph-sidebar"></div>
 
@@ -464,6 +464,42 @@
 
   <!-- MAIN CONTENT WRAPPER -->
   <main class="ml-[260px] pt-[96px] flex flex-col lg:flex-row justify-center lg:items-start gap-8 min-h-screen max-md:ml-0 max-md:pb-20 px-2 sm:px-4 md:px-8 pb-8 max-w-full overflow-x-hidden" style="box-sizing:border-box">
+
+    <!-- ═══ MOBILE-ONLY: Compact top section (below fixed header) ═══ -->
+    <div class="md:hidden w-full -mx-2 px-0">
+
+      <!-- Compact Post Bar -->
+      <div class="flex items-center gap-2.5 px-3 py-2.5 bg-[var(--tw-surf)] border-b border-[var(--tw-bd)]">
+        <div id="mob-creator-av" onclick="document.getElementById('post-text').focus();window.scrollTo(0,document.getElementById('post-text').getBoundingClientRect().top+window.scrollY-120);"
+          class="w-9 h-9 rounded-full overflow-hidden border-2 border-primary/20 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm shrink-0 cursor-pointer">?</div>
+        <button onclick="document.getElementById('post-text').focus();setTimeout(()=>window.scrollTo({top:document.getElementById('post-text').getBoundingClientRect().top+window.scrollY-120,behavior:'smooth'}),50);"
+          class="flex-1 text-left px-4 py-2 rounded-full bg-[var(--tw-surf2)] border border-[var(--tw-bd)] text-sm text-[var(--tw-sub)]">
+          What's on your mind?
+        </button>
+        <button onclick="triggerFileInput('image')" aria-label="Upload photo"
+          class="w-9 h-9 rounded-full flex items-center justify-center bg-[var(--tw-surf2)] border border-[var(--tw-bd)] shrink-0">
+          <span class="material-symbols-outlined text-[20px] text-emerald-500">image</span>
+        </button>
+      </div>
+
+      <!-- Stories Row -->
+      <div class="bg-[var(--tw-surf)] border-b border-[var(--tw-bd)] px-2 py-2.5">
+        <div id="mob-stories-row" class="flex gap-2 overflow-x-auto no-scrollbar pb-0.5">
+          <!-- Create Story Card (always first) -->
+          <div onclick="openStoryCreator()" class="flex flex-col items-center gap-1 shrink-0 cursor-pointer">
+            <div class="w-[72px] h-[112px] rounded-xl bg-[var(--tw-surf2)] border border-[var(--tw-bd)] flex items-end justify-center relative overflow-hidden">
+              <div id="mob-story-self-av" class="w-full h-[80px] object-cover absolute top-0 left-0 bg-primary/10 flex items-center justify-center font-bold text-primary text-2xl overflow-hidden"></div>
+              <div class="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-primary flex items-center justify-center border-2 border-[var(--tw-surf)] z-10">
+                <span class="material-symbols-outlined text-white text-[14px] font-bold">add</span>
+              </div>
+            </div>
+            <span class="text-[10px] font-semibold text-[var(--tw-tx)] text-center leading-tight w-[72px] truncate">Create</span>
+          </div>
+          <!-- Dynamic story cards injected here by JS -->
+          <div id="mob-story-cards" class="flex gap-2"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Center Content: Post Creator + Feed List -->
     <div class="flex-1 max-w-full sm:max-w-[680px] min-w-0 flex flex-col w-full">
@@ -2336,6 +2372,428 @@
         .forEach(function(p) { p.classList.remove('touch-show'); });
     });
   }
+  </script>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!--              STORY CREATOR MODAL                    -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div id="story-creator-modal" class="fixed inset-0 z-[999] flex items-end justify-center hidden" style="background:rgba(0,0,0,0.6);backdrop-filter:blur(4px)">
+    <div class="w-full max-w-lg bg-[var(--tw-surf)] rounded-t-2xl p-5 pb-8 flex flex-col gap-4 animate-slide-up">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-base text-[var(--tw-tx)]">Create Story</h2>
+        <button onclick="closeStoryCreator()" class="w-8 h-8 rounded-full bg-[var(--tw-surf2)] flex items-center justify-center">
+          <span class="material-symbols-outlined text-[18px] text-[var(--tw-sub)]">close</span>
+        </button>
+      </div>
+
+      <!-- Media Preview -->
+      <div id="story-media-preview" class="hidden relative rounded-xl overflow-hidden bg-black aspect-[9/16] max-h-[280px]">
+        <img id="story-preview-img" class="w-full h-full object-cover hidden" src="">
+        <video id="story-preview-vid" class="w-full h-full object-cover hidden" autoplay muted loop src=""></video>
+        <button onclick="clearStoryMedia()" class="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center">
+          <span class="material-symbols-outlined text-[14px]">close</span>
+        </button>
+      </div>
+
+      <!-- Upload area -->
+      <div id="story-upload-area" class="border-2 border-dashed border-[var(--tw-bd)] rounded-xl p-8 flex flex-col items-center gap-2 cursor-pointer" onclick="document.getElementById('story-file-input').click()">
+        <span class="material-symbols-outlined text-4xl text-[var(--tw-sub)]">add_photo_alternate</span>
+        <p class="text-sm font-semibold text-[var(--tw-sub)]">Tap to choose photo or video</p>
+        <p class="text-xs text-[var(--tw-sub)] opacity-60">Max 10MB · Image or Video</p>
+      </div>
+      <input id="story-file-input" type="file" accept="image/*,video/*" class="hidden" onchange="handleStoryFileSelect(event)">
+
+      <!-- Caption -->
+      <input id="story-caption" type="text" placeholder="Add a caption... (optional)" maxlength="200"
+        class="w-full px-4 py-2.5 rounded-xl bg-[var(--tw-surf2)] border border-[var(--tw-bd)] text-sm text-[var(--tw-tx)] placeholder:text-[var(--tw-sub)] outline-none focus:ring-2 focus:ring-primary">
+
+      <!-- Submit -->
+      <button id="story-submit-btn" onclick="submitStory()" disabled
+        class="w-full py-3 rounded-xl bg-primary text-white font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-all">
+        Share Story
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!--              STORY VIEWER MODAL                     -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <div id="story-viewer-modal" class="fixed inset-0 z-[1000] hidden flex-col items-center justify-center" style="background:#000">
+    <!-- Progress bars -->
+    <div id="story-progress-bars" class="absolute top-0 left-0 right-0 flex gap-1 p-3 z-10"></div>
+
+    <!-- Header -->
+    <div class="absolute top-8 left-0 right-0 flex items-center justify-between px-4 z-10">
+      <div class="flex items-center gap-2.5">
+        <div id="sv-avatar" class="w-9 h-9 rounded-full border-2 border-white overflow-hidden bg-primary/20 flex items-center justify-center font-bold text-white text-sm"></div>
+        <div>
+          <p id="sv-name" class="text-white text-sm font-bold"></p>
+          <p id="sv-time" class="text-white/70 text-xs"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="sv-delete-btn" onclick="deleteCurrentStory()" class="hidden w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-[16px]">delete</span>
+        </button>
+        <button onclick="closeStoryViewer()" class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-[18px]">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Media -->
+    <img id="sv-img" class="w-full h-full object-contain hidden" src="">
+    <video id="sv-vid" class="w-full h-full object-contain hidden" src="" playsinline></video>
+
+    <!-- Caption -->
+    <div id="sv-caption" class="absolute bottom-16 left-4 right-4 z-10 hidden">
+      <p class="text-white text-sm font-semibold bg-black/40 px-3 py-2 rounded-xl backdrop-blur-sm"></p>
+    </div>
+
+    <!-- Tap zones -->
+    <div class="absolute inset-0 flex z-5">
+      <div class="w-1/3 h-full cursor-pointer" onclick="prevStory()"></div>
+      <div class="w-1/3 h-full"></div>
+      <div class="w-1/3 h-full cursor-pointer" onclick="nextStory()"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════ -->
+  <!--              STORIES JAVASCRIPT                     -->
+  <!-- ════════════════════════════════════════════════════ -->
+  <script>
+  (function() {
+    const _API = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+      ? '' : 'https://projecthive-backend.onrender.com';
+    const _H = () => ({ 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('access_token') });
+
+    // ── State ──────────────────────────────────────────────
+    let storyGroups = [];
+    let currentGroupIdx = 0;
+    let currentStoryIdx = 0;
+    let storyTimerInterval = null;
+    let storyMediaData = null;
+    let storyMediaType = 'image';
+
+    // ── Fetch & Render Stories ─────────────────────────────
+    async function fetchAndRenderStories() {
+      try {
+        const res = await fetch(_API + '/api/stories', { headers: _H() });
+        if (!res.ok) return;
+        const { groups } = await res.json();
+        storyGroups = groups || [];
+        renderStoryCards();
+        populateSelfAvatar();
+      } catch(_) {}
+    }
+
+    function populateSelfAvatar() {
+      // Mirror creator avatar from feed-avatar
+      const feedAv = document.getElementById('feed-avatar');
+      const mobAv = document.getElementById('mob-creator-av');
+      const selfAv = document.getElementById('mob-story-self-av');
+      if (!feedAv) return;
+      const img = feedAv.querySelector('img');
+      if (img && img.src) {
+        [mobAv, selfAv].forEach(el => {
+          if (!el) return;
+          el.innerHTML = `<img src="${img.src}" class="w-full h-full object-cover">`;
+        });
+      } else {
+        const txt = feedAv.textContent.trim();
+        if (mobAv) mobAv.textContent = txt;
+        if (selfAv) selfAv.textContent = txt;
+      }
+    }
+
+    function ini(f, l) {
+      return ((f||'')[0]||(l||'')[0]||'?').toUpperCase();
+    }
+
+    function timeAgo(dateStr) {
+      const diff = Date.now() - new Date(dateStr).getTime();
+      const h = Math.floor(diff / 3600000);
+      if (h < 1) return 'Just now';
+      if (h === 1) return '1h ago';
+      return h + 'h ago';
+    }
+
+    function renderStoryCards() {
+      const container = document.getElementById('mob-story-cards');
+      if (!container) return;
+      container.innerHTML = '';
+
+      storyGroups.forEach((group, gIdx) => {
+        const a = group.author || {};
+        const hasUnviewed = group.hasUnviewed;
+        const ringClass = hasUnviewed
+          ? 'border-2 border-primary'
+          : 'border-2 border-[var(--tw-bd)]';
+
+        // Use last story as thumbnail
+        const thumb = group.stories[0];
+        const isImg = thumb?.mediaType === 'image';
+
+        const card = document.createElement('div');
+        card.className = 'flex flex-col items-center gap-1 shrink-0 cursor-pointer';
+        card.onclick = () => openStoryViewer(gIdx);
+        card.innerHTML = `
+          <div class="w-[72px] h-[112px] rounded-xl overflow-hidden relative ${ringClass} bg-[var(--tw-surf2)]">
+            ${isImg
+              ? `<img src="${thumb.mediaUrl}" class="w-full h-full object-cover" loading="lazy">`
+              : `<video src="${thumb.mediaUrl}" class="w-full h-full object-cover" muted></video>`
+            }
+            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-1 pb-1 pt-4">
+              <div class="w-7 h-7 rounded-full border-2 border-white overflow-hidden bg-primary flex items-center justify-center font-bold text-white text-xs mx-auto -mt-1">
+                ${a.avatar
+                  ? `<img src="${a.avatar}" class="w-full h-full object-cover">`
+                  : `<span>${ini(a.firstName, a.lastName)}</span>`
+                }
+              </div>
+            </div>
+          </div>
+          <span class="text-[10px] font-semibold text-[var(--tw-tx)] text-center leading-tight w-[72px] truncate">${a.firstName||'User'}</span>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // ── Story Creator ──────────────────────────────────────
+    window.openStoryCreator = function() {
+      document.getElementById('story-creator-modal').classList.remove('hidden');
+    };
+    window.closeStoryCreator = function() {
+      document.getElementById('story-creator-modal').classList.add('hidden');
+      clearStoryMedia();
+      document.getElementById('story-caption').value = '';
+    };
+
+    window.handleStoryFileSelect = function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('File too large. Max 10MB.', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        storyMediaData = e.target.result;
+        storyMediaType = file.type.startsWith('video/') ? 'video' : 'image';
+        const preview = document.getElementById('story-media-preview');
+        const uploadArea = document.getElementById('story-upload-area');
+        const img = document.getElementById('story-preview-img');
+        const vid = document.getElementById('story-preview-vid');
+        img.classList.add('hidden');
+        vid.classList.add('hidden');
+        if (storyMediaType === 'image') {
+          img.src = storyMediaData;
+          img.classList.remove('hidden');
+        } else {
+          vid.src = storyMediaData;
+          vid.classList.remove('hidden');
+        }
+        preview.classList.remove('hidden');
+        uploadArea.classList.add('hidden');
+        document.getElementById('story-submit-btn').disabled = false;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    };
+
+    window.clearStoryMedia = function() {
+      storyMediaData = null;
+      storyMediaType = 'image';
+      document.getElementById('story-media-preview').classList.add('hidden');
+      document.getElementById('story-upload-area').classList.remove('hidden');
+      document.getElementById('story-preview-img').src = '';
+      document.getElementById('story-preview-vid').src = '';
+      document.getElementById('story-submit-btn').disabled = true;
+    };
+
+    window.submitStory = async function() {
+      if (!storyMediaData) return;
+      const btn = document.getElementById('story-submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Sharing...';
+      try {
+        const caption = document.getElementById('story-caption').value.trim();
+        const res = await fetch(_API + '/api/stories', {
+          method: 'POST',
+          headers: _H(),
+          body: JSON.stringify({ mediaUrl: storyMediaData, mediaType: storyMediaType, caption: caption || null })
+        });
+        if (!res.ok) { showToast('Failed to share story', 'error'); btn.disabled = false; btn.textContent = 'Share Story'; return; }
+        showToast('Story shared! 🎉', 'success');
+        closeStoryCreator();
+        fetchAndRenderStories();
+      } catch(_) {
+        showToast('Error sharing story', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Share Story';
+      }
+    };
+
+    // ── Story Viewer ──────────────────────────────────────
+    window.openStoryViewer = async function(groupIdx) {
+      currentGroupIdx = groupIdx;
+      currentStoryIdx = 0;
+      const modal = document.getElementById('story-viewer-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      renderCurrentStory();
+    };
+
+    window.closeStoryViewer = function() {
+      const modal = document.getElementById('story-viewer-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      clearStoryTimer();
+      const vid = document.getElementById('sv-vid');
+      vid.pause(); vid.src = '';
+    };
+
+    function renderCurrentStory() {
+      const group = storyGroups[currentGroupIdx];
+      if (!group) { closeStoryViewer(); return; }
+      const story = group.stories[currentStoryIdx];
+      if (!story) { closeStoryViewer(); return; }
+
+      const a = group.author || {};
+      const svImg = document.getElementById('sv-img');
+      const svVid = document.getElementById('sv-vid');
+      const svName = document.getElementById('sv-name');
+      const svTime = document.getElementById('sv-time');
+      const svCaption = document.getElementById('sv-caption');
+      const svAvatar = document.getElementById('sv-avatar');
+      const svDelete = document.getElementById('sv-delete-btn');
+
+      svName.textContent = `${a.firstName||''} ${a.lastName||''}`.trim();
+      svTime.textContent = timeAgo(story.createdAt);
+
+      if (a.avatar) {
+        svAvatar.innerHTML = `<img src="${a.avatar}" class="w-full h-full object-cover">`;
+      } else {
+        svAvatar.textContent = ini(a.firstName, a.lastName);
+        svAvatar.style.background = 'linear-gradient(135deg,#6366f1,#7c3aed)';
+      }
+
+      // Show delete only for own stories
+      const myId = localStorage.getItem('ph-user-id') || '';
+      svDelete.classList.toggle('hidden', a.id !== myId);
+
+      // Caption
+      if (story.caption) {
+        svCaption.classList.remove('hidden');
+        svCaption.querySelector('p').textContent = story.caption;
+      } else {
+        svCaption.classList.add('hidden');
+      }
+
+      // Media
+      svImg.classList.add('hidden');
+      svVid.classList.add('hidden');
+      if (story.mediaType === 'video') {
+        svVid.src = story.mediaUrl;
+        svVid.classList.remove('hidden');
+        svVid.play().catch(()=>{});
+      } else {
+        svImg.src = story.mediaUrl;
+        svImg.classList.remove('hidden');
+      }
+
+      // Progress bars
+      renderProgressBars(group.stories.length, currentStoryIdx);
+
+      // Mark viewed
+      if (!story.hasViewed && a.id !== myId) {
+        fetch(_API + '/api/stories/' + story.id + '/view', { method: 'POST', headers: _H() }).catch(()=>{});
+        story.hasViewed = true;
+      }
+
+      // Auto-advance timer (7s for image, use video duration for video)
+      clearStoryTimer();
+      const duration = story.mediaType === 'video' ? null : 7000;
+      if (duration) {
+        storyTimerInterval = setTimeout(() => nextStory(), duration);
+      } else {
+        svVid.onended = () => nextStory();
+      }
+    }
+
+    function renderProgressBars(total, currentIdx) {
+      const container = document.getElementById('story-progress-bars');
+      container.innerHTML = '';
+      for (let i = 0; i < total; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'flex-1 h-0.5 rounded-full overflow-hidden bg-white/30';
+        const fill = document.createElement('div');
+        fill.className = 'h-full rounded-full bg-white transition-all';
+        fill.style.width = i < currentIdx ? '100%' : i === currentIdx ? '0%' : '0%';
+        if (i === currentIdx) {
+          // Animate fill
+          setTimeout(() => { fill.style.transition = 'width 7s linear'; fill.style.width = '100%'; }, 50);
+        }
+        bar.appendChild(fill);
+        container.appendChild(bar);
+      }
+    }
+
+    function clearStoryTimer() {
+      if (storyTimerInterval) { clearTimeout(storyTimerInterval); storyTimerInterval = null; }
+      const vid = document.getElementById('sv-vid');
+      if (vid) vid.onended = null;
+    }
+
+    window.nextStory = function() {
+      const group = storyGroups[currentGroupIdx];
+      if (!group) return;
+      if (currentStoryIdx < group.stories.length - 1) {
+        currentStoryIdx++;
+        renderCurrentStory();
+      } else if (currentGroupIdx < storyGroups.length - 1) {
+        currentGroupIdx++;
+        currentStoryIdx = 0;
+        renderCurrentStory();
+      } else {
+        closeStoryViewer();
+      }
+    };
+
+    window.prevStory = function() {
+      if (currentStoryIdx > 0) {
+        currentStoryIdx--;
+      } else if (currentGroupIdx > 0) {
+        currentGroupIdx--;
+        currentStoryIdx = storyGroups[currentGroupIdx].stories.length - 1;
+      }
+      renderCurrentStory();
+    };
+
+    window.deleteCurrentStory = async function() {
+      const group = storyGroups[currentGroupIdx];
+      const story = group?.stories[currentStoryIdx];
+      if (!story) return;
+      try {
+        await fetch(_API + '/api/stories/' + story.id, { method: 'DELETE', headers: _H() });
+        showToast('Story deleted', 'info');
+        closeStoryViewer();
+        fetchAndRenderStories();
+      } catch(_) {}
+    };
+
+    // ── Init ───────────────────────────────────────────────
+    // Wait for auth to be ready before fetching stories
+    function initStories() {
+      const tok = localStorage.getItem('access_token');
+      if (!tok) { setTimeout(initStories, 500); return; }
+      fetchAndRenderStories();
+      // Refresh stories every 5 minutes
+      setInterval(fetchAndRenderStories, 5 * 60 * 1000);
+    }
+    // Also update mob-creator-av after feed avatar is set
+    const _origSetupAvatar = window._feedAvatarReady;
+    setTimeout(initStories, 800);
+  })();
   </script>
 </body>
 </html>

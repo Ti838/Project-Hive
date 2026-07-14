@@ -27,6 +27,7 @@ import { adminDevRouter } from './routes/admin.routes.js';
 import { adminLogin } from './controllers/admin.auth.controller.js';
 import { getFlags, loadFlagsFromDB } from './controllers/admin.controller.js';
 import postsRoutes from './routes/posts.routes.js';
+import storiesRoutes from './routes/stories.routes.js';
 
 const app = express();
 
@@ -223,6 +224,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
+app.use('/api/stories', storiesRoutes); // stories
 
 // TURN credentials endpoint
 app.get('/api/turn-credentials', async (req, res) => {
