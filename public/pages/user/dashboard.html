@@ -312,7 +312,7 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
         <span class="material-symbols-outlined">help</span>
       </button>
       <div class="relative">
-        <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="window.location.href='/notifications'" aria-label="Notifications">
+        <button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" onclick="toggleNotificationDropdown()" aria-label="Notifications">
           <span class="material-symbols-outlined">notifications</span>
         </button>
         <span id="topbar-unread" class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface hidden"></span>
@@ -327,20 +327,17 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
     </div>
   </div>
 
-  <!-- Mobile Right: Search, Notifications, Chat Shortcuts -->
+  <!-- Mobile Right: Search, Notifications -->
   <div class="flex items-center gap-1.5 md:hidden">
     <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="document.getElementById('ph-search-backdrop').style.display='flex'; document.getElementById('ph-search-input').focus();" title="Search" aria-label="Search">
       <span class="material-symbols-outlined text-[22px]">search</span>
     </button>
     <div class="relative">
-      <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="window.location.href='/notifications'" title="Notifications" aria-label="Notifications">
+      <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="toggleNotificationDropdown()" title="Notifications" aria-label="Notifications">
         <span class="material-symbols-outlined text-[22px]">notifications</span>
       </button>
       <span id="topbar-unread-mobile" class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border border-surface hidden"></span>
     </div>
-    <button class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-variant/20 text-on-surface-variant transition-colors" onclick="window.location.href='/messages'" title="Messages" aria-label="Messages">
-      <span class="material-symbols-outlined text-[22px]">chat_bubble</span>
-    </button>
   </div>
 </header>
 
@@ -1085,5 +1082,131 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
     } catch(e) {}
   });
 })();
+
+// ── Notification Dropdown / Bottom Sheet Logic ────────
+window.toggleNotificationDropdown = function() {
+  const dropdown = document.getElementById('notification-dropdown');
+  const backdrop = document.getElementById('notification-dropdown-backdrop');
+  if (!dropdown) return;
+  
+  if (dropdown.classList.contains('hidden')) {
+    dropdown.classList.remove('hidden');
+    backdrop.classList.remove('hidden');
+    setTimeout(() => {
+      dropdown.classList.remove('translate-y-full');
+    }, 10);
+    loadDropdownNotifications();
+  } else {
+    dropdown.classList.add('translate-y-full');
+    setTimeout(() => {
+      dropdown.classList.add('hidden');
+      backdrop.classList.add('hidden');
+    }, 300);
+  }
+};
+
+async function loadDropdownNotifications() {
+  const listEl = document.getElementById('dropdown-notif-list');
+  if (!listEl) return;
+  
+  try {
+    const r = await fetch(API_BASE + '/api/notifications?limit=6', { headers: H });
+    if (r.ok) {
+      const d = await r.json();
+      const list = d.notifications || d || [];
+      
+      const unread = list.filter(n => !n.read).length;
+      const dot = document.getElementById('topbar-unread');
+      const dotMob = document.getElementById('topbar-unread-mobile');
+      if (unread > 0) {
+        if (dot) dot.classList.remove('hidden');
+        if (dotMob) dotMob.classList.remove('hidden');
+      } else {
+        if (dot) dot.classList.add('hidden');
+        if (dotMob) dotMob.classList.add('hidden');
+      }
+
+      if (list.length === 0) {
+        listEl.innerHTML = '<div class="text-center text-xs text-gray-400 dark:text-gray-500 py-8">No notifications yet.</div>';
+        return;
+      }
+
+      listEl.innerHTML = list.map(n => {
+        const dateStr = new Date(n.created_at || n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const isUnread = !n.read;
+        const borderClass = isUnread ? 'border-l-4 border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/10' : 'border-l border-gray-100 dark:border-darkSurface-border';
+        
+        let icon = 'notifications';
+        if (n.type === 'friend_request' || n.type === 'friend') icon = 'person_add';
+        else if (n.type === 'team' || n.type === 'team_join') icon = 'group';
+        else if (n.type === 'message') icon = 'chat_bubble';
+
+        return `
+          <div onclick="clickDropdownNotification('${n._id || n.id}', '${n.link || ''}')" class="p-3 rounded-xl border ${borderClass} hover:bg-gray-50 dark:hover:bg-darkSurface-hover cursor-pointer transition-all flex gap-3 items-start select-none text-left">
+            <span class="material-symbols-outlined text-[20px] text-indigo-500 shrink-0 mt-0.5">${icon}</span>
+            <div class="flex-1 min-w-0">
+              <p class="text-xs text-gray-800 dark:text-gray-200 font-semibold leading-normal line-clamp-2">${n.message || ''}</p>
+              <span class="text-[10px] text-gray-400 mt-1 block">${dateStr}</span>
+            </div>
+            ${isUnread ? '<span class="w-1.5 h-1.5 bg-indigo-500 rounded-full shrink-0 mt-2"></span>' : ''}
+          </div>
+        `;
+      }).join('');
+    } else {
+      listEl.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">Failed to load.</div>';
+    }
+  } catch (e) {
+    listEl.innerHTML = '<div class="text-center text-xs text-gray-400 py-8">Server offline.</div>';
+  }
+}
+
+window.clickDropdownNotification = async function(id, link) {
+  try {
+    await fetch(API_BASE + `/api/notifications/${id}/read`, { method: 'PUT', headers: H });
+  } catch (e) {}
+  
+  toggleNotificationDropdown();
+  if (typeof fetchNotifications === 'function') fetchNotifications();
+  
+  if (link) {
+    window.location.href = link;
+  }
+};
+
+window.markAllNotificationsAsRead = async function() {
+  try {
+    const r = await fetch(API_BASE + '/api/notifications/read-all', { method: 'PUT', headers: H });
+    if (r.ok) {
+      PHToast?.success('All marked as read');
+      loadDropdownNotifications();
+      if (typeof fetchNotifications === 'function') fetchNotifications();
+    }
+  } catch (e) {}
+};
 </script>
+
+<!-- Notification Dropdown / Bottom Sheet -->
+<div id="notification-dropdown" class="hidden fixed md:absolute md:top-16 md:right-10 md:w-80 w-full max-md:bottom-0 max-md:left-0 bg-white/95 dark:bg-darkSurface-panel/95 backdrop-blur-md rounded-2xl md:shadow-2xl border border-gray-100 dark:border-darkSurface-border z-[100] flex flex-col transition-all duration-300 transform translate-y-full md:translate-y-0 max-md:rounded-b-none max-md:max-h-[75vh]">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-darkSurface-border select-none shrink-0">
+    <h3 class="font-heading font-bold text-sm text-gray-900 dark:text-white flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[20px] text-indigo-500">notifications</span>
+      Notifications
+    </h3>
+    <div class="flex items-center gap-2">
+      <button onclick="markAllNotificationsAsRead()" class="text-indigo-600 dark:text-indigo-400 text-xs font-bold hover:underline transition-all">Mark all read</button>
+      <button onclick="toggleNotificationDropdown()" class="w-7 h-7 rounded-lg hover:bg-gray-100 dark:hover:bg-darkSurface-card flex items-center justify-center text-gray-500">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+    </div>
+  </div>
+  <div id="dropdown-notif-list" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[150px] max-h-[300px]">
+    <div class="text-center text-xs text-gray-400 py-6">Loading notifications...</div>
+  </div>
+  <div class="p-3 border-t border-gray-100 dark:border-darkSurface-border text-center shrink-0">
+    <a href="/notifications" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1">
+      View All Notifications <span class="material-symbols-outlined text-sm">arrow_forward</span>
+    </a>
+  </div>
+</div>
+<div id="notification-dropdown-backdrop" class="hidden fixed inset-0 bg-black/10 dark:bg-black/30 z-[99]" onclick="toggleNotificationDropdown()"></div>
 <script src="/assets/js/core/info-modal.js"></script></body></html>
