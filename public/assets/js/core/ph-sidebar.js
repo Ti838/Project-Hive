@@ -318,7 +318,7 @@ const PHSidebar = (() => {
     const link = document.createElement('link');
     link.id = 'ph-mobile-fixes-css';
     link.rel = 'stylesheet';
-    link.href = '/assets/css/mobile-fixes.css?v=3';
+    link.href = '/assets/css/mobile-fixes.css?v=5';
     document.head.appendChild(link);
   }
 
