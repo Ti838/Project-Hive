@@ -1,5 +1,6 @@
 import bcryptjs from 'bcryptjs';
 import { supabaseAdmin } from '../config/supabase.js';
+import { getIo } from '../services/socket.service.js';
 
 // Sanitize search input to prevent Supabase PostgREST filter injection
 function sanitizeSearch(input) {
@@ -547,10 +548,22 @@ export async function createSupportTicket(req, res, next) {
       console.warn('[ProjectHive] Database warning while saving ticket, simulating storage fallback:', error.message);
     }
 
+    const ticketObj = data || { id: 'sim-' + Date.now(), category, subject, message, status: 'open' };
+
+    // Emit Socket event to admins
+    try {
+      const io = getIo();
+      if (io) {
+        io.emit('ticket:new', ticketObj);
+      }
+    } catch (e) {
+      console.warn('[ProjectHive] Socket emit warning:', e.message);
+    }
+
     res.status(201).json({
       ok: true,
       message: 'Support ticket submitted successfully! A support agent will review your case.',
-      ticket: data || { id: 'sim-' + Date.now(), category, subject, message, status: 'open' }
+      ticket: ticketObj
     });
   } catch (err) {
     next(err);

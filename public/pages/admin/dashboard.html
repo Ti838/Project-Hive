@@ -1,12 +1,13 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin Panel — ProjectHive</title><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Admin Panel — ProjectHive</title><script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script><script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script><link rel="icon" href="/favicon.png?v=2"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms"></script><script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif']}}}}</script><style>
 :root{--bg:#f0f2ff;--sb:#fff;--sf:#fff;--bd:#dde2f5;--tx:#0f172a;--sub:#64748b;--tx2:#475569;--ac:#6366f1;--ac2:#4f46e5;--red:#dc2626;--grn:#059669;--yel:#d97706;--blu:#2563eb;--shadow:0 4px 24px rgba(0,0,0,.08)}
 html.dark{--bg:#07080f;--sb:#0b0d17;--sf:#0f1020;--bd:#1c1f35;--tx:#e2deee;--sub:#5a6080;--tx2:#8b93b8;--ac:#6366f1;--ac2:#818cf8;--red:#ef4444;--grn:#10b981;--yel:#f59e0b;--blu:#3b82f6;--shadow:0 4px 24px rgba(0,0,0,.4)}
 *{margin:0;padding:0;box-sizing:border-box;font-family:"Inter",system-ui,sans-serif}
 html,body{height:100%}
 body{background:var(--bg);color:var(--tx);display:flex;height:100%;overflow:hidden;transition:background .25s,color .25s}
 /* â”€â”€ Sidebar â”€â”€ */
-.sb{width:248px;height:100vh;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none;transition:background .25s,border-color .25s}
-.sb::-webkit-scrollbar{display:none}
+.sb{width:248px;height:100vh;background:var(--sb);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:background .25s,border-color .25s}
+.sb-content{flex:1;overflow-y:auto;scrollbar-width:none;-ms-overflow-style:none}
+.sb-content::-webkit-scrollbar{display:none}
 .sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px 12px}
 .sb-brand img{width:32px;height:32px;border-radius:10px;flex-shrink:0}
 .sb-brand-name{font-size:15px;font-weight:900;background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex:1}
@@ -739,54 +740,56 @@ html.dark .admin-bottom-nav{background:rgba(11,13,23,0.85);border-top:1px solid 
     <span class="sb-badge">ADMIN</span>
   </div>
   <div class="sb-divider"></div>
-  <div class="sb-section">Overview</div>
-  <button class="sb-item active" id="nav-ov" onclick="nav('ov',this)" title="Control Center">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
-    <span>Control Center</span>
-  </button>
-  <div class="sb-section">Manage</div>
-  <button class="sb-item" id="nav-us" onclick="nav('us',this)" title="Users">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-    <span>Users</span><span class="badge-cnt" id="cnt-u">—</span>
-  </button>
-  <button class="sb-item" id="nav-tm" onclick="nav('tm',this)" title="Teams">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-    <span>Teams</span><span class="badge-cnt" id="cnt-t">—</span>
-  </button>
-  <button class="sb-item" id="nav-pr" onclick="nav('pr',this)" title="Projects">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-    <span>Projects</span><span class="badge-cnt" id="cnt-pr">—</span>
-  </button>
-  <button class="sb-item" id="nav-po" onclick="nav('po',this)" title="Posts">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span>Posts</span><span class="badge-cnt" id="cnt-po">—</span>
-  </button>
-  <div class="sb-section">Insights</div>
-  <button class="sb-item" id="nav-an" onclick="nav('an',this)" title="Analytics">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <span>Analytics</span>
-  </button>
-  <div class="sb-section">Admin</div>
-  <button class="sb-item" id="nav-sy" onclick="nav('sy',this)" title="System">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
-    <span>System</span>
-  </button>
-  <button class="sb-item" id="nav-au" onclick="nav('au',this)" title="Audit Log">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    <span>Audit Log</span>
-  </button>
-  <button class="sb-item" id="nav-rp" onclick="nav('rp',this)" title="Reports">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-    <span>Reports</span>
-  </button>
-  <button class="sb-item" id="nav-tk" onclick="nav('tk',this)" title="Support Tickets">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span>Support Tickets</span><span class="badge-cnt" id="cnt-tk">—</span>
-  </button>
-  <button class="sb-item" id="nav-em" onclick="nav('em',this)" title="Email Blast">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-    <span>Email Blast</span>
-  </button>
+  <div class="sb-content">
+    <div class="sb-section">Overview</div>
+    <button class="sb-item active" id="nav-ov" onclick="nav('ov',this)" title="Control Center">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      <span>Control Center</span>
+    </button>
+    <div class="sb-section">Manage</div>
+    <button class="sb-item" id="nav-us" onclick="nav('us',this)" title="Users">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Users</span><span class="badge-cnt" id="cnt-u">—</span>
+    </button>
+    <button class="sb-item" id="nav-tm" onclick="nav('tm',this)" title="Teams">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Teams</span><span class="badge-cnt" id="cnt-t">—</span>
+    </button>
+    <button class="sb-item" id="nav-pr" onclick="nav('pr',this)" title="Projects">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <span>Projects</span><span class="badge-cnt" id="cnt-pr">—</span>
+    </button>
+    <button class="sb-item" id="nav-po" onclick="nav('po',this)" title="Posts">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Posts</span><span class="badge-cnt" id="cnt-po">—</span>
+    </button>
+    <div class="sb-section">Insights</div>
+    <button class="sb-item" id="nav-an" onclick="nav('an',this)" title="Analytics">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      <span>Analytics</span>
+    </button>
+    <div class="sb-section">Admin</div>
+    <button class="sb-item" id="nav-sy" onclick="nav('sy',this)" title="System">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+      <span>System</span>
+    </button>
+    <button class="sb-item" id="nav-au" onclick="nav('au',this)" title="Audit Log">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>Audit Log</span>
+    </button>
+    <button class="sb-item" id="nav-rp" onclick="nav('rp',this)" title="Reports">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+      <span>Reports</span>
+    </button>
+    <button class="sb-item" id="nav-tk" onclick="nav('tk',this)" title="Support Tickets">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span>Support Tickets</span><span class="badge-cnt" id="cnt-tk">—</span>
+    </button>
+    <button class="sb-item" id="nav-em" onclick="nav('em',this)" title="Email Blast">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <span>Email Blast</span>
+    </button>
+  </div>
   <div class="sb-footer">
     <button class="sb-theme" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
       <div style="display:flex;align-items:center;gap:10px">
@@ -1372,6 +1375,58 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 // Load flags from backend on start
 fetch(API+'/api/admin/flags',{headers:H}).then(r=>r.ok?r.json():null).then(d=>{if(d)syncFlags(d);}).catch(()=>{});
+
+// ── Socket.IO Real-Time Synchronization ──
+try {
+  const socket = io(API, { auth: { token: TK }, transports: ['websocket', 'polling'] });
+  
+  socket.on('connect', () => {
+    console.log('[Admin Socket] Connected to Socket.IO');
+  });
+
+  socket.on('ticket:new', (ticket) => {
+    loadAll();
+    try {
+      const audio = new Audio('/assets/sounds/notification.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(()=>{});
+    } catch(e) {}
+  });
+
+  socket.on('ticket:update', (ticket) => {
+    loadAll();
+  });
+
+  socket.on('ticket:delete', (data) => {
+    loadAll();
+  });
+
+  socket.on('admin:reload', (data) => {
+    loadAll();
+  });
+
+  socket.on('admin:activity', (entry) => {
+    const isDuplicate = auditLog.some(e => 
+      e.action === entry.action && 
+      e.details === entry.details && 
+      e.admin === entry.admin &&
+      Math.abs(new Date(e.time) - new Date(entry.time)) < 3000
+    );
+    if (isDuplicate) return;
+
+    auditLog.unshift(entry);
+    if (auditLog.length > 100) auditLog.pop();
+    try { localStorage.setItem('ph-audit-log', JSON.stringify(auditLog)); } catch(e) {}
+    renderAuditLog();
+    renderReports();
+  });
+
+  socket.on('disconnect', () => {
+    console.log('[Admin Socket] Disconnected from Socket.IO');
+  });
+} catch (e) {
+  console.warn('[Admin Socket] Connection failed:', e.message);
+}
 // Audit Log //
 let auditLog = [];
 function pushAudit(action, details) {
@@ -1810,29 +1865,48 @@ function rTickets() {
 
 async function resolveTk(id) {
   if (!(await adminConfirm('Mark this ticket as resolved?', 'Resolve Ticket'))) return;
+  const oldTickets = JSON.parse(JSON.stringify(ATk));
+
+  // Optimistic update
+  const tk = ATk.find(t => t.id === id);
+  if (tk) {
+    tk.status = 'resolved';
+  }
+  rTickets();
+  adminAlert('Ticket marked as resolved!', 'Success');
+
   const r = await fetch(API + '/api/admin/tickets/' + id + '/resolve', {
     method: 'PATCH',
     headers: H,
     body: JSON.stringify({ status: 'resolved' })
   });
   if (r.ok) {
-    adminAlert('Ticket marked as resolved!', 'Success');
     pushAudit('RESOLVE_TICKET', 'Ticket ID: ' + id);
     loadAll();
   } else {
-    adminAlert('Failed to update ticket status', 'Error');
+    ATk = oldTickets;
+    rTickets();
+    adminAlert('Failed to update ticket status. Reverting changes.', 'Error');
   }
 }
 
 async function delTk(id) {
   if (!(await adminConfirm('Delete this support ticket permanently?', 'Delete Ticket', true))) return;
+  const oldTickets = JSON.parse(JSON.stringify(ATk));
+
+  // Optimistic update
+  ATk = ATk.filter(t => t.id !== id);
+  rTickets();
+  adminAlert('Ticket deleted.', 'Success');
+
   const r = await fetch(API + '/api/admin/tickets/' + id, { method: 'DELETE', headers: H });
   if (r.ok) {
-    adminAlert('Ticket deleted.', 'Success');
     pushAudit('DELETE_TICKET', 'Ticket ID: ' + id);
     loadAll();
   } else {
-    adminAlert('Failed to delete ticket', 'Error');
+    ATk = oldTickets;
+    rTickets();
+    adminAlert('Failed to delete ticket. Reverting changes.', 'Error');
   }
 }
 

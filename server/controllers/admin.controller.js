@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { getIo } from '../services/socket.service.js';
 
 // ── Input sanitizer for Supabase filter parameters ───────────────────────────
 // Prevents injection through ilike/or filter patterns
@@ -29,6 +30,22 @@ export async function loadFlagsFromDB() {
   }
 }
 export function getFlags() { return FLAGS; }
+
+function broadcastAdminUpdate(action, details, extra = {}) {
+  try {
+    const io = getIo();
+    if (io) {
+      io.emit('admin:activity', {
+        time: new Date().toISOString(),
+        action,
+        details,
+        admin: extra.admin || 'System',
+      });
+    }
+  } catch (e) {
+    console.warn('[Admin Socket] Broadcast failed:', e.message);
+  }
+}
 
 // ── Helper: normalize Supabase snake_case → camelCase for frontend ────────────
 function normUser(u) {
@@ -100,6 +117,15 @@ export async function banUser(req, res, next) {
     if (!user) return res.status(404).json({ error: 'User not found' });
     const newBan = req.body.ban !== undefined ? req.body.ban : !user.is_banned;
     await supabaseAdmin.from('users').update({ is_banned: newBan, is_public: !newBan }).eq('id', id);
+
+    const action = newBan ? 'BAN_USER' : 'UNBAN_USER';
+    broadcastAdminUpdate(action, 'User ID: ' + id, { admin: req.user.email });
+    const io = getIo();
+    if (io) {
+      io.emit('admin:reload', { section: 'users' });
+      io.emit('user:banned', { userId: id });
+    }
+
     res.json({ message: newBan ? 'User banned' : 'User unbanned', isBanned: newBan });
   } catch (err) { next(err); }
 }
@@ -113,6 +139,11 @@ export async function changeRole(req, res, next) {
       .from('users').update({ role }).eq('id', req.params.id)
       .select('id,first_name,last_name,email,role').single();
     if (error || !user) return res.status(404).json({ error: 'User not found' });
+
+    broadcastAdminUpdate('CHANGE_ROLE', `User: ${user.email} -> ${role}`, { admin: req.user.email });
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'users' });
+
     res.json({ message: `Role changed to ${role}`, user });
   } catch (err) { next(err); }
 }
@@ -121,7 +152,18 @@ export async function changeRole(req, res, next) {
 export async function deleteUser(req, res, next) {
   try {
     if (req.params.id === req.user.id) return res.status(400).json({ error: 'Cannot delete yourself' });
+    const { data: user } = await supabaseAdmin.from('users').select('email').eq('id', req.params.id).single();
+    const email = user ? user.email : req.params.id;
+
     await supabaseAdmin.from('users').delete().eq('id', req.params.id);
+
+    broadcastAdminUpdate('DELETE_USER', email, { admin: req.user.email });
+    const io = getIo();
+    if (io) {
+      io.emit('admin:reload', { section: 'users' });
+      io.emit('user:deleted', { userId: req.params.id });
+    }
+
     res.json({ message: 'User deleted' });
   } catch (err) { next(err); }
 }
@@ -149,7 +191,16 @@ export async function getTeams(req, res, next) {
 // DELETE /api/admin/teams/:id
 export async function deleteTeam(req, res, next) {
   try {
-    await supabaseAdmin.from('teams').delete().eq('id', req.params.id);
+    const { id } = req.params;
+    const { data: team } = await supabaseAdmin.from('teams').select('name').eq('id', id).single();
+    const teamName = team ? team.name : id;
+
+    await supabaseAdmin.from('teams').delete().eq('id', id);
+
+    broadcastAdminUpdate('DELETE_TEAM', teamName, { admin: req.user.email });
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'teams' });
+
     res.json({ message: 'Team deleted' });
   } catch (err) { next(err); }
 }
@@ -181,7 +232,16 @@ export async function getProjects(req, res, next) {
 // DELETE /api/admin/projects/:id
 export async function deleteProject(req, res, next) {
   try {
-    await supabaseAdmin.from('projects').delete().eq('id', req.params.id);
+    const { id } = req.params;
+    const { data: project } = await supabaseAdmin.from('projects').select('title').eq('id', id).single();
+    const title = project ? project.title : id;
+
+    await supabaseAdmin.from('projects').delete().eq('id', id);
+
+    broadcastAdminUpdate('DELETE_PROJECT', title, { admin: req.user.email });
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'projects' });
+
     res.json({ message: 'Project deleted' });
   } catch (err) { next(err); }
 }
@@ -192,13 +252,19 @@ export async function featureProject(req, res, next) {
     const { featured } = req.body;
     const { data, error } = await supabaseAdmin
       .from('projects').update({ is_featured: Boolean(featured) }).eq('id', req.params.id)
-      .select('id,is_featured').single();
+      .select('id,title,is_featured').single();
     if (error) {
       if (error.message?.includes('is_featured')) {
         return res.status(400).json({ error: 'Feature column not yet added. Run schema_update.sql in Supabase.' });
       }
       throw error;
     }
+
+    const title = data ? data.title : req.params.id;
+    broadcastAdminUpdate(featured ? 'FEATURE_PROJECT' : 'UNFEATURE_PROJECT', title, { admin: req.user.email });
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'projects' });
+
     res.json({ message: featured ? 'Project featured' : 'Project unfeatured', project: data });
   } catch (err) { next(err); }
 }
@@ -228,6 +294,15 @@ export async function updateFlags(req, res) {
       console.warn('[Admin] Failed to persist flags to DB:', e.message);
     }
   }
+
+  const details = updates.map(u => `${u.key}: ${u.value}`).join(', ');
+  broadcastAdminUpdate('UPDATE_FLAGS', details, { admin: req.user.email });
+  const io = getIo();
+  if (io) {
+    io.emit('admin:reload', { section: 'flags' });
+    io.emit('flags:update', FLAGS);
+  }
+
   console.log('[Admin] System flags updated:', FLAGS);
   res.json({ message: 'System flags updated', flags: FLAGS });
 }
@@ -273,6 +348,11 @@ export async function getAdminPosts(req, res, next) {
 export async function deleteAdminPost(req, res, next) {
   try {
     await supabaseAdmin.from('posts').delete().eq('id', req.params.id);
+
+    broadcastAdminUpdate('DELETE_POST', 'Post ID: ' + req.params.id, { admin: req.user.email });
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'posts' });
+
     res.json({ message: 'Post deleted' });
   } catch (err) { next(err); }
 }
@@ -327,6 +407,14 @@ export async function resolveTicket(req, res, next) {
       .single();
 
     if (error) throw error;
+
+    broadcastAdminUpdate('RESOLVE_TICKET', 'Ticket ID: ' + id, { admin: req.user.email });
+    const io = getIo();
+    if (io) {
+      io.emit('admin:reload', { section: 'tickets' });
+      io.emit('ticket:update', data);
+    }
+
     res.json({ message: `Ticket status updated to ${status}`, ticket: data });
   } catch (err) {
     next(err);
@@ -338,6 +426,14 @@ export async function deleteTicket(req, res, next) {
     const { id } = req.params;
     const { error } = await supabaseAdmin.from('support_tickets').delete().eq('id', id);
     if (error) throw error;
+
+    broadcastAdminUpdate('DELETE_TICKET', 'Ticket ID: ' + id, { admin: req.user.email });
+    const io = getIo();
+    if (io) {
+      io.emit('admin:reload', { section: 'tickets' });
+      io.emit('ticket:delete', { ticketId: id });
+    }
+
     res.json({ message: 'Ticket deleted successfully' });
   } catch (err) {
     next(err);

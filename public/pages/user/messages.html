@@ -656,6 +656,13 @@
 
         <!-- Jitsi container -->
         <div id="jitsi-container" class="w-full h-full"></div>
+        <!-- Draggable Local Camera PIP -->
+        <div id="local-video-pip" class="absolute bottom-24 right-4 w-28 h-40 sm:w-36 sm:h-48 bg-slate-900 rounded-2xl overflow-hidden border border-white/20 shadow-2xl z-40 cursor-grab active:cursor-grabbing select-none hidden">
+          <video id="local-video-stream" class="w-full h-full object-cover pointer-events-none" autoplay playsinline muted></video>
+          <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
+            <span class="material-symbols-outlined text-white text-sm">drag_pan</span>
+          </div>
+        </div>
         <!-- Real-Time Collaborative Whiteboard Overlay -->
         <div id="whiteboard-container" class="hidden absolute inset-0 w-full h-full bg-[#181926]/90 backdrop-blur-md z-30 flex flex-col p-4">
           <!-- Toolbar -->
@@ -3753,11 +3760,139 @@
         }, 1000);
       }
 
+      let localVideoStream = null;
+      let isFilmstripVisible = true;
+
+      async function startLocalPreview() {
+        try {
+          stopLocalPreview();
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          localVideoStream = stream;
+          const localVideoEl = document.getElementById('local-video-stream');
+          if (localVideoEl) {
+            localVideoEl.srcObject = stream;
+            localVideoEl.onloadedmetadata = () => localVideoEl.play();
+          }
+          const pip = document.getElementById('local-video-pip');
+          if (pip) {
+            pip.classList.remove('hidden');
+            // Reset position to default (bottom-24, right-4)
+            pip.style.left = 'auto';
+            pip.style.top = 'auto';
+            pip.style.right = '1rem';
+            pip.style.bottom = '6rem';
+            pip.style.width = '';
+            pip.style.height = '';
+          }
+          makePipDraggable();
+        } catch (err) {
+          console.error('[Call] Error starting local preview:', err);
+        }
+      }
+
+      function stopLocalPreview() {
+        if (localVideoStream) {
+          try {
+            localVideoStream.getTracks().forEach(track => track.stop());
+          } catch (_) {}
+          localVideoStream = null;
+        }
+        const localVideoEl = document.getElementById('local-video-stream');
+        if (localVideoEl) {
+          localVideoEl.srcObject = null;
+        }
+        document.getElementById('local-video-pip')?.classList.add('hidden');
+      }
+
+      function makePipDraggable() {
+        const pip = document.getElementById('local-video-pip');
+        if (!pip || pip.dataset.draggableBound === 'true') return;
+        pip.dataset.draggableBound = 'true';
+
+        let isDragging = false;
+        let startX = 0, startY = 0;
+        let initialLeft = 0, initialTop = 0;
+
+        pip.addEventListener('dblclick', () => {
+          if (pip.classList.contains('w-28')) {
+            pip.classList.remove('w-28', 'h-40', 'sm:w-36', 'sm:h-48');
+            pip.classList.add('w-40', 'h-56', 'sm:w-52', 'sm:h-72');
+          } else {
+            pip.classList.remove('w-40', 'h-56', 'sm:w-52', 'sm:h-72');
+            pip.classList.add('w-28', 'h-40', 'sm:w-36', 'sm:h-48');
+          }
+        });
+
+        const onStart = (e) => {
+          isDragging = true;
+          const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+          const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+          
+          startX = clientX;
+          startY = clientY;
+          
+          const rect = pip.getBoundingClientRect();
+          const parentRect = pip.parentElement.getBoundingClientRect();
+          
+          initialLeft = rect.left - parentRect.left;
+          initialTop = rect.top - parentRect.top;
+          
+          pip.style.right = 'auto';
+          pip.style.bottom = 'auto';
+          pip.style.left = `${initialLeft}px`;
+          pip.style.top = `${initialTop}px`;
+          pip.style.transition = 'none';
+        };
+
+        const onMove = (e) => {
+          if (!isDragging) return;
+          const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+          const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+          
+          const dx = clientX - startX;
+          const dy = clientY - startY;
+          
+          const parentRect = pip.parentElement.getBoundingClientRect();
+          const pipRect = pip.getBoundingClientRect();
+          
+          let newLeft = initialLeft + dx;
+          let newTop = initialTop + dy;
+          
+          newLeft = Math.max(0, Math.min(newLeft, parentRect.width - pipRect.width));
+          newTop = Math.max(0, Math.min(newTop, parentRect.height - pipRect.height));
+          
+          pip.style.left = `${newLeft}px`;
+          pip.style.top = `${newTop}px`;
+        };
+
+        const onEnd = () => {
+          isDragging = false;
+        };
+
+        pip.addEventListener('mousedown', onStart);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onEnd);
+
+        pip.addEventListener('touchstart', onStart, { passive: true });
+        window.addEventListener('touchmove', onMove, { passive: false });
+        window.addEventListener('touchend', onEnd);
+      }
+
       // Join embedded Jitsi call container
       async function openJitsiFrame(roomId, voiceOnly = false) {
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
-        document.getElementById('jitsi-container').classList.remove('hidden');
-        document.getElementById('webrtc-container').classList.add('hidden');
+        
+        if (voiceOnly) {
+          document.getElementById('jitsi-container').classList.add('hidden');
+          document.getElementById('webrtc-container').classList.remove('hidden');
+          const waitingStatusLabel = document.getElementById('waiting-status-label');
+          if (waitingStatusLabel) waitingStatusLabel.textContent = 'Voice Session Live';
+          stopLocalPreview();
+        } else {
+          document.getElementById('jitsi-container').classList.remove('hidden');
+          document.getElementById('webrtc-container').classList.add('hidden');
+          startLocalPreview();
+        }
         
         // Show our custom control bar and reset states
         const controlBar = document.getElementById('call-control-bar');
@@ -3809,14 +3944,40 @@
           configOverwrite: {
             prejoinPageEnabled: false,
             startWithVideoMuted: voiceOnly,
+            startAudioOnly: voiceOnly,
             startWithAudioMuted: false,
             enableNoisyMicDetection: false,
             disableDeepLinking: true,
+            disableSelfView: true,
             toolbarButtons: [] // Hides native Jitsi toolbar completely
           }
         };
         jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
+        
+        function switchToVideoMode() {
+          const jitsiContainer = document.getElementById('jitsi-container');
+          const webrtcContainer = document.getElementById('webrtc-container');
+          if (jitsiContainer && jitsiContainer.classList.contains('hidden')) {
+            jitsiContainer.classList.remove('hidden');
+          }
+          if (webrtcContainer && !webrtcContainer.classList.contains('hidden')) {
+            webrtcContainer.classList.add('hidden');
+          }
+          const callTypeIcon = document.getElementById('call-type-icon');
+          if (callTypeIcon) callTypeIcon.textContent = 'videocam';
+        }
+
         jitsiApiInstance.addEventListeners({
+          videoConferenceJoined: () => {
+            if (isFilmstripVisible) {
+              try {
+                jitsiApiInstance.executeCommand('toggleFilmStrip');
+              } catch (err) {}
+            }
+          },
+          filmstripDisplayChanged: (e) => {
+            isFilmstripVisible = e.visible;
+          },
           audioMuteStatusChanged: (e) => {
             isMuted = e.muted;
             updateCustomControlButtons();
@@ -3824,10 +3985,31 @@
           videoMuteStatusChanged: (e) => {
             isCameraOff = e.muted;
             updateCustomControlButtons();
+            if (!e.muted) {
+              switchToVideoMode();
+              startLocalPreview();
+            } else {
+              stopLocalPreview();
+            }
+          },
+          videoAvailabilityChanged: (e) => {
+            if (e.available) {
+              switchToVideoMode();
+            }
           },
           screenSharingStatusChanged: (e) => {
             isSharingScreen = e.on;
             updateCustomControlButtons();
+            if (e.on) {
+              switchToVideoMode();
+            }
+            try {
+              if (e.on && !isFilmstripVisible) {
+                jitsiApiInstance.executeCommand('toggleFilmStrip');
+              } else if (!e.on && isFilmstripVisible) {
+                jitsiApiInstance.executeCommand('toggleFilmStrip');
+              }
+            } catch (err) {}
           },
           videoConferenceLeft: () => endCall(),
           readyToClose: () => endCall(),
@@ -3837,6 +4019,7 @@
       }
 
       window.endCall = function() {
+        stopLocalPreview();
         if (window._callTimerInterval) { clearInterval(window._callTimerInterval); window._callTimerInterval = null; }
         const timerEl = document.getElementById('call-timer');
         if (timerEl) timerEl.textContent = '00:00';

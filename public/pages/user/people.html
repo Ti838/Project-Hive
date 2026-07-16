@@ -191,6 +191,10 @@ body{background:var(--bg);color:var(--tx);margin:0}
     if (sel) { unis.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; sel.appendChild(o); }); }
 
     const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['discover','recommended','friends','requests'].includes(tabParam)) {
+      switchTab(tabParam);
+    }
     const uid = params.get('uid');
     if (uid) {
       setTimeout(() => {

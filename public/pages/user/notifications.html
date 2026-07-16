@@ -274,7 +274,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
   function getNotifLink(n) {
     const meta = n.metadata || n.data || {};
     switch(n.type) {
-      case 'friend':  return meta.senderId   ? `/people?uid=${meta.senderId}`    : '/people';
+      case 'friend':  return `/people?tab=requests${meta.senderId ? '&uid=' + meta.senderId : ''}`;
       case 'team':    return meta.teamId     ? `/teams?tid=${meta.teamId}`        : '/teams';
       case 'project': return meta.projectId  ? `/showcase?pid=${meta.projectId}` : '/showcase';
       case 'message': return meta.senderId   ? `/messages?chat=${meta.senderId}` : '/messages';
@@ -321,17 +321,40 @@ body{background:var(--bg);color:var(--tx);margin:0}
   window.handleNotifClick=async function(id, link, el){
     const n=all.find(x=>x._id===id);
     if(n&&!n.read){
-      try{await fetch(API_BASE+`/api/notifications/${id}/read`,{method:'PUT',headers:H});}catch(e){}
+      const oldRead = n.read;
+      // Optimistic update
       n.read=true;
       el.classList.remove('unread');
       el.querySelector('.n-msg')?.classList.remove('fw');
       el.querySelector('.n-dot')?.remove();
-      const ic=document.createElement('span');
-      ic.style.cssText="font-family:'Material Symbols Outlined';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0";
-      ic.textContent='check_circle';
-      el.appendChild(ic);
+      
+      const deleteBtn = el.querySelector('.delete-btn');
+      if (deleteBtn && deleteBtn.previousElementSibling) {
+        deleteBtn.previousElementSibling.outerHTML = '<span style="font-family:\'Material Symbols Outlined\';font-size:16px;color:var(--bd2);margin-top:4px;flex-shrink:0">check_circle</span>';
+      }
       stats();
-      if(currentTab==='unread')render(all.filter(n=>!n.read));
+      if(currentTab==='unread') {
+        const card = document.getElementById(`nc-${id}`);
+        if (card) {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+          card.style.transition = 'all 0.2s ease';
+          setTimeout(() => render(all.filter(n=>!n.read)), 200);
+        } else {
+          render(all.filter(n=>!n.read));
+        }
+      }
+
+      try{
+        const res = await fetch(API_BASE+`/api/notifications/${id}/read`,{method:'PUT',headers:H});
+        if (!res.ok) throw new Error();
+      }catch(e){
+        // Revert on error
+        n.read = oldRead;
+        stats();
+        render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
+        PHToast?.error('Failed to update notification read status');
+      }
     }
     if(link) setTimeout(()=>window.location.href=link, 150);
   };
@@ -347,18 +370,23 @@ body{background:var(--bg);color:var(--tx);margin:0}
       cancelText: 'Cancel',
       danger: false,
       onConfirm: async () => {
+        const oldAll = JSON.parse(JSON.stringify(all));
+        
+        // Optimistic update
+        all.forEach(n=>n.read=true);
+        stats();
+        render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
+        PHToast?.success('All notifications marked as read');
+
         try {
           const res = await fetch(API_BASE+'/api/notifications/read-all',{method:'PUT',headers:H});
-          if (res.ok) {
-            all.forEach(n=>n.read=true);
-            stats();
-            render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
-            PHToast?.success('All notifications marked as read');
-          } else {
-            PHToast?.error('Failed to mark notifications as read');
-          }
+          if (!res.ok) throw new Error();
         } catch(e) {
-          PHToast?.error('An error occurred');
+          // Revert on error
+          all = oldAll;
+          stats();
+          render(currentTab==='all'?all:all.filter(n=>n.type===currentTab));
+          PHToast?.error('Failed to mark notifications as read. Please try again.');
         }
       }
     });
@@ -372,30 +400,35 @@ body{background:var(--bg);color:var(--tx);margin:0}
       cancelText: 'Cancel',
       danger: true,
       onConfirm: async () => {
+        const oldAll = JSON.parse(JSON.stringify(all));
+
+        // Optimistic update
+        all = all.filter(n => n._id !== id);
+        stats();
+
+        // Animate removal
+        const card = document.getElementById(`nc-${id}`);
+        if (card) {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.95)';
+          card.style.transition = 'all 0.2s ease';
+          setTimeout(() => {
+            render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
+          }, 200);
+        } else {
+          render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
+        }
+        PHToast?.success('Notification deleted');
+
         try {
           const res = await fetch(API_BASE+`/api/notifications/${id}`, { method: 'DELETE', headers: H });
-          if (res.ok) {
-            // Remove from local list
-            all = all.filter(n => n._id !== id);
-            stats();
-            // Animate removal
-            const card = document.getElementById(`nc-${id}`);
-            if (card) {
-              card.style.opacity = '0';
-              card.style.transform = 'scale(0.95)';
-              card.style.transition = 'all 0.2s ease';
-              setTimeout(() => {
-                render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
-              }, 200);
-            } else {
-              render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
-            }
-            PHToast?.success('Notification deleted');
-          } else {
-            PHToast?.error('Failed to delete notification');
-          }
+          if (!res.ok) throw new Error();
         } catch(e) {
-          PHToast?.error('An error occurred');
+          // Revert on error
+          all = oldAll;
+          stats();
+          render(currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab));
+          PHToast?.error('Failed to delete notification. Please try again.');
         }
       }
     });
@@ -420,34 +453,26 @@ body{background:var(--bg);color:var(--tx);margin:0}
     stats();render(all);
   }).catch(()=>{ all=[];stats();render(all); });
 
-  // â”€â”€â”€ Socket.io: real-time notification:new â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  try {
-    const socket = io(API_BASE, { auth:{token:TK}, transports:['websocket','polling'] });
-    socket.on('notification:new', (notif) => {
-      if(!notif) return;
-      // Normalize: Supabase returns `id` (UUID), not `_id` (MongoDB)
-      // Also normalize snake_case DB fields to camelCase for the render fn
-      const normalized = {
-        _id:       notif.id || notif._id || Date.now().toString(),
-        id:        notif.id || notif._id,
-        type:      notif.type || 'default',
-        title:     notif.title || 'Notification',
-        message:   notif.message || '',
-        read:      notif.read ?? notif.is_read ?? false,
-        createdAt: notif.createdAt || notif.created_at || new Date().toISOString(),
-        metadata:  notif.metadata || notif.data || {},
-      };
-      // Dedup by id
-      if(all.find(n=>n._id===normalized._id || n.id===normalized.id)) return;
-      all.unshift(normalized);
-      stats();
-      const list = currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab);
-      render(list);
-      PHToast?.success('\uD83D\uDD14 ' + (normalized.message||'New notification').substring(0,60));
-    });
-  } catch(e) {
-    console.warn('[Notifications] Socket error:', e.message);
-  }
+  // ─── Global Notification Event Listener ───
+  window.addEventListener('app:notification-update', (e) => {
+    const notif = e.detail;
+    if(!notif) return;
+    const normalized = {
+      _id:       notif.id || notif._id || Date.now().toString(),
+      id:        notif.id || notif._id,
+      type:      notif.type || 'default',
+      title:     notif.title || 'Notification',
+      message:   notif.message || '',
+      read:      notif.read ?? notif.is_read ?? false,
+      createdAt: notif.createdAt || notif.created_at || new Date().toISOString(),
+      metadata:  notif.metadata || notif.data || {},
+    };
+    if(all.find(n=>n._id===normalized._id || n.id===normalized.id)) return;
+    all.unshift(normalized);
+    stats();
+    const list = currentTab==='all'?all:currentTab==='unread'?all.filter(n=>!n.read):all.filter(n=>n.type===currentTab);
+    render(list);
+  });
 })();
 </script>
 <script src="/assets/js/core/info-modal.js"></script></body></html>

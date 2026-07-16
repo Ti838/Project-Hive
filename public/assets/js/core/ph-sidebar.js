@@ -823,6 +823,9 @@ const PHSidebar = (() => {
           notifBadge.textContent = cur + 1;
           notifBadge.classList.remove('hidden');
         }
+
+        // Dispatch a global event for decoupled UI component updates
+        window.dispatchEvent(new CustomEvent('app:notification-update', { detail: notif }));
       });
 
       socket.on('call:incoming', (data) => {
