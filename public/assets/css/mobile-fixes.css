@@ -465,6 +465,11 @@
     justify-content: center;
   }
 
+  .chip {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
   /* Quick Actions Grid Override */
   .qa-grid {
     grid-template-columns: repeat(2, 1fr) !important;
