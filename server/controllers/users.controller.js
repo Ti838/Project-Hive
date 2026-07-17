@@ -57,7 +57,7 @@ export async function getCurrentUser(req, res, next) {
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });
 
-    // Fetch live counts
+    // Fetch live counts — each query catches independently so one bad table never crashes the profile
     const [
       { count: friendCount },
       { count: followerCount },
@@ -66,12 +66,12 @@ export async function getCurrentUser(req, res, next) {
       { count: postCount },
       { data: teamMemberRows }
     ] = await Promise.all([
-      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', userId).catch(() => ({ count: 0 })),
       supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', userId).catch(() => ({ count: 0 })),
       supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
-      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', userId),
-      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', userId)
+      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', userId).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', userId).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', userId).catch(() => ({ data: [] }))
     ]);
 
     const joinedTeams = (teamMemberRows || []).map(r => r.team).filter(Boolean);
@@ -133,7 +133,7 @@ export async function getUserProfile(req, res, next) {
       friendshipStatus = await computeRelationshipState(requesterId, id);
     }
 
-    // Fetch live counts
+    // Fetch live counts — each query catches independently so one bad table never crashes the profile
     const [
       { count: friendCount },
       { count: followerCount },
@@ -142,12 +142,12 @@ export async function getUserProfile(req, res, next) {
       { count: postCount },
       { data: teamMemberRows }
     ] = await Promise.all([
-      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', id),
+      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', id).catch(() => ({ count: 0 })),
       supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', id).catch(() => ({ count: 0 })),
       supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', id).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', id),
-      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id),
-      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', id)
+      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', id).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', id).catch(() => ({ data: [] }))
     ]);
 
     const joinedTeams = (teamMemberRows || []).map(r => r.team).filter(Boolean);
