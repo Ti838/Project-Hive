@@ -393,19 +393,19 @@ export async function globalSearch(req, res, next) {
         .eq('is_public', true)
         .eq('is_banned', false)
         .or(`first_name.ilike.%${sanitizeSearch(queryStr)}%,last_name.ilike.%${sanitizeSearch(queryStr)}%,university.ilike.%${sanitizeSearch(queryStr)}%`)
-        .limit(5),
+        .limit(5).catch(() => ({ data: [] })),
       supabaseAdmin.from('teams')
         .select('id, name, category, description')
         .or(`name.ilike.%${sanitizeSearch(queryStr)}%,category.ilike.%${sanitizeSearch(queryStr)}%,description.ilike.%${sanitizeSearch(queryStr)}%`)
-        .limit(5),
+        .limit(5).catch(() => ({ data: [] })),
       supabaseAdmin.from('projects')
         .select('id, title, category, description')
         .or(`title.ilike.%${sanitizeSearch(queryStr)}%,category.ilike.%${sanitizeSearch(queryStr)}%,description.ilike.%${sanitizeSearch(queryStr)}%`)
-        .limit(5),
+        .limit(5).catch(() => ({ data: [] })),
       supabaseAdmin.from('posts')
         .select('id, content, post_type')
         .ilike('content', `%${sanitizeSearch(queryStr)}%`)
-        .limit(5)
+        .limit(5).catch(() => ({ data: [] }))
     ]);
 
     res.json({

@@ -78,9 +78,9 @@ export async function getFeed(req, res, next) {
 
     if (postIds.length > 0) {
       const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
-        supabaseAdmin.from('post_reactions').select('post_id, type, user_id').in('post_id', postIds),
-        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds),
-        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId),
+        supabaseAdmin.from('post_reactions').select('post_id, type, user_id').in('post_id', postIds).catch(() => ({ data: [] })),
+        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds).catch(() => ({ data: [] })),
+        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId).catch(() => ({ data: [] })),
       ]);
 
       // Group reactions by post + type
@@ -345,9 +345,9 @@ export async function getPostById(req, res, next) {
 
     // Fetch reactions & comments count & my reaction
     const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
-      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId),
-      supabaseAdmin.from('post_comments').select('id').eq('post_id', postId),
-      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).eq('user_id', userId),
+      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).catch(() => ({ data: [] })),
+      supabaseAdmin.from('post_comments').select('id').eq('post_id', postId).catch(() => ({ data: [] })),
+      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).eq('user_id', userId).catch(() => ({ data: [] })),
     ]);
 
     const reactionsMap = {};
@@ -502,8 +502,8 @@ export async function getUserPosts(req, res, next) {
 
     if (postIds.length > 0) {
       const [{ data: reactions }, { data: comments }] = await Promise.all([
-        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds),
-        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds),
+        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).catch(() => ({ data: [] })),
+        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds).catch(() => ({ data: [] })),
       ]);
       (reactions || []).forEach(r => {
         if (!reactionsMap[r.post_id]) reactionsMap[r.post_id] = {};
@@ -631,9 +631,9 @@ export async function getSavedPosts(req, res, next) {
 
     if (postIds.length > 0) {
       const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
-        supabaseAdmin.from('post_reactions').select('post_id, type, user_id').in('post_id', postIds),
-        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds),
-        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId),
+        supabaseAdmin.from('post_reactions').select('post_id, type, user_id').in('post_id', postIds).catch(() => ({ data: [] })),
+        supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds).catch(() => ({ data: [] })),
+        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId).catch(() => ({ data: [] })),
       ]);
       (reactions || []).forEach(r => {
         if (!reactionsMap[r.post_id]) reactionsMap[r.post_id] = {};

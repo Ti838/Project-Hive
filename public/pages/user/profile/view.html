@@ -217,7 +217,11 @@
         renderTeams(td.teams || td || []);
       }
 
-    } catch(e) { console.error(e); PHToast?.error('Could not load profile'); }
+    } catch(e) {
+      console.error('[Profile] Load error:', e);
+      const isNetwork = !navigator.onLine || e.message?.includes('fetch');
+      PHToast?.error(isNetwork ? 'Network error — please check your connection' : 'Could not load profile');
+    }
   }
 
   window.scrollToSection = function(id) {
