@@ -794,30 +794,37 @@ setTimeout(()=>{ fetch('https://projecthive-backend.onrender.com/health',{method
 
   const stDefaults = { toggleActions: 'play none none none', once: true };
 
-  // Set initial hidden state for hero elements to prevent layout flash (FOUC)
+  // Set initial hidden state for hero elements and navbar to prevent layout flash (FOUC)
+  gsap.set('.ln-nav', { y: -80, opacity: 0 });
   gsap.set('.ln-hero-eyebrow, .ln-hero h1, .ln-hero-desc, .ln-hero-actions, .ln-hero-stats, .ln-hero-visual', { opacity: 0 });
 
   function startHeroAnimations() {
-    gsap.fromTo('.ln-hero-eyebrow', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.1 });
-    gsap.fromTo('.ln-hero h1', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, delay: 0.25 });
-    gsap.fromTo('.ln-hero-desc', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.4 });
-    gsap.fromTo('.ln-hero-actions', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.55 });
-    gsap.fromTo('.ln-hero-stats', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.7 });
-    gsap.fromTo('.ln-hero-visual', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1.0, delay: 0.3, ease: 'power3.out' });
+    // Animate navbar sliding down
+    gsap.to('.ln-nav', { y: 0, opacity: 1, duration: 0.8, ease: 'power2.out' });
+    
+    // Animate hero content elements rising up
+    gsap.fromTo('.ln-hero-eyebrow', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.1 });
+    gsap.fromTo('.ln-hero h1', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.2 });
+    gsap.fromTo('.ln-hero-desc', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.35 });
+    gsap.fromTo('.ln-hero-actions', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.6, delay: 0.45 });
+    gsap.fromTo('.ln-hero-stats', { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.6, delay: 0.55 });
+    gsap.fromTo('.ln-hero-visual', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.9, delay: 0.25, ease: 'power3.out' });
   }
 
   // Handle preloader fadeout & start hero animations
   window.addEventListener('load', function() {
     const loader = document.getElementById('preloader');
     if (loader) {
+      // Start hero animations immediately when preloader starts fading out
+      startHeroAnimations();
+      
       gsap.to(loader, {
         opacity: 0,
-        duration: 0.6,
+        duration: 0.5,
         ease: 'power2.out',
         onComplete: () => {
           loader.style.display = 'none';
           loader.remove();
-          startHeroAnimations();
         }
       });
     } else {
