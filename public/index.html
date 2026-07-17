@@ -19,6 +19,90 @@
 <script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['Outfit','sans-serif']}}}}</script>
 <link rel="stylesheet" href="./assets/css/landing.css">
 
+<style>
+/* Premium Preloader Styles */
+#preloader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #fafafa;
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s;
+}
+html.dark #preloader {
+  background: #0a0a0f;
+}
+.preloader-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+.preloader-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'Outfit', -apple-system, sans-serif;
+  font-weight: 900;
+  font-size: 28px;
+  color: #111;
+  letter-spacing: -0.5px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: preloaderFadeIn 0.5s forwards 0.2s ease-out;
+}
+html.dark .preloader-logo {
+  color: #ececec;
+}
+.preloader-logo img {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+.preloader-logo .dot {
+  color: #6366f1;
+}
+html.dark .preloader-logo .dot {
+  color: #818cf8;
+}
+.preloader-bar {
+  width: 160px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+  opacity: 0;
+  animation: preloaderFadeIn 0.5s forwards 0.4s ease-out;
+}
+html.dark .preloader-bar {
+  background: rgba(255, 255, 255, 0.05);
+}
+.preloader-progress {
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #a78bfa);
+  border-radius: 3px;
+  position: absolute;
+  left: -40%;
+  animation: preloaderShim 1.4s infinite ease-in-out;
+}
+@keyframes preloaderFadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes preloaderShim {
+  0% { left: -40%; }
+  50% { left: 100%; width: 60%; }
+  100% { left: 100%; width: 0%; }
+}
+</style>
+
 <script>
 (function(){
   const t = localStorage.getItem('theme');
@@ -29,6 +113,19 @@
 </script>
 </head>
 <body>
+
+<!-- Premium Preloader Screen -->
+<div id="preloader">
+  <div class="preloader-content">
+    <div class="preloader-logo">
+      <img src="/favicon.png?v=2" alt="ProjectHive">
+      <span>ProjectHive<span class="dot">.</span></span>
+    </div>
+    <div class="preloader-bar">
+      <div class="preloader-progress"></div>
+    </div>
+  </div>
+</div>
 
 <!-- Full-page 3D canvas -->
 <canvas id="hero-3d" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none"></canvas>
@@ -697,13 +794,36 @@ setTimeout(()=>{ fetch('https://projecthive-backend.onrender.com/health',{method
 
   const stDefaults = { toggleActions: 'play none none none', once: true };
 
-  // Hero content stagger entrance
-  gsap.from('.ln-hero-eyebrow', { opacity: 0, y: 30, duration: 0.8, delay: 0.2 });
-  gsap.from('.ln-hero h1', { opacity: 0, y: 40, duration: 0.9, delay: 0.4 });
-  gsap.from('.ln-hero-desc', { opacity: 0, y: 30, duration: 0.8, delay: 0.6 });
-  gsap.from('.ln-hero-actions', { opacity: 0, y: 20, duration: 0.7, delay: 0.8 });
-  gsap.from('.ln-hero-stats', { opacity: 0, y: 20, duration: 0.7, delay: 1.0 });
-  gsap.from('.ln-hero-visual', { opacity: 0, y: 40, duration: 1.0, delay: 0.5, ease: 'power3.out' });
+  // Set initial hidden state for hero elements to prevent layout flash (FOUC)
+  gsap.set('.ln-hero-eyebrow, .ln-hero h1, .ln-hero-desc, .ln-hero-actions, .ln-hero-stats, .ln-hero-visual', { opacity: 0 });
+
+  function startHeroAnimations() {
+    gsap.fromTo('.ln-hero-eyebrow', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.1 });
+    gsap.fromTo('.ln-hero h1', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, delay: 0.25 });
+    gsap.fromTo('.ln-hero-desc', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, delay: 0.4 });
+    gsap.fromTo('.ln-hero-actions', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.55 });
+    gsap.fromTo('.ln-hero-stats', { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, delay: 0.7 });
+    gsap.fromTo('.ln-hero-visual', { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1.0, delay: 0.3, ease: 'power3.out' });
+  }
+
+  // Handle preloader fadeout & start hero animations
+  window.addEventListener('load', function() {
+    const loader = document.getElementById('preloader');
+    if (loader) {
+      gsap.to(loader, {
+        opacity: 0,
+        duration: 0.6,
+        ease: 'power2.out',
+        onComplete: () => {
+          loader.style.display = 'none';
+          loader.remove();
+          startHeroAnimations();
+        }
+      });
+    } else {
+      startHeroAnimations();
+    }
+  });
 
   // Features section
   gsap.from('.ln-section-label', {
@@ -738,6 +858,12 @@ setTimeout(()=>{ fetch('https://projecthive-backend.onrender.com/health',{method
         gsap.to(el, { opacity: 1, y: 0, scale: 1, duration: 0.5 });
       }
     });
+    // Safety check for preloader removal
+    const loader = document.getElementById('preloader');
+    if (loader) {
+      loader.remove();
+      startHeroAnimations();
+    }
   }, 4000);
 })();
 </script>
