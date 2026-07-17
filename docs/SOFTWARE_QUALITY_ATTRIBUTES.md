@@ -43,15 +43,15 @@ graph TD
 
 ## 3. Core Software Quality Attribute Breakdowns
 
-### Security (নিরাপত্তা)
+### Security
 *   **Google OAuth 2.0 & Custom JWT:** Follows the international standard for federated identity (OAuth 2.0). If a user logs in via Google, no password details are stored locally.
 *   **Bcrypt Hashing:** Passwords for manual accounts are hashed using bcrypt with a high salt round, preventing rainbow table attacks.
 *   **Email Verification Flow:** Accounts require verification state synchronization before accessing active feeds, protecting the platform from spam bots.
 
-### Usability & Responsiveness (ব্যবহারযোগ্যতা)
+### Usability & Responsiveness
 *   **Mobile-First Design System:** Through `mobile-fixes.css`, Project-Hive implements standard touch-screen UX patterns, such as 44px minimum tap targets (recommended by Apple & Google UX Guidelines) and horizontal scrolling tabs.
 *   **Optimistic UI Syncing:** Changes (like notifications or call state updates) render instantly on the client screen and update in the background, minimizing perceived latency.
 
-### Scalability (পরিমাপযোগ্যতা)
+### Scalability
 *   **Stateless REST API:** The server is stateless, meaning you can spin up multiple instances of the Node.js server behind a Load Balancer (horizontal scaling) to support millions of concurrent users.
 *   **Decoupled Real-Time Signaling:** Calling and messaging use event-driven Socket.io, separating heavy database REST operations from fast real-time event distribution.

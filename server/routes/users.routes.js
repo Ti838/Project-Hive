@@ -9,6 +9,9 @@ router.get('/me',           authMiddleware,         usersController.getCurrentUs
 router.get('/search',       optionalAuthMiddleware, usersController.searchUsers);
 router.get('/global-search',authMiddleware,         usersController.globalSearch);
 router.get('/:id',          optionalAuthMiddleware, usersController.getUserProfile);
+router.get('/:id/friends',  authMiddleware,         usersController.getUserFriends);
+router.get('/:id/followers',authMiddleware,         usersController.getUserFollowers);
+router.get('/:id/following',authMiddleware,         usersController.getUserFollowing);
 
 router.put('/me',           authMiddleware, usersController.updateProfile);
 router.patch('/me',         authMiddleware, usersController.updateProfile);

@@ -283,4 +283,4 @@ Call modals use Tailwind CSS and can be customized by editing:
 
 **Built with ❤️ for ProjectHive**
 
-আপনি এখন real audio এবং video call করতে পারবেন! 🎉
+You can now make real audio and video calls! 🎉

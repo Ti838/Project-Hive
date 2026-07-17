@@ -88,7 +88,7 @@ export async function handleLeaveRoom(socket) {
 export async function handleSendMessage(socket, io, data) {
   try {
     const roomId = data.roomId || data.teamId;
-    const { content, reply_to, reply_to_content, reply_to_sender } = data;
+    const { content, type, reply_to, reply_to_content, reply_to_sender } = data;
     if (!content || !roomId) return socket.emit('error', { message: 'Missing content or roomId' });
 
     // Only include optional columns when they have actual values
@@ -97,6 +97,7 @@ export async function handleSendMessage(socket, io, data) {
       room_id: roomId,
       sender_id: socket.userId,
       content,
+      type: type || 'text',
       read_by: [socket.userId],
     };
     if (reply_to)         insertData.reply_to         = reply_to;
@@ -118,6 +119,7 @@ export async function handleSendMessage(socket, io, data) {
     const payload = {
       id: message.id,
       content: message.content,
+      type: message.type || 'text',
       sender: message.sender,
       roomId: message.room_id,
       createdAt: message.created_at,

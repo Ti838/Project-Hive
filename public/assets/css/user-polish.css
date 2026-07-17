@@ -9,7 +9,7 @@
 html {
   width: 100%;
   max-width: 100%;
-  overflow-x: visible !important;
+  overflow-x: hidden !important;
 }
 
 body {

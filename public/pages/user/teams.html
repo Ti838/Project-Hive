@@ -1,523 +1,729 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Find Teams — ProjectHive</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Groups Hub — ProjectHive</title>
 <script>(function(){const t=localStorage.getItem('theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark');}})()</script>
 
 <link rel="icon" href="/favicon.png?v=2">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/ph-design.css">
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=4">
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/ph-sidebar.js?v=5"></script>
 <script src="/assets/js/core/auth.js"></script>
+<script src="/assets/js/core/socket.js"></script>
 
+<style>
+  /* Base Overrides & Premium Style Variables */
+  :root {
+    --ph-purple-gradient: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    --ph-card-rgb: 255, 255, 255;
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(226, 232, 240, 0.8);
+    --sh-premium: 0 8px 30px rgba(99, 102, 241, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
+  }
+  html.dark {
+    --ph-card-rgb: 18, 19, 29;
+    --glass-bg: rgba(18, 19, 29, 0.6);
+    --glass-border: rgba(36, 37, 56, 0.7);
+    --sh-premium: 0 8px 30px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(255, 255, 255, 0.01);
+  }
+
+  .ph-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    padding-bottom: 0 !important;
+  }
+
+  /* Segmented Control - Modern Glassmorphism Switcher */
+  .ph-segmented-control {
+    display: inline-flex;
+    background: var(--sf2);
+    border: 1px solid var(--bd);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .ph-segmented-btn {
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--sub);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ph-segmented-btn.active {
+    background: var(--ph-purple-gradient);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+  }
+
+  /* Topbar override */
+  .groups-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    height: 64px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 10;
+    flex-shrink: 0;
+  }
+
+  /* Core Layout Grid */
+  .groups-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Discover layout - Left list, Right detail */
+  .discover-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .discover-list-col {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    height: 100%;
+  }
+
+  .discover-detail-col {
+    width: 420px;
+    border-left: 1px solid var(--bd);
+    background: var(--sf);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Grid details */
+  .groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 16px;
+  }
+
+  /* Card styling with subtle hover micro-animations */
+  .group-card {
+    border-radius: 20px;
+    border: 1px solid var(--bd);
+    overflow: hidden;
+    background: var(--sf);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--sh-premium);
+    display: flex;
+    flex-direction: column;
+  }
+  .group-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--ac);
+    box-shadow: 0 12px 28px rgba(99, 102, 241, 0.1), var(--sh-premium);
+  }
+
+  .group-banner {
+    height: 100px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .group-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    border: 3px solid var(--sf);
+    transform: translateY(20px);
+  }
+
+  .group-card-body {
+    padding: 24px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .group-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 12px 0;
+  }
+
+  .group-tag-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--sf2);
+    border: 1px solid var(--bd);
+    color: var(--sub);
+  }
+
+  /* Workspace Layout (Slack/Discord Style) */
+  .workspace-layout {
+    display: none; /* Toggled via JS */
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .workspace-sidebar {
+    width: 260px;
+    border-right: 1px solid var(--bd);
+    background: var(--sf2);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    flex-shrink: 0;
+  }
+
+  .workspace-channels {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .workspace-channel-btn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--sub);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    text-align: left;
+  }
+
+  .workspace-channel-btn:hover {
+    background: var(--sf);
+    color: var(--tx);
+  }
+
+  .workspace-channel-btn.active {
+    background: var(--ac-light);
+    color: var(--ac);
+  }
+
+  .workspace-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--sf);
+    overflow: hidden;
+  }
+
+  .workspace-header {
+    height: 60px;
+    border-bottom: 1px solid var(--bd);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--sf);
+    flex-shrink: 0;
+  }
+
+  .workspace-content {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Dynamic Tab Views in Workspace */
+  .workspace-tab-view {
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .workspace-tab-view.active {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Chat System inside Workspace */
+  .chat-view {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .chat-messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .chat-input-area {
+    padding: 16px 24px;
+    border-top: 1px solid var(--bd);
+    background: var(--sf);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .chat-input-wrapper {
+    flex: 1;
+    position: relative;
+  }
+
+  .chat-input {
+    width: 100%;
+    border-radius: 24px !important;
+    padding: 10px 48px 10px 16px !important;
+    border: 1.5px solid var(--bd) !important;
+    background: var(--sf2) !important;
+    font-size: 14px;
+  }
+
+  /* Kanban Task Board styling */
+  .task-board {
+    display: flex;
+    gap: 20px;
+    padding: 24px;
+    overflow-x: auto;
+    height: 100%;
+    align-items: flex-start;
+  }
+
+  .task-column {
+    width: 320px;
+    background: var(--sf2);
+    border-radius: 16px;
+    border: 1px solid var(--bd);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    flex-shrink: 0;
+  }
+
+  .task-column-header {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--bd);
+  }
+
+  .task-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 100px;
+  }
+
+  .task-card {
+    background: var(--sf);
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid var(--bd);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    cursor: grab;
+    transition: all 0.2s ease;
+  }
+  .task-card:hover {
+    border-color: var(--ac);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+
+  /* Live Poll Widget styling */
+  .poll-card {
+    background: var(--sf2);
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .poll-option-row {
+    margin-top: 10px;
+    cursor: pointer;
+  }
+  .poll-option-bar-wrapper {
+    position: relative;
+    height: 38px;
+    background: var(--sf);
+    border: 1px solid var(--bd);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+  }
+  .poll-option-bar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--ac-light);
+    opacity: 0.5;
+    transition: width 0.4s ease;
+  }
+  .poll-option-text {
+    position: relative;
+    z-index: 2;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* Responsive Rules */
+  @media(max-width: 992px) {
+    .discover-detail-col {
+      display: none;
+    }
+  }
+
+  @media(max-width: 768px) {
+    .groups-topbar {
+      flex-direction: column;
+      height: auto;
+      gap: 12px;
+      padding: 12px 16px;
+    }
+    .discover-list-col {
+      padding: 16px;
+    }
+    .workspace-sidebar {
+      width: 60px;
+    }
+    .workspace-channel-btn span:not(.ms) {
+      display: none;
+    }
+    .task-board {
+      flex-direction: column;
+      overflow-y: auto;
+    }
+    .task-column {
+      width: 100%;
+    }
+  }
+</style>
 </head>
 <body class="ph-page-bg" data-no-float-theme="1">
 <div id="ph-sidebar"></div>
 <div class="ph-page">
 
-<!-- Topbar -->
-<div class="ph-topbar teams-topbar">
-  <div class="teams-topbar-left">
-    <span class="ms" style="color:var(--ac);flex-shrink:0">diversity_3</span>
-    <h1>Find Teams</h1>
-  </div>
-  <div class="teams-topbar-search">
-    <span class="ms">search</span>
-    <input id="search" type="text" placeholder="Search teams..." oninput="window.search(this.value)" class="ph-input">
-  </div>
-  <a href="/teams/create" class="ph-btn teams-create-btn">
-    <span class="ms" style="font-size:18px">add</span>
-    <span class="hide-xs">Create Team</span>
-  </a>
-</div>
-<style>
-  /* Modern Topbar Styling */
-  .teams-topbar {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    gap: 16px !important;
-    height: 64px !important;
-    padding: 0 24px !important;
-    background: rgba(var(--ph-card-rgb, 255, 255, 255), 0.85) !important;
-    backdrop-filter: blur(12px) !important;
-    border-bottom: 1px solid var(--ph-border) !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 40 !important;
-  }
-  
-  .teams-topbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  
-  .teams-topbar-left h1 {
-    font-size: 18px;
-    font-weight: 800;
-    margin: 0;
-    color: var(--tx);
-  }
-  
-  .teams-topbar-search {
-    position: relative;
-    flex: 1;
-    max-width: 260px;
-    min-width: 140px;
-    transition: all 0.25s ease;
-  }
-  
-  .teams-topbar-search .ms {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--sub);
-    font-size: 18px;
-    pointer-events: none;
-  }
-  
-  .teams-topbar-search input {
-    padding-left: 40px !important;
-    width: 100% !important;
-    height: 40px !important;
-    border-radius: 999px !important;
-    font-size: 14px !important;
-    background: var(--sf) !important;
-    border: 1.5px solid var(--bd) !important;
-    transition: all 0.2s ease !important;
-  }
-  
-  .teams-topbar-search input:focus {
-    border-color: var(--ac) !important;
-    background: var(--ph-card) !important;
-    box-shadow: 0 0 0 3px rgba(var(--ac-rgb, 99, 102, 241), 0.15) !important;
-  }
-  
-  .teams-create-btn {
-    height: 40px !important;
-    border-radius: 999px !important;
-    text-decoration: none !important;
-    flex-shrink: 0 !important;
-    padding: 0 16px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    font-size: 14px !important;
-    font-weight: 700 !important;
-    transition: all 0.2s ease !important;
-  }
-
-  /* Stats cards style */
-  .teams-stats .ph-card {
-    border-radius: 16px;
-    border: 1px solid var(--ph-border);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .teams-stats .ph-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--sh-lg);
-  }
-  
-  /* Team Card Actions Touch targets */
-  .card-action-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1.5px solid var(--bd);
-    margin-top: 12px;
-  }
-  
-  .card-action-btns {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  
-  .card-action-btns button,
-  .card-action-row .ph-btn {
-    min-height: 38px !important;
-    min-width: 44px !important;
-    padding: 6px 14px !important;
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    border-radius: 10px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    transition: all 0.2s ease !important;
-    cursor: pointer;
-  }
-
-  /* Modal Accessibility Improvements */
-  .modal-actions-container button {
-    min-height: 40px !important;
-    min-width: 44px !important;
-    padding: 8px 16px !important;
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    border-radius: 10px !important;
-  }
-
-  /* Responsive Design Rules */
-  @media (max-width: 768px) {
-    /* Hide the auto-injected global search button on teams page */
-    .ph-mobile-search-btn {
-      display: none !important;
-    }
-    
-    .teams-topbar {
-      flex-wrap: wrap !important;
-      height: auto !important;
-      min-height: auto !important;
-      padding: 12px 16px !important;
-      gap: 12px !important;
-    }
-    
-    .teams-topbar-left {
-      order: 1 !important;
-    }
-    
-    /* Ensure the hamburger icon injected by script stays on line 1 left */
-    .teams-topbar > button:first-child,
-    .teams-topbar > .ph-hamburger-btn {
-      order: 1 !important;
-      margin-right: -4px !important;
-    }
-    
-    .teams-create-btn {
-      order: 2 !important;
-      margin-left: auto !important;
-      padding: 0 12px !important;
-      height: 38px !important;
-    }
-    
-    .teams-create-btn .hide-xs {
-      display: none !important; /* Hide label, only show plus icon */
-    }
-    
-    .teams-topbar-search {
-      order: 3 !important;
-      width: 100% !important;
-      max-width: 100% !important;
-      flex: none !important;
-    }
-    
-    .teams-topbar-search input {
-      height: 42px !important;
-    }
-    
-    /* Stats padding & margins */
-    .teams-stats {
-      margin-bottom: 24px !important;
-      gap: 12px !important;
-    }
-    .teams-stats .ph-card {
-      padding: 14px 16px !important;
-    }
-    
-    /* Grid adjustments */
-    .teams-grid {
-      grid-template-columns: 1fr !important;
-      gap: 16px !important;
-    }
-
-    /* Modal content scrolling optimization */
-    #td-content {
-      padding: 16px 20px !important;
-      gap: 16px !important;
-    }
-  }
-
-  /* Truncation utility */
-  .text-truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-</style>
-
-
-<main style="max-width:1100px;margin:0 auto;padding:32px 24px">
-
-  <!-- Stats row -->
-  <div class="grid teams-stats" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px">
-
-    <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
-      <div style="width:48px;height:48px;border-radius:14px;background:var(--ac-light);color:var(--ac);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">diversity_3</span></div>
-      <div><div class="ph-label" style="margin:0 0 2px">Total Teams</div><div style="font-size:26px;font-weight:800" id="st-total">—</div></div>
+  <!-- Topbar -->
+  <div class="groups-topbar">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="ms" style="color:var(--ac);font-size:26px">diversity_3</span>
+      <h1 style="font-size:18px;font-weight:800;margin:0;color:var(--tx)">Groups Hub</h1>
     </div>
-    <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
-      <div style="width:48px;height:48px;border-radius:14px;background:rgba(16,185,129,.12);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">how_to_reg</span></div>
-      <div><div class="ph-label" style="margin:0 0 2px">My Teams</div><div style="font-size:26px;font-weight:800" id="st-mine">—</div></div>
+    
+    <div class="ph-segmented-control" id="group-type-control">
+      <button class="ph-segmented-btn active" onclick="switchGroupType('community')">
+        <span class="ms">diversity_1</span>
+        <span>Communities</span>
+      </button>
+      <button class="ph-segmented-btn" onclick="switchGroupType('team')">
+        <span class="ms">hub</span>
+        <span>Team Hub</span>
+      </button>
     </div>
-    <div class="ph-card" style="padding:20px;display:flex;align-items:center;gap:14px">
-      <div style="width:48px;height:48px;border-radius:14px;background:rgba(139,92,246,.12);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0"><span class="ms">group_add</span></div>
-      <div><div class="ph-label" style="margin:0 0 2px">Open to Join</div><div style="font-size:26px;font-weight:800" id="st-open">—</div></div>
+
+    <div style="display:flex;align-items:center;gap:10px">
+      <a href="/teams/create" class="ph-btn" style="border-radius:999px;height:38px;padding:0 16px;display:flex;align-items:center;gap:6px">
+        <span class="ms" style="font-size:18px">add</span>
+        <span>Create</span>
+      </a>
     </div>
   </div>
 
-  <!-- Grid -->
-  <h2 style="font-size:16px;font-weight:800;margin:0 0 16px">Discover Teams</h2>
-  <div id="grid" class="teams-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px">
-    <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)">
-      <span class="ms" style="font-size:48px;display:block;margin-bottom:8px;color:var(--ac)">groups</span>Loading teamsâ€¦
-    </div>
-  </div>
-</main>
-</div>
+  <!-- Main Canvas container -->
+  <div class="groups-container">
 
-<script>
-(function(){
-  const TK=localStorage.getItem('access_token');
-  if(!TK){location.href='/login';return;}
-  let myId='';
-  try{
-    const p=JSON.parse(atob(TK.split('.')[1]));
-    if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='/login';return;}
-    myId=p.sub||p.id||p.userId||'';
-    window._myId=myId;
-  }catch(e){location.href='/login';return;}
-  PHSidebar.init('teams','../../');
-
-  const H={Authorization:'Bearer '+TK,'Content-Type':'application/json'};
-  const API_BASE=(location.hostname==='localhost'||location.hostname==='127.0.0.1')
-    ? (location.port === '3000' ? 'http://localhost:5000' : '')
-    : 'https://projecthive-backend.onrender.com';
-  const COLS=['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
-  function col(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
-  function ini(s){return(s||'T').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'T';}
-  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
-
-  let teams=[],myIds=new Set(),myTeamRoles=new Map();
-  let pendingRequestIds = new Set();
-  try {
-    const cached = localStorage.getItem('ph-pending-request-ids');
-    if (cached) pendingRequestIds = new Set(JSON.parse(cached));
-  } catch(e) {}
-
-  window.teams = teams;   // expose for edit modal
-  window.myIds = myIds;   // expose for details modal
-  window.myTeamRoles = myTeamRoles;
-
-
-  function render(list){
-    const g=document.getElementById('grid');
-    if(!list.length){g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block;margin-bottom:12px">group_off</span>No teams found.<br><a href="/teams/create" style="color:var(--ac);text-decoration:underline;font-weight:600">Create the first one!</a></div>`;return;}
-    g.innerHTML=list.map(t=>{
-      const tid=t._id||t.id;
-      const name=t.name||'Team';const c=col(name);const isMine=myIds.has(tid);
-      const members=t.members?.length||t.memberCount||0;
-      const tags=(t.tags||t.skills||[]).slice(0,3);const isOpen=t.isOpen!==false;
-      const isLeader=myTeamRoles.get(tid)==='leader';
-      return `<div id="team-card-${tid}" class="team-card ph-card" style="overflow:hidden;cursor:pointer;transition:transform .2s" onclick="openTeamDetailsModal('${tid}',event)" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-        <!-- Banner -->
-        <div style="height:80px;background:linear-gradient(135deg,${c}30,${c}55);position:relative;display:flex;align-items:center;justify-content:center">
-          <div style="width:52px;height:52px;border-radius:14px;background:${c};color:#fff;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px ${c}60">${ini(name)}</div>
-          ${isOpen?`<span style="position:absolute;top:10px;right:12px;background:var(--green);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">Open</span>`:`<span style="position:absolute;top:10px;right:12px;background:var(--sub);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px">Closed</span>`}
+    <!-- 1. DISCOVER VIEW SCREEN -->
+    <div class="discover-layout" id="screen-discover">
+      
+      <!-- Cards list Column -->
+      <div class="discover-list-col">
+        <!-- Search and filters bar -->
+        <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap">
+          <div style="position:relative;flex:1;min-width:240px">
+            <span class="ms" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--sub)">search</span>
+            <input type="text" id="search-input" placeholder="Search by name, tags, or description..." class="ph-input" style="padding-left:44px !important;border-radius:999px" oninput="triggerSearch()">
+          </div>
+          <select id="category-filter" class="ph-input" style="width:180px;border-radius:999px" onchange="triggerSearch()">
+            <option value="">All Categories</option>
+          </select>
         </div>
-        <!-- Body -->
-        <div style="padding:18px">
-          <h3 style="font-size:15px;font-weight:800;margin:0 0 6px;color:var(--tx)">${esc(name)}</h3>
-          <p style="font-size:13px;color:var(--sub);margin:0 0 12px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(t.description||'No description.')}</p>
-          ${tags.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${tags.map(tg=>`<span class="ph-tag">${esc(tg)}</span>`).join('')}</div>`:''}
-          <div class="card-action-row" onclick="event.stopPropagation()">
-            <span style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px"><span class="ms" style="font-size:16px">group</span>${members} member${members!==1?'s':''}</span>
-            ${isMine
-              ? isLeader
-                ? `<div class="card-action-btns">
-                     <span style="font-size:11px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:3px"><span class="ms" style="font-size:14px">star</span>Leader</span>
-                     <button onclick="event.stopPropagation();editTeam('${tid}')" style="background:var(--ac-light);color:var(--ac);border:1px solid var(--bd);">Edit</button>
-                     <button onclick="event.stopPropagation();deleteTeam('${tid}','${esc(name)}',this)" style="background:rgba(239,68,68,0.12);color:#ef4444;border:1px solid rgba(239,68,68,0.3);">Delete</button>
-                   </div>`
-                : `<button onclick="event.stopPropagation();leaveTeam('${tid}',this)" class="ph-btn" style="background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.25)">Leave</button>`
-              : isOpen
-                ? pendingRequestIds.has(tid)
-                  ? `<button disabled class="ph-btn" style="background:var(--sf2);color:var(--sub);border:1px solid var(--bd);cursor:not-allowed">Requested</button>`
-                  : `<button onclick="event.stopPropagation();join('${tid}',this)" class="ph-btn">Join</button>`
-                : `<span style="font-size:12px;color:var(--sub)">Members only</span>`
-            }
+
+        <!-- Dashboard Stats -->
+        <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px">
+          <div class="ph-card" style="padding:16px;display:flex;align-items:center;gap:12px;border-radius:16px">
+            <div style="width:40px;height:40px;border-radius:12px;background:var(--ac-light);color:var(--ac);display:flex;align-items:center;justify-content:center"><span class="ms">explore</span></div>
+            <div>
+              <div class="ph-label" style="margin:0">Total Available</div>
+              <div style="font-size:20px;font-weight:800" id="stat-total">—</div>
+            </div>
+          </div>
+          <div class="ph-card" style="padding:16px;display:flex;align-items:center;gap:12px;border-radius:16px">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.1);color:var(--green);display:flex;align-items:center;justify-content:center"><span class="ms">how_to_reg</span></div>
+            <div>
+              <div class="ph-label" style="margin:0">My Groups</div>
+              <div style="font-size:20px;font-weight:800" id="stat-my">—</div>
+            </div>
           </div>
         </div>
-      </div>`;
-    }).join('');
-  }
 
+        <!-- Cards grid -->
+        <div id="groups-grid" class="groups-grid">
+          <div style="grid-column:1/-1;text-align:center;padding:80px;color:var(--sub)">
+            <span class="ms animate-spin" style="font-size:40px;display:block;margin-bottom:12px">progress_activity</span>Loading...
+          </div>
+        </div>
+      </div>
 
-  window.search=function(q){render(q?teams.filter(t=>(t.name||'').toLowerCase().includes(q.toLowerCase())||(t.description||'').toLowerCase().includes(q.toLowerCase())):teams);};
+      <!-- Selected Details Column -->
+      <div class="discover-detail-col" id="detail-panel">
+        <div style="padding:40px 24px;text-align:center;color:var(--sub);margin:auto">
+          <span class="ms" style="font-size:64px;color:var(--bd2);margin-bottom:16px;display:block">touch_app</span>
+          <h3>Select a Group</h3>
+          <p style="font-size:13px;max-width:280px;margin:8px auto 0">Click on any community or team card to view members, details, and join the conversation.</p>
+        </div>
+      </div>
 
-  window.join=async function(id,btn){
-    btn.disabled=true;btn.textContent='Joining…';
-    try{
-      const r=await fetch(API_BASE+`/api/teams/${id}/join`,{method:'POST',headers:H});
-      if(r.ok){
-        btn.textContent='Requested';
-        btn.style.background='var(--sf2)';
-        btn.style.color='var(--sub)';
-        btn.style.border='1px solid var(--bd)';
-        btn.style.cursor='not-allowed';
-        pendingRequestIds.add(id);
-        localStorage.setItem('ph-pending-request-ids', JSON.stringify(Array.from(pendingRequestIds)));
-        PHToast?.success('Join request sent!');
-        setTimeout(()=>load(),800);
-      }
-      else{const d=await r.json();PHToast?.error(d.message||d.error||'Failed');btn.textContent='Join';btn.disabled=false;}
-    }catch(e){PHToast?.error('Server offline');btn.textContent='Join';btn.disabled=false;}
-  };
-
-  window.leaveTeam=async function(id,btn){
-    if(!confirm('Leave this team?')) return;
-    btn.disabled=true;btn.textContent='Leavingâ€¦';
-    try{
-      const r=await fetch(API_BASE+`/api/teams/${id}/leave`,{method:'POST',headers:H});
-      const d=await r.json();
-      if(r.ok){myIds.delete(id);PHToast?.success('Left team');setTimeout(()=>load(),600);}
-      else{PHToast?.error(d.error||'Cannot leave');btn.disabled=false;btn.textContent='Leave';}
-    }catch(e){PHToast?.error('Server error');btn.disabled=false;btn.textContent='Leave';}
-  };
-
-  window.deleteTeam=async function(id,name,btn){
-    if(!confirm(`Delete team "${name}"? This cannot be undone.`)) return;
-    btn.disabled=true;btn.textContent='Deletingâ€¦';
-    try{
-      const r=await fetch(API_BASE+`/api/teams/${id}`,{method:'DELETE',headers:H});
-      const d=await r.json();
-      if(r.ok){PHToast?.success('Team deleted');setTimeout(()=>load(),600);}
-      else{PHToast?.error(d.error||'Cannot delete');btn.disabled=false;btn.textContent='Delete';}
-    }catch(e){PHToast?.error('Server error');btn.disabled=false;btn.textContent='Delete';}
-  };
-
-  async function load(){
-    // Try caching
-    try {
-      const cacheTeams = localStorage.getItem('ph-teams-all-cache');
-      const cacheMine = localStorage.getItem('ph-teams-mine-cache');
-      if (cacheTeams) {
-        teams = JSON.parse(cacheTeams);
-        document.getElementById('st-total').textContent = teams.length;
-        document.getElementById('st-open').textContent = teams.filter(t=>t.isOpen!==false).length;
-        render(teams);
-      }
-      if (cacheMine) {
-        const mine = JSON.parse(cacheMine);
-        myIds = new Set(mine.map(t => t._id));
-        document.getElementById('st-mine').textContent = mine.length;
-      }
-    } catch(e) {}
-
-    try{
-      const [tr,mr]=await Promise.allSettled([fetch(API_BASE+'/api/teams',{headers:H}).then(r=>r.json()),fetch(API_BASE+'/api/teams/my-teams',{headers:H}).then(r=>r.json())]);
-      if(tr.status==='fulfilled'){
-        teams=tr.value?.teams||tr.value||[];
-        window.teams=teams; // keep in sync for edit modal
-        localStorage.setItem('ph-teams-all-cache', JSON.stringify(teams));
-
-        document.getElementById('st-total').textContent=teams.length;
-        document.getElementById('st-open').textContent=teams.filter(t=>t.isOpen!==false).length;
-        render(teams);
-      }
-      if(mr.status==='fulfilled'){
-        const mine=mr.value?.teams||mr.value||[];
-        localStorage.setItem('ph-teams-mine-cache', JSON.stringify(mine));
-        myIds=new Set(mine.map(t=>t._id||t.id));
-        myTeamRoles=new Map(mine.map(t=>[t._id||t.id, t.myRole||'member']));
-
-        let changed = false;
-        myIds.forEach(id => {
-          if (pendingRequestIds.has(id)) {
-            pendingRequestIds.delete(id);
-            changed = true;
-          }
-        });
-        if (changed) {
-          localStorage.setItem('ph-pending-request-ids', JSON.stringify(Array.from(pendingRequestIds)));
-        }
-
-        document.getElementById('st-mine').textContent=mine.length;
-        if (tr.status==='fulfilled') render(teams);
-      }
-    }catch(e){
-      if (!teams.length) {
-        document.getElementById('grid').innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)"><span class="ms" style="font-size:48px;display:block">cloud_off</span>Server offline</div>`;
-      }
-    }
-    const params = new URLSearchParams(window.location.search);
-    const tid = params.get('tid');
-    if (tid) {
-      setTimeout(() => {
-        const card = document.getElementById(`team-card-${tid}`);
-        if (card) {
-          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          card.style.ring = '2px solid var(--ac)';
-          card.style.outline = '2px solid var(--ac)';
-          card.style.outlineOffset = '2px';
-          setTimeout(() => {
-            card.style.ring = '';
-            card.style.outline = '';
-            card.style.outlineOffset = '';
-          }, 4000);
-        }
-      }, 600);
-    }
-  }
-  load();
-})();
-</script>
-
-<!-- Team Details & Members Modal -->
-<div id="team-details-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:450;align-items:center;justify-content:center;padding:16px">
-  <div class="ph-card" style="width:100%;max-width:580px;max-height:92vh;overflow-y:auto;padding:0">
-    <div style="padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--sf);z-index:1">
-      <h3 style="font-size:16px;font-weight:800;margin:0" id="td-title">Team Details</h3>
-      <button onclick="closeTeamDetailsModal()" aria-label="Close" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
     </div>
-    <div style="padding:24px;display:flex;flex-direction:column;gap:20px" id="td-content">
-      <!-- Dynamic detail content -->
+
+    <!-- 2. COLLABORATIVE WORKSPACE SCREEN -->
+    <div class="workspace-layout" id="screen-workspace">
+      
+      <!-- Workspace Left Channel Sidebar -->
+      <div class="workspace-sidebar">
+        <!-- Group Identity Header -->
+        <div style="padding:16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:10px">
+          <div id="ws-group-avatar" style="width:36px;height:36px;border-radius:10px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px"></div>
+          <div style="min-width:0;flex:1">
+            <h3 id="ws-group-name" style="font-size:14px;font-weight:800;margin:0;color:var(--tx)" class="text-truncate">Group Workspace</h3>
+            <span id="ws-group-badge" style="font-size:10px;font-weight:700;color:var(--ac)">Workspace</span>
+          </div>
+        </div>
+
+        <!-- Channel/Tab List -->
+        <div class="workspace-channels" id="ws-channels-list">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Footer: Leave Workspace -->
+        <div style="padding:12px;border-top:1px solid var(--bd)">
+          <button class="ph-btn" style="width:100%;background:var(--sf);border:1px solid var(--bd);color:var(--sub);border-radius:10px;font-size:12px;height:36px;display:flex;align-items:center;justify-content:center;gap:6px" onclick="exitWorkspace()">
+            <span class="ms" style="font-size:16px">arrow_back</span>
+            <span>Exit Workspace</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Workspace main view canvas -->
+      <div class="workspace-main">
+        
+        <!-- Header -->
+        <div class="workspace-header">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-weight:800;color:var(--sub);font-size:16px" id="ws-channel-symbol">#</span>
+            <h2 id="ws-active-channel-title" style="font-size:15px;font-weight:800;margin:0;color:var(--tx)">channel</h2>
+          </div>
+          
+          <div style="display:flex;align-items:center;gap:12px">
+            <!-- Member count / settings buttons -->
+            <div id="ws-header-actions" style="display:flex;align-items:center;gap:8px"></div>
+          </div>
+        </div>
+
+        <!-- Inner Content Area -->
+        <div class="workspace-content">
+          
+          <!-- TAB: Overview -->
+          <div class="workspace-tab-view" id="ws-tab-overview" style="overflow-y:auto;padding:24px">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- TAB: Chat -->
+          <div class="workspace-tab-view" id="ws-tab-chat">
+            <div class="chat-view">
+              <div class="chat-messages-container" id="ws-chat-messages">
+                <!-- Messages populated by JS -->
+              </div>
+              <!-- Typing Indicator -->
+              <div id="ws-typing-indicator" style="padding:4px 24px;font-size:11px;color:var(--sub);font-style:italic;height:20px"></div>
+              
+              <!-- Input Area -->
+              <div class="chat-input-area">
+                <div class="chat-input-wrapper">
+                  <input type="text" class="chat-input" id="ws-chat-input" placeholder="Send a message..." onkeydown="handleChatInputKey(event)" oninput="handleChatTyping()">
+                  <button onclick="sendChatMessage()" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--ac);cursor:pointer;display:flex;align-items:center"><span class="ms" style="font-size:22px">send</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Tasks -->
+          <div class="workspace-tab-view" id="ws-tab-tasks">
+            <!-- Add Task bar -->
+            <div style="padding:12px 24px;border-bottom:1px solid var(--bd);display:flex;gap:10px">
+              <input type="text" id="new-task-title" placeholder="Add a new task..." class="ph-input" style="flex:1;height:38px;font-size:13px;border-radius:8px">
+              <button onclick="createNewTask()" class="ph-btn" style="height:38px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:700">Add Task</button>
+            </div>
+            <!-- Task Columns Kanban -->
+            <div class="task-board" id="ws-task-board">
+              <!-- Columns: To Do, In Progress, Done -->
+              <div class="task-column">
+                <div class="task-column-header">
+                  <strong style="font-size:13px">To Do</strong>
+                  <span class="group-tag-pill" id="count-todo">0</span>
+                </div>
+                <div class="task-list" id="task-list-todo" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'todo')"></div>
+              </div>
+              <div class="task-column">
+                <div class="task-column-header">
+                  <strong style="font-size:13px;color:var(--ac)">In Progress</strong>
+                  <span class="group-tag-pill" id="count-progress" style="color:var(--ac);background:var(--ac-light)">0</span>
+                </div>
+                <div class="task-list" id="task-list-progress" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'in_progress')"></div>
+              </div>
+              <div class="task-column">
+                <div class="task-column-header">
+                  <strong style="font-size:13px;color:var(--green)">Done</strong>
+                  <span class="group-tag-pill" id="count-done" style="color:var(--green);background:rgba(16,185,129,0.1)">0</span>
+                </div>
+                <div class="task-list" id="task-list-done" ondragover="allowDrop(event)" ondrop="handleDrop(event, 'done')"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB: Roadmap -->
+          <div class="workspace-tab-view" id="ws-tab-roadmap" style="overflow-y:auto;padding:24px">
+            <!-- Add Roadmap Phase -->
+            <div style="display:flex;gap:12px;margin-bottom:24px;background:var(--sf2);padding:16px;border-radius:14px;border:1px solid var(--bd);flex-wrap:wrap">
+              <input type="text" id="roadmap-phase-title" placeholder="Phase Title (e.g. Phase 1: MVP Launch)" class="ph-input" style="flex:2;min-width:180px;height:38px;font-size:13px;border-radius:8px">
+              <input type="date" id="roadmap-phase-date" class="ph-input" style="flex:1;min-width:120px;height:38px;font-size:13px;border-radius:8px">
+              <button onclick="createRoadmapPhase()" class="ph-btn" style="height:38px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:700">Add Phase</button>
+            </div>
+            <!-- Timeline Grid -->
+            <div id="roadmap-list" style="display:flex;flex-direction:column;gap:14px">
+              <!-- Roadmap Cards -->
+            </div>
+          </div>
+
+          <!-- TAB: Events & Polls -->
+          <div class="workspace-tab-view" id="ws-tab-events" style="overflow-y:auto;padding:24px">
+            <!-- Create Poll widget -->
+            <div style="background:var(--sf2);border:1px solid var(--bd);border-radius:16px;padding:16px;margin-bottom:24px">
+              <h4 style="font-size:13px;font-weight:800;margin:0 0 12px">Create a New Poll</h4>
+              <div style="display:flex;flex-direction:column;gap:10px">
+                <input type="text" id="poll-question" placeholder="Ask a question..." class="ph-input" style="height:38px;font-size:13px;border-radius:8px">
+                <input type="text" id="poll-opts" placeholder="Options (comma separated, e.g. Yes, No, Maybe)" class="ph-input" style="height:38px;font-size:13px;border-radius:8px">
+                <button onclick="createPoll()" class="ph-btn" style="height:38px;border-radius:8px;font-size:13px;font-weight:700;align-self:flex-start;padding:0 20px">Launch Poll</button>
+              </div>
+            </div>
+            <!-- Active Polls -->
+            <div id="polls-list"></div>
+          </div>
+
+          <!-- TAB: Gallery & Files -->
+          <div class="workspace-tab-view" id="ws-tab-files" style="overflow-y:auto;padding:24px">
+            <div id="files-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px">
+              <!-- Shared file attachments -->
+            </div>
+          </div>
+
+          <!-- TAB: Members list -->
+          <div class="workspace-tab-view" id="ws-tab-members" style="overflow-y:auto;padding:24px">
+            <div id="ws-members-list" style="display:flex;flex-direction:column;gap:12px">
+              <!-- Member list items -->
+            </div>
+          </div>
+
+          <!-- TAB: Settings & Admin -->
+          <div class="workspace-tab-view" id="ws-tab-settings" style="overflow-y:auto;padding:24px">
+            <!-- Settings panel for leader -->
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+
   </div>
+
 </div>
 
-
-<!-- Edit Team Modal -->
-<div id="edit-team-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px">
-  <div class="ph-card" style="width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:0">
+<!-- Manage / Edit Modal -->
+<div id="edit-group-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:500;align-items:center;justify-content:center;padding:16px">
+  <div class="ph-card" style="width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:0;border-radius:20px">
     <div style="padding:20px 24px;border-bottom:1.5px solid var(--bd);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--sf);z-index:1">
-      <h3 style="font-size:16px;font-weight:800;margin:0">Edit Team</h3>
+      <h3 style="font-size:16px;font-weight:800;margin:0" id="edit-modal-title">Edit Group</h3>
       <button onclick="closeEditModal()" aria-label="Close" style="width:32px;height:32px;border-radius:9px;border:1.5px solid var(--bd);background:var(--sf2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--sub)"><span class="ms">close</span></button>
     </div>
-    <form id="edit-team-form" style="padding:24px;display:flex;flex-direction:column;gap:16px">
-      <input type="hidden" id="edit-tid">
+    <form id="edit-group-form" style="padding:24px;display:flex;flex-direction:column;gap:16px">
+      <input type="hidden" id="edit-gid">
       <div>
-        <label class="ph-label">Team Name *</label>
-        <input id="edit-name" class="ph-input" placeholder="Team name" required>
+        <label class="ph-label">Name *</label>
+        <input id="edit-name" class="ph-input" placeholder="Group name" required>
       </div>
       <div>
         <label class="ph-label">Description</label>
-        <textarea id="edit-desc" class="ph-input" rows="3" placeholder="What is your team about?" style="resize:vertical"></textarea>
+        <textarea id="edit-desc" class="ph-input" rows="3" placeholder="Describe the objectives, culture, or rules..." style="resize:vertical"></textarea>
       </div>
-      <div>
-        <label class="ph-label">Category</label>
-        <select id="edit-cat" class="ph-input">
-          <option value="">General</option>
-          <option value="web">Web Development</option>
-          <option value="mobile">Mobile App</option>
-          <option value="ai">AI / ML</option>
-          <option value="design">Design</option>
-          <option value="research">Research</option>
-          <option value="other">Other</option>
-        </select>
+      <div id="edit-capacity-row">
+        <label class="ph-label">Max Members</label>
+        <input type="number" id="edit-max-size" class="ph-input" min="2" max="100">
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--sf2);border-radius:12px;border:1.5px solid var(--bd)">
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--tx)">Open to Join</div>
-          <div style="font-size:11px;color:var(--sub)">Anyone can request to join</div>
+          <div style="font-size:13px;font-weight:700;color:var(--tx)" id="edit-open-title">Open to Join</div>
+          <div style="font-size:11px;color:var(--sub)" id="edit-open-desc">Anyone can join instantly</div>
         </div>
         <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
           <input type="checkbox" id="edit-open" style="opacity:0;width:0;height:0">
@@ -533,255 +739,485 @@
   </div>
 </div>
 
-<script src="/assets/js/core/info-modal.js"></script>
 <script>
 (function(){
-  // Resolve myId from JWT (set by first IIFE) or re-parse
-  let myId = window._myId || '';
-  if (!myId) {
-    try {
-      const tk = localStorage.getItem('access_token');
-      if (tk) { const p = JSON.parse(atob(tk.split('.')[1])); myId = p.sub||p.id||p.userId||''; }
-    } catch(e) {}
-  }
+  // 1. Authenticate user & parse JWT
+  const TK = localStorage.getItem('access_token');
+  if(!TK){location.href='/login';return;}
+  let myId = '';
+  try{
+    const p = JSON.parse(atob(TK.split('.')[1]));
+    if(p.exp && Date.now() >= p.exp * 1000){
+      localStorage.removeItem('access_token');
+      location.href='/login';
+      return;
+    }
+    myId = p.sub || p.id || p.userId || '';
+  }catch(e){location.href='/login';return;}
 
-  // Also get H and API_BASE for modal requests
-  const _TK = localStorage.getItem('access_token');
-  const H = { Authorization: 'Bearer ' + _TK, 'Content-Type': 'application/json' };
-  const API_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
-    ? (location.port==='3000'?'http://localhost:5000':'')
-    : 'https://projecthive-backend.onrender.com';
+  PHSidebar.init('teams','../../');
 
-  window.closeTeamDetailsModal = function() {
-    document.getElementById('team-details-modal').style.display = 'none';
-    document.body.style.overflow = ''; // Unlock body scroll
+  window.PHConfirm = function({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', danger = false, onConfirm }) {
+    let modal = document.getElementById('ph-custom-confirm-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'ph-custom-confirm-modal';
+      modal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+        padding: 16px;
+        font-family: 'Inter', sans-serif;
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    const iconColor = danger ? '#ef4444' : '#6366f1';
+    const iconBg = danger ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)';
+    const iconBorder = danger ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)';
+    const confirmBtnColor = danger ? '#ef4444' : '#6366f1';
+    const confirmBtnHoverBg = danger ? 'rgba(239,68,68,0.06)' : 'rgba(99,102,241,0.06)';
+    
+    const iconSvg = danger 
+      ? `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`
+      : `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
+    modal.innerHTML = `
+      <div class="lo-card" style="
+        background: var(--bg-surface-container-lowest, var(--ph-card, #fff));
+        border: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));
+        border-radius: 24px;
+        width: 100%;
+        max-width: 360px;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+        transform: scale(0.9) translateY(10px);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      ">
+        <div class="lo-header" style="padding: 28px 24px 20px; text-align: center;">
+          <div class="lo-icon" style="
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: ${iconBg};
+            border: 1.5px solid ${iconBorder};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+          ">
+            ${iconSvg}
+          </div>
+          <h3 class="lo-title" style="
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-on-surface, var(--ph-txt, #0f172a));
+            margin: 0 0 8px;
+          ">${title}</h3>
+          <p class="lo-msg" style="
+            font-size: 13px;
+            color: var(--text-on-surface-variant, var(--ph-txt2, #475569));
+            line-height: 1.5;
+            margin: 0;
+          ">${message}</p>
+        </div>
+        <div class="lo-actions" style="display: flex; border-top: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));">
+          <button class="lo-btn lo-btn-cancel" id="ph-confirm-cancel" style="
+            flex: 1;
+            padding: 15px 12px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s;
+            color: var(--text-on-surface-variant, var(--ph-txt2, #475569));
+          ">${cancelText}</button>
+          <button class="lo-btn lo-btn-confirm" id="ph-confirm-ok" style="
+            flex: 1;
+            padding: 15px 12px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s;
+            color: ${confirmBtnColor};
+            border-left: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));
+          ">${confirmText}</button>
+        </div>
+      </div>
+    `;
+
+    const btnCancel = modal.querySelector('#ph-confirm-cancel');
+    const btnConfirm = modal.querySelector('#ph-confirm-ok');
+    
+    btnCancel.addEventListener('mouseenter', () => btnCancel.style.background = 'var(--bg-surface-variant, #f1f5f9)');
+    btnCancel.addEventListener('mouseleave', () => btnCancel.style.background = 'none');
+    btnConfirm.addEventListener('mouseenter', () => btnConfirm.style.background = confirmBtnHoverBg);
+    btnConfirm.addEventListener('mouseleave', () => btnConfirm.style.background = 'none');
+
+    const container = modal.querySelector('.lo-card');
+    
+    function hide() {
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+      container.style.transform = 'scale(0.9) translateY(10px)';
+    }
+
+    btnCancel.addEventListener('click', hide);
+    btnConfirm.addEventListener('click', () => {
+      hide();
+      if (typeof onConfirm === 'function') onConfirm();
+    });
+    
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) hide();
+    });
+
+    modal.style.pointerEvents = 'all';
+    modal.style.opacity = '1';
+    requestAnimationFrame(() => {
+      container.style.transform = 'scale(1) translateY(0)';
+    });
   };
 
-  // Close modal when clicking outside
-  document.getElementById('team-details-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeTeamDetailsModal();
-  });
+  // API Config
+  const H = { Authorization: 'Bearer ' + TK, 'Content-Type': 'application/json' };
+  const API_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+    ? (location.port === '3000' ? 'http://localhost:5000' : '')
+    : 'https://projecthive-backend.onrender.com';
 
-  window.openTeamDetailsModal = async function(id, ev) {
-    if (ev) ev.stopPropagation();
-    const modal = document.getElementById('team-details-modal');
-    const content = document.getElementById('td-content');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Lock body scroll
-    content.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)"><span class="ms animate-spin" style="font-size:32px;display:block;margin-bottom:8px">progress_activity</span>Loading details...</div>`;
+  const COLS = ['#6366f1','#7c3aed','#ec4899','#10b981','#f59e0b','#3b82f6'];
+  function col(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
+  function ini(s){return(s||'G').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2)||'G';}
+  function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
 
+  // State Management
+  let allGroups = [];
+  let myGroups = [];
+  let currentGroupType = 'community'; // 'community' or 'team'
+  let selectedGroup = null;
+  let activeWorkspaceChannel = '';
+  let socket = null;
+  let currentRoomId = '';
+  let joinedIds = new Set();
+  let leaderIds = new Set();
+  
+  // Real-time Tasks state
+  let tasks = [];
+  
+  // Real-time Roadmap state
+  let roadmapPhases = [];
+
+  // Real-time Polls state
+  let polls = [];
+
+  // Real-time chat messages
+  let messages = [];
+
+  // Initialize Socket Client
+  function initSocket() {
+    if (window.SocketClient && !socket) {
+      socket = window.SocketClient.connect(TK);
+      window.SocketClient.on('messageReceived', (msg) => {
+        if (msg.roomId === currentRoomId) {
+          if (msg.type === 'task') {
+            handleRealtimeTask(msg);
+          } else if (msg.type === 'roadmap') {
+            handleRealtimeRoadmap(msg);
+          } else if (msg.type === 'poll') {
+            handleRealtimePoll(msg);
+          } else if (msg.type === 'vote') {
+            handleRealtimeVote(msg);
+          } else {
+            messages.push(msg);
+            renderChatMessages();
+            scrollChatBottom();
+          }
+        }
+      });
+      window.SocketClient.on('userTyping', (data) => {
+        if (data.userId !== myId) {
+          document.getElementById('ws-typing-indicator').textContent = 'Someone is typing...';
+        }
+      });
+      window.SocketClient.on('userStopTyping', () => {
+        document.getElementById('ws-typing-indicator').textContent = '';
+      });
+    }
+  }
+
+  // Switch between Community and Team Hub
+  window.switchGroupType = function(type) {
+    currentGroupType = type;
+    const btns = document.querySelectorAll('#group-type-control .ph-segmented-btn');
+    btns[0].classList.toggle('active', type === 'community');
+    btns[1].classList.toggle('active', type === 'team');
+    
+    // Update categories filter select options
+    const catSelect = document.getElementById('category-filter');
+    if (type === 'community') {
+      catSelect.innerHTML = `
+        <option value="">All Categories</option>
+        <option value="community:Study">Study Groups</option>
+        <option value="community:Gaming">Gaming</option>
+        <option value="community:Tech">Tech & Coding</option>
+        <option value="community:Social">Social & Hangout</option>
+        <option value="community:Hobby">Hobbies & Creative</option>
+      `;
+    } else {
+      catSelect.innerHTML = `
+        <option value="">All Categories</option>
+        <option value="Computer Science">Computer Science</option>
+        <option value="Biotechnology">Biotechnology</option>
+        <option value="Theoretical Physics">Theoretical Physics</option>
+        <option value="Social Sciences">Social Sciences</option>
+        <option value="Engineering">Engineering</option>
+      `;
+    }
+    
+    exitWorkspace();
+    renderGroupGrid();
+  };
+
+  // Search/Filters Trigger
+  window.triggerSearch = function() {
+    renderGroupGrid();
+  };
+
+  // Fetch groups
+  async function loadData() {
     try {
-      const res = await fetch(API_BASE + `/api/teams/${id}`, { headers: H });
-      if (!res.ok) throw new Error();
-      const t = await res.json();
+      const typeParam = currentGroupType === 'community' ? 'community' : 'team';
+      const [allRes, myRes] = await Promise.all([
+        fetch(API_BASE + `/api/teams?type=${typeParam}`, { headers: H }).then(r => r.json()),
+        fetch(API_BASE + `/api/teams/my-teams`, { headers: H }).then(r => r.json())
+      ]);
 
-      document.getElementById('td-title').textContent = t.name || 'Team Details';
+      allGroups = allRes.teams || [];
+      myGroups = myRes.teams || [];
 
-      // Check current user role — myId from JWT
-      const isLeader = t.leader_id === myId;
-      const isMember = (window.myIds||new Set()).has(t.id || t._id);
+      joinedIds = new Set(myGroups.map(g => g.id || g._id));
+      leaderIds = new Set(myGroups.filter(g => g.myRole === 'leader').map(g => g.id || g._id));
 
-      // Members list markup
-      const membersHTML = (t.team_members || []).map(m => {
+      renderGroupGrid();
+    } catch(err) {
+      console.error('[ProjectHive] Error loading groups:', err);
+    }
+  }
+
+  // Render Groups Grid
+  function renderGroupGrid() {
+    const grid = document.getElementById('groups-grid');
+    const searchVal = document.getElementById('search-input').value.toLowerCase().trim();
+    const catVal = document.getElementById('category-filter').value;
+
+    let filtered = allGroups.filter(g => {
+      // Filter by search text
+      const matchesSearch = !searchVal || 
+        (g.name || '').toLowerCase().includes(searchVal) || 
+        (g.description || '').toLowerCase().includes(searchVal) ||
+        (g.tags || []).some(t => t.toLowerCase().includes(searchVal));
+
+      // Filter by category
+      const matchesCat = !catVal || g.category === catVal;
+
+      return matchesSearch && matchesCat;
+    });
+
+    // Update stats
+    document.getElementById('stat-total').textContent = filtered.length;
+    document.getElementById('stat-my').textContent = myGroups.filter(g => {
+      const isComm = g.category?.startsWith('community:');
+      return currentGroupType === 'community' ? isComm : !isComm;
+    }).length;
+
+    if (!filtered.length) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:60px;color:var(--sub)">
+          <span class="ms" style="font-size:48px;display:block;margin-bottom:12px">group_off</span>
+          No ${currentGroupType === 'community' ? 'communities' : 'teams'} found.
+        </div>
+      `;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(g => {
+      const gid = g.id || g._id;
+      const isJoined = joinedIds.has(gid);
+      const isLeader = leaderIds.has(gid);
+      const membersCount = g.team_members?.length || g.memberCount || 0;
+      const parsedCat = g.category?.startsWith('community:') ? g.category.replace('community:', '') : g.category;
+      
+      const themeColor = col(g.name);
+      const tags = (g.tags || []).slice(0, 3);
+
+      return `
+        <div class="group-card" onclick="selectGroup('${gid}')">
+          <div class="group-banner" style="background: linear-gradient(135deg, ${themeColor}20, ${themeColor}50)">
+            <div class="group-avatar" style="background: ${themeColor}">${ini(g.name)}</div>
+          </div>
+          <div class="group-card-body">
+            <span style="font-size:10px;font-weight:800;color:var(--ac);text-transform:uppercase;letter-spacing:0.5px">${esc(parsedCat || 'General')}</span>
+            <h3 style="font-size:15px;font-weight:800;margin:6px 0 4px;color:var(--tx)" class="text-truncate">${esc(g.name)}</h3>
+            <p style="font-size:13px;color:var(--sub);margin:0;line-height:1.5;height:40px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${esc(g.description || 'No description provided.')}</p>
+            
+            <div class="group-tags">
+              ${tags.map(t => `<span class="group-tag-pill">${esc(t)}</span>`).join('')}
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:12px;border-top:1px solid var(--bd)">
+              <span style="font-size:12px;color:var(--sub);display:flex;align-items:center;gap:4px">
+                <span class="ms" style="font-size:16px">group</span>
+                <span>${membersCount} member${membersCount !== 1 ? 's' : ''}</span>
+              </span>
+              ${isJoined 
+                ? `<span style="font-size:12px;font-weight:700;color:var(--ac);display:flex;align-items:center;gap:3px"><span class="ms" style="font-size:15px">check_circle</span>Member</span>`
+                : `<span class="ms" style="color:var(--sub);font-size:18px">arrow_forward</span>`
+              }
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Select Group Card -> Show detail panel
+  window.selectGroup = async function(gid) {
+    const detailPanel = document.getElementById('detail-panel');
+    detailPanel.innerHTML = `<div style="text-align:center;padding:80px;color:var(--sub)"><span class="ms animate-spin" style="font-size:32px;display:block;margin-bottom:8px">progress_activity</span>Loading details...</div>`;
+    
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${gid}`, { headers: H });
+      if(!res.ok) throw new Error();
+      const g = await res.json();
+      selectedGroup = g;
+
+      const isJoined = joinedIds.has(gid);
+      const isLeader = g.leader_id === myId;
+      const themeColor = col(g.name);
+      
+      const parsedCat = g.category?.startsWith('community:') ? g.category.replace('community:', '') : g.category;
+
+      // Extract metadata if saved as JSON inside description
+      let meta = { github: '', figma: '', website: '' };
+      let textDesc = g.description || '';
+      try {
+        if (g.description?.startsWith('{')) {
+          const parsed = JSON.parse(g.description);
+          textDesc = parsed.text || '';
+          meta.github = parsed.github || '';
+          meta.figma = parsed.figma || '';
+          meta.website = parsed.website || '';
+        }
+      } catch(e) {}
+
+      // Members markup
+      const membersHTML = (g.team_members || []).map(m => {
         const u = m.users || m.user || {};
-        const uid = u.id || u._id || m.user_id;
         const name = `${u.first_name || 'Member'} ${u.last_name || ''}`;
-        const userAvatarCol = col(u.first_name || 'M');
-        const roleText = m.role === 'leader' ? '<span style="color:var(--ac);font-weight:bold;font-size:11px">Leader</span>' : '<span style="color:var(--sub);font-size:11px">Member</span>';
-        
-        // Show kick button if current user is leader and target is not leader
-        const kickBtn = (isLeader && m.role !== 'leader') 
-          ? `<button onclick="kickUser('${t.id || t._id}', '${uid}', '${esc(name)}', this)" style="padding:6px 12px;font-size:12px;min-height:36px;border-radius:8px;background:rgba(239,68,68,0.1);color:#ef4444;border:1px solid rgba(239,68,68,0.2);cursor:pointer;font-weight:700">Kick</button>` 
-          : '';
-
         return `
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1.5px solid var(--bd)">
-            <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-              <div style="width:36px;height:36px;border-radius:50%;background:${userAvatarCol};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">
-                ${(u.first_name || 'M')[0].toUpperCase()}
-              </div>
-              <div style="min-width:0">
-                <a href="/profile?id=${uid}" class="text-truncate" style="display:block;font-size:13px;font-weight:700;color:var(--tx);text-decoration:none">${esc(name)}</a>
-                <div class="text-truncate" style="font-size:11px;color:var(--sub)">${esc(u.university || t.leader?.university || '')}</div>
-              </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)">
+            <div style="width:28px;height:28px;border-radius:50%;background:${col(u.first_name || 'M')};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">
+              ${(u.first_name || 'M')[0].toUpperCase()}
             </div>
-            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-              ${roleText}
-              ${kickBtn}
+            <div style="min-width:0;flex:1">
+              <span style="font-size:13px;font-weight:700;color:var(--tx)" class="text-truncate">${esc(name)}</span>
+              <span style="font-size:10px;color:var(--sub);display:block" class="text-truncate">${esc(u.university || '')}</span>
             </div>
+            <span style="font-size:10px;font-weight:700;color:${m.role==='leader'?'var(--ac)':'var(--sub)'}">
+              ${m.role==='leader'?'Leader':'Member'}
+            </span>
           </div>
         `;
       }).join('');
 
-      // Join requests list (Leader only)
-      let requestsHTML = '';
-      if (isLeader) {
-        try {
-          const reqRes = await fetch(API_BASE + `/api/teams/${t.id || t._id}/requests`, { headers: H });
-          if (reqRes.ok) {
-            const requests = await reqRes.json();
-            const pending = requests.filter(r => r.status === 'pending');
-            if (pending.length) {
-              requestsHTML = `
-                <div style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--bd)">
-                  <h4 style="font-size:14px;font-weight:800;margin:0 0 12px;color:var(--tx);display:flex;align-items:center;gap:6px">
-                    <span class="ms" style="color:var(--ac)">group_add</span> Join Requests (${pending.length})
-                  </h4>
-                  <div style="display:flex;flex-direction:column;gap:10px">
-                    ${pending.map(r => {
-                      const u = r.users || {};
-                      const reqName = `${u.first_name || 'Applicant'} ${u.last_name || ''}`;
-                      return `
-                        <div style="padding:12px;background:var(--sf2);border-radius:12px;border:1.5px solid var(--bd)">
-                          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
-                            <div>
-                              <strong style="font-size:13px;color:var(--tx)">${esc(reqName)}</strong>
-                              <span style="font-size:11px;color:var(--sub);display:block">${esc(u.university || '')}</span>
-                            </div>
-                            <div style="display:flex;gap:8px">
-                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'accept', this)" style="padding:6px 12px;font-size:12px;min-height:36px;border-radius:8px;background:var(--ac);color:#fff;border:none;cursor:pointer;font-weight:700">Accept</button>
-                              <button onclick="handleRequest('${t.id || t._id}', '${r.id}', 'reject', this)" style="padding:6px 12px;font-size:12px;min-height:36px;border-radius:8px;background:var(--sf);color:var(--sub);border:1.5px solid var(--bd);cursor:pointer;font-weight:700">Reject</button>
-                            </div>
-                          </div>
-                          ${r.message ? `<p style="margin:0;font-size:12px;color:var(--sub);font-style:italic">"${esc(r.message)}"</p>` : ''}
-                        </div>
-                      `;
-                    }).join('')}
-                  </div>
-                </div>
-              `;
-            }
-          }
-        } catch(e) {}
+      let actionBtnHTML = '';
+      if (isJoined) {
+        actionBtnHTML = `
+          <button class="ph-btn" style="width:100%;height:44px;border-radius:12px;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px" onclick="launchWorkspace('${gid}')">
+            <span class="ms">launch</span>
+            <span>Launch Workspace</span>
+          </button>
+        `;
+      } else {
+        actionBtnHTML = `
+          <button class="ph-btn" style="width:100%;height:44px;border-radius:12px;font-size:14px;font-weight:800" onclick="joinGroup('${gid}', this)">
+            <span>${currentGroupType === 'community' ? 'Join Community' : 'Request to Join'}</span>
+          </button>
+        `;
       }
 
-      // Direct friend invite section (Leader only)
-      let inviteHTML = '';
-      if (isLeader) {
-        // Find existing team member IDs
-        const memberIds = new Set((t.team_members || []).map(m => {
-          const u = m.users || m.user || {};
-          return u.id || u._id || m.user_id;
-        }));
+      detailPanel.innerHTML = `
+        <div style="padding:24px;display:flex;flex-direction:column;gap:20px;height:100%">
+          <!-- Header Card -->
+          <div style="background:linear-gradient(135deg, ${themeColor}15, ${themeColor}30);border:1px solid ${themeColor}25;border-radius:16px;padding:20px;text-align:center">
+            <div style="width:56px;height:56px;border-radius:14px;background:${themeColor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;margin:0 auto 12px;box-shadow:0 4px 12px ${themeColor}40">${ini(g.name)}</div>
+            <h3 style="font-size:16px;font-weight:800;margin:0;color:var(--tx)">${esc(g.name)}</h3>
+            <span class="group-tag-pill" style="margin-top:6px;display:inline-block">${esc(parsedCat || 'General')}</span>
+          </div>
 
-        try {
-          const frRes = await fetch(API_BASE + '/api/friends', { headers: H });
-          if (frRes.ok) {
-            const frData = await frRes.json();
-            const friends = frData.friends || [];
-            // Filter friends who are NOT already in the team
-            const addableFriends = friends.filter(f => !memberIds.has(f.id || f._id));
-            
-            let selectOptions = '<option value="">Select a friend...</option>';
-            if (addableFriends.length) {
-              selectOptions += addableFriends.map(f => {
-                const name = `${f.first_name || ''} ${f.last_name || ''}`.trim() || 'Friend';
-                return `<option value="${f.id || f._id}">${esc(name)}</option>`;
-              }).join('');
-            } else {
-              selectOptions = '<option value="">No addable friends found</option>';
-            }
+          <!-- Description -->
+          <div>
+            <h4 style="font-size:11px;font-weight:800;color:var(--sub);margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px">Description</h4>
+            <p style="font-size:13px;color:var(--tx);margin:0;line-height:1.5;white-space:pre-wrap">${esc(textDesc || 'No description.')}</p>
+          </div>
 
-            inviteHTML = `
-              <div style="margin-top:20px;padding-top:20px;border-top:2px dashed var(--bd)">
-                <h4 style="font-size:13px;font-weight:800;margin:0 0 12px;color:var(--tx);display:flex;align-items:center;gap:6px">
-                  <span class="ms" style="color:var(--ac);font-size:18px">person_add</span> Add Friend to Team
-                </h4>
-                <div style="display:flex;gap:8px">
-                  <select id="invite-friend-select" class="ph-input" style="flex:1;height:38px;padding:0 12px;font-size:13px;border-radius:8px">
-                    ${selectOptions}
-                  </select>
-                  <button onclick="inviteFriendToTeam('${t.id || t._id}', this)" class="ph-btn" style="height:38px;border-radius:8px;padding:0 16px;font-size:13px;font-weight:700">Add</button>
-                </div>
+          <!-- Project Metadata (Teams only) -->
+          ${currentGroupType === 'team' && (meta.github || meta.figma || meta.website) ? `
+            <div>
+              <h4 style="font-size:11px;font-weight:800;color:var(--sub);margin:0 0 8px;text-transform:uppercase;letter-spacing:0.5px">Project Assets</h4>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                ${meta.github ? `<a href="${esc(meta.github)}" target="_blank" style="font-size:12px;color:var(--ac);display:flex;align-items:center;gap:6px;text-decoration:none"><span class="ms" style="font-size:16px">code</span>GitHub Repository</a>` : ''}
+                ${meta.figma ? `<a href="${esc(meta.figma)}" target="_blank" style="font-size:12px;color:var(--ac);display:flex;align-items:center;gap:6px;text-decoration:none"><span class="ms" style="font-size:16px">design_services</span>Figma Board</a>` : ''}
+                ${meta.website ? `<a href="${esc(meta.website)}" target="_blank" style="font-size:12px;color:var(--ac);display:flex;align-items:center;gap:6px;text-decoration:none"><span class="ms" style="font-size:16px">language</span>Website Link</a>` : ''}
               </div>
-            `;
-          }
-        } catch(e) {
-          console.error('[ProjectHive] Failed to load friends:', e);
-        }
-      }
+            </div>
+          ` : ''}
 
-      content.innerHTML = `
-        <div>
-          <h4 style="font-size:12px;font-weight:800;color:var(--sub);margin:0 0 6px;text-transform:uppercase;letter-spacing:0.5px">Description</h4>
-          <p style="font-size:14px;color:var(--tx);margin:0;line-height:1.5;white-space:pre-wrap">${esc(t.description || 'No description.')}</p>
-        </div>
+          <!-- Action Button -->
+          <div>${actionBtnHTML}</div>
 
-        <div style="margin-top:10px">
-          <h4 style="font-size:12px;font-weight:800;color:var(--sub);margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px">Members (${t.team_members?.length || 0})</h4>
-          <div style="display:flex;flex-direction:column;max-height:220px;overflow-y:auto">
-            ${membersHTML || '<div style="color:var(--sub);font-size:13px">No members listed.</div>'}
+          <!-- Members List -->
+          <div style="flex:1;overflow-y:auto;margin-top:10px">
+            <h4 style="font-size:11px;font-weight:800;color:var(--sub);margin:0 0 10px;text-transform:uppercase;letter-spacing:0.5px">Members (${g.team_members?.length || 0})</h4>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              ${membersHTML}
+            </div>
           </div>
         </div>
-
-        ${inviteHTML}
-        ${requestsHTML}
       `;
-
     } catch(err) {
-      content.innerHTML = `<div style="text-align:center;padding:20px;color:var(--red)"><span class="ms" style="font-size:32px;display:block;margin-bottom:8px">error</span>Could not load details.</div>`;
+      detailPanel.innerHTML = `<div style="text-align:center;padding:40px;color:var(--red)"><span class="ms" style="font-size:32px;display:block;margin-bottom:8px">error</span>Could not load details.</div>`;
     }
   };
 
-  window.inviteFriendToTeam = async function(teamId, btn) {
-    const select = document.getElementById('invite-friend-select');
-    const userId = select?.value;
-    if (!userId) return PHToast?.error('Please select a friend to add');
-
-    btn.disabled = true; btn.textContent = '...';
-    try {
-      const res = await fetch(API_BASE + `/api/teams/${teamId}/members`, {
-        method: 'POST',
-        headers: H,
-        body: JSON.stringify({ userId })
-      });
-      const d = await res.json();
-      if (res.ok) {
-        PHToast?.success(d.message || 'Friend added successfully!');
-        openTeamDetailsModal(teamId); // reload modal content
-        load(); // reload team listing stats
-      } else {
-        PHToast?.error(d.error || 'Failed to add member');
-        btn.disabled = false; btn.textContent = 'Add';
-      }
-    } catch(e) {
-      PHToast?.error('Server connection failed');
-      btn.disabled = false; btn.textContent = 'Add';
-    }
-  };
-
-  window.kickUser = async function(teamId, memberId, memberName, btn) {
-    if (!confirm(`Are you sure you want to kick ${memberName} from the team?`)) return;
-    btn.disabled = true; btn.textContent = '...';
-    try {
-      const res = await fetch(API_BASE + `/api/teams/${teamId}/members/${memberId}`, { method: 'DELETE', headers: H });
-      const d = await res.json();
-      if (res.ok) {
-        PHToast?.success(`${memberName} removed from team`);
-        openTeamDetailsModal(teamId); // reload modal content
-        load(); // reload dashboard stats
-      } else {
-        PHToast?.error(d.error || 'Failed to kick member');
-        btn.disabled = false; btn.textContent = 'Kick';
-      }
-    } catch(e) {
-      PHToast?.error('Server offline');
-      btn.disabled = false; btn.textContent = 'Kick';
-    }
-  };
-
-  window.handleRequest = async function(teamId, reqId, action, btn) {
+  // Join/Request API call
+  window.joinGroup = async function(gid, btn) {
     btn.disabled = true;
+    btn.textContent = 'Joining...';
     try {
-      const res = await fetch(API_BASE + `/api/teams/${teamId}/requests/${reqId}/${action}`, { method: 'POST', headers: H });
+      const res = await fetch(API_BASE + `/api/teams/${gid}/join`, { method: 'POST', headers: H });
+      const d = await res.json();
       if (res.ok) {
-        PHToast?.success(`Request ${action}ed successfully`);
-        openTeamDetailsModal(teamId); // refresh
-        load();
+        PHToast?.success(d.message || 'Joined successfully!');
+        loadData();
+        setTimeout(() => selectGroup(gid), 600);
       } else {
-        const d = await res.json();
-        PHToast?.error(d.error || 'Failed to update request');
+        PHToast?.error(d.error || 'Failed to join');
         btn.disabled = false;
+        btn.textContent = currentGroupType === 'community' ? 'Join Community' : 'Request to Join';
       }
     } catch(e) {
       PHToast?.error('Server error');
@@ -789,27 +1225,991 @@
     }
   };
 
-  window.editTeam = function(id) {
-    const t = teams.find(x => x._id === id);
-    if (!t) return;
-    document.getElementById('edit-tid').value = id;
-    document.getElementById('edit-name').value = t.name || '';
-    document.getElementById('edit-desc').value = t.description || '';
-    document.getElementById('edit-cat').value = t.category || '';
-    const isOpen = t.isOpen !== false;
+  // ----------------------------------------------------
+  // WORKSPACE WORKFLOW
+  // ----------------------------------------------------
+  window.launchWorkspace = async function(gid) {
+    initSocket();
+    
+    // Switch layouts
+    document.getElementById('screen-discover').style.display = 'none';
+    document.getElementById('screen-workspace').style.display = 'flex';
+
+    const g = myGroups.find(x => x.id === gid || x._id === gid);
+    if (!g) return;
+
+    selectedGroup = g;
+
+    // Load workspace identity
+    const themeColor = col(g.name);
+    const wsAvatar = document.getElementById('ws-group-avatar');
+    wsAvatar.textContent = ini(g.name);
+    wsAvatar.style.background = themeColor;
+    wsAvatar.style.boxShadow = `0 4px 10px ${themeColor}50`;
+    
+    document.getElementById('ws-group-name').textContent = g.name;
+    document.getElementById('ws-group-badge').textContent = currentGroupType === 'community' ? 'Community Hub' : 'Team Workspace';
+
+    // Populate Sidebar Channels
+    const channelsList = document.getElementById('ws-channels-list');
+    if (currentGroupType === 'community') {
+      channelsList.innerHTML = `
+        <button class="workspace-channel-btn active" onclick="switchWorkspaceTab('overview')"><span class="ms">info</span><span>Overview</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('chat')"><span class="ms">chat</span><span>General Chat</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('events')"><span class="ms">ballot</span><span>Events & Polls</span></button>
+        <button class="workspace-channel-btn" onclick="workspaceChatFiles()"><span class="ms">image</span><span>Gallery & Files</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('members')"><span class="ms">groups</span><span>Members List</span></button>
+        ${g.myRole === 'leader' ? `<button class="workspace-channel-btn" onclick="switchWorkspaceTab('settings')"><span class="ms">settings</span><span>Group Settings</span></button>` : ''}
+      `;
+    } else {
+      channelsList.innerHTML = `
+        <button class="workspace-channel-btn active" onclick="switchWorkspaceTab('overview')"><span class="ms">info</span><span>Overview</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('roadmap')"><span class="ms">timeline</span><span>Roadmap</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('tasks')"><span class="ms">assignment</span><span>Task Board</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('chat')"><span class="ms">forum</span><span>Private Chat</span></button>
+        <button class="workspace-channel-btn" onclick="workspaceChatFiles()"><span class="ms">folder</span><span>Shared Files</span></button>
+        <button class="workspace-channel-btn" onclick="switchWorkspaceTab('members')"><span class="ms">groups</span><span>Team Roster</span></button>
+        ${g.myRole === 'leader' ? `<button class="workspace-channel-btn" onclick="switchWorkspaceTab('settings')"><span class="ms">settings</span><span>Team Settings</span></button>` : ''}
+      `;
+    }
+
+    switchWorkspaceTab('overview');
+  };
+
+  window.exitWorkspace = function() {
+    if (currentRoomId) {
+      window.SocketClient?.leaveRoom();
+      currentRoomId = '';
+    }
+    document.getElementById('screen-workspace').style.display = 'none';
+    document.getElementById('screen-discover').style.display = 'flex';
+  };
+
+  // Switch tabs inside workspace
+  window.switchWorkspaceTab = async function(tab) {
+    activeWorkspaceChannel = tab;
+    
+    // Toggle active classes in channel sidebar
+    const btns = document.querySelectorAll('#ws-channels-list .workspace-channel-btn');
+    btns.forEach(btn => {
+      const clickAttr = btn.getAttribute('onclick');
+      if (clickAttr && (clickAttr.includes(`'${tab}'`) || (tab === 'files' && clickAttr.includes('Files')))) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Toggle tab panels
+    const panels = document.querySelectorAll('.workspace-tab-view');
+    panels.forEach(p => p.classList.remove('active'));
+
+    const activePanel = document.getElementById(`ws-tab-${tab}`);
+    if (activePanel) activePanel.classList.add('active');
+
+    // Update Headers
+    document.getElementById('ws-channel-symbol').textContent = tab === 'chat' ? '#' : '⚙';
+    document.getElementById('ws-active-channel-title').textContent = tab.charAt(0).toUpperCase() + tab.slice(1);
+
+    // Load dynamic contents
+    const gid = selectedGroup.id || selectedGroup._id;
+    if (tab === 'overview') {
+      loadOverviewTab();
+    } else if (tab === 'chat') {
+      loadChatTab(gid);
+    } else if (tab === 'tasks') {
+      loadTasksTab(gid);
+    } else if (tab === 'roadmap') {
+      loadRoadmapTab(gid);
+    } else if (tab === 'events') {
+      loadEventsTab(gid);
+    } else if (tab === 'members') {
+      loadMembersTab();
+    } else if (tab === 'settings') {
+      loadSettingsTab();
+    }
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: OVERVIEW
+  // ----------------------------------------------------
+  function loadOverviewTab() {
+    const view = document.getElementById('ws-tab-overview');
+    const g = selectedGroup;
+    
+    let textDesc = g.description || '';
+    let meta = { github: '', figma: '', website: '' };
+    try {
+      if (g.description?.startsWith('{')) {
+        const parsed = JSON.parse(g.description);
+        textDesc = parsed.text || '';
+        meta.github = parsed.github || '';
+        meta.figma = parsed.figma || '';
+        meta.website = parsed.website || '';
+      }
+    } catch(e) {}
+
+    view.innerHTML = `
+      <div style="max-width: 680px; display:flex; flex-direction:column; gap:24px">
+        <div>
+          <h2 style="font-size:24px; font-weight:800; margin:0 0 8px; color:var(--tx)">Welcome to ${esc(g.name)}</h2>
+          <p style="font-size:14px; color:var(--sub); line-height:1.6">${esc(textDesc || 'This group does not have a description set yet.')}</p>
+        </div>
+
+        ${currentGroupType === 'team' ? `
+          <div style="background:var(--sf2); border:1px solid var(--bd); border-radius:16px; padding:20px">
+            <h3 style="font-size:14px; font-weight:800; margin:0 0 12px">Project Collaboration Links</h3>
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px">
+              <a href="${esc(meta.github || '#')}" ${meta.github?'target="_blank"':''} class="ph-card" style="padding:12px; text-align:center; display:block; text-decoration:none; opacity: ${meta.github?'1':'0.5'}">
+                <span class="ms" style="font-size:24px; color:var(--ac); display:block; margin-bottom:6px">code</span>
+                <span style="font-size:12px; font-weight:700; color:var(--tx)">GitHub Repo</span>
+              </a>
+              <a href="${esc(meta.figma || '#')}" ${meta.figma?'target="_blank"':''} class="ph-card" style="padding:12px; text-align:center; display:block; text-decoration:none; opacity: ${meta.figma?'1':'0.5'}">
+                <span class="ms" style="font-size:24px; color:var(--ac); display:block; margin-bottom:6px">design_services</span>
+                <span style="font-size:12px; font-weight:700; color:var(--tx)">Figma Board</span>
+              </a>
+              <a href="${esc(meta.website || '#')}" ${meta.website?'target="_blank"':''} class="ph-card" style="padding:12px; text-align:center; display:block; text-decoration:none; opacity: ${meta.website?'1':'0.5'}">
+                <span class="ms" style="font-size:24px; color:var(--ac); display:block; margin-bottom:6px">language</span>
+                <span style="font-size:12px; font-weight:700; color:var(--tx)">Live Site</span>
+              </a>
+            </div>
+          </div>
+        ` : ''}
+
+        <div>
+          <h3 style="font-size:14px; font-weight:800; margin:0 0 12px">Workspace Stats</h3>
+          <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px">
+            <div class="ph-card" style="padding:14px; text-align:center">
+              <span style="font-size:18px; font-weight:800; display:block; color:var(--ac)">${g.team_members?.length || 0}</span>
+              <span style="font-size:11px; color:var(--sub)">Members</span>
+            </div>
+            <div class="ph-card" style="padding:14px; text-align:center">
+              <span style="font-size:18px; font-weight:800; display:block; color:var(--ac)">${(g.tags || []).length}</span>
+              <span style="font-size:11px; color:var(--sub)">Tags</span>
+            </div>
+            <div class="ph-card" style="padding:14px; text-align:center">
+              <span style="font-size:18px; font-weight:800; display:block; color:var(--ac)">Active</span>
+              <span style="font-size:11px; color:var(--sub)">Status</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: CHAT
+  // ----------------------------------------------------
+  async function loadChatTab(gid) {
+    const chatContainer = document.getElementById('ws-chat-messages');
+    chatContainer.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)"><span class="ms animate-spin" style="font-size:24px;display:block;margin-bottom:8px">progress_activity</span>Loading chat messages...</div>`;
+    
+    // Join room on Socket
+    currentRoomId = currentGroupType === 'community' ? `community_chat_${gid}` : `team_chat_${gid}`;
+    window.SocketClient?.joinRoom(currentRoomId);
+
+    try {
+      const res = await fetch(API_BASE + `/api/messages/teams/${gid}?roomId=${currentRoomId}`, { headers: H });
+      const d = await res.json();
+      if (res.ok) {
+        messages = d.messages || [];
+        renderChatMessages();
+        scrollChatBottom();
+      } else {
+        chatContainer.innerHTML = `<div style="text-align:center;padding:20px;color:var(--sub)">Failed to load messages</div>`;
+      }
+    } catch(e) {
+      chatContainer.innerHTML = `<div style="text-align:center;padding:20px;color:var(--sub)">Connection failed</div>`;
+    }
+  }
+
+  function renderChatMessages() {
+    const container = document.getElementById('ws-chat-messages');
+    // Filter out tasks, roadmaps, polls, etc. from rendering in normal text chat
+    const textMsgs = messages.filter(m => !m.type || m.type === 'text');
+
+    if (!textMsgs.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)">No messages in this chat yet. Send the first one!</div>`;
+      return;
+    }
+
+    container.innerHTML = textMsgs.map(m => {
+      const sender = m.sender || {};
+      const senderName = `${sender.first_name || 'Someone'} ${sender.last_name || ''}`;
+      const timeStr = new Date(m.createdAt || m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      const isMe = sender.id === myId;
+      
+      return `
+        <div style="display:flex;gap:12px;align-items:flex-start;max-width:80%;${isMe ? 'align-self:flex-end;flex-direction:row-reverse' : ''}">
+          <div style="width:34px;height:34px;border-radius:50%;background:${col(sender.first_name || 'S')};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0">
+            ${(sender.first_name || 'S')[0].toUpperCase()}
+          </div>
+          <div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px;${isMe ? 'justify-content:flex-end' : ''}">
+              <strong style="font-size:12px;color:var(--tx)">${esc(senderName)}</strong>
+              <span style="font-size:10px;color:var(--sub)">${timeStr}</span>
+            </div>
+            <div style="padding:10px 14px;border-radius:16px;background:${isMe ? 'var(--ac)' : 'var(--sf2)'};color:${isMe ? '#fff' : 'var(--tx)'};font-size:13px;line-height:1.4;word-break:break-word;border:${isMe?'none':'1px solid var(--bd)'}">
+              ${esc(m.content)}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function scrollChatBottom() {
+    const chatContainer = document.getElementById('ws-chat-messages');
+    setTimeout(() => chatContainer.scrollTop = chatContainer.scrollHeight, 50);
+  }
+
+  window.handleChatInputKey = function(e) {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
+  };
+
+  window.handleChatTyping = function() {
+    window.SocketClient?.startTyping(currentRoomId);
+  };
+
+  window.sendChatMessage = function() {
+    const input = document.getElementById('ws-chat-input');
+    const content = input.value.trim();
+    if (!content) return;
+
+    window.SocketClient?.sendMessage(currentRoomId, content);
+    input.value = '';
+    window.SocketClient?.stopTyping(currentRoomId);
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: TASKS (Kanban Board)
+  // ----------------------------------------------------
+  async function loadTasksTab(gid) {
+    const board = document.getElementById('ws-task-board');
+    currentRoomId = `team_tasks_${gid}`;
+    window.SocketClient?.joinRoom(currentRoomId);
+
+    try {
+      const res = await fetch(API_BASE + `/api/messages/teams/${gid}?roomId=${currentRoomId}`, { headers: H });
+      const d = await res.json();
+      if (res.ok) {
+        // Map messages of type 'task' to tasks array
+        tasks = (d.messages || []).filter(m => m.type === 'task').map(m => {
+          try {
+            return { id: m.id, ...JSON.parse(m.content) };
+          } catch(e) {
+            return null;
+          }
+        }).filter(Boolean);
+        renderTaskBoard();
+      }
+    } catch(e) {
+      console.error('[ProjectHive] Error loading tasks:', e);
+    }
+  }
+
+  function renderTaskBoard() {
+    const cols = { todo: [], in_progress: [], done: [] };
+    tasks.forEach(t => {
+      if (cols[t.status]) cols[t.status].push(t);
+    });
+
+    // Update Counts
+    document.getElementById('count-todo').textContent = cols.todo.length;
+    document.getElementById('count-progress').textContent = cols.in_progress.length;
+    document.getElementById('count-done').textContent = cols.done.length;
+
+    // Render Cards
+    const renderCards = (list) => {
+      if (!list.length) return `<div style="text-align:center;padding:20px;color:var(--sub);font-size:11px">No tasks</div>`;
+      return list.map(t => `
+        <div class="task-card" draggable="true" ondragstart="handleDragStart(event, '${t.id}')">
+          <h5 style="margin:0 0 6px;font-size:13px;font-weight:700;color:var(--tx)">${esc(t.title)}</h5>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+            <span style="font-size:10px;color:var(--sub)">Created by ${esc(t.creator || 'User')}</span>
+            <button onclick="deleteTask('${t.id}')" style="background:transparent;border:none;color:var(--red);cursor:pointer;display:flex"><span class="ms" style="font-size:16px">delete</span></button>
+          </div>
+        </div>
+      `).join('');
+    };
+
+    document.getElementById('task-list-todo').innerHTML = renderCards(cols.todo);
+    document.getElementById('task-list-progress').innerHTML = renderCards(cols.in_progress);
+    document.getElementById('task-list-done').innerHTML = renderCards(cols.done);
+  }
+
+  // Create Task
+  window.createNewTask = function() {
+    const input = document.getElementById('new-task-title');
+    const title = input.value.trim();
+    if (!title) return;
+
+    const taskObj = {
+      title,
+      status: 'todo',
+      creator: localStorage.getItem('user_data') ? JSON.parse(localStorage.getItem('user_data')).firstName : 'User',
+      createdAt: new Date().toISOString()
+    };
+
+    // Send task as a message to task room
+    window.SocketClient?.send('message:send', {
+      roomId: currentRoomId,
+      content: JSON.stringify(taskObj),
+      type: 'task'
+    });
+
+    input.value = '';
+  };
+
+  // Real-time task handler
+  function handleRealtimeTask(msg) {
+    try {
+      const taskObj = { id: msg.id, ...JSON.parse(msg.content) };
+      // Check if task already exists, update or add
+      const idx = tasks.findIndex(t => t.id === msg.id);
+      if (idx !== -1) {
+        tasks[idx] = taskObj;
+      } else {
+        tasks.push(taskObj);
+      }
+      renderTaskBoard();
+    } catch(e) {}
+  }
+
+  // Drag and Drop Logic
+  let draggedTaskId = '';
+  window.handleDragStart = function(e, taskId) {
+    draggedTaskId = taskId;
+  };
+  window.allowDrop = function(e) {
+    e.preventDefault();
+  };
+  window.handleDrop = function(e, targetStatus) {
+    e.preventDefault();
+    const task = tasks.find(t => t.id === draggedTaskId);
+    if (task && task.status !== targetStatus) {
+      task.status = targetStatus;
+      
+      // Sync update with backend/socket
+      window.SocketClient?.send('message:send', {
+        roomId: currentRoomId,
+        content: JSON.stringify(task),
+        type: 'task'
+      });
+    }
+  };
+
+  // Delete Task
+  window.deleteTask = async function(taskId) {
+    try {
+      const res = await fetch(API_BASE + `/api/messages/${taskId}`, { method: 'DELETE', headers: H });
+      if (res.ok) {
+        tasks = tasks.filter(t => t.id !== taskId);
+        renderTaskBoard();
+        PHToast?.success('Task deleted');
+      }
+    } catch(e) {}
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: ROADMAP
+  // ----------------------------------------------------
+  async function loadRoadmapTab(gid) {
+    const list = document.getElementById('roadmap-list');
+    currentRoomId = `team_roadmap_${gid}`;
+    window.SocketClient?.joinRoom(currentRoomId);
+
+    try {
+      const res = await fetch(API_BASE + `/api/messages/teams/${gid}?roomId=${currentRoomId}`, { headers: H });
+      const d = await res.json();
+      if (res.ok) {
+        roadmapPhases = (d.messages || []).filter(m => m.type === 'roadmap').map(m => {
+          try {
+            return { id: m.id, ...JSON.parse(m.content) };
+          } catch(e) {
+            return null;
+          }
+        }).filter(Boolean);
+        renderRoadmap();
+      }
+    } catch(e) {}
+  }
+
+  function renderRoadmap() {
+    const container = document.getElementById('roadmap-list');
+    if (!roadmapPhases.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)">No roadmap phases added yet.</div>`;
+      return;
+    }
+
+    // Sort by due date
+    roadmapPhases.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    container.innerHTML = roadmapPhases.map(p => {
+      const isCompleted = p.completed;
+      const dateStr = new Date(p.date).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+      return `
+        <div class="ph-card" style="padding:16px;display:flex;align-items:center;justify-content:between;gap:16px;border-left:4px solid ${isCompleted?'var(--green)':'var(--ac)'}">
+          <div style="flex:1">
+            <h4 style="margin:0 0 4px;font-size:14px;font-weight:800;color:var(--tx);text-decoration:${isCompleted?'line-through':'none'}">${esc(p.title)}</h4>
+            <span style="font-size:11px;color:var(--sub);display:flex;align-items:center;gap:4px">
+              <span class="ms" style="font-size:14px">calendar_month</span>
+              <span>Due: ${dateStr}</span>
+            </span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <button onclick="toggleRoadmapComplete('${p.id}')" style="background:transparent;border:none;color:${isCompleted?'var(--green)':'var(--sub)'};cursor:pointer;display:flex" title="${isCompleted?'Mark Incomplete':'Mark Complete'}">
+              <span class="ms">${isCompleted?'check_box':'check_box_outline_blank'}</span>
+            </button>
+            <button onclick="deleteRoadmapPhase('${p.id}')" style="background:transparent;border:none;color:var(--red);cursor:pointer;display:flex">
+              <span class="ms">delete</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.createRoadmapPhase = function() {
+    const titleInput = document.getElementById('roadmap-phase-title');
+    const dateInput = document.getElementById('roadmap-phase-date');
+    const title = titleInput.value.trim();
+    const date = dateInput.value;
+
+    if (!title || !date) {
+      PHToast?.error('Please enter phase title and date');
+      return;
+    }
+
+    const phaseObj = { title, date, completed: false };
+
+    window.SocketClient?.send('message:send', {
+      roomId: currentRoomId,
+      content: JSON.stringify(phaseObj),
+      type: 'roadmap'
+    });
+
+    titleInput.value = '';
+    dateInput.value = '';
+  };
+
+  function handleRealtimeRoadmap(msg) {
+    try {
+      const phaseObj = { id: msg.id, ...JSON.parse(msg.content) };
+      const idx = roadmapPhases.findIndex(p => p.id === msg.id);
+      if (idx !== -1) {
+        roadmapPhases[idx] = phaseObj;
+      } else {
+        roadmapPhases.push(phaseObj);
+      }
+      renderRoadmap();
+    } catch(e) {}
+  }
+
+  window.toggleRoadmapComplete = function(phaseId) {
+    const phase = roadmapPhases.find(p => p.id === phaseId);
+    if (phase) {
+      phase.completed = !phase.completed;
+      window.SocketClient?.send('message:send', {
+        roomId: currentRoomId,
+        content: JSON.stringify(phase),
+        type: 'roadmap'
+      });
+    }
+  };
+
+  window.deleteRoadmapPhase = async function(phaseId) {
+    try {
+      const res = await fetch(API_BASE + `/api/messages/${phaseId}`, { method: 'DELETE', headers: H });
+      if (res.ok) {
+        roadmapPhases = roadmapPhases.filter(p => p.id !== phaseId);
+        renderRoadmap();
+        PHToast?.success('Phase deleted');
+      }
+    } catch(e) {}
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: EVENTS & POLLS
+  // ----------------------------------------------------
+  async function loadEventsTab(gid) {
+    const list = document.getElementById('polls-list');
+    currentRoomId = `community_events_${gid}`;
+    window.SocketClient?.joinRoom(currentRoomId);
+
+    try {
+      const res = await fetch(API_BASE + `/api/messages/teams/${gid}?roomId=${currentRoomId}`, { headers: H });
+      const d = await res.json();
+      if (res.ok) {
+        // Separate polls and votes from database messages
+        polls = (d.messages || []).filter(m => m.type === 'poll').map(m => {
+          try {
+            return { id: m.id, ...JSON.parse(m.content), votes: {} };
+          } catch(e) {
+            return null;
+          }
+        }).filter(Boolean);
+
+        // Load votes
+        const voteMsgs = (d.messages || []).filter(m => m.type === 'vote');
+        voteMsgs.forEach(v => {
+          try {
+            const voteData = JSON.parse(v.content);
+            const poll = polls.find(p => p.id === voteData.pollId);
+            if (poll) {
+              poll.votes[v.sender_id] = voteData.option;
+            }
+          } catch(e) {}
+        });
+
+        renderPolls();
+      }
+    } catch(e) {}
+  }
+
+  function renderPolls() {
+    const container = document.getElementById('polls-list');
+    if (!polls.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)">No active polls. Launch one above!</div>`;
+      return;
+    }
+
+    container.innerHTML = polls.map(p => {
+      // Calculate vote counts
+      const counts = {};
+      p.options.forEach(o => counts[o] = 0);
+      let totalVotes = 0;
+      Object.values(p.votes).forEach(opt => {
+        if (counts[opt] !== undefined) {
+          counts[opt]++;
+          totalVotes++;
+        }
+      });
+
+      const myVote = p.votes[myId];
+
+      const optionsHTML = p.options.map(opt => {
+        const voteCount = counts[opt];
+        const pct = totalVotes ? Math.round((voteCount / totalVotes) * 100) : 0;
+        const isMyChoice = myVote === opt;
+
+        return `
+          <div class="poll-option-row" onclick="voteInPoll('${p.id}', '${esc(opt)}')">
+            <div class="poll-option-bar-wrapper" style="${isMyChoice ? 'border-color:var(--ac)' : ''}">
+              <div class="poll-option-bar" style="width:${pct}%;background:${isMyChoice?'var(--ac)':'var(--ac-light)'}"></div>
+              <span class="poll-option-text">${esc(opt)} ${isMyChoice?'(Your Vote)':''}</span>
+              <span class="poll-option-text" style="font-weight:700">${pct}% (${voteCount})</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      return `
+        <div class="poll-card">
+          <div style="display:flex;justify-content:between;align-items:start;margin-bottom:12px">
+            <h4 style="margin:0;font-size:14px;font-weight:800;color:var(--tx)">${esc(p.question)}</h4>
+            <button onclick="deletePoll('${p.id}')" style="background:transparent;border:none;color:var(--red);cursor:pointer;display:flex"><span class="ms" style="font-size:18px">delete</span></button>
+          </div>
+          <div>${optionsHTML}</div>
+          <span style="font-size:10px;color:var(--sub);display:block;margin-top:12px">Total Votes: ${totalVotes}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.createPoll = function() {
+    const questionInput = document.getElementById('poll-question');
+    const optsInput = document.getElementById('poll-opts');
+
+    const question = questionInput.value.trim();
+    const optsText = optsInput.value.trim();
+
+    if (!question || !optsText) {
+      PHToast?.error('Please fill out question and options');
+      return;
+    }
+
+    const options = optsText.split(',').map(o => o.trim()).filter(Boolean);
+    if (options.length < 2) {
+      PHToast?.error('Please enter at least 2 options');
+      return;
+    }
+
+    const pollObj = { question, options };
+
+    window.SocketClient?.send('message:send', {
+      roomId: currentRoomId,
+      content: JSON.stringify(pollObj),
+      type: 'poll'
+    });
+
+    questionInput.value = '';
+    optsInput.value = '';
+  };
+
+  window.voteInPoll = function(pollId, option) {
+    // Send vote message to room
+    window.SocketClient?.send('message:send', {
+      roomId: currentRoomId,
+      content: JSON.stringify({ pollId, option }),
+      type: 'vote'
+    });
+  };
+
+  function handleRealtimePoll(msg) {
+    try {
+      const pollObj = { id: msg.id, ...JSON.parse(msg.content), votes: {} };
+      polls.unshift(pollObj);
+      renderPolls();
+    } catch(e) {}
+  }
+
+  function handleRealtimeVote(msg) {
+    try {
+      const voteData = JSON.parse(msg.content);
+      const poll = polls.find(p => p.id === voteData.pollId);
+      if (poll) {
+        poll.votes[msg.sender_id] = voteData.option;
+        renderPolls();
+      }
+    } catch(e) {}
+  }
+
+  window.deletePoll = async function(pollId) {
+    try {
+      const res = await fetch(API_BASE + `/api/messages/${pollId}`, { method: 'DELETE', headers: H });
+      if (res.ok) {
+        polls = polls.filter(p => p.id !== pollId);
+        renderPolls();
+        PHToast?.success('Poll removed');
+      }
+    } catch(e) {}
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: MEMBERS LIST
+  // ----------------------------------------------------
+  function loadMembersTab() {
+    const list = document.getElementById('ws-members-list');
+    const g = selectedGroup;
+
+    list.innerHTML = (g.team_members || []).map(m => {
+      const u = m.users || m.user || {};
+      const name = `${u.first_name || 'Member'} ${u.last_name || ''}`;
+      const userCol = col(u.first_name || 'M');
+
+      const isLeader = m.role === 'leader';
+      const showKickBtn = selectedGroup.leader_id === myId && m.role !== 'leader';
+
+      return `
+        <div class="ph-card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:36px;height:36px;border-radius:50%;background:${userCol};color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">
+              ${(u.first_name || 'M')[0].toUpperCase()}
+            </div>
+            <div>
+              <strong style="font-size:13px;color:var(--tx)">${esc(name)}</strong>
+              <span style="font-size:10px;color:var(--sub);display:block">${esc(u.university || '')}</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="group-tag-pill" style="${isLeader?'color:#ffffff;background:var(--ph-purple-gradient);border:none':''}">${isLeader?'Leader':'Member'}</span>
+            ${showKickBtn ? `<button onclick="kickUserDirect('${u.id || u._id || m.user_id}', '${esc(name)}')" style="background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.25);border-radius:8px;font-size:11px;padding:6px 12px;font-weight:700;cursor:pointer">Kick</button>` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.kickUserDirect = async function(uid, name) {
+    PHConfirm({
+      title: 'Kick Member?',
+      message: `Are you sure you want to kick ${name} from this group?`,
+      confirmText: 'Kick Member',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${selectedGroup.id || selectedGroup._id}/members/${uid}`, { method: 'DELETE', headers: H });
+          if (res.ok) {
+            PHToast?.success(`${name} kicked`);
+            // Refresh details & reload members list
+            const detailRes = await fetch(API_BASE + `/api/teams/${selectedGroup.id || selectedGroup._id}`, { headers: H });
+            selectedGroup = await detailRes.json();
+            loadMembersTab();
+          } else {
+            const d = await res.json();
+            PHToast?.error(d.error || 'Could not kick member');
+          }
+        } catch(e) {}
+      }
+    });
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: FILE SHARING & ATTACHMENTS
+  // ----------------------------------------------------
+  window.workspaceChatFiles = async function() {
+    switchWorkspaceTab('files');
+    const container = document.getElementById('files-grid');
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--sub)"><span class="ms animate-spin" style="font-size:24px;display:block;margin-bottom:8px">progress_activity</span>Scanning files...</div>`;
+
+    try {
+      // Chat messages of type text that contain image/file links
+      const fileMsgs = messages.filter(m => (m.content?.includes('http://') || m.content?.includes('https://')) && (m.content?.match(/\.(jpeg|jpg|gif|png|pdf|doc|docx|zip)/i)));
+      
+      if (!fileMsgs.length) {
+        container.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--sub)">No shared files found in the chat history.</div>`;
+        return;
+      }
+
+      container.innerHTML = fileMsgs.map(m => {
+        // Extract URL
+        const urlMatch = m.content.match(/\bhttps?:\/\/\S+/gi);
+        const url = urlMatch ? urlMatch[0] : '#';
+        const filename = url.substring(url.lastIndexOf('/') + 1) || 'Attachment';
+        const sender = m.sender || {};
+        
+        return `
+          <div class="ph-card" style="padding:14px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px">
+            <span class="ms" style="font-size:36px;color:var(--ac)">insert_drive_file</span>
+            <div style="min-width:0;width:100%">
+              <a href="${esc(url)}" target="_blank" style="font-size:12px;font-weight:700;color:var(--tx);text-decoration:none;display:block" class="text-truncate" title="${esc(filename)}">${esc(filename)}</a>
+              <span style="font-size:10px;color:var(--sub);display:block;margin-top:2px">By ${esc(sender.first_name || 'Someone')}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch(e) {}
+  };
+
+  // ----------------------------------------------------
+  // WORKSPACE TAB: SETTINGS & LEADER PANEL
+  // ----------------------------------------------------
+  async function loadSettingsTab() {
+    const view = document.getElementById('ws-tab-settings');
+    const g = selectedGroup;
+
+    let textDesc = g.description || '';
+    let meta = { github: '', figma: '', website: '' };
+    try {
+      if (g.description?.startsWith('{')) {
+        const parsed = JSON.parse(g.description);
+        textDesc = parsed.text || '';
+        meta.github = parsed.github || '';
+        meta.figma = parsed.figma || '';
+        meta.website = parsed.website || '';
+      }
+    } catch(e) {}
+
+    // Load invitations lists (Leader only)
+    let requestsHTML = `<div style="color:var(--sub);font-size:13px">No pending join requests.</div>`;
+    try {
+      const reqRes = await fetch(API_BASE + `/api/teams/${g.id || g._id}/requests`, { headers: H });
+      if (reqRes.ok) {
+        const requests = await reqRes.json();
+        const pending = requests.filter(r => r.status === 'pending');
+        if (pending.length) {
+          requestsHTML = pending.map(r => {
+            const u = r.users || {};
+            const reqName = `${u.first_name || 'Applicant'} ${u.last_name || ''}`;
+            return `
+              <div style="padding:14px;background:var(--sf);border-radius:12px;border:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center;gap:12px">
+                <div>
+                  <strong style="font-size:13px;color:var(--tx)">${esc(reqName)}</strong>
+                  <span style="font-size:11px;color:var(--sub);display:block">${esc(u.university || '')}</span>
+                  ${r.message ? `<p style="margin:6px 0 0;font-size:12px;color:var(--sub);font-style:italic">"${esc(r.message)}"</p>` : ''}
+                </div>
+                <div style="display:flex;gap:8px">
+                  <button onclick="respondRequest('${r.id}', 'accept', this)" class="ph-btn" style="height:32px;padding:0 12px;font-size:12px;border-radius:8px">Accept</button>
+                  <button onclick="respondRequest('${r.id}', 'reject', this)" class="ph-btn" style="height:32px;padding:0 12px;font-size:12px;border-radius:8px;background:var(--sf2);color:var(--sub);border:1px solid var(--bd)">Reject</button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    } catch(e) {}
+
+    view.innerHTML = `
+      <div style="max-width: 600px; display:flex; flex-direction:column; gap:24px">
+        
+        <!-- Action bar -->
+        <div style="display:flex; gap:12px">
+          <button class="ph-btn" onclick="openEditModal()" style="flex:1; height:40px; border-radius:10px; font-size:13px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:6px">
+            <span class="ms" style="font-size:18px">edit</span>
+            <span>Edit Group Details</span>
+          </button>
+          <button class="ph-btn" onclick="deleteGroupDirect()" style="flex:1; height:40px; border-radius:10px; font-size:13px; font-weight:700; background:rgba(239,68,68,0.1); color:var(--red); border:1px solid rgba(239,68,68,0.25); display:flex; align-items:center; justify-content:center; gap:6px">
+            <span class="ms" style="font-size:18px">delete</span>
+            <span>Delete Group</span>
+          </button>
+        </div>
+
+        <!-- Join Requests (Leader only) -->
+        <div>
+          <h3 style="font-size:14px; font-weight:800; margin:0 0 12px; color:var(--tx); display:flex; align-items:center; gap:6px">
+            <span class="ms" style="color:var(--ac)">group_add</span>
+            <span>Pending Join Requests</span>
+          </h3>
+          <div style="display:flex; flex-direction:column; gap:10px" id="settings-requests-list">
+            ${requestsHTML}
+          </div>
+        </div>
+
+        <!-- Project Links Sync (Teams only) -->
+        ${currentGroupType === 'team' ? `
+          <div style="background:var(--sf2); border:1px solid var(--bd); border-radius:16px; padding:20px">
+            <h3 style="font-size:14px; font-weight:800; margin:0 0 16px">Update Collaboration Links</h3>
+            <div style="display:flex; flex-direction:column; gap:12px">
+              <div>
+                <label class="ph-label">GitHub Repository Link</label>
+                <input type="url" id="settings-github" class="ph-input" placeholder="https://github.com/..." value="${esc(meta.github)}">
+              </div>
+              <div>
+                <label class="ph-label">Figma Design Link</label>
+                <input type="url" id="settings-figma" class="ph-input" placeholder="https://figma.com/file/..." value="${esc(meta.figma)}">
+              </div>
+              <div>
+                <label class="ph-label">External Website Link</label>
+                <input type="url" id="settings-website" class="ph-input" placeholder="https://..." value="${esc(meta.website)}">
+              </div>
+              <button onclick="updateCollaborationLinks()" class="ph-btn" style="height:38px; border-radius:8px; font-size:13px; font-weight:700; align-self:flex-start; margin-top:6px">Save Links</button>
+            </div>
+          </div>
+        ` : ''}
+
+      </div>
+    `;
+  }
+
+  // Manage join requests
+  window.respondRequest = async function(reqId, action, btn) {
+    btn.disabled = true;
+    try {
+      const gid = selectedGroup.id || selectedGroup._id;
+      const res = await fetch(API_BASE + `/api/teams/${gid}/requests/${reqId}/${action}`, { method: 'POST', headers: H });
+      if (res.ok) {
+        PHToast?.success(`Request ${action}ed`);
+        // Refresh details & reload settings
+        const detailRes = await fetch(API_BASE + `/api/teams/${gid}`, { headers: H });
+        selectedGroup = await detailRes.json();
+        loadSettingsTab();
+      } else {
+        const d = await res.json();
+        PHToast?.error(d.error || 'Failed');
+        btn.disabled = false;
+      }
+    } catch(e) {
+      btn.disabled = false;
+    }
+  };
+
+  // Update links
+  window.updateCollaborationLinks = async function() {
+    const github = document.getElementById('settings-github').value.trim();
+    const figma = document.getElementById('settings-figma').value.trim();
+    const website = document.getElementById('settings-website').value.trim();
+
+    const g = selectedGroup;
+    let textDesc = g.description || '';
+    try {
+      if (g.description?.startsWith('{')) {
+        const parsed = JSON.parse(g.description);
+        textDesc = parsed.text || '';
+      }
+    } catch(e) {}
+
+    const updatedDesc = JSON.stringify({
+      text: textDesc,
+      github,
+      figma,
+      website
+    });
+
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${g.id || g._id}`, {
+        method: 'PUT',
+        headers: H,
+        body: JSON.stringify({ description: updatedDesc })
+      });
+      if (res.ok) {
+        PHToast?.success('Links updated successfully!');
+        // Refresh
+        const detailRes = await fetch(API_BASE + `/api/teams/${g.id || g._id}`, { headers: H });
+        selectedGroup = await detailRes.json();
+        loadSettingsTab();
+      } else {
+        PHToast?.error('Failed to save links');
+      }
+    } catch(e) {}
+  };
+
+  // Delete Group
+  window.deleteGroupDirect = async function() {
+    const g = selectedGroup;
+    PHConfirm({
+      title: 'Delete Group?',
+      message: `Are you sure you want to delete "${g.name}"? This action is permanent and cannot be undone.`,
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const res = await fetch(API_BASE + `/api/teams/${g.id || g._id}`, { method: 'DELETE', headers: H });
+          if (res.ok) {
+            PHToast?.success('Group deleted');
+            exitWorkspace();
+            loadData();
+          } else {
+            PHToast?.error('Failed to delete group');
+          }
+        } catch(e) {}
+      }
+    });
+  };
+
+  // ----------------------------------------------------
+  // EDIT GROUP MODAL
+  // ----------------------------------------------------
+  window.openEditModal = function() {
+    const g = selectedGroup;
+    document.getElementById('edit-gid').value = g.id || g._id;
+    document.getElementById('edit-name').value = g.name || '';
+    
+    let textDesc = g.description || '';
+    try {
+      if (g.description?.startsWith('{')) {
+        const parsed = JSON.parse(g.description);
+        textDesc = parsed.text || '';
+      }
+    } catch(e) {}
+
+    document.getElementById('edit-desc').value = textDesc;
+    document.getElementById('edit-max-size').value = g.max_size || 5;
+
+    // Toggle row visibility based on type
+    document.getElementById('edit-capacity-row').style.display = currentGroupType === 'community' ? 'none' : 'block';
+
+    const isOpen = g.is_open !== false;
     document.getElementById('edit-open').checked = isOpen;
+    
+    document.getElementById('edit-open-title').textContent = currentGroupType === 'community' ? 'Public Community' : 'Open to Applications';
+    document.getElementById('edit-open-desc').textContent = currentGroupType === 'community' ? 'Anyone can join instantly without approval' : 'Anyone can send join requests';
+
     const track = document.getElementById('edit-open-track');
     const thumb = document.getElementById('edit-open-thumb');
     track.style.background = isOpen ? 'var(--ac)' : 'var(--bd2)';
     thumb.style.left = isOpen ? '23px' : '3px';
-    const modal = document.getElementById('edit-team-modal');
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden'; // Lock body scroll
+
+    document.getElementById('edit-group-modal').style.display = 'flex';
   };
 
   window.closeEditModal = function() {
-    document.getElementById('edit-team-modal').style.display = 'none';
-    document.body.style.overflow = ''; // Unlock body scroll
+    document.getElementById('edit-group-modal').style.display = 'none';
   };
 
   window.toggleEditOpen = function() {
@@ -821,39 +2221,55 @@
     thumb.style.left = cb.checked ? '23px' : '3px';
   };
 
-  document.getElementById('edit-team-modal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closeEditModal();
-  });
-
-  const TK2 = localStorage.getItem('access_token');
-  const H2 = {Authorization:'Bearer '+TK2,'Content-Type':'application/json'};
-  const API2 = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
-    ? (location.port === '3000' ? 'http://localhost:5000' : '')
-    : 'https://projecthive-backend.onrender.com';
-
-  document.getElementById('edit-team-form').onsubmit = async function(e) {
+  document.getElementById('edit-group-form').onsubmit = async function(e) {
     e.preventDefault();
-    const id = document.getElementById('edit-tid').value;
+    const id = document.getElementById('edit-gid').value;
     const btn = document.getElementById('edit-save-btn');
-    btn.textContent = 'Savingâ€¦'; btn.disabled = true;
+    
+    btn.textContent = 'Saving...'; 
+    btn.disabled = true;
+
+    // Preserve metadata links
+    let meta = { github: '', figma: '', website: '' };
     try {
-      const r = await fetch(API2 + `/api/teams/${id}`, {
-        method: 'PUT', headers: H2,
+      if (selectedGroup.description?.startsWith('{')) {
+        const parsed = JSON.parse(selectedGroup.description);
+        meta.github = parsed.github || '';
+        meta.figma = parsed.figma || '';
+        meta.website = parsed.website || '';
+      }
+    } catch(_) {}
+
+    const textDesc = document.getElementById('edit-desc').value.trim();
+    const finalDesc = JSON.stringify({
+      text: textDesc,
+      ...meta
+    });
+
+    try {
+      const res = await fetch(API_BASE + `/api/teams/${id}`, {
+        method: 'PUT',
+        headers: H,
         body: JSON.stringify({
           name: document.getElementById('edit-name').value.trim(),
-          description: document.getElementById('edit-desc').value.trim(),
-          category: document.getElementById('edit-cat').value,
-          isOpen: document.getElementById('edit-open').checked,
+          description: finalDesc,
+          maxMembers: parseInt(document.getElementById('edit-max-size').value) || 5,
+          isOpen: document.getElementById('edit-open').checked
         })
       });
-      if (r.ok) {
-        PHToast?.success('Team updated!');
+      if (res.ok) {
+        PHToast?.success('Group details updated!');
         closeEditModal();
-        // Refresh teams list
-        setTimeout(() => location.reload(), 500);
+        // Reload details & refresh page data
+        loadData();
+        setTimeout(async () => {
+          const detailRes = await fetch(API_BASE + `/api/teams/${id}`, { headers: H });
+          selectedGroup = await detailRes.json();
+          switchWorkspaceTab(activeWorkspaceChannel || 'overview');
+        }, 500);
       } else {
-        const d = await r.json();
-        PHToast?.error(d.error || 'Could not update team');
+        const d = await res.json();
+        PHToast?.error(d.error || 'Failed to update');
         btn.textContent = 'Save Changes'; btn.disabled = false;
       }
     } catch(err) {
@@ -861,6 +2277,14 @@
       btn.textContent = 'Save Changes'; btn.disabled = false;
     }
   };
+
+  // Close modals clicking backdrop
+  document.getElementById('edit-group-modal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closeEditModal();
+  });
+
+  // Initial Load
+  loadData();
 })();
 </script>
 </body>

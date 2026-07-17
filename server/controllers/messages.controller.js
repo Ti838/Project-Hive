@@ -69,17 +69,19 @@ export async function getTeamConversations(req, res, next) {
 export async function getTeamMessages(req, res, next) {
   try {
     const { teamId } = req.params;
-    const { skip = 0, limit = 50 } = req.query;
+    const { skip = 0, limit = 50, roomId } = req.query;
     const userId = req.user.id;
 
     // Verify membership
-    const { data: mem } = await supabaseAdmin.from('team_members').select('id').eq('team_id', teamId).eq('user_id', userId).single();
+    const { data: mem } = await supabaseAdmin.from('team_members').select('id').eq('team_id', teamId).eq('user_id', userId).maybeSingle();
     if (!mem) return res.status(403).json({ error: 'Not a member of this team' });
+
+    const targetRoomId = roomId || teamId;
 
     const { data: messages, error, count } = await supabaseAdmin
       .from('messages')
       .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`, { count: 'exact' })
-      .eq('room_id', teamId)
+      .eq('room_id', targetRoomId)
       .range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1)
       .order('created_at', { ascending: false });
 
@@ -100,7 +102,7 @@ export async function getTeamMessages(req, res, next) {
 
 export async function saveMessage(req, res, next) {
   try {
-    const { roomId, content, reply_to, reply_to_content, reply_to_sender } = req.body;
+    const { roomId, content, type, reply_to, reply_to_content, reply_to_sender } = req.body;
     const userId = req.user.id;
 
     const { data: message, error } = await supabaseAdmin
@@ -109,6 +111,7 @@ export async function saveMessage(req, res, next) {
         room_id: roomId, 
         sender_id: userId, 
         content, 
+        type: type || 'text',
         read_by: [userId],
         reply_to: reply_to || null,
         reply_to_content: reply_to_content || null,

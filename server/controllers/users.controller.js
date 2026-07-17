@@ -1,6 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import { supabaseAdmin } from '../config/supabase.js';
 import { getIo } from '../services/socket.service.js';
+import { computeRelationshipState } from './friends.controller.js';
 
 // Sanitize search input to prevent Supabase PostgREST filter injection
 function sanitizeSearch(input) {
@@ -47,14 +48,46 @@ const toClient = (user) => camelizeUser(sanitize(user));
 // ─── GET CURRENT USER ────────────────────────────────────────────────────────
 export async function getCurrentUser(req, res, next) {
   try {
+    const userId = req.user.id;
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('*, skills(*)')
-      .eq('id', req.user.id)
+      .eq('id', userId)
       .single();
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });
-    res.json(toClient(user));
+
+    // Fetch live counts
+    const [
+      { count: friendCount },
+      { count: followerCount },
+      { count: followingCount },
+      { count: projectCount },
+      { count: postCount },
+      { data: teamMemberRows }
+    ] = await Promise.all([
+      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', userId),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', userId).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', userId),
+      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', userId),
+      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', userId)
+    ]);
+
+    const joinedTeams = (teamMemberRows || []).map(r => r.team).filter(Boolean);
+    const teamsCount = joinedTeams.filter(t => !t.category?.startsWith('community:')).length;
+    const communitiesCount = joinedTeams.filter(t => t.category?.startsWith('community:')).length;
+
+    const clientUser = toClient(user);
+    clientUser.friendCount = friendCount || 0;
+    clientUser.followerCount = followerCount || 0;
+    clientUser.followingCount = followingCount || 0;
+    clientUser.projectCount = projectCount || 0;
+    clientUser.postCount = postCount || 0;
+    clientUser.teamsCount = teamsCount || 0;
+    clientUser.communitiesCount = communitiesCount || 0;
+
+    res.json(clientUser);
   } catch (err) { next(err); }
 }
 
@@ -94,50 +127,37 @@ export async function getUserProfile(req, res, next) {
 
     if (error || !user) return res.status(404).json({ error: 'User not found' });
 
-    // Check friendship status
-    let friendshipStatus = 'none';
     const requesterId = req.user?.id;
-    let isFriend = false;
-    let pendingReqId = null;
-
-    if (requesterId === id) {
-      friendshipStatus = 'self';
-    } else if (requesterId) {
-      const { data: fr } = await supabaseAdmin
-        .from('friends')
-        .select('id')
-        .eq('user_id', requesterId)
-        .eq('friend_id', id)
-        .limit(1);
-
-      if (fr && fr.length > 0) {
-        friendshipStatus = 'friends';
-        isFriend = true;
-      } else {
-        const { data: reqSent } = await supabaseAdmin
-          .from('friend_requests')
-          .select('id, from_user_id')
-          .or(`and(from_user_id.eq.${requesterId},to_user_id.eq.${id}),and(from_user_id.eq.${id},to_user_id.eq.${requesterId})`)
-          .eq('status', 'pending')
-          .limit(1);
-
-        if (reqSent && reqSent.length > 0) {
-          friendshipStatus = reqSent[0].from_user_id === requesterId ? 'sent' : 'received';
-          pendingReqId = reqSent[0].id;
-        }
-      }
+    let friendshipStatus = 'none';
+    if (requesterId) {
+      friendshipStatus = await computeRelationshipState(requesterId, id);
     }
 
-    const showDetails = user.is_public || friendshipStatus === 'self' || isFriend;
+    // Fetch live counts
+    const [
+      { count: friendCount },
+      { count: followerCount },
+      { count: followingCount },
+      { count: projectCount },
+      { count: postCount },
+      { data: teamMemberRows }
+    ] = await Promise.all([
+      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', id),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', id).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', id).catch(() => ({ count: 0 })),
+      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', id),
+      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id),
+      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', id)
+    ]);
 
-    // Fetch the target user's friend count (always, regardless of privacy)
-    const { count: friendCount } = await supabaseAdmin
-      .from('friends')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', id);
+    const joinedTeams = (teamMemberRows || []).map(r => r.team).filter(Boolean);
+    const teamsCount = joinedTeams.filter(t => !t.category?.startsWith('community:')).length;
+    const communitiesCount = joinedTeams.filter(t => t.category?.startsWith('community:')).length;
+
+    const isFriend = friendshipStatus === 'FRIEND';
+    const showDetails = user.is_public || friendshipStatus === 'SELF' || isFriend;
 
     if (!showDetails) {
-      // Return redacted profile with isLocked: true
       return res.json({
         id: user.id,
         firstName: user.first_name,
@@ -148,18 +168,27 @@ export async function getUserProfile(req, res, next) {
         major: user.major,
         isPublic: user.is_public,
         isLocked: true,
-        friendCount: friendCount || 0,
         friendshipStatus,
-        pendingReqId,
+        friendCount: friendCount || 0,
+        followerCount: followerCount || 0,
+        followingCount: followingCount || 0,
+        projectCount: projectCount || 0,
+        postCount: postCount || 0,
+        teamsCount: teamsCount || 0,
+        communitiesCount: communitiesCount || 0,
       });
     }
 
-    // Return full profile
     const clientUser = toClient(user);
     clientUser.friendshipStatus = friendshipStatus;
-    clientUser.pendingReqId = pendingReqId;
     clientUser.isLocked = false;
     clientUser.friendCount = friendCount || 0;
+    clientUser.followerCount = followerCount || 0;
+    clientUser.followingCount = followingCount || 0;
+    clientUser.projectCount = projectCount || 0;
+    clientUser.postCount = postCount || 0;
+    clientUser.teamsCount = teamsCount || 0;
+    clientUser.communitiesCount = communitiesCount || 0;
     res.json(clientUser);
   } catch (err) { next(err); }
 }
@@ -569,3 +598,83 @@ export async function createSupportTicket(req, res, next) {
     next(err);
   }
 }
+
+// ─── GET TARGET USER FRIENDS ──────────────────────────────────────────────────
+export async function getUserFriends(req, res, next) {
+  try {
+    const { id } = req.params;
+    const requesterId = req.user?.id;
+
+    // Check relationship to see if blocked or private
+    const rel = await computeRelationshipState(requesterId, id);
+    if (rel === 'BLOCKED' || rel === 'BLOCKED_BY_OTHER') {
+      return res.status(403).json({ error: 'Blocked' });
+    }
+
+    const { data: user } = await supabaseAdmin.from('users').select('is_public').eq('id', id).single();
+    if (!user?.is_public && rel !== 'FRIEND' && rel !== 'SELF') {
+      return res.status(403).json({ error: 'Profile is private' });
+    }
+
+    const { data: rows, error } = await supabaseAdmin
+      .from('friends')
+      .select('friend:friend_id(id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major)')
+      .eq('user_id', id);
+    if (error) throw error;
+
+    res.json({ friends: (rows || []).map(r => r.friend).filter(Boolean) });
+  } catch (err) { next(err); }
+}
+
+// ─── GET TARGET USER FOLLOWERS ────────────────────────────────────────────────
+export async function getUserFollowers(req, res, next) {
+  try {
+    const { id } = req.params;
+    const requesterId = req.user?.id;
+
+    const rel = await computeRelationshipState(requesterId, id);
+    if (rel === 'BLOCKED' || rel === 'BLOCKED_BY_OTHER') {
+      return res.status(403).json({ error: 'Blocked' });
+    }
+
+    const { data: user } = await supabaseAdmin.from('users').select('is_public').eq('id', id).single();
+    if (!user?.is_public && rel !== 'FRIEND' && rel !== 'SELF') {
+      return res.status(403).json({ error: 'Profile is private' });
+    }
+
+    const { data: rows, error } = await supabaseAdmin
+      .from('follows')
+      .select('follower:follower_id(id, first_name, last_name, avatar, avatar_color, university, major)')
+      .eq('following_id', id);
+    if (error) return res.json({ followers: [] });
+
+    res.json({ followers: (rows || []).map(r => r.follower).filter(Boolean) });
+  } catch (err) { next(err); }
+}
+
+// ─── GET TARGET USER FOLLOWING ────────────────────────────────────────────────
+export async function getUserFollowing(req, res, next) {
+  try {
+    const { id } = req.params;
+    const requesterId = req.user?.id;
+
+    const rel = await computeRelationshipState(requesterId, id);
+    if (rel === 'BLOCKED' || rel === 'BLOCKED_BY_OTHER') {
+      return res.status(403).json({ error: 'Blocked' });
+    }
+
+    const { data: user } = await supabaseAdmin.from('users').select('is_public').eq('id', id).single();
+    if (!user?.is_public && rel !== 'FRIEND' && rel !== 'SELF') {
+      return res.status(403).json({ error: 'Profile is private' });
+    }
+
+    const { data: rows, error } = await supabaseAdmin
+      .from('follows')
+      .select('following:following_id(id, first_name, last_name, avatar, avatar_color, university, major)')
+      .eq('follower_id', id);
+    if (error) return res.json({ following: [] });
+
+    res.json({ following: (rows || []).map(r => r.following).filter(Boolean) });
+  } catch (err) { next(err); }
+}
+

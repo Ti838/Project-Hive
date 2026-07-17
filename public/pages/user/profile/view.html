@@ -9,6 +9,7 @@
 <script src="/assets/js/core/ph-toast.js"></script>
 <script src="/assets/js/core/ph-sidebar.js?v=5"></script>
 <script src="/assets/js/core/auth.js"></script>
+<script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script id="tailwind-config">
   tailwind.config = {
@@ -51,7 +52,8 @@
         <h1 class="pv-name" id="pv-name"></h1>
         <p class="pv-headline" id="pv-headline"></p>
         <p class="pv-location" id="pv-location" style="display:none"><span class="material-symbols-outlined">location_on</span><span id="pv-uni-text"></span></p>
-        <div class="pv-connections" id="pv-connections"></div>
+        <div class="pv-connections" id="pv-connections" style="display:none"></div>
+        <div class="pv-stats-grid flex flex-wrap gap-x-4 gap-y-2 mt-4 text-xs font-semibold border-t border-gray-100 dark:border-gray-800/80 pt-4" id="pv-stats-grid"></div>
       </div>
     </div>
 
@@ -169,8 +171,19 @@
   const isOwnProfile = !viewId || viewId === myData.id;
   const userId = viewId || myData.id;
 
-  let friendCount = 0;
-  let profileFriendCount = 0; // the viewed user's friend count
+  // Real-time Socket.IO Connection
+  let socket;
+  if (typeof io !== 'undefined') {
+    socket = io(API, { auth: { token: TK }, transports: ['websocket'] });
+    socket.on('connect', () => {
+      socket.emit('join:user', myData.id || myData._id);
+    });
+    socket.on('social:relationship-update', (data) => {
+      if (data.senderId === userId || data.receiverId === userId) {
+        loadProfile();
+      }
+    });
+  }
 
   async function loadProfile() {
     try {
@@ -179,14 +192,6 @@
       if (!r.ok) throw new Error('Failed');
       const u = await r.json();
       renderProfile(u);
-
-      // Use the friendCount from the API (now included for all profiles)
-      profileFriendCount = u.friendCount || 0;
-      if (isOwnProfile) {
-        const fr = await fetch(API + '/api/friends', { headers: H });
-        if (fr.ok) { const d = await fr.json(); profileFriendCount = (d.friends||[]).length; }
-      }
-      updateConnections();
 
       // Load user's own posts via dedicated endpoint
       const postR = await fetch(API + `/api/posts/user/${userId}?limit=4`, { headers: H });
@@ -215,10 +220,13 @@
     } catch(e) { console.error(e); PHToast?.error('Could not load profile'); }
   }
 
-  function updateConnections() {
-    const cnt = profileFriendCount;
-    document.getElementById('pv-connections').innerHTML = `<span class="pv-conn-link">${cnt} friend${cnt!==1?'s':''}</span>`;
-  }
+  window.scrollToSection = function(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'block';
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
 
   function renderProfile(u) {
     const fn = u.firstName || u.first_name || '';
@@ -232,8 +240,9 @@
 
     // Avatar
     const av = document.getElementById('pv-avatar');
+    av.innerHTML = '<span id="pv-initials">?</span>';
     const ini = document.getElementById('pv-initials');
-    if (u.avatar && u.avatar.startsWith('data:')) {
+    if (u.avatar && (u.avatar.startsWith('data:') || u.avatar.startsWith('http') || u.avatar.startsWith('/'))) {
       const img = document.createElement('img'); img.src = u.avatar; img.alt = name;
       av.appendChild(img); ini.style.display = 'none';
     } else {
@@ -243,6 +252,7 @@
 
     // Banner
     const bEl = document.getElementById('pv-banner');
+    bEl.innerHTML = '';
     if (u.bannerImage || u.banner_image) {
       const bimg = document.createElement('img');
       bimg.src = u.bannerImage || u.banner_image;
@@ -257,6 +267,26 @@
     if (u.university) {
       document.getElementById('pv-location').style.display = 'flex';
       document.getElementById('pv-uni-text').textContent = u.university;
+    }
+
+    // Render Stats Row
+    const statsGrid = document.getElementById('pv-stats-grid');
+    if (statsGrid) {
+      const stats = [
+        { count: u.friendCount || 0, label: 'Friends', action: `openStatsModal('friends')` },
+        { count: u.followerCount || 0, label: 'Followers', action: `openStatsModal('followers')` },
+        { count: u.followingCount || 0, label: 'Following', action: `openStatsModal('following')` },
+        { count: u.projectCount || 0, label: 'Projects', action: `scrollToSection('sec-projects')` },
+        { count: u.teamsCount || 0, label: 'Teams', action: `scrollToSection('sec-teams')` },
+        { count: u.communitiesCount || 0, label: 'Communities', action: `scrollToSection('sec-teams')` },
+        { count: u.postCount || 0, label: 'Posts', action: `scrollToSection('sec-activity')` }
+      ];
+      statsGrid.innerHTML = stats.map(s => `
+        <button onclick="${s.action}" class="flex items-center gap-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors text-gray-700 dark:text-gray-300">
+          <span class="font-bold text-gray-900 dark:text-white">${s.count}</span>
+          <span class="text-gray-500 dark:text-gray-400">${s.label}</span>
+        </button>
+      `).join('<span class="text-gray-300 dark:text-gray-700 select-none">•</span>');
     }
 
     // Bio
@@ -333,44 +363,110 @@
     } else {
       const fs = u.friendshipStatus;
       const msgUrl = '/messages?chat=' + u.id;
-      if (fs === 'friends') {
-        acts.innerHTML = `
+      let buttonsHtml = '';
+
+      if (fs === 'BLOCKED') {
+        buttonsHtml = `
+          <button class="pv-btn pv-btn-primary bg-rose-600 hover:bg-rose-700 text-white" onclick="unblockUser('${u.id}')">
+            <span class="material-symbols-outlined">block</span>Unblock
+          </button>`;
+      } else if (fs === 'BLOCKED_BY_OTHER') {
+        buttonsHtml = `
+          <button class="pv-btn pv-btn-ghost" disabled>
+            <span class="material-symbols-outlined">block</span>Unavailable
+          </button>`;
+      } else if (fs === 'FRIEND') {
+        buttonsHtml = `
           <button class="pv-btn pv-btn-primary" onclick="location.href='${msgUrl}'">
             <span class="material-symbols-outlined">send</span>Message
           </button>
-          <div class="relative" id="friends-btn-wrap">
-            <button class="pv-btn pv-btn-ghost" onclick="toggleFriendsMenu()">
+          <div class="relative inline-block text-left" id="profile-actions-wrap">
+            <button class="pv-btn pv-btn-ghost" onclick="toggleProfileMenu()">
               <span class="material-symbols-outlined">check</span>Friends
               <span class="material-symbols-outlined text-sm ml-0.5">expand_more</span>
             </button>
-            <div id="friends-menu" class="hidden absolute right-0 top-full mt-1 w-44 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl py-1 z-50">
-              <button onclick="unfriend('${u.id}')" class="w-full text-left px-4 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 transition-all">
+            <div id="profile-actions-menu" class="hidden absolute right-0 top-full mt-1 w-44 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl py-1 z-50">
+              <button onclick="unfriend('${u.id}')" class="w-full text-left px-4 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2 transition-all">
                 <span class="material-symbols-outlined text-base">person_remove</span>Unfriend
+              </button>
+              <button onclick="blockUser('${u.id}')" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">block</span>Block
               </button>
             </div>
           </div>`;
-      } else if (fs === 'sent') {
-        acts.innerHTML = `
-          <button class="pv-btn pv-btn-ghost" disabled>
-            <span class="material-symbols-outlined">schedule</span>Request Sent
+      } else if (fs === 'REQUEST_SENT') {
+        buttonsHtml = `
+          <button class="pv-btn pv-btn-ghost" onclick="cancelReq('${u.id}')">
+            <span class="material-symbols-outlined">close</span>Cancel Request
+          </button>
+          <button class="pv-btn pv-btn-primary" onclick="location.href='${msgUrl}'">
+            <span class="material-symbols-outlined">send</span>Message
           </button>`;
-      } else if (fs === 'received') {
-        acts.innerHTML = `
-          <button class="pv-btn pv-btn-primary" onclick="acceptReq('${u.pendingReqId}')">
+      } else if (fs === 'REQUEST_RECEIVED') {
+        buttonsHtml = `
+          <button class="pv-btn pv-btn-primary" onclick="acceptReq('${u.id}')">
             <span class="material-symbols-outlined">check</span>Accept
           </button>
-          <button class="pv-btn pv-btn-ghost" onclick="rejectReq('${u.pendingReqId}')">
+          <button class="pv-btn pv-btn-ghost" onclick="rejectReq('${u.id}')">
             <span class="material-symbols-outlined">close</span>Ignore
           </button>`;
-      } else {
-        acts.innerHTML = `
+      } else if (fs === 'FOLLOWING') {
+        buttonsHtml = `
           <button class="pv-btn pv-btn-primary" onclick="sendReq('${u.id}')">
             <span class="material-symbols-outlined">person_add</span>Connect
           </button>
-          <button class="pv-btn pv-btn-ghost" onclick="location.href='${msgUrl}'">
-            <span class="material-symbols-outlined">send</span>Message
-          </button>`;
+          <button class="pv-btn pv-btn-ghost" onclick="unfollowUser('${u.id}')">
+            <span class="material-symbols-outlined">do_not_distribute</span>Unfollow
+          </button>
+          <div class="relative inline-block text-left" id="profile-actions-wrap">
+            <button class="pv-btn pv-btn-ghost" onclick="toggleProfileMenu()">
+              <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+            <div id="profile-actions-menu" class="hidden absolute right-0 top-full mt-1 w-44 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl py-1 z-50">
+              <button onclick="blockUser('${u.id}')" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">block</span>Block
+              </button>
+            </div>
+          </div>`;
+      } else if (fs === 'FOLLOWER') {
+        buttonsHtml = `
+          <button class="pv-btn pv-btn-primary" onclick="sendReq('${u.id}')">
+            <span class="material-symbols-outlined">person_add</span>Connect
+          </button>
+          <button class="pv-btn pv-btn-ghost" onclick="followUser('${u.id}')">
+            <span class="material-symbols-outlined">add</span>Follow Back
+          </button>
+          <div class="relative inline-block text-left" id="profile-actions-wrap">
+            <button class="pv-btn pv-btn-ghost" onclick="toggleProfileMenu()">
+              <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+            <div id="profile-actions-menu" class="hidden absolute right-0 top-full mt-1 w-44 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl py-1 z-50">
+              <button onclick="blockUser('${u.id}')" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">block</span>Block
+              </button>
+            </div>
+          </div>`;
+      } else {
+        // NOT_FRIEND
+        buttonsHtml = `
+          <button class="pv-btn pv-btn-primary" onclick="sendReq('${u.id}')">
+            <span class="material-symbols-outlined">person_add</span>Connect
+          </button>
+          <button class="pv-btn pv-btn-ghost" onclick="followUser('${u.id}')">
+            <span class="material-symbols-outlined">add</span>Follow
+          </button>
+          <div class="relative inline-block text-left" id="profile-actions-wrap">
+            <button class="pv-btn pv-btn-ghost" onclick="toggleProfileMenu()">
+              <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+            <div id="profile-actions-menu" class="hidden absolute right-0 top-full mt-1 w-44 bg-white dark:bg-darkSurface-card border border-gray-200 dark:border-darkSurface-border rounded-xl shadow-xl py-1 z-50">
+              <button onclick="blockUser('${u.id}')" class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 flex items-center gap-2 transition-all">
+                <span class="material-symbols-outlined text-base">block</span>Block
+              </button>
+            </div>
+          </div>`;
       }
+      acts.innerHTML = buttonsHtml;
     }
 
     // Locked profile UI
@@ -380,12 +476,25 @@
       document.getElementById('sec-activity').style.display = 'none';
       document.getElementById('sec-details').style.display = 'none';
       document.getElementById('sec-links').style.display = 'none';
-      const lockDiv = document.createElement('div');
-      lockDiv.style.cssText = 'text-align:center;padding:48px 24px;color:var(--sub);';
-      lockDiv.innerHTML = '<span class="material-symbols-outlined" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px">lock</span>' +
-        '<p style="font-weight:700;font-size:15px;color:var(--tx);margin-bottom:6px">Private Profile</p>' +
-        '<p style="font-size:13px;margin-bottom:16px">Connect with ' + name + ' to see their full profile.</p>';
-      document.querySelector('.pv-2col').appendChild(lockDiv);
+      
+      let lockDiv = document.getElementById('pv-locked-msg');
+      if (!lockDiv) {
+        lockDiv = document.createElement('div');
+        lockDiv.id = 'pv-locked-msg';
+        lockDiv.style.cssText = 'text-align:center;padding:48px 24px;color:var(--sub);grid-column:1/-1;';
+        lockDiv.innerHTML = '<span class="material-symbols-outlined" style="font-size:48px;color:var(--border);display:block;margin-bottom:12px">lock</span>' +
+          '<p style="font-weight:700;font-size:15px;color:var(--tx);margin-bottom:6px">Private Profile</p>' +
+          '<p style="font-size:13px;margin-bottom:16px">Connect with ' + name + ' to see their full profile.</p>';
+        document.querySelector('.pv-2col').appendChild(lockDiv);
+      }
+    } else {
+      const lockDiv = document.getElementById('pv-locked-msg');
+      if (lockDiv) lockDiv.remove();
+      
+      document.getElementById('sec-about').style.display = u.bio ? 'block' : 'none';
+      document.getElementById('sec-skills').style.display = skills.length ? 'block' : 'none';
+      document.getElementById('sec-activity').style.display = 'block';
+      document.getElementById('sec-details').style.display = 'block';
     }
 
     // Profile strength card (own profile only)
@@ -398,7 +507,7 @@
       let lvl = 'Beginner';
       let desc = 'Add a profile photo, bio, skills, and links to reach Intermediate.';
       if (pct >= 85) {
-        lvl = 'All-Star ðŸŒŸ';
+        lvl = 'All-Star 🌟';
         desc = 'Excellent! Your profile is complete and optimized for recruiters and teams.';
       } else if (pct >= 50) {
         lvl = 'Intermediate';
@@ -408,8 +517,6 @@
       document.getElementById('pv-strength-name').textContent = lvl;
       document.getElementById('pv-strength-desc').textContent = desc;
     }
-
-    updateConnections();
   }
 
   function renderActivity(posts, user) {
@@ -427,8 +534,7 @@
     el.innerHTML = posts.map(p => {
       const date = new Date(p.createdAt || p.created_at);
       const ago = timeAgo(date);
-      const content = (p.content||'').substring(0, 200) + ((p.content||'').length > 200 ? 'â€¦' : '');
-      // reaction count
+      const content = (p.content||'').substring(0, 200) + ((p.content||'').length > 200 ? '…' : '');
       const totalReactions = Object.values(p.reactions||{}).reduce((a,b)=>a+b,0);
       return `<div class="pv-activity-item">
         <div class="pv-activity-head">
@@ -437,8 +543,8 @@
         </div>
         <div class="pv-activity-content">${content}</div>
         <div class="pv-activity-stats">
-          ${totalReactions ? `<span>👍 ${totalReactions}</span>` : ''}
-          ${p.commentsCount ? `<span>💡¬ ${p.commentsCount}</span>` : ''}
+          ${totalReactions ? `<span>👍  ${totalReactions}</span>` : ''}
+          ${p.commentsCount ? `<span>💡  ${p.commentsCount}</span>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -460,7 +566,7 @@
   function renderProjects(projects) {
     const sec = document.getElementById('sec-projects');
     const el = document.getElementById('pv-projects');
-    if (!projects.length) return; // keep hidden with empty state
+    if (!projects.length) return;
     sec.style.display = 'block';
     el.innerHTML = projects.map(p => {
       const col = avC2(p.title||'P');
@@ -472,7 +578,7 @@
         onclick="window.location.href='/showcase?pid=${pid}'">
         <div style="height:60px;background:linear-gradient(135deg,${col}22,${col}44);display:flex;align-items:center;justify-content:center;position:relative">
           <div style="width:38px;height:38px;border-radius:10px;background:${col};color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center">${(p.title||'P')[0].toUpperCase()}</div>
-          ${p.featured?'<span style="position:absolute;top:6px;right:8px;background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px">â˜… Featured</span>':''}
+          ${p.featured?'<span style="position:absolute;top:6px;right:8px;background:#f59e0b;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:999px">★ Featured</span>':''}
         </div>
         <div style="padding:12px">
           <div style="font-size:13px;font-weight:800;color:var(--tx);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.title||'Untitled')}</div>
@@ -509,61 +615,113 @@
     }).join('');
   }
 
-
-
+  // ─── RELATIONSHIP LIFECYCLE ACTION HANDLERS ────────────────────────────────
   window.sendReq = async function(id) {
-    const btn = event.target.closest('button');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined">schedule</span>Sending...'; }
     try {
       const r = await fetch(API+'/api/friends/request/'+id, { method:'POST', headers:H });
       if (r.ok) { PHToast?.success('Friend request sent!'); loadProfile(); }
-      else { const e = await r.json().catch(()=>({})); PHToast?.error(e.error||'Failed to send request'); if(btn){btn.disabled=false;btn.innerHTML='<span class="material-symbols-outlined">person_add</span>Connect';}}
-    } catch(e) { PHToast?.error('Error sending request'); if(btn){btn.disabled=false;} }
+      else { const e = await r.json().catch(()=>({})); PHToast?.error(e.error||'Failed to send request'); }
+    } catch(e) { PHToast?.error('Error sending request'); }
   };
+
+  window.cancelReq = async function(id) {
+    try {
+      const r = await fetch(API+'/api/friends/request/'+id+'/cancel', { method:'DELETE', headers:H });
+      if (r.ok) { PHToast?.success('Request cancelled'); loadProfile(); }
+      else { const e = await r.json().catch(()=>({})); PHToast?.error(e.error||'Failed to cancel request'); }
+    } catch(e) { PHToast?.error('Error cancelling request'); }
+  };
+
   window.acceptReq = async function(id) {
     try {
       const r = await fetch(API+'/api/friends/accept/'+id, { method:'POST', headers:H });
-      r.ok ? (PHToast?.success('Connected! 🎉‰'), loadProfile()) : PHToast?.error('Failed');
-    } catch(e) { PHToast?.error('Error'); }
+      r.ok ? (PHToast?.success('Connected! 🎉'), loadProfile()) : PHToast?.error('Failed to accept');
+    } catch(e) { PHToast?.error('Error accepting request'); }
   };
 
   window.rejectReq = async function(id) {
     try {
       const r = await fetch(API+'/api/friends/reject/'+id, { method:'POST', headers:H });
       r.ok ? (PHToast?.success('Request ignored'), loadProfile()) : PHToast?.error('Failed');
-    } catch(e) { PHToast?.error('Error'); }
+    } catch(e) { PHToast?.error('Error declining request'); }
   };
 
-  window.toggleFriendsMenu = function() {
-    const menu = document.getElementById('friends-menu');
-    if (menu) menu.classList.toggle('hidden');
+  window.followUser = async function(id) {
+    try {
+      const r = await fetch(API+'/api/friends/follow/'+id, { method:'POST', headers:H });
+      r.ok ? (PHToast?.success('Started following'), loadProfile()) : PHToast?.error('Failed');
+    } catch(e) { PHToast?.error('Error following user'); }
   };
 
-  // Close friends dropdown on outside click
-  document.addEventListener('click', function(e) {
-    const wrap = document.getElementById('friends-btn-wrap');
-    const menu = document.getElementById('friends-menu');
-    if (wrap && menu && !wrap.contains(e.target)) menu.classList.add('hidden');
-  });
+  window.unfollowUser = async function(id) {
+    PHConfirm({
+      title: 'Unfollow student?',
+      message: 'Are you sure you want to stop following this student?',
+      confirmText: 'Unfollow',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const r = await fetch(API+'/api/friends/follow/'+id, { method:'DELETE', headers:H });
+          r.ok ? (PHToast?.success('Unfollowed'), loadProfile()) : PHToast?.error('Failed');
+        } catch(e) { PHToast?.error('Error unfollowing'); }
+      }
+    });
+  };
+
+  window.blockUser = async function(id) {
+    PHConfirm({
+      title: 'Block student?',
+      message: 'Blocked students cannot message you, see your profile, or view your posts.',
+      confirmText: 'Block',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const r = await fetch(API+'/api/friends/block/'+id, { method:'POST', headers:H });
+          r.ok ? (PHToast?.success('User blocked'), loadProfile()) : PHToast?.error('Failed');
+        } catch(e) { PHToast?.error('Error blocking user'); }
+      }
+    });
+  };
+
+  window.unblockUser = async function(id) {
+    try {
+      const r = await fetch(API+'/api/friends/block/'+id, { method:'DELETE', headers:H });
+      r.ok ? (PHToast?.success('User unblocked'), loadProfile()) : PHToast?.error('Failed');
+    } catch(e) { PHToast?.error('Error unblocking user'); }
+  };
 
   window.unfriend = async function(targetId) {
-    if (!confirm('Remove this person from your friends list?')) return;
-    try {
-      const r = await fetch(API + '/api/friends/' + targetId, { method: 'DELETE', headers: H });
-      if (r.ok) {
-        PHToast?.success('Removed from friends');
-        loadProfile(); // reload to update button state
-      } else {
-        const err = await r.json().catch(()=>({}));
-        PHToast?.error(err.error || 'Failed to unfriend');
+    PHConfirm({
+      title: 'Remove friend?',
+      message: 'Are you sure you want to remove this person from your friends list?',
+      confirmText: 'Remove',
+      cancelText: 'Cancel',
+      danger: true,
+      onConfirm: async () => {
+        try {
+          const r = await fetch(API + '/api/friends/' + targetId, { method: 'DELETE', headers: H });
+          if (r.ok) { PHToast?.success('Removed from friends'); loadProfile(); }
+          else { const err = await r.json().catch(()=>({})); PHToast?.error(err.error || 'Failed to unfriend'); }
+        } catch(e) { PHToast?.error('Network error'); }
       }
-    } catch(e) { PHToast?.error('Network error'); }
+    });
   };
 
-  // Escape HTML helper for profile page
-  function esc(s) { const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+  window.toggleProfileMenu = function() {
+    const menu = document.getElementById('profile-actions-menu');
+    if (menu) menu.classList.toggle('hidden');
+    event.stopPropagation();
+  };
 
-  // Endorse / un-endorse a skill (toggle)
+  // Close profile dropdown on outside click
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('profile-actions-menu');
+    if (menu && !menu.contains(e.target)) menu.classList.add('hidden');
+  });
+
+  // Endorse skill toggle
   window.endorseSkill = async function(targetUserId, skillId, btn) {
     btn.disabled = true;
     const cntEl = document.getElementById('endorse-cnt-' + skillId);
@@ -587,6 +745,230 @@
       }
     } catch(e) { PHToast?.error('Network error'); }
     btn.disabled = false;
+  };
+
+  // Stats list modals (Friends, Followers, Following)
+  window.openStatsModal = async function(type) {
+    let modal = document.getElementById('pv-stats-list-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'pv-stats-list-modal';
+      modal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        padding: 16px;
+        font-family: 'Inter', sans-serif;
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+      <div class="stats-modal-card" style="
+        background: var(--bg-surface-container-lowest, var(--ph-card, #fff));
+        border: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));
+        border-radius: 24px;
+        width: 100%;
+        max-width: 400px;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+        transform: scale(0.95);
+        transition: transform 0.2s ease;
+      ">
+        <div style="padding: 18px 20px; border-bottom: 1px solid var(--bd); display: flex; align-items: center; justify-content: space-between;">
+          <h3 style="font-size: 16px; font-weight: 800; color: var(--tx); margin: 0; text-transform: capitalize;">${type}</h3>
+          <button onclick="closeStatsModal()" style="border: none; background: none; color: var(--sub); cursor: pointer; display: flex; align-items: center; justify-content: center;"><span class="material-symbols-outlined" style="font-size: 20px;">close</span></button>
+        </div>
+        <div id="stats-modal-list" style="padding: 12px; max-height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+          <div style="text-align: center; padding: 24px; color: var(--sub);"><span class="material-symbols-outlined animate-spin" style="font-size: 24px; color: var(--ac)">progress_activity</span></div>
+        </div>
+      </div>
+    `;
+
+    modal.style.pointerEvents = 'all';
+    modal.style.opacity = '1';
+    setTimeout(() => {
+      modal.querySelector('.stats-modal-card').style.transform = 'scale(1)';
+    }, 10);
+
+    try {
+      const res = await fetch(API + `/api/users/${userId}/${type}`, { headers: H });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      const list = data[type] || data.friends || data.followers || data.following || [];
+      
+      const listEl = document.getElementById('stats-modal-list');
+      if (!list.length) {
+        listEl.innerHTML = `<div style="text-align: center; padding: 32px; color: var(--sub);"><span class="material-symbols-outlined" style="font-size: 36px; display: block; margin-bottom: 8px;">group</span>No entries found</div>`;
+        return;
+      }
+      
+      listEl.innerHTML = list.map(item => {
+        const nm = `${item.firstName || item.first_name || ''} ${item.lastName || item.last_name || ''}`.trim() || 'Anonymous';
+        const initial = nm[0]?.toUpperCase() || '?';
+        const c = item.avatarColor || item.avatar_color || '#6366f1';
+        const avatarHtml = item.avatar 
+          ? `<img src="${item.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+          : initial;
+          
+        return `
+          <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; background: var(--sf2); border: 1.5px solid var(--bd); cursor: pointer;" onclick="closeStatsModal(); location.href='/profile/view?id=${item.id}'">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: ${item.avatar ? 'transparent' : c}; color: #fff; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; overflow: hidden;">${avatarHtml}</div>
+            <div style="flex: 1; min-width: 0;">
+              <div style="font-size: 13px; font-weight: 700; color: var(--tx); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${nm}</div>
+              <div style="font-size: 11px; color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.university || ''} ${item.major ? '• ' + item.major : ''}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    } catch (err) {
+      document.getElementById('stats-modal-list').innerHTML = `<div style="text-align: center; padding: 24px; color: #ef4444;"><span class="material-symbols-outlined" style="font-size: 24px; display: block; margin-bottom: 8px;">error</span>Failed to load list</div>`;
+    }
+  };
+
+  window.closeStatsModal = function() {
+    const modal = document.getElementById('pv-stats-list-modal');
+    if (modal) {
+      modal.querySelector('.stats-modal-card').style.transform = 'scale(0.95)';
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+    }
+  };
+
+  function esc(s) { const d=document.createElement('div');d.textContent=s||'';return d.innerHTML; }
+
+  // Custom PHConfirm implementation
+  window.PHConfirm = function({ title, message, confirmText = 'Confirm', cancelText = 'Cancel', danger = false, onConfirm }) {
+    let modal = document.getElementById('ph-custom-confirm-modal');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'ph-custom-confirm-modal';
+      modal.style.cssText = `
+        position: fixed;
+        inset: 0;
+        z-index: 999999;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.22s ease;
+        padding: 16px;
+        font-family: 'Inter', sans-serif;
+      `;
+      document.body.appendChild(modal);
+    }
+    
+    const iconColor = danger ? '#ef4444' : '#6366f1';
+    const iconBg = danger ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)';
+    const iconBorder = danger ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)';
+    const confirmBtnColor = danger ? '#ef4444' : '#6366f1';
+    const confirmBtnHoverBg = danger ? 'rgba(239,68,68,0.06)' : 'rgba(99,102,241,0.06)';
+    
+    const iconSvg = danger 
+      ? `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`
+      : `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+
+    modal.innerHTML = `
+      <div class="lo-card" style="
+        background: var(--bg-surface-container-lowest, var(--ph-card, #fff));
+        border: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));
+        border-radius: 24px;
+        width: 100%;
+        max-width: 360px;
+        overflow: hidden;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+        transform: scale(0.9) translateY(10px);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      ">
+        <div class="lo-header" style="padding: 28px 24px 20px; text-align: center;">
+          <div class="lo-icon" style="
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: ${iconBg};
+            border: 1.5px solid ${iconBorder};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+          ">
+            ${iconSvg}
+          </div>
+          <h3 class="lo-title" style="
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-on-surface, var(--ph-txt, #0f172a));
+            margin: 0 0 8px;
+          ">${title}</h3>
+          <p class="lo-msg" style="
+            font-size: 13px;
+            color: var(--text-on-surface-variant, var(--ph-txt2, #475569));
+            line-height: 1.5;
+            margin: 0;
+          ">${message}</p>
+        </div>
+        <div class="lo-actions" style="display: flex; border-top: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));">
+          <button class="lo-btn lo-btn-cancel" id="ph-confirm-cancel" style="
+            flex: 1;
+            padding: 15px 12px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s;
+            color: var(--text-on-surface-variant, var(--ph-txt2, #475569));
+          ">${cancelText}</button>
+          <button class="lo-btn lo-btn-confirm" id="ph-confirm-ok" style="
+            flex: 1;
+            padding: 15px 12px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            transition: background 0.15s;
+            color: ${confirmBtnColor};
+            border-left: 1px solid var(--border-outline, var(--ph-border, #e2e8f0));
+          ">${confirmText}</button>
+        </div>
+      </div>
+    `;
+
+    const btnCancel = modal.querySelector('#ph-confirm-cancel');
+    const btnConfirm = modal.querySelector('#ph-confirm-ok');
+    btnCancel.addEventListener('mouseenter', () => btnCancel.style.background = 'var(--bg-surface-variant, #f1f5f9)');
+    btnCancel.addEventListener('mouseleave', () => btnCancel.style.background = 'none');
+    btnConfirm.addEventListener('mouseenter', () => btnConfirm.style.background = confirmBtnHoverBg);
+    btnConfirm.addEventListener('mouseleave', () => btnConfirm.style.background = 'none');
+
+    const container = modal.querySelector('.lo-card');
+    function hide() {
+      modal.style.opacity = '0';
+      modal.style.pointerEvents = 'none';
+      container.style.transform = 'scale(0.9) translateY(10px)';
+    }
+
+    btnCancel.addEventListener('click', hide);
+    btnConfirm.addEventListener('click', () => { hide(); if (typeof onConfirm === 'function') onConfirm(); });
+    modal.addEventListener('click', (e) => { if (e.target === modal) hide(); });
+
+    modal.style.pointerEvents = 'all';
+    modal.style.opacity = '1';
+    requestAnimationFrame(() => { container.style.transform = 'scale(1) translateY(0)'; });
   };
 
   loadProfile();

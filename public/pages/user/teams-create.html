@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-
-<html class="light" lang="en"><head>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Create New Hive | ProjectHive</title>
 <script>(function(){const t=localStorage.getItem("theme");if(t==="dark"||(!t&&matchMedia("(prefers-color-scheme:dark)").matches)){document.documentElement.classList.add("dark");}})()</script>
 <style>
   html { background-color: #F0F2F9 !important; }
@@ -9,294 +12,298 @@
   html.dark body { background-color: #0C0D14 !important; }
 </style>
 <link rel="icon" href="/favicon.png?v=2">
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>Create New Hive | ProjectHive</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            "colors": {
-                    "on-tertiary-fixed": "#1b1a29",
-                    "on-secondary": "#ffffff",
-                    "on-error": "#ffffff",
-                    "on-tertiary": "#ffffff",
-                    "surface-tint": "#544fc0",
-                    "on-secondary-container": "#fffbff",
-                    "on-error-container": "#93000a",
-                    "surface": "#f7f9fb",
-                    "primary-fixed-dim": "#c3c0ff",
-                    "surface-variant": "#e0e3e5",
-                    "on-tertiary-fixed-variant": "#464555",
-                    "tertiary-fixed-dim": "#c7c4d8",
-                    "secondary": "#712ae2",
-                    "on-tertiary-container": "#b0adc1",
-                    "on-background": "#191c1e",
-                    "surface-container": "#eceef0",
-                    "error-container": "#ffdad6",
-                    "on-secondary-fixed-variant": "#5a00c6",
-                    "on-surface-variant": "#464553",
-                    "secondary-container": "#8a4cfc",
-                    "secondary-fixed-dim": "#d2bbff",
-                    "primary-fixed": "#e2dfff",
-                    "on-primary": "#ffffff",
-                    "error": "#ba1a1a",
-                    "outline-variant": "#c8c4d5",
-                    "tertiary": "#2c2b3a",
-                    "surface-bright": "#f7f9fb",
-                    "background": "#f7f9fb",
-                    "on-surface": "#191c1e",
-                    "on-primary-fixed": "#0f0069",
-                    "primary": "#1f108e",
-                    "inverse-primary": "#c3c0ff",
-                    "outline": "#777584",
-                    "on-secondary-fixed": "#25005a",
-                    "tertiary-container": "#424151",
-                    "surface-container-lowest": "#ffffff",
-                    "on-primary-fixed-variant": "#3b35a7",
-                    "secondary-fixed": "#eaddff",
-                    "inverse-surface": "#2d3133",
-                    "surface-container-low": "#f2f4f6",
-                    "surface-container-high": "#e6e8ea",
-                    "on-primary-container": "#a9a7ff",
-                    "inverse-on-surface": "#eff1f3",
-                    "surface-container-highest": "#e0e3e5",
-                    "tertiary-fixed": "#e4e0f5",
-                    "surface-dim": "#d8dadc",
-                    "primary-container": "#3730a3"
-            },
-            "borderRadius": {
-                    "DEFAULT": "0.25rem",
-                    "lg": "0.5rem",
-                    "xl": "0.75rem",
-                    "full": "9999px"
-            },
-            "spacing": {
-                    "sidebar-width": "280px",
-                    "container-max": "1440px",
-                    "stack-md": "16px",
-                    "margin-mobile": "16px",
-                    "stack-sm": "8px",
-                    "stack-lg": "32px",
-                    "margin-desktop": "40px",
-                    "gutter": "24px"
-            },
-            "fontFamily": {
-                    "label-sm": ["Inter"],
-                    "headline-lg-mobile": ["Inter"],
-                    "label-md": ["Inter"],
-                    "headline-xl": ["Inter"],
-                    "headline-md": ["Inter"],
-                    "headline-lg": ["Inter"],
-                    "body-sm": ["Inter"],
-                    "body-lg": ["Inter"],
-                    "body-md": ["Inter"]
-            },
-            "fontSize": {
-                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
-                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                    "label-md": ["14px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
-                    "headline-xl": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
-                    "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
-                    "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
-                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
-                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
-            }
-          },
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "on-tertiary-fixed": "#1b1a29",
+          "on-secondary": "#ffffff",
+          "on-error": "#ffffff",
+          "on-tertiary": "#ffffff",
+          "surface-tint": "#544fc0",
+          "on-secondary-container": "#fffbff",
+          "on-error-container": "#93000a",
+          "surface": "#f7f9fb",
+          "primary-fixed-dim": "#c3c0ff",
+          "surface-variant": "#e0e3e5",
+          "on-tertiary-fixed-variant": "#464555",
+          "tertiary-fixed-dim": "#c7c4d8",
+          "secondary": "#712ae2",
+          "on-tertiary-container": "#b0adc1",
+          "on-background": "#191c1e",
+          "surface-container": "#eceef0",
+          "error-container": "#ffdad6",
+          "on-secondary-fixed-variant": "#5a00c6",
+          "on-surface-variant": "#464553",
+          "secondary-container": "#8a4cfc",
+          "secondary-fixed-dim": "#d2bbff",
+          "primary-fixed": "#e2dfff",
+          "on-primary": "#ffffff",
+          "error": "#ba1a1a",
+          "outline-variant": "#c8c4d5",
+          "tertiary": "#2c2b3a",
+          "surface-bright": "#f7f9fb",
+          "background": "#f7f9fb",
+          "on-surface": "#191c1e",
+          "on-primary-fixed": "#0f0069",
+          "primary": "#1f108e",
+          "inverse-primary": "#c3c0ff",
+          "outline": "#777584",
+          "on-secondary-fixed": "#25005a",
+          "tertiary-container": "#424151",
+          "surface-container-lowest": "#ffffff",
+          "on-primary-fixed-variant": "#3b35a7",
+          "secondary-fixed": "#eaddff",
+          "inverse-surface": "#2d3133",
+          "surface-container-low": "#f2f4f6",
+          "surface-container-high": "#e6e8ea",
+          "on-primary-container": "#a9a7ff",
+          "inverse-on-surface": "#eff1f3",
+          "surface-container-highest": "#e0e3e5",
+          "tertiary-fixed": "#e4e0f5",
+          "surface-dim": "#d8dadc",
+          "primary-container": "#3730a3"
         },
+        borderRadius: {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        spacing: {
+          "sidebar-width": "280px",
+          "container-max": "1440px",
+          "stack-md": "16px",
+          "margin-mobile": "16px",
+          "stack-sm": "8px",
+          "stack-lg": "32px",
+          "margin-desktop": "40px",
+          "gutter": "24px"
+        }
       }
-    </script>
+    }
+  }
+</script>
 <style>
-        body { font-family: 'Inter', sans-serif; }
-        .accent-gradient {
-            background: linear-gradient(135deg, #712ae2 0%, #1f108e 100%);
-        }
-        .soft-shadow {
-            box-shadow: 0px 4px 20px rgba(55, 48, 163, 0.04);
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: #712ae2 !important;
-            box-shadow: 0 0 0 2px rgba(113, 42, 226, 0.1);
-        }
-    </style>
+  body { font-family: 'Inter', sans-serif; }
+  .accent-gradient {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+  }
+  .soft-shadow {
+    box-shadow: 0px 8px 30px rgba(99, 102, 241, 0.05);
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #7c3aed !important;
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+  }
+  /* Custom switch */
+  .ph-segmented-control {
+    display: inline-flex;
+    background: var(--tw-surf2);
+    border: 1px solid var(--tw-bd);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .ph-segmented-btn {
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--tw-sub);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ph-segmented-btn.active {
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%);
+    color: #ffffff;
+  }
+</style>
 <link rel="stylesheet" href="/assets/css/ph-system.css?v=4">
 <script src="/assets/js/core/ph-sidebar.js?v=5"></script>
 <style>
-/* Teams Create — Mobile Responsive */
-@media(max-width:768px){
-  main.ml-\[260px\]{margin-left:0!important;padding:16px!important;padding-bottom:80px!important;}
-  .grid-cols-12{display:flex!important;flex-direction:column!important;}
-  section.col-span-8{width:100%!important;}
-  aside.col-span-4{width:100%!important;position:static!important;}
-  .grid.grid-cols-2{grid-template-columns:1fr!important;}
-  header.mb-stack-lg{flex-direction:column!important;align-items:flex-start!important;gap:12px!important;}
-  header .flex.items-center.gap-4:last-child{display:none!important;}
-}
-html.dark .bg-white{background:var(--tw-surf,#12131D)!important;border-color:var(--tw-bd,#242538)!important;}
-html.dark .bg-secondary-container{background:linear-gradient(135deg,#4338ca,#7c3aed)!important;}
+  @media(max-width:768px){
+    main.ml-\[260px\]{margin-left:0!important;padding:16px!important;padding-bottom:80px!important;}
+    .grid-cols-12{display:flex!important;flex-direction:column!important;}
+    section.col-span-8{width:100%!important;}
+    aside.col-span-4{width:100%!important;position:static!important;}
+  }
+  html.dark .bg-white { background: var(--tw-surf,#12131D)!important; border-color: var(--tw-bd,#242538)!important; }
 </style>
 <style id="ph-dark-override">
-/* ProjectHive — Dark mode override for Tailwind custom colors */
-:root{--tw-bg:#F8FAFC;--tw-surf:#FFFFFF;--tw-surf2:#F1F5F9;--tw-surf3:#E8EDF5;--tw-bd:#E2E8F0;--tw-tx:#0F172A;--tw-sub:#64748B;}
-html.dark{--tw-bg:#0B0C14;--tw-surf:#12131D;--tw-surf2:#181926;--tw-surf3:#1E2030;--tw-bd:#242538;--tw-tx:#E2DEEE;--tw-sub:#8A86A2;}
-body{background-color:var(--tw-bg)!important;color:var(--tw-tx)!important;}
-html.dark .bg-background{background-color:var(--tw-bg)!important;}
-html.dark .bg-surface,.dark .bg-surface{background-color:var(--tw-surf)!important;}
-html.dark .bg-surface-container-lowest{background-color:var(--tw-surf)!important;}
-html.dark .bg-surface-container-low{background-color:var(--tw-surf2)!important;}
-html.dark .bg-surface-container{background-color:var(--tw-surf3)!important;}
-html.dark .bg-surface-container-high{background-color:var(--tw-surf3)!important;}
-html.dark .bg-surface-variant{background-color:var(--tw-surf2)!important;}
-html.dark .border-surface-variant{border-color:var(--tw-bd)!important;}
-html.dark .border-outline-variant{border-color:var(--tw-bd)!important;}
-html.dark .divide-surface-variant>*+*{border-color:var(--tw-bd)!important;}
-html.dark .text-on-surface{color:var(--tw-tx)!important;}
-html.dark .text-on-surface-variant{color:var(--tw-sub)!important;}
-html.dark .text-on-background{color:var(--tw-tx)!important;}
-html.dark .text-outline{color:var(--tw-sub)!important;}
-html.dark header{background-color:rgba(11,12,20,.9)!important;border-bottom-color:var(--tw-bd)!important;}
-html.dark input,html.dark textarea,html.dark select{background-color:var(--tw-surf2)!important;color:var(--tw-tx)!important;border-color:var(--tw-bd)!important;}
-body,header,aside,main,section,div{transition:background-color .25s,border-color .25s,color .25s;}
-</style></head>
+  :root { --tw-bg:#F8FAFC; --tw-surf:#FFFFFF; --tw-surf2:#F1F5F9; --tw-bd:#E2E8F0; --tw-tx:#0F172A; --tw-sub:#64748B; }
+  html.dark { --tw-bg:#0B0C14; --tw-surf:#12131D; --tw-surf2:#181926; --tw-bd:#242538; --tw-tx:#E2DEEE; --tw-sub:#8A86A2; }
+  body { background-color: var(--tw-bg)!important; color: var(--tw-tx)!important; }
+  html.dark .bg-background { background-color: var(--tw-bg)!important; }
+  html.dark .bg-surface { background-color: var(--tw-surf)!important; }
+  html.dark input, html.dark textarea, html.dark select { background-color: var(--tw-surf2)!important; color: var(--tw-tx)!important; border-color: var(--tw-bd)!important; }
+</style>
+</head>
 <body class="bg-surface text-on-surface" data-no-float-theme="1">
 <div id="ph-sidebar"></div>
 
-<!-- Persistent Sidebar Navigation -->
+<main class="ml-[260px] p-margin-desktop min-h-screen max-md:ml-0 max-md:p-4 max-md:pb-20" style="max-width:1000px;margin-left:260px;margin-right:auto">
+  <header class="mb-8 flex justify-between items-center">
+    <div class="flex items-start gap-4">
+      <button onclick="history.back()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors shrink-0 text-on-surface shadow-sm border border-slate-200 dark:border-slate-800" title="Go Back">
+        <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+      </button>
+      <div>
+        <h2 class="text-2xl font-extrabold text-primary" id="page-title">Create Group</h2>
+        <p class="text-sm text-on-surface-variant" id="page-subtitle">Configure your workspace or community and start connecting.</p>
+      </div>
+    </div>
+  </header>
 
+  <div class="grid grid-cols-12 gap-gutter">
+    <!-- Creation Form -->
+    <section class="col-span-8">
+      <div class="bg-white rounded-2xl soft-shadow p-8 border border-surface-container-high">
+        
+        <!-- Segmented Type Selector -->
+        <div class="mb-6 flex flex-col gap-2">
+          <label class="block text-sm font-bold text-on-surface-variant">Group Category Type</label>
+          <div class="ph-segmented-control">
+            <button class="ph-segmented-btn active" type="button" onclick="setType('community')">
+              <span class="material-symbols-outlined">diversity_1</span>
+              <span>Community</span>
+            </button>
+            <button class="ph-segmented-btn" type="button" onclick="setType('team')">
+              <span class="material-symbols-outlined">hub</span>
+              <span>Team Hub</span>
+            </button>
+          </div>
+        </div>
 
-<!-- Main Content Canvas -->
-<main class="ml-[260px] p-margin-desktop min-h-screen max-md:ml-0 max-md:p-4 max-md:pb-20" style="max-width:900px;margin-left:260px;margin-right:auto">
-<header class="mb-stack-lg flex justify-between items-center">
-<div class="flex items-start gap-4">
-<button onclick="history.back()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center hover:bg-surface-container transition-colors shrink-0 text-on-surface" title="Go Back" aria-label="Go Back">
-  <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-</button>
-<div>
-<h2 class="font-headline-lg text-headline-lg text-primary">Assemble Your Hive</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">Create a new collaborative research team and start your next breakthrough.</p>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 text-on-surface-variant hover:bg-surface-container rounded-full transition-all" onclick="window.location.href='/notifications'" title="Notifications" aria-label="Notifications">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<div id="tc-avatar" class="h-10 w-10 rounded-full bg-primary/10 overflow-hidden border-2 border-surface-container flex items-center justify-center font-bold text-primary text-sm">?</div>
-</div>
-</header>
-<div class="grid grid-cols-12 gap-gutter">
-<!-- Creation Form -->
-<section class="col-span-8">
-<div class="bg-white rounded-xl soft-shadow p-8 border border-surface-container-high">
-<form class="space-y-6" id="hive-form">
-<div class="grid grid-cols-2 gap-6">
-<div class="col-span-2">
-<label for="hive-name-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Team Name</label>
-<input class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" id="hive-name-input" placeholder="e.g. Quantum Computing Research Lab" type="text" value="Project: Neural Synthesis"/>
-</div>
-<div class="col-span-2">
-<label for="hive-desc-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Description</label>
-<textarea class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md resize-none" id="hive-desc-input" placeholder="Briefly describe the research objectives and team culture..." rows="4">Investigating the intersection of artificial neural networks and biological synaptic plasticity to develop more efficient learning algorithms.</textarea>
-</div>
-<div>
-<label for="hive-category-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Category</label>
-<select class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" id="hive-category-input">
-<option value="Computer Science">Computer Science</option>
-<option value="Biotechnology">Biotechnology</option>
-<option value="Theoretical Physics">Theoretical Physics</option>
-<option value="Social Sciences">Social Sciences</option>
-<option value="Engineering">Engineering</option>
-</select>
-</div>
-<div>
-<label for="hive-max-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Max Members</label>
-<input id="hive-max-input" class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" max="20" min="2" type="number" value="6"/>
-</div>
-<div class="col-span-2">
-<label for="tag-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">Required Skills (Tags)</label>
-<div id="tag-container" class="flex flex-wrap gap-2 p-3 border border-outline-variant bg-surface-container-lowest rounded-lg">
-  <input id="tag-input" class="border-none bg-transparent p-0 focus:ring-0 font-body-sm text-body-sm flex-1 min-w-[100px]" placeholder="Type skill and press Enter..." type="text"/>
-</div>
-</div>
-<div>
-<label for="visibility-btn" class="block font-label-md text-label-md text-on-surface-variant mb-2">Visibility</label>
-<div class="flex items-center gap-4 py-2">
-<span class="font-body-md text-body-md">Open to Applications</span>
-<button id="visibility-btn" aria-label="Toggle open to applications visibility" class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
-<div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
-</button>
-</div>
-</div>
-<div>
-<label for="hive-link-input" class="block font-label-md text-label-md text-on-surface-variant mb-2">External Project Link (Optional)</label>
-<input id="hive-link-input" class="w-full px-4 py-3 rounded-lg border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all font-body-md" placeholder="https://github.com/..." type="url"/>
-</div>
-</div>
-<div class="pt-6 border-t border-surface-container">
-<button id="btn-submit" class="accent-gradient text-white w-full py-4 rounded-xl font-headline-md text-headline-md flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg" type="submit">
-<span class="material-symbols-outlined">hub</span>
-                                Create Hive
-                            </button>
-</div>
-</form>
-</div>
-</section>
-<!-- Live Preview -->
-<aside class="col-span-4 sticky top-margin-desktop">
-<div class="flex flex-col gap-6">
-<h3 class="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest px-1">Live Preview</h3>
-<!-- Card Preview -->
-<div class="bg-white rounded-xl soft-shadow overflow-hidden border border-surface-container-high transition-transform duration-300">
-<div class="h-32 bg-secondary-container relative overflow-hidden">
-<div class="absolute inset-0 opacity-20">
+        <form class="space-y-6" id="hive-form">
+          <div class="grid grid-cols-2 gap-6">
+            
+            <div class="col-span-2">
+              <label for="hive-name-input" class="block text-sm font-bold text-on-surface-variant mb-2" id="lbl-name">Community Name</label>
+              <input class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all text-sm" id="hive-name-input" placeholder="e.g. Design Enthusiasts Club" type="text" required/>
+            </div>
 
-</div>
-<div class="absolute bottom-4 left-4">
-<span class="px-3 py-1 bg-white/90 backdrop-blur text-primary text-[10px] font-bold rounded-full uppercase tracking-widest shadow-sm" id="preview-category">Computer Science</span>
-</div>
-</div>
-<div class="p-6">
-<h4 class="font-headline-md text-headline-md text-primary mb-2 line-clamp-1" id="preview-name">Project: Neural Synthesis</h4>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-4 line-clamp-2" id="preview-desc">Investigating the intersection of artificial neural networks and biological synaptic plasticity...</p>
-<div class="mb-4">
-<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-2 tracking-tighter">Looking For</p>
-<div class="flex flex-wrap gap-2" id="preview-tags">
-  <span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">Python</span>
-</div>
-</div>
-<div class="flex items-center justify-between pt-4 border-t border-surface-container">
-<div class="flex -space-x-2">
-<div class="h-8 w-8 rounded-full border-2 border-white bg-tertiary-fixed flex items-center justify-center text-[10px] font-bold" id="preview-leader-av">?</div>
-<div class="h-8 w-8 rounded-full border-2 border-white bg-primary-fixed-dim flex items-center justify-center">
-<span class="material-symbols-outlined text-[16px]">add</span>
-</div>
-</div>
-<div class="flex items-center gap-1 text-on-surface-variant font-label-sm text-label-sm">
-<span class="material-symbols-outlined text-[18px]">group</span>
-<span id="preview-members">1/6</span>
-</div>
-</div>
-</div>
-</div>
-<!-- Help Tooltip -->
-<div class="bg-tertiary-container text-on-tertiary-container p-5 rounded-xl flex gap-4">
-<span class="material-symbols-outlined text-primary-fixed-dim">info</span>
-<div>
-<p class="font-label-md text-label-md text-white mb-1">Pro Tip</p>
-<p class="text-body-sm text-body-sm opacity-90">Detailed descriptions attract 40% more qualified researchers. Highlight your tech stack clearly.</p>
-</div>
-</div>
-</div>
-</aside>
-</div>
+            <div class="col-span-2">
+              <label for="hive-desc-input" class="block text-sm font-bold text-on-surface-variant mb-2">Description</label>
+              <textarea class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all text-sm resize-none" id="hive-desc-input" placeholder="Briefly describe the objectives, rules, and vibes..." rows="4" required></textarea>
+            </div>
+
+            <div class="col-span-2 md:col-span-1">
+              <label for="hive-category-input" class="block text-sm font-bold text-on-surface-variant mb-2">Category</label>
+              <select class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all text-sm" id="hive-category-input">
+                <!-- Populated dynamically by JS -->
+              </select>
+            </div>
+
+            <div class="col-span-2 md:col-span-1" id="row-max-members" style="display:none">
+              <label for="hive-max-input" class="block text-sm font-bold text-on-surface-variant mb-2">Max Members</label>
+              <input id="hive-max-input" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all text-sm" max="100" min="2" type="number" value="6"/>
+            </div>
+
+            <div class="col-span-2">
+              <label for="tag-input" class="block text-sm font-bold text-on-surface-variant mb-2" id="lbl-tags">Interests / Tags</label>
+              <div id="tag-container" class="flex flex-wrap gap-2 p-3 border border-outline-variant bg-surface-container-lowest rounded-xl min-h-[48px] items-center">
+                <input id="tag-input" class="border-none bg-transparent p-0 focus:ring-0 text-sm flex-1 min-w-[120px]" placeholder="Type and press Enter..." type="text"/>
+              </div>
+            </div>
+
+            <!-- Banner Theme Colors (Community only) -->
+            <div class="col-span-2" id="row-theme-color">
+              <label class="block text-sm font-bold text-on-surface-variant mb-3">Community Theme Color</label>
+              <div class="flex gap-3">
+                <button type="button" onclick="setThemeColor('#6366f1')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-transparent transition-all" style="background:#6366f1" id="btn-col-indigo"></button>
+                <button type="button" onclick="setThemeColor('#7c3aed')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-transparent transition-all" style="background:#7c3aed" id="btn-col-purple"></button>
+                <button type="button" onclick="setThemeColor('#ec4899')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-transparent transition-all" style="background:#ec4899" id="btn-col-pink"></button>
+                <button type="button" onclick="setThemeColor('#10b981')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-transparent transition-all" style="background:#10b981" id="btn-col-emerald"></button>
+                <button type="button" onclick="setThemeColor('#f59e0b')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-transparent transition-all" style="background:#f59e0b" id="btn-col-amber"></button>
+                <button type="button" onclick="setThemeColor('#3b82f6')" class="w-8 h-8 rounded-full border-2 border-white ring-2 ring-transparent transition-all" style="background:#3b82f6" id="btn-col-blue"></button>
+              </div>
+            </div>
+
+            <div class="col-span-2 md:col-span-1">
+              <label class="block text-sm font-bold text-on-surface-variant mb-2">Visibility</label>
+              <div class="flex items-center gap-4 py-2">
+                <span class="text-sm font-medium" id="lbl-visibility-desc">Public (Instant Join)</span>
+                <button id="visibility-btn" aria-label="Toggle open to applications visibility" class="w-12 h-6 bg-secondary rounded-full relative transition-colors duration-200 focus:outline-none" type="button">
+                  <div class="absolute right-1 top-1 bg-white w-4 h-4 rounded-full shadow-sm"></div>
+                </button>
+              </div>
+            </div>
+
+            <div class="col-span-2 md:col-span-1" id="row-link" style="display:none">
+              <label for="hive-link-input" class="block text-sm font-bold text-on-surface-variant mb-2">Project Repository/Link</label>
+              <input id="hive-link-input" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-surface-container-lowest focus:ring-0 transition-all text-sm" placeholder="https://github.com/..." type="url"/>
+            </div>
+
+          </div>
+
+          <div class="pt-6 border-t border-surface-container">
+            <button id="btn-submit" class="accent-gradient text-white w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-95 transition-all shadow-lg text-sm" type="submit">
+              <span class="material-symbols-outlined">check_circle</span>
+              <span id="btn-submit-txt">Create Community</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Live Preview -->
+    <aside class="col-span-4 sticky top-12">
+      <div class="flex flex-col gap-6">
+        <h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest px-1">Live Card Preview</h3>
+        
+        <!-- Live Card -->
+        <div class="bg-white rounded-2xl soft-shadow overflow-hidden border border-surface-container-high transition-transform duration-300">
+          <div id="preview-banner" class="h-28 relative overflow-hidden transition-all duration-300" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.35))">
+            <!-- Icon/Avatar Overlay -->
+            <div id="preview-avatar" class="absolute left-6 bottom-[-20px] w-14 h-14 rounded-xl text-white font-extrabold text-xl flex items-center justify-center shadow-md border-2 border-white transition-all duration-300" style="background: #6366f1">
+              C
+            </div>
+          </div>
+          <div class="p-6 pt-8">
+            <span class="px-2.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-extrabold rounded-full uppercase tracking-wider shadow-sm border border-slate-200/50 dark:border-slate-700/50 text-indigo-500" id="preview-category">Study</span>
+            <h4 class="text-base font-bold text-slate-800 dark:text-slate-100 mt-3 mb-1 line-clamp-1" id="preview-name">New Group Title</h4>
+            <p class="text-xs text-on-surface-variant line-clamp-2 leading-relaxed" id="preview-desc">Enter description to see preview...</p>
+            
+            <div class="my-4">
+              <div class="flex flex-wrap gap-1.5" id="preview-tags">
+                <span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[10px] font-medium border border-outline-variant/30">Welcome</span>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-3 border-t border-surface-container-high">
+              <div class="flex -space-x-1.5" id="preview-members-avatars">
+                <div class="h-6 w-6 rounded-full border border-white bg-slate-300 flex items-center justify-center text-[9px] font-bold text-slate-700" id="preview-leader-av">?</div>
+              </div>
+              <div class="flex items-center gap-1 text-on-surface-variant text-[11px] font-semibold">
+                <span class="material-symbols-outlined text-[16px]">group</span>
+                <span id="preview-members">1 member</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-indigo-50 dark:bg-slate-900/50 text-indigo-900 dark:text-indigo-200 p-5 rounded-2xl flex gap-3 border border-indigo-100/50 dark:border-indigo-900/20">
+          <span class="material-symbols-outlined text-indigo-500">info</span>
+          <div>
+            <p class="text-xs font-bold mb-1">Creation Tip</p>
+            <p class="text-xs opacity-90 leading-relaxed" id="lbl-pro-tip">Communities are open social groups designed for instant communication and events. No member caps by default.</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
 </main>
 
 <script src="/assets/js/core/api.js"></script>
@@ -319,7 +326,7 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
   // 2. Initialize Sidebar
   PHSidebar.init('teams', '../../');
 
-  // 3. Form fields
+  // Form elements
   const form = document.getElementById('hive-form');
   const nameInput = document.getElementById('hive-name-input');
   const descInput = document.getElementById('hive-desc-input');
@@ -331,19 +338,23 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
   const visibilityBtn = document.getElementById('visibility-btn');
   const submitBtn = document.getElementById('btn-submit');
 
-  // Previews
+  // Preview elements
   const previewName = document.getElementById('preview-name');
   const previewDesc = document.getElementById('preview-desc');
   const previewCategory = document.getElementById('preview-category');
   const previewTags = document.getElementById('preview-tags');
   const previewMembers = document.getElementById('preview-members');
   const previewLeaderAv = document.getElementById('preview-leader-av');
+  const previewBanner = document.getElementById('preview-banner');
+  const previewAvatar = document.getElementById('preview-avatar');
 
-  // State
-  let tags = ['Python', 'TensorFlow', 'Data Analysis'];
+  // State Variables
+  let groupType = 'community'; // 'community' or 'team'
+  let tags = [];
   let isOpen = true;
+  let themeColor = '#6366f1';
 
-  // Set initial preview leader initials
+  // Load User details
   try {
     const cached = localStorage.getItem('ph-user-cache');
     if (cached) {
@@ -354,16 +365,115 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
     }
   } catch(_) {}
 
-  // Render dynamic tags
+  // Set active group type & swap layouts
+  window.setType = function(type) {
+    groupType = type;
+    
+    // Toggle active tabs
+    const btns = document.querySelectorAll('.ph-segmented-control .ph-segmented-btn');
+    btns[0].classList.toggle('active', type === 'community');
+    btns[1].classList.toggle('active', type === 'team');
+
+    // Update labels and display attributes
+    document.getElementById('lbl-name').textContent = type === 'community' ? 'Community Name' : 'Team Name';
+    nameInput.placeholder = type === 'community' ? 'e.g. Design Enthusiasts Club' : 'e.g. Quantum Computing Research Lab';
+    document.getElementById('lbl-tags').textContent = type === 'community' ? 'Interests / Tags' : 'Required Skills (Tags)';
+    document.getElementById('btn-submit-txt').textContent = type === 'community' ? 'Create Community' : 'Create Team Hub';
+
+    // Show/Hide Fields
+    document.getElementById('row-max-members').style.display = type === 'team' ? 'block' : 'none';
+    document.getElementById('row-link').style.display = type === 'team' ? 'block' : 'none';
+    document.getElementById('row-theme-color').style.display = type === 'community' ? 'block' : 'none';
+
+    // Update visibility defaults
+    isOpen = true;
+    updateVisibilityUI();
+
+    // Populate categories
+    populateCategories();
+
+    // Update dynamic pro tips
+    document.getElementById('lbl-pro-tip').textContent = type === 'community' 
+      ? 'Communities are open social groups designed for instant communication and events. No member caps by default.'
+      : 'Team Hubs are professional workspaces built for focused engineering. They support roadmaps, task boards, and member request approvals.';
+
+    updatePreview();
+  };
+
+  // Populate Categories drop-down
+  function populateCategories() {
+    if (groupType === 'community') {
+      categoryInput.innerHTML = `
+        <option value="community:Study">Study Groups</option>
+        <option value="community:Gaming">Gaming</option>
+        <option value="community:Tech">Tech & Coding</option>
+        <option value="community:Social">Social & Hangout</option>
+        <option value="community:Hobby">Hobbies & Creative</option>
+      `;
+    } else {
+      categoryInput.innerHTML = `
+        <option value="Computer Science">Computer Science</option>
+        <option value="Biotechnology">Biotechnology</option>
+        <option value="Theoretical Physics">Theoretical Physics</option>
+        <option value="Social Sciences">Social Sciences</option>
+        <option value="Engineering">Engineering</option>
+      `;
+    }
+    categoryInput.dispatchEvent(new Event('change'));
+  }
+
+  // Toggle Theme color selection
+  window.setThemeColor = function(color) {
+    themeColor = color;
+    // Remove ring border from color circles
+    const colors = ['indigo', 'purple', 'pink', 'emerald', 'amber', 'blue'];
+    colors.forEach(col => {
+      document.getElementById(`btn-col-${col}`).style.transform = 'scale(1)';
+    });
+    
+    // Scale selected circle
+    const colorMap = { '#6366f1': 'indigo', '#7c3aed': 'purple', '#ec4899': 'pink', '#10b981': 'emerald', '#f59e0b': 'amber', '#3b82f6': 'blue' };
+    const name = colorMap[color];
+    if (name) {
+      document.getElementById(`btn-col-${name}`).style.transform = 'scale(1.2)';
+    }
+
+    updatePreview();
+  };
+
+  // Update visibility button styles
+  function updateVisibilityUI() {
+    const indicator = visibilityBtn.querySelector('div');
+    if (groupType === 'community') {
+      document.getElementById('lbl-visibility-desc').textContent = isOpen ? 'Public Community (Instant Join)' : 'Private Community (Invite Only)';
+    } else {
+      document.getElementById('lbl-visibility-desc').textContent = isOpen ? 'Open (Request Queue)' : 'Private (Invite Only)';
+    }
+
+    if (isOpen) {
+      visibilityBtn.classList.replace('bg-surface-variant', 'bg-secondary');
+      indicator.classList.replace('left-1', 'right-1');
+    } else {
+      visibilityBtn.classList.replace('bg-secondary', 'bg-surface-variant');
+      indicator.classList.replace('right-1', 'left-1');
+    }
+  }
+
+  // Visibility toggle button click listener
+  visibilityBtn.addEventListener('click', () => {
+    isOpen = !isOpen;
+    updateVisibilityUI();
+  });
+
+  // Render tag pills
   function renderTags() {
-    // Clear all except input
     const pills = tagContainer.querySelectorAll('.ph-tag-pill');
     pills.forEach(p => p.remove());
 
     tags.forEach(t => {
       const d = document.createElement('div');
-      d.className = 'ph-tag-pill flex items-center gap-1 bg-secondary-fixed text-on-secondary-fixed px-3 py-1 rounded-full text-label-sm font-label-sm';
-      d.innerHTML = `${t} <button class="material-symbols-outlined text-[14px]" type="button" aria-label="Remove tag">close</button>`;
+      d.className = 'ph-tag-pill flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-full text-xs font-semibold';
+      d.innerHTML = `${t} <button class="material-symbols-outlined text-[14px]" type="button">close</button>`;
       d.querySelector('button').onclick = () => {
         tags = tags.filter(x => x !== t);
         renderTags();
@@ -371,13 +481,9 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
       tagContainer.insertBefore(d, tagInput);
     });
 
-    // Update preview
-    previewTags.innerHTML = tags.length
-      ? tags.map(t => `<span class="px-2 py-0.5 bg-surface-container text-on-surface-variant rounded text-[11px] font-medium border border-outline-variant/30">${t}</span>`).join('')
-      : '<span class="text-on-surface-variant text-[11px] italic">No skills listed</span>';
+    updatePreview();
   }
 
-  // Handle enter key to add tags
   tagInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -390,49 +496,58 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
     }
   });
 
-  // Inputs live preview sync
-  nameInput.addEventListener('input', (e) => {
-    previewName.textContent = e.target.value.trim() || 'New Project Title';
-  });
-  descInput.addEventListener('input', (e) => {
-    previewDesc.textContent = e.target.value.trim() || 'Brief project description...';
-  });
-  categoryInput.addEventListener('change', (e) => {
-    previewCategory.textContent = e.target.value;
-  });
-  maxInput.addEventListener('input', (e) => {
-    previewMembers.textContent = `1/${e.target.value || 6}`;
-  });
+  // Update dynamic preview card
+  function updatePreview() {
+    previewName.textContent = nameInput.value.trim() || (groupType === 'community' ? 'My New Community' : 'My New Team');
+    previewDesc.textContent = descInput.value.trim() || 'Describe your group to see it live here.';
 
-  // Visibility toggle
-  visibilityBtn.addEventListener('click', () => {
-    isOpen = !isOpen;
-    const indicator = visibilityBtn.querySelector('div');
-    if (isOpen) {
-      visibilityBtn.classList.replace('bg-surface-variant', 'bg-secondary');
-      indicator.classList.replace('left-1', 'right-1');
+    const selectedCat = categoryInput.value || '';
+    const cleanCat = selectedCat.startsWith('community:') ? selectedCat.replace('community:', '') : selectedCat;
+    previewCategory.textContent = cleanCat || 'General';
+
+    // Tags list preview
+    previewTags.innerHTML = tags.length
+      ? tags.map(t => `<span class="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-semibold border border-slate-200 dark:border-slate-700 rounded text-on-surface-variant">${t}</span>`).join('')
+      : '<span class="text-xs text-on-surface-variant italic">No tags</span>';
+
+    // Theme Color styling
+    const colHex = groupType === 'community' ? themeColor : '#7c3aed';
+    previewBanner.style.background = `linear-gradient(135deg, ${colHex}20, ${colHex}50)`;
+    previewAvatar.style.background = colHex;
+    previewAvatar.textContent = (nameInput.value.trim() || 'G').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+
+    // Members count display
+    if (groupType === 'community') {
+      previewMembers.textContent = '1 member';
     } else {
-      visibilityBtn.classList.replace('bg-secondary', 'bg-surface-variant');
-      indicator.classList.replace('right-1', 'left-1');
+      previewMembers.textContent = `1/${maxInput.value || 6} members`;
     }
-  });
+  }
 
-  // Init tags list on load
-  renderTags();
+  // Bind live listeners
+  nameInput.addEventListener('input', updatePreview);
+  descInput.addEventListener('input', updatePreview);
+  categoryInput.addEventListener('change', updatePreview);
+  maxInput.addEventListener('input', updatePreview);
 
-  // Form submission API call
+  // Form submission
   form.onsubmit = async (e) => {
     e.preventDefault();
     const name = nameInput.value.trim();
-    const description = descInput.value.trim();
+    const rawDesc = descInput.value.trim();
     const category = categoryInput.value;
     const maxMembers = parseInt(maxInput.value) || 6;
     const externalLink = linkInput.value.trim();
 
-    if (!name) { PHToast?.error('Please enter a team name'); return; }
+    if (!name) { PHToast?.error('Please enter a name'); return; }
 
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Creating...';
+
+    // For Community, include themeColor inside JSON description
+    const description = groupType === 'community' 
+      ? JSON.stringify({ text: rawDesc, themeColor })
+      : JSON.stringify({ text: rawDesc, github: externalLink, figma: '', website: '' });
 
     const API_BASE = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
       ? (location.port === '3000' ? 'http://localhost:5000' : '')
@@ -458,21 +573,27 @@ body,header,aside,main,section,div{transition:background-color .25s,border-color
 
       const data = await res.json();
       if (res.ok) {
-        PHToast?.success('Team created successfully!');
+        PHToast?.success(groupType === 'community' ? 'Community created successfully!' : 'Team Hub created successfully!');
         setTimeout(() => {
           window.location.href = '/teams';
         }, 1200);
       } else {
-        PHToast?.error(data.error || 'Failed to create team');
+        PHToast?.error(data.error || 'Failed to create group');
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<span class="material-symbols-outlined">hub</span> Create Hive';
+        submitBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Create';
       }
     } catch(err) {
-      PHToast?.error('Cannot connect to server. Try again.');
+      PHToast?.error('Server offline. Try again.');
       submitBtn.disabled = false;
-      submitBtn.innerHTML = '<span class="material-symbols-outlined">hub</span> Create Hive';
+      submitBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Create';
     }
   };
+
+  // Set default view on load
+  setType('community');
+  setThemeColor('#6366f1');
+
 })();
 </script>
-<script src="/assets/js/core/info-modal.js"></script></body></html>
+</body>
+</html>

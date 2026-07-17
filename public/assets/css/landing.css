@@ -31,7 +31,11 @@ html.dark {
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+  overflow-x: hidden;
+}
 
 body {
   background: var(--bg);
@@ -40,6 +44,8 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  width: 100%;
 }
 
 /* Grain overlay — gives that hand-crafted texture */
@@ -534,6 +540,7 @@ a { color: inherit; text-decoration: none; }
   .ln-section-title { font-size: 28px; margin-bottom: 36px; }
   .ln-mobile-nav { padding: 12px 16px; }
   .ln-mobile-link { padding: 14px 16px; font-size: 16px; min-height: 48px; display: flex; align-items: center; }
+  .ln-browser-url { margin: 0 8px !important; font-size: 10px !important; padding: 4px 8px !important; }
   .ln-footer-links { flex-wrap: wrap; justify-content: center; gap: 16px; }
 }
 

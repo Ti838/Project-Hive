@@ -1,605 +1,646 @@
-/* ══════════════════════════════════════════════════════════════════
-   PROJECTHIVE - COMPREHENSIVE MOBILE RESPONSIVE FIXES
-   Ensures 100% mobile compatibility for all user and admin pages
-   ══════════════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   PROJECTHIVE — COMPLETE RESPONSIVE AUDIT FIX v3.0
+   Zero horizontal scroll · All breakpoints 320px–2560px
+   Covers: Every page, component, modal, drawer, table, card, form
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* ═══ Global Mobile Fixes ═══ */
-@media (max-width: 768px) {
-  /* Prevent horizontal scrolling without locking vertical scroll */
-  html {
-    overflow-x: visible !important;
-    max-width: 100vw !important;
-    width: 100% !important;
+/* ──────────────────────────────────────────
+   LAYER 0 — GLOBAL CONTAINMENT (all screens)
+   ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  overflow-x: hidden;
+  max-width: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+img, video, iframe, canvas, svg, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+input, textarea, select, button {
+  max-width: 100%;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+table { border-collapse: collapse; }
+
+/* ──────────────────────────────────────────
+   LAYER 1 — WIDE DESKTOP (1536px–2560px)
+   ────────────────────────────────────────── */
+@media (min-width: 1536px) {
+  .ph-page > main,
+  .fp-wrap, .nt-wrap, .saved-wrap,
+  .main-wrap, .project-showcase {
+    max-width: 1440px;
+    margin-left: auto;
+    margin-right: auto;
   }
-  body {
+  .groups-grid, .teams-grid, .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   LAYER 2 — STANDARD DESKTOP (1025px–1535px)
+   ────────────────────────────────────────── */
+@media (min-width: 1025px) and (max-width: 1535px) {
+  .groups-grid, .teams-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  }
+}
+
+/* ──────────────────────────────────────────
+   LAYER 3 — TABLET (769px–1024px)
+   ────────────────────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .ph-page { margin-left: 72px !important; }
+
+  .groups-grid, .teams-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .projects-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .stats, .sum-card, .quick-actions,
+  .analytics-grid, .ph-stats, .pv-2col {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+  main > aside {
+    display: none !important;
+  }
+  /* Dashboard stats — 2×2 on tablet */
+  .grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  /* Teams discover detail col hidden on tablet */
+  .discover-detail-col { display: none !important; }
+}
+
+/* ──────────────────────────────────────────
+   LAYER 4 — LARGE MOBILE + SMALL TABLET (600px–768px)
+   ────────────────────────────────────────── */
+@media (min-width: 600px) and (max-width: 768px) {
+  .ucard-grid, #fp-grid, #grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .stats, .sum-card, .quick-actions, .analytics-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* ══════════════════════════════════════════
+   LAYER 5 — MOBILE (≤768px) — PRIMARY FIXES
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ─── App Shell ─── */
+  html, body {
     overflow-x: hidden !important;
     max-width: 100vw !important;
     width: 100% !important;
   }
 
-  * {
-    box-sizing: border-box !important;
-  }
-
-  /* Main content areas with sidebar offset */
-  .ml-\[260px\] {
+  .ph-page,
+  .ml-\[260px\],
+  div[class*="ml-[260px]"] {
     margin-left: 0 !important;
+    width: 100% !important;
     max-width: 100vw !important;
+    overflow-x: hidden !important;
   }
 
-  /* Ensure page-level containers respect viewport without breaking nested UI */
-  main, section, article, .ph-page, .ph-content, .ml-\[260px\] {
-    max-width: 100vw !important;
-  }
+  body { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
 
-  /* Text content - prevent overflow (scoped to text elements only) */
-  h1, h2, h3, h4, h5, h6, p, label {
+  /* ─── Typography ─── */
+  h1 { font-size: clamp(20px, 5vw, 28px) !important; }
+  h2 { font-size: clamp(17px, 4.5vw, 24px) !important; }
+  h3 { font-size: clamp(15px, 4vw, 20px) !important; }
+  p, li, span, label {
     word-wrap: break-word !important;
     overflow-wrap: break-word !important;
   }
 
-  /* Images and videos - always responsive (max-width only; height left to components) */
-  img, video, iframe {
-    max-width: 100% !important;
+  /* ─── Topbar / Header ─── */
+  .ph-topbar,
+  header.fixed,
+  header.ph-topbar,
+  div.ph-topbar {
+    height: auto !important;
+    min-height: 56px !important;
+    padding: 8px 14px !important;
+    gap: 10px !important;
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
   }
 
-  /* Buttons and inputs */
-  button, input, textarea, select {
-    max-width: 100% !important;
-  }
-
-  /* Cards and containers */
-  .ph-card,
-  .bg-surface-container-lowest,
-  .bg-surface-container-low,
-  .bg-surface-container,
-  .feed-card-shadow,
-  .sb-card,
-  .stat-card {
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-  }
-
-  /* Only known filter/action rows should wrap; core app bars and chat rows stay stable */
-  .top-row, .search-card, .stats, .sum-card, .card-hdr, .post-actions, .pv-actions {
-    flex-wrap: wrap !important;
-  }
-
-  /* Grid layouts */
-  .grid:not(.quick-actions):not(.stats):not(.sum-card) {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Remove excessive padding on mobile */
-  main {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
-
-  /* Bottom navigation spacing */
-  body {
-    padding-bottom: 80px !important;
-  }
-}
-
-/* ═══ Feed Page Specific ═══ */
-@media (max-width: 768px) {
-  /* Feed main container */
-  main.pt-\[96px\] {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-  }
-
-  /* Feed cards */
-  .feed-card-shadow {
-    border-radius: 16px !important;
-    margin-bottom: 16px !important;
-  }
-
-  /* Post creator */
-  #post-text {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Post type selector - horizontal scroll */
-  #post-type-selector {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scroll-behavior: smooth !important;
-  }
-
-  /* Post type buttons */
-  .post-type-btn {
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-  }
-
-  /* Feed header */
   header.fixed {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
+    left: 0 !important;
+    right: 0 !important;
+    position: fixed !important;
   }
 
-  /* Search bar on mobile */
-  .relative.flex-1.max-w-sm {
-    max-width: 100% !important;
+  .ph-topbar h1, header h1 {
+    font-size: 15px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
   }
 
-  /* Post images */
-  .rounded-xl.overflow-hidden img {
-    width: 100% !important;
-    max-height: 400px !important;
-    object-fit: cover !important;
-  }
-
-  /* Comments section */
-  .comments-list {
-    max-width: 100% !important;
+  /* ─── Main Content ─── */
+  main,
+  .ph-page > main,
+  div[class*="ml-[260px]"] > main:not(.msg-chat-area) {
+    margin-left: 0 !important;
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    padding-top: 72px !important;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+    max-width: 100vw !important;
     overflow-x: hidden !important;
   }
-}
 
-/* ═══ Dashboard Page Specific ═══ */
-@media (max-width: 768px) {
-  /* Dashboard main container */
-  main[class*="ml-"] {
-    margin-left: 0 !important;
-    padding: 84px 12px 80px !important;
+  .fp-wrap, .nt-wrap, .saved-wrap,
+  .main-wrap, .project-showcase {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+    max-width: 100% !important;
   }
 
-  /* Dashboard cards */
-  .dash-card {
-    width: 100% !important;
-    margin-bottom: 16px !important;
+  /* ─── Hero sections ─── */
+  .hero, .st-hero {
+    padding: 24px 16px 60px !important;
+    border-radius: 0 0 20px 20px !important;
+  }
+  .hero h1, .hero h2,
+  .hero div[style*="font-size:28px"],
+  .hero div[style*="font-size:26px"] {
+    font-size: clamp(20px, 5vw, 26px) !important;
+    line-height: 1.2 !important;
+  }
+  .fp-wrap, .nt-wrap { margin-top: -40px !important; }
+
+  /* ─── Cards ─── */
+  .ph-card, .ph-card-static,
+  .ucard, .team-card, .project-card,
+  .n-card, .post-card, .feed-card-shadow,
+  .search-card, .sum-card, .fc,
+  .gen-card, .gen-result, .sv-card,
+  .group-card, .req-card {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    border-radius: 14px !important;
   }
 
-  /* Stats grid */
-  .stats-grid {
+  /* ─── Grids ─── */
+  #fp-grid, #grid, #projects-grid,
+  .teams-grid, .projects-grid,
+  .groups-grid, .grid[class*="grid-cols"] {
     grid-template-columns: 1fr !important;
     gap: 12px !important;
   }
 
-  /* Quick actions */
-  .quick-actions {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  /* AI popup */
-  .ai-popup {
-    width: calc(100vw - 32px) !important;
-    max-width: 360px !important;
-    right: 16px !important;
-  }
-}
-
-/* ═══ Teams Page Specific ═══ */
-@media (max-width: 768px) {
-  /* Team cards */
-  .team-card {
-    width: 100% !important;
-  }
-
-  /* Team modals */
-  #team-details-modal > div,
-  #edit-team-modal > div {
-    width: calc(100vw - 32px) !important;
-    max-width: 100% !important;
-    margin: 16px !important;
-  }
-}
-
-/* ═══ Messages Page Specific ═══ */
-@media (max-width: 768px) {
-  /* Messages layout */
-  .msg-layout {
-    flex-direction: column !important;
-  }
-
-  /* Conversation list */
-  .msg-list {
-    width: 100% !important;
-    max-height: 40vh !important;
-  }
-
-  /* Message input */
-  .msg-input {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  /* Message bubbles */
-  .msg-bubble {
-    max-width: 85% !important;
-  }
-}
-
-/* ═══ Profile Page Specific ═══ */
-@media (max-width: 768px) {
-  /* Profile header */
-  .profile-header {
-    flex-direction: column !important;
-    text-align: center !important;
-  }
-
-  /* Profile tabs */
-  .profile-tabs {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  /* Profile content */
-  .profile-content {
-    padding: 16px 12px !important;
-  }
-}
-
-/* ═══ Projects Page Specific ═══ */
-@media (max-width: 768px) {
-  /* Project cards */
-  .project-card {
-    width: 100% !important;
-  }
-
-  /* Project grid */
-  .projects-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Project showcase */
-  .project-showcase {
-    padding: 16px 12px !important;
-  }
-}
-
-/* ═══ Admin Dashboard Specific ═══ */
-@media (max-width: 768px) {
-  /* Admin stat cards */
+  .stats, .sum-card, .teams-stats,
+  .quick-actions, .analytics-grid,
+  .ph-stats, .pv-2col, .sys-grid,
   .stat-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  /* Dashboard 4-col stats → 2×2 */
+  .grid.grid-cols-1.md\:grid-cols-4,
+  section.grid[class*="grid-cols-4"] {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
 
-  /* Admin tables - horizontal scroll */
-  .desktop-table {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
+  /* Quick Actions on Dashboard → 2 cols */
+  .qa-grid, [class*="grid-cols-4"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
   }
 
-  .desktop-table table {
-    min-width: 650px !important;
+  /* ─── Flex row → wrap ─── */
+  .search-card, .top-row, .card-hdr,
+  .pv-actions, .post-actions, .st-layout,
+  .av-row, .ucard-foot {
+    flex-wrap: wrap !important;
   }
 
-  /* Admin cards */
-  .card {
-    margin-bottom: 16px !important;
+  /* ─── Inputs & Forms ─── */
+  .ph-input, .fi, .s-inp,
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea, select {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    box-sizing: border-box !important;
   }
 
-  /* Admin topbar */
-  .topbar {
-    padding: 0 12px !important;
-    padding-left: 58px !important;
-  }
-
-  /* Admin content */
-  .content {
-    padding: 14px 12px !important;
-    padding-bottom: 80px !important;
-  }
-
-  /* System grid */
-  .sys-grid {
+  /* Settings form grid — 2 cols → 1 col */
+  .fc-body div[style*="grid-template-columns"],
+  .fc-body > div[style*="display:grid"],
+  .fc-body > div[style*="display: grid"],
+  form > div[style*="grid-template-columns"],
+  form > div[style*="display:grid"] {
     grid-template-columns: 1fr !important;
   }
-}
 
-/* ═══ Small Mobile (< 480px) ═══ */
-@media (max-width: 480px) {
-  /* Even tighter spacing */
-  main {
+  /* ─── Buttons ─── */
+  .ph-btn, .ph-btn-outline, .ph-btn-danger,
+  .btn-add, .mark-btn, .save-btn, .filter-btn,
+  .btn-msg, .chip, .tab, .stab, .lvl,
+  button[type="submit"], a[role="button"] {
+    min-height: 44px !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+
+  /* ─── Horizontal scroll tabs (hidden scrollbar) ─── */
+  .tabs, .tabs-wrap, .sv-tabs, .scroll-tabs,
+  #post-type-selector, .filter-row,
+  .chip-row, .msg-chat-actions,
+  .profile-tabs {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .tabs::-webkit-scrollbar,
+  .tabs-wrap::-webkit-scrollbar,
+  .sv-tabs::-webkit-scrollbar,
+  #post-type-selector::-webkit-scrollbar,
+  .profile-tabs::-webkit-scrollbar { display: none !important; }
+
+  .tab, .chip, .stab, .post-type-btn,
+  .sv-tab, .filter-btn {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+  }
+
+  /* ─── Tables ─── */
+  .table-wrap, .desktop-table, .overflow-x-auto {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    max-width: 100% !important;
+  }
+  .desktop-table table { min-width: 600px; }
+
+  /* ─── Modals ─── */
+  .modal, [id$="-modal"] {
+    padding: 12px !important;
+  }
+  [id$="-modal"] > div,
+  .modal > div,
+  .modal-content {
+    width: min(calc(100vw - 24px), 560px) !important;
+    max-height: calc(100dvh - 32px) !important;
+    max-height: calc(100vh - 32px) !important;
+    overflow-y: auto !important;
+    border-radius: 18px !important;
+    margin: 16px auto !important;
+  }
+
+  /* ─── Team modals ─── */
+  #team-details-modal > div,
+  #edit-team-modal > div,
+  #create-team-modal > div {
+    width: calc(100vw - 24px) !important;
+    max-width: 100% !important;
+    margin: 12px !important;
+  }
+
+  /* ─── Drawers & Sidebars ─── */
+  .ph-drawer, #ph-sidebar-drawer,
+  [class*="sidebar-drawer"] {
+    width: min(300px, 85vw) !important;
+    max-width: 85vw !important;
+  }
+
+  /* ─── Bottom nav ─── */
+  #ph-bottom-nav {
+    height: calc(64px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
     padding-left: 8px !important;
     padding-right: 8px !important;
   }
 
-  /* Single column everything */
-  .grid,
-  [class*="grid-cols"] {
-    grid-template-columns: 1fr !important;
+  .ph-bn-item {
+    min-width: 0 !important;
+    min-height: 52px !important;
+    padding: 6px 2px !important;
   }
 
-  /* Smaller text on tiny screens */
-  h1 { font-size: 20px !important; }
-  h2 { font-size: 18px !important; }
-  h3 { font-size: 16px !important; }
-
-  /* Touch targets minimum 44px (scoped to interactive components) */
-  .ph-btn,
-  .ph-btn-outline,
-  .chip,
-  .tab,
-  .stab,
-  .save-btn,
-  .filter-btn,
-  .btn-add,
-  input[type="submit"] {
-    min-height: 44px !important;
+  .ph-bn-center {
+    width: 52px !important;
+    height: 52px !important;
+    top: -10px !important;
   }
 
-  /* Admin stat grid - single column on tiny screens */
-  .stat-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* ═══ Landscape Mobile ═══ */
-@media (max-width: 768px) and (orientation: landscape) {
-  /* Reduce header height in landscape */
-  header.fixed {
-    height: 56px !important;
+  /* ─── AI Popup ─── */
+  .ai-popup {
+    width: calc(100vw - 24px) !important;
+    right: 12px !important;
+    left: 12px !important;
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 10px) !important;
+    max-height: min(68vh, 560px) !important;
   }
 
-  /* Adjust content padding */
-  main {
-    padding-top: 64px !important;
-  }
-}
-
-/* ═══ Touch-friendly Enhancements ═══ */
-@media (hover: none) and (pointer: coarse) {
-  /* Scoped tap targets — only primary interactive components */
-  .ph-btn,
-  .ph-btn-outline,
-  .chip,
-  .tab,
-  .stab,
-  .save-btn,
-  .filter-btn {
-    min-height: 44px !important;
+  /* ─── Search inputs in topbar ─── */
+  .ph-topbar input, header input,
+  #dash-search, #search, #conv-search, #s-inp {
+    max-width: min(52vw, 240px) !important;
+    font-size: 16px !important;
   }
 
-  /* Subtle hover replacement for touch screens */
-  .ph-btn:hover, .ph-btn-outline:hover, .chip:hover, .tab:hover {
-    filter: brightness(0.98);
+  /* ─── Hide desktop-only sidebar elements ─── */
+  main > aside { display: none !important; }
+
+  /* ─── Teams page ─── */
+  .workspace-sidebar { width: 60px !important; }
+  .workspace-channel-btn span:not(.ms) { display: none !important; }
+  .task-board {
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  .task-column { width: 100% !important; }
+  .discover-detail-col { display: none !important; }
+  .groups-topbar {
+    flex-direction: column !important;
+    height: auto !important;
+    gap: 10px !important;
+    padding: 12px 16px !important;
   }
 
-  /* Active states — scoped to interactive elements only */
-  .ph-btn:active,
-  .ph-btn-outline:active,
-  .ph-card:active,
-  .chip:active,
-  .tab:active,
-  .stab:active,
-  .ucard:active,
-  .team-card:active,
-  .n-card:active,
-  .btn-add:active,
-  .btn-msg:active,
-  .save-btn:active,
-  .filter-btn:active {
-    transform: scale(0.97);
-    opacity: 0.85;
+  /* ─── Profile page ─── */
+  .pv-avatar-wrap {
+    display: block !important;
+    margin-top: -48px !important;
   }
-}
-
-/* ═══ Safe Area Support (Notched Devices) ═══ */
-@supports (padding: env(safe-area-inset-bottom)) {
-  @media (max-width: 768px) {
-    /* Bottom navigation with safe area */
-    .admin-bottom-nav,
-    .bottom-nav,
-    nav[class*="bottom"] {
-      padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
-    }
-
-    /* Content with safe area */
-    main {
-      padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
-    }
+  .pv-avatar {
+    width: 88px !important;
+    height: 88px !important;
+    border-width: 3px !important;
   }
-}
-
-/* ═══ Print Styles ═══ */
-@media print {
-  /* Hide navigation on print */
-  .sidebar,
-  .admin-bottom-nav,
-  .bottom-nav,
-  header,
-  .mob-menu {
-    display: none !important;
+  .pv-actions {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    gap: 8px !important;
+    margin-top: 16px !important;
   }
+  .pv-actions > button,
+  .pv-actions > a { flex: 1 1 0% !important; }
 
-  /* Full width content on print */
-  main {
-    margin-left: 0 !important;
-    padding: 0 !important;
-  }
-}
-
-/* ═══ Phase 1 Mobile Premium Redesign Overrides ═══ */
-@media (max-width: 768px) {
-  /* .ph-page padding — canonical rule in ph-design.css */
-
-  /* Bottom Sheet Drawer Layout */
-  #ph-profile-sheet {
-    background: var(--sf, #13141f) !important;
-    border: 1px solid var(--bd, rgba(255, 255, 255, 0.08)) !important;
-  }
-  
-  html:not(.dark) #ph-profile-sheet {
-    background: #ffffff !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.08) !important;
-  }
-
-  .ph-ps-item {
-    background: var(--sf2, rgba(255, 255, 255, 0.04)) !important;
-    border: 1.5px solid var(--bd, rgba(255, 255, 255, 0.06)) !important;
-  }
-
-  html:not(.dark) .ph-ps-item {
-    background: #f8fafc !important;
-    border: 1.5px solid #e2e8f0 !important;
-  }
-
-  .ph-ps-item:hover, .ph-ps-item:active {
-    background: var(--sf3, rgba(255, 255, 255, 0.08)) !important;
-    transform: translateY(-1px);
-  }
-
-  /* Hide scrollbars globally on mobile horizontal tabs */
-  .tabs-scroll, .filter-bar, #domain-grid, .scroll-tabs, .sv-tabs, .tabs-wrap, .tabs, .profile-tabs {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-    overflow-x: auto;
-    white-space: nowrap;
-  }
-  .tabs-scroll::-webkit-scrollbar, .filter-bar::-webkit-scrollbar, #domain-grid::-webkit-scrollbar, .scroll-tabs::-webkit-scrollbar, .sv-tabs::-webkit-scrollbar, .tabs-wrap::-webkit-scrollbar, .tabs::-webkit-scrollbar, .profile-tabs::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
-  }
-
-  /* Class-Specific Touch Targets */
-  .ph-btn, .chip, .tab, .ph-ps-item {
-    min-height: 44px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .chip {
-    flex-shrink: 0 !important;
-    white-space: nowrap !important;
-  }
-
-  /* Quick Actions Grid Override */
-  .qa-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  /* Edit Profile Form Layout Stacking */
-  .fc-body > div[style*="display:grid"],
-  .fc-body > div[style*="display: grid"] {
-    grid-template-columns: 1fr !important;
-  }
-
-  /* Hero Section Mobile Formatting */
-  .hero {
-    padding: 24px 18px 48px !important;
-    border-radius: 16px !important;
-  }
-
-  .fp-wrap {
-    margin-top: -30px !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-  }
-
-  /* Push main content below fixed header */
-  main {
-    margin-left: 0 !important;
-    padding-top: 84px !important;
-    padding-bottom: 80px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .qa-grid {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-/* Connection Status Indicator Banner */
-.ph-conn-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 999999;
-  padding: 10px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-100%);
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease;
-  font-family: 'Inter', sans-serif;
-}
-.ph-conn-banner.visible {
-  transform: translateY(0);
-}
-.ph-conn-banner.offline {
-  background-color: #ef4444;
-}
-.ph-conn-banner.online {
-  background-color: #10b981;
-}
-
-/* ═══ Chat Page Emoji Picker & Header Gap Fixes ═══ */
-@media (max-width: 768px) {
-  /* Fix active chat header layout gap - prevent 'main' padding-top rule from pushing it down */
+  /* ─── Messages ─── */
+  .msg-layout { height: calc(100dvh - 56px) !important; overflow: hidden !important; }
+  .msg-conv-panel { width: 100% !important; max-width: 100vw !important; }
+  .msg-conv-panel.hidden-mobile { display: none !important; }
   main.msg-chat-area {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     margin-top: 0 !important;
-    height: 100% !important;
+  }
+  body:has(.msg-layout) {
+    padding-bottom: 0 !important;
+    overflow: hidden !important;
+  }
+  #chat-input-area { max-width: 100vw !important; }
+  #chat-hdr { padding: 10px 12px !important; gap: 8px !important; }
+
+  /* ─── Dashboard welcome banner ─── */
+  section.accent-gradient { padding: 20px 16px !important; }
+  section.accent-gradient h2 { font-size: 20px !important; }
+  section.accent-gradient .absolute.-right-10 { display: none !important; }
+
+  /* ─── Generator hero icons ─── */
+  .hero div[style*="right:32px"] { display: none !important; }
+
+  /* ─── Generator main padding ─── */
+  main[style*="max-width:820px"],
+  main[style*="max-width: 820px"] {
+    padding: 16px 14px !important;
   }
 
-  /* Make emoji picker actual mobile style: clean grid, fixed position, shadow */
+  /* ─── Saved tabs ─── */
+  .sv-wrap {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+  .sv-foot { flex-wrap: wrap !important; gap: 8px !important; }
+  .sv-foot-actions { width: 100% !important; justify-content: flex-end !important; }
+
+  /* ─── Emoji picker ─── */
   #emoji-picker-container {
     position: fixed !important;
-    bottom: 60px !important; /* aligns with bottom action bar height */
+    bottom: calc(60px + env(safe-area-inset-bottom, 0px)) !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
     max-height: 280px !important;
-    height: 280px !important;
     border-radius: 20px 20px 0 0 !important;
-    border: 1px solid var(--tw-bd) !important;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15) !important;
-    background: #ffffff !important;
     z-index: 1000 !important;
   }
-  
-  html.dark #emoji-picker-container {
-    background: #181a2b !important;
-    border-color: #24273e !important;
-  }
-
   #emoji-grid {
     display: grid !important;
     grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
-    gap: 8px !important;
-    padding: 12px !important;
-    max-height: 210px !important;
+    gap: 6px !important;
+    padding: 10px !important;
+    max-height: 200px !important;
     overflow-y: auto !important;
   }
-
   #emoji-grid button {
-    font-size: 24px !important;
-    width: 44px !important;
-    height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 12px !important;
-    transition: background 0.1s ease !important;
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 22px !important;
   }
-  
-  #emoji-grid button:active {
-    background-color: rgba(0, 0, 0, 0.05) !important;
+
+  /* ─── Admin topbar ─── */
+  .topbar {
+    padding-left: calc(58px + env(safe-area-inset-left, 0px)) !important;
+    padding-right: 14px !important;
   }
-  
-  html.dark #emoji-grid button:active {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+  .content { padding: 14px 12px 80px !important; }
+  .sys-grid { grid-template-columns: 1fr !important; }
+
+  /* ─── Profile sheet ─── */
+  #ph-profile-sheet {
+    border-radius: 24px 24px 0 0 !important;
+  }
+
+  /* ─── Connection banner ─── */
+  .ph-conn-banner { font-size: 12px !important; padding: 8px 14px !important; }
+
+  /* ─── Notification summary ─── */
+  .sum-card .sum-item { min-width: 100px !important; }
+}
+
+/* ══════════════════════════════════════════
+   LAYER 6 — SMALL MOBILE (≤520px)
+   ══════════════════════════════════════════ */
+@media (max-width: 520px) {
+  .stats, .sum-card, .teams-stats,
+  .quick-actions, .analytics-grid,
+  .ph-stats, .pv-2col, .sys-grid,
+  .stat-grid,
+  section.grid[class*="grid-cols-4"],
+  .grid.grid-cols-1.md\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ph-topbar input, header input,
+  #dash-search, #search, #s-inp {
+    max-width: 44vw !important;
+  }
+
+  .ucard-foot, .post-actions {
+    flex-direction: column !important;
+  }
+  .ucard-foot > *, .post-actions > * { width: 100% !important; }
+
+  /* Idea card action buttons stack */
+  .idea-card div[style*="display:flex;gap:8px;margin-top"] {
+    flex-direction: column !important;
+  }
+  .idea-card div[style*="display:flex;gap:8px;margin-top"] > button {
+    width: 100% !important;
+  }
+
+  /* Generator form card padding */
+  .ph-card-static[style*="padding:28px"] {
+    padding: 16px !important;
+  }
+
+  /* Bottom nav label smaller */
+  .ph-bn-item span[class*="text"] {
+    font-size: 9px !important;
   }
 }
 
-/* Ensure grid layout is applied to emoji picker on desktop as well */
+/* ══════════════════════════════════════════
+   LAYER 7 — TINY MOBILE (≤380px)
+   ══════════════════════════════════════════ */
+@media (max-width: 380px) {
+  h1 { font-size: 18px !important; }
+  h2 { font-size: 16px !important; }
+  h3 { font-size: 14px !important; }
+
+  .ph-topbar, header.fixed { padding: 6px 10px !important; }
+
+  main,
+  .ph-page > main,
+  div[class*="ml-[260px]"] > main:not(.msg-chat-area) {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .fp-wrap, .nt-wrap, .sv-wrap { padding-left: 10px !important; padding-right: 10px !important; }
+
+  .ph-bn-item { padding: 4px 1px !important; }
+
+  .pv-avatar { width: 72px !important; height: 72px !important; }
+
+  #ph-bottom-nav { height: calc(58px + env(safe-area-inset-bottom, 0px)) !important; }
+}
+
+/* ══════════════════════════════════════════
+   LAYER 8 — LANDSCAPE MOBILE
+   ══════════════════════════════════════════ */
+@media (max-width: 900px) and (orientation: landscape) and (max-height: 500px) {
+  .ph-topbar, header.fixed {
+    min-height: 48px !important;
+    padding: 6px 14px !important;
+  }
+  main,
+  .ph-page > main {
+    padding-top: 56px !important;
+  }
+  .hero, .st-hero {
+    padding-top: 16px !important;
+    padding-bottom: 40px !important;
+  }
+  #ph-bottom-nav { height: calc(52px + env(safe-area-inset-bottom, 0px)) !important; }
+  body { padding-bottom: calc(52px + env(safe-area-inset-bottom, 0px)) !important; }
+}
+
+/* ══════════════════════════════════════════
+   LAYER 9 — TOUCH DEVICE ENHANCEMENTS
+   ══════════════════════════════════════════ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .admin-bottom-nav, .bottom-nav, nav[class*="bottom"],
+  #ph-bottom-nav {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+  }
+  main {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .ph-btn, .ph-btn-outline, .chip, .tab,
+  .stab, .save-btn, .filter-btn, .btn-add,
+  .tab, .sv-tab, .lvl {
+    min-height: 44px !important;
+    touch-action: manipulation !important;
+  }
+  /* Disable hover transforms on touch */
+  .ph-card:hover,
+  .ucard:hover,
+  .group-card:hover { transform: none !important; }
+  .ph-card:active,
+  .ucard:active,
+  .group-card:active { transform: scale(0.98) !important; }
+}
+
+/* ══════════════════════════════════════════
+   LAYER 10 — GLOBAL UTILITY / SCROLLBARS
+   ══════════════════════════════════════════ */
+
+/* Hide scrollbars on horizontal scroll containers */
+.tabs-scroll, .filter-bar, #domain-grid,
+.scroll-tabs, .sv-tabs, .tabs-wrap, .tabs,
+.profile-tabs, .msg-chat-actions {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tabs-scroll::-webkit-scrollbar,
+.filter-bar::-webkit-scrollbar,
+.scroll-tabs::-webkit-scrollbar,
+.sv-tabs::-webkit-scrollbar,
+.tabs-wrap::-webkit-scrollbar,
+.profile-tabs::-webkit-scrollbar { display: none; }
+
+/* Emoji grid desktop */
 #emoji-grid {
   display: grid !important;
   grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
@@ -611,3 +652,34 @@
   justify-content: center !important;
 }
 
+/* Connection Status Banner */
+.ph-conn-banner {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 999999;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  transform: translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Inter', sans-serif;
+}
+.ph-conn-banner.visible { transform: translateY(0); }
+.ph-conn-banner.offline { background-color: #ef4444; }
+.ph-conn-banner.online { background-color: #10b981; }
+
+/* ══════════════════════════════════════════
+   LAYER 11 — PRINT
+   ══════════════════════════════════════════ */
+@media print {
+  .sidebar, #ph-bottom-nav, .admin-bottom-nav,
+  .bottom-nav, header, .mob-menu, #ph-sidebar { display: none !important; }
+  main { margin-left: 0 !important; padding: 0 !important; }
+  .ph-page { margin-left: 0 !important; }
+}

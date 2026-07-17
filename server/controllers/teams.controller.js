@@ -10,7 +10,7 @@ function sanitizeSearch(input) {
 export async function createTeam(req, res, next) {
   try {
     const userId = req.user.id;
-    const { name, description, maxMembers, category, tags } = req.body;
+    const { name, description, maxMembers, category, tags, isOpen } = req.body;
 
     const { data: team, error } = await supabaseAdmin
       .from('teams')
@@ -21,7 +21,7 @@ export async function createTeam(req, res, next) {
         category: category || '',
         tags: tags || [],
         leader_id: userId,
-        is_open: true,
+        is_open: isOpen !== undefined ? isOpen : true,
       })
       .select()
       .single();
@@ -46,7 +46,7 @@ export async function createTeam(req, res, next) {
 // ─── GET TEAMS ────────────────────────────────────────────────────────────────
 export async function getTeams(req, res, next) {
   try {
-    const { skip = 0, limit = 20, search, category } = req.query;
+    const { skip = 0, limit = 20, search, category, type } = req.query;
 
     let q = supabaseAdmin
       .from('teams')
@@ -54,8 +54,16 @@ export async function getTeams(req, res, next) {
         *,
         leader:leader_id(id, first_name, last_name, avatar, avatar_color),
         team_members(user_id, role, users(id, first_name, last_name, avatar, avatar_color))
-      `, { count: 'exact' })
-      .eq('is_open', true);
+      `, { count: 'exact' });
+
+    // For public lists, show only open groups (or let users discover closed ones if needed, but keeping existing is_open=true logic)
+    q = q.eq('is_open', true);
+
+    if (type === 'community') {
+      q = q.like('category', 'community:%');
+    } else if (type === 'team') {
+      q = q.not('category', 'like', 'community:%');
+    }
 
     if (search) { const s = sanitizeSearch(search); if (s) q = q.ilike('name', `%${s}%`); }
     if (category) q = q.eq('category', category);
@@ -123,15 +131,23 @@ export async function postJoinRequest(req, res, next) {
     const { teamId } = req.params;
     const { message = '' } = req.body;
 
-    const { data: team } = await supabaseAdmin.from('teams').select('id, name, leader_id').eq('id', teamId).single();
+    const { data: team } = await supabaseAdmin.from('teams').select('id, name, leader_id, is_open, category').eq('id', teamId).single();
     if (!team) return res.status(404).json({ error: 'Team not found' });
 
     // Check already member
-    const { data: mem } = await supabaseAdmin.from('team_members').select('id').eq('team_id', teamId).eq('user_id', userId).single();
-    if (mem) return res.status(400).json({ error: 'Already a member of this team' });
+    const { data: mem } = await supabaseAdmin.from('team_members').select('id').eq('team_id', teamId).eq('user_id', userId).maybeSingle();
+    if (mem) return res.status(400).json({ error: 'Already a member' });
+
+    // Instant join for public communities
+    if (team.is_open && team.category?.startsWith('community:')) {
+      await supabaseAdmin.from('team_members').insert({ team_id: teamId, user_id: userId, role: 'member' });
+      const { data: u } = await supabaseAdmin.from('users').select('teams_joined').eq('id', userId).single();
+      await supabaseAdmin.from('users').update({ teams_joined: (u?.teams_joined || 0) + 1 }).eq('id', userId);
+      return res.status(201).json({ message: 'Joined community successfully', joined: true });
+    }
 
     // Check pending request
-    const { data: existing } = await supabaseAdmin.from('join_requests').select('id').eq('team_id', teamId).eq('user_id', userId).eq('status', 'pending').single();
+    const { data: existing } = await supabaseAdmin.from('join_requests').select('id').eq('team_id', teamId).eq('user_id', userId).eq('status', 'pending').maybeSingle();
     if (existing) return res.status(400).json({ error: 'Join request already pending' });
 
     const { data: jr, error } = await supabaseAdmin.from('join_requests').insert({ team_id: teamId, user_id: userId, message }).select().single();
