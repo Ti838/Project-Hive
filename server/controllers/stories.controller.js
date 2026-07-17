@@ -56,8 +56,8 @@ export async function getStories(req, res, next) {
 
     if (storyIds.length > 0) {
       const [{ data: myViews }, { data: allViews }] = await Promise.all([
-        supabaseAdmin.from('story_views').select('story_id').in('story_id', storyIds).eq('viewer_id', userId).catch(() => ({ data: [] })),
-        supabaseAdmin.from('story_views').select('story_id').in('story_id', storyIds).catch(() => ({ data: [] })),
+        supabaseAdmin.from('story_views').select('story_id').in('story_id', storyIds).eq('viewer_id', userId).then(r => r, () => ({ data: [] })),
+        supabaseAdmin.from('story_views').select('story_id').in('story_id', storyIds).then(r => r, () => ({ data: [] })),
       ]);
       (myViews || []).forEach(v => viewedSet.add(v.story_id));
       (allViews || []).forEach(v => {

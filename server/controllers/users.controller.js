@@ -66,12 +66,12 @@ export async function getCurrentUser(req, res, next) {
       { count: postCount },
       { data: teamMemberRows }
     ] = await Promise.all([
-      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', userId).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', userId).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', userId).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', userId).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', userId).catch(() => ({ data: [] }))
+      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', userId).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', userId).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', userId).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', userId).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', userId).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', userId).then(r => r, () => ({ data: [] }))
     ]);
 
     const joinedTeams = (teamMemberRows || []).map(r => r.team).filter(Boolean);
@@ -142,12 +142,12 @@ export async function getUserProfile(req, res, next) {
       { count: postCount },
       { data: teamMemberRows }
     ] = await Promise.all([
-      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', id).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', id).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', id).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', id).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id).catch(() => ({ count: 0 })),
-      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', id).catch(() => ({ data: [] }))
+      supabaseAdmin.from('friends').select('id', { count: 'exact', head: true }).eq('user_id', id).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', id).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', id).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', id).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', id).then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('team_members').select('team:team_id(id, category)').eq('user_id', id).then(r => r, () => ({ data: [] }))
     ]);
 
     const joinedTeams = (teamMemberRows || []).map(r => r.team).filter(Boolean);
@@ -393,19 +393,19 @@ export async function globalSearch(req, res, next) {
         .eq('is_public', true)
         .eq('is_banned', false)
         .or(`first_name.ilike.%${sanitizeSearch(queryStr)}%,last_name.ilike.%${sanitizeSearch(queryStr)}%,university.ilike.%${sanitizeSearch(queryStr)}%`)
-        .limit(5).catch(() => ({ data: [] })),
+        .limit(5).then(r => r, () => ({ data: [] })),
       supabaseAdmin.from('teams')
         .select('id, name, category, description')
         .or(`name.ilike.%${sanitizeSearch(queryStr)}%,category.ilike.%${sanitizeSearch(queryStr)}%,description.ilike.%${sanitizeSearch(queryStr)}%`)
-        .limit(5).catch(() => ({ data: [] })),
+        .limit(5).then(r => r, () => ({ data: [] })),
       supabaseAdmin.from('projects')
         .select('id, title, category, description')
         .or(`title.ilike.%${sanitizeSearch(queryStr)}%,category.ilike.%${sanitizeSearch(queryStr)}%,description.ilike.%${sanitizeSearch(queryStr)}%`)
-        .limit(5).catch(() => ({ data: [] })),
+        .limit(5).then(r => r, () => ({ data: [] })),
       supabaseAdmin.from('posts')
         .select('id, content, post_type')
         .ilike('content', `%${sanitizeSearch(queryStr)}%`)
-        .limit(5).catch(() => ({ data: [] }))
+        .limit(5).then(r => r, () => ({ data: [] }))
     ]);
 
     res.json({

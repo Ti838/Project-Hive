@@ -568,8 +568,8 @@ export async function getRecommendedFriends(req, res, next) {
 
     // 1. Fetch current friends and blocked lists to exclude
     const [friendsRows, blockedRows] = await Promise.all([
-      supabaseAdmin.from('friends').select('friend_id').eq('user_id', myId).catch(() => ({ data: [] })),
-      supabaseAdmin.from('blocks').select('blocked_id').eq('blocker_id', myId).catch(() => ({ data: [] }))
+      supabaseAdmin.from('friends').select('friend_id').eq('user_id', myId).then(r => r, () => ({ data: [] })),
+      supabaseAdmin.from('blocks').select('blocked_id').eq('blocker_id', myId).then(r => r, () => ({ data: [] }))
     ]);
 
     const excludeIds = new Set([myId]);
