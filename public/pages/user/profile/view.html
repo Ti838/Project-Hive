@@ -154,6 +154,11 @@
 <script src="/assets/js/core/info-modal.js"></script>
 <script>
 (function(){
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s || '';
+    return d.innerHTML;
+  }
   const TK = localStorage.getItem('access_token');
   if (!TK) { location.href='/login'; return; }
   try { const p=JSON.parse(atob(TK.split('.')[1])); if(p.exp&&Date.now()>=p.exp*1000){localStorage.removeItem('access_token');location.href='/login';return;} } catch(e){location.href='/login';return;}
