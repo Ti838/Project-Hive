@@ -114,6 +114,9 @@ html.dark .preloader-bar {
 
 <script>
 (function(){
+  // Disable browser scroll position restoration — always start at top
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
   const t = localStorage.getItem('theme');
   if(t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme:dark)').matches)){
     document.documentElement.classList.add('dark');
@@ -823,6 +826,12 @@ setTimeout(()=>{ fetch('https://projecthive-backend.onrender.com/health',{method
 
   // Handle preloader fadeout & start hero animations
   window.addEventListener('load', function() {
+    // Force scroll to very top instantly — prevents browser from restoring
+    // a previous scroll position that would push the navbar off screen
+    document.documentElement.style.scrollBehavior = 'auto';
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.style.scrollBehavior = '';
+
     const loader = document.getElementById('preloader');
     if (loader) {
       // Start hero animations immediately when preloader starts fading out
