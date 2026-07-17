@@ -101,6 +101,15 @@ html.dark .preloader-bar {
   50% { left: 100%; width: 60%; }
   100% { left: 100%; width: 0%; }
 }
+
+/* Pre-load hidden states to prevent FOUC / layout flash */
+.ln-nav {
+  opacity: 0;
+  transform: translateY(-80px);
+}
+.ln-hero-eyebrow, .ln-hero h1, .ln-hero-desc, .ln-hero-actions, .ln-hero-stats, .ln-hero-visual {
+  opacity: 0;
+}
 </style>
 
 <script>
