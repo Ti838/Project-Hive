@@ -142,7 +142,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     : 'https://projecthive-backend.onrender.com';
   const COLS=['#6366F1','#7C3AED','#EC4899','#10B981','#F59E0B','#3B82F6','#EF4444','#14B8A6'];
   function avC(s){let h=0;for(const c of s||'')h=c.charCodeAt(0)+((h<<5)-h);return COLS[Math.abs(h)%COLS.length];}
-  let myId='',allUsers=[],myFriends=new Set(),sentReqs=new Set(),inReqs=[],recList=[],tab='discover',filter='all',sTimer=null;
+  let myId='',allUsers=[],myFriends=new Set(),myFriendsList=[],sentReqs=new Set(),inReqs=[],recList=[],tab='discover',filter='all',sTimer=null;
 
   async function init(){
     // Try cached user profile first
@@ -176,7 +176,21 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
     allUsers=Array.isArray(usersVal)?usersVal:(usersVal.users||[]);
     const fl=Array.isArray(friendsVal)?friendsVal:(friendsVal.friends||[]);
-    fl.forEach(f=>{const id=f._id||f.id||f.friend?._id;if(id)myFriends.add(id);});
+    myFriendsList = fl.map(f => {
+      return {
+        _id: f.id || f._id,
+        firstName: f.firstName || f.first_name || '',
+        lastName: f.lastName || f.last_name || '',
+        avatar: f.avatar,
+        avatarColor: f.avatarColor || f.avatar_color,
+        university: f.university,
+        major: f.major,
+        status: f.onlineStatus || f.online_status || 'offline'
+      };
+    });
+    myFriends.clear();
+    myFriendsList.forEach(f => { if(f._id) myFriends.add(f._id); });
+    
     inReqs=Array.isArray(pendingVal)?pendingVal:(pendingVal.requests||[]);
     recList=Array.isArray(recsVal)?recsVal:(recsVal.recommendations||[]);
     document.getElementById('st-total').textContent=allUsers.length;
@@ -215,8 +229,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
   function render(){
     const g=document.getElementById('fp-grid');
     if(tab==='friends'){
-      const list=allUsers.filter(u=>myFriends.has(u._id||u.id));
-      g.innerHTML=list.length?list.map(u=>card(u,'friends')).join(''):empty('handshake','No friends yet','Discover people and add them!');return;
+      g.innerHTML=myFriendsList.length?myFriendsList.map(u=>card(u,'friends')).join(''):empty('handshake','No friends yet','Discover people and add them!');return;
     }
     if(tab==='recommended'){
       g.innerHTML=recList.length?recList.map(u=>{
@@ -257,7 +270,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
       }).join('')+'</div>';
       return;
     }
-    let list=allUsers.filter(u=>(u._id||u.id)!==myId);
+    let list=allUsers.filter(u=>{const id=u._id||u.id;return id!==myId && !myFriends.has(id);});
     const q=document.getElementById('s-inp').value.trim().toLowerCase();
     if(q)list=list.filter(u=>`${u.firstName} ${u.lastName} ${u.university||''} ${(u.skills||[]).map(s=>s.name||s).join(' ')}`.toLowerCase().includes(q));
     if(filter==='available')list=list.filter(u=>!u.status||u.status==='available');
@@ -470,6 +483,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
           const r = await fetch(API_BASE + `/api/friends/${uid}`, { method: 'DELETE', headers: H });
           if (r.ok) {
             myFriends.delete(uid);
+            myFriendsList = myFriendsList.filter(f => f._id !== uid);
             document.getElementById('st-friends').textContent = myFriends.size;
             PHToast?.success('Friend removed');
             render();
@@ -502,7 +516,29 @@ body{background:var(--bg);color:var(--tx);margin:0}
     try{
       const r=await fetch(API_BASE+`/api/friends/${action}/${reqId}`,{method:'POST',headers:H});
       if(r.ok){
-        if(action==='accept'){PHToast?.success('Friend added! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2z"/></svg></span>');}else{PHToast?.success('Declined');}
+        if(action==='accept'){
+          PHToast?.success('Friend added! <span class="ph-svg-icon" style="display:inline-flex;align-items:center;vertical-align:middle"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12v0c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11v0c-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98v0C9.52 4.9 9 5.52 9 6.23V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2z"/></svg></span>');
+          const fr = await fetch(API_BASE+'/api/friends', {headers:H});
+          if (fr.ok) {
+            const fd = await fr.json();
+            const fl = fd.friends || [];
+            myFriendsList = fl.map(f => {
+              return {
+                _id: f.id || f._id,
+                firstName: f.firstName || f.first_name || '',
+                lastName: f.lastName || f.last_name || '',
+                avatar: f.avatar,
+                avatarColor: f.avatarColor || f.avatar_color,
+                university: f.university,
+                major: f.major,
+                status: f.onlineStatus || f.online_status || 'offline'
+              };
+            });
+            myFriends.clear();
+            myFriendsList.forEach(f => { if(f._id) myFriends.add(f._id); });
+            document.getElementById('st-friends').textContent = myFriends.size;
+          }
+        }else{PHToast?.success('Declined');}
         inReqs=inReqs.filter(req=>(req._id||req.id)!==reqId);
         document.getElementById('st-pending').textContent=inReqs.length;
         if(!inReqs.length)document.getElementById('req-badge').style.display='none';
