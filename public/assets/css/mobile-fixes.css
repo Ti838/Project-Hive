@@ -596,13 +596,15 @@ table { border-collapse: collapse; }
 /* ══════════════════════════════════════════
    LAYER 9 — TOUCH DEVICE ENHANCEMENTS
    ══════════════════════════════════════════ */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .admin-bottom-nav, .bottom-nav, nav[class*="bottom"],
-  #ph-bottom-nav {
-    padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
-  }
-  main {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+@media (max-width: 768px) {
+  @supports (padding: env(safe-area-inset-bottom)) {
+    .admin-bottom-nav, .bottom-nav, nav[class*="bottom"],
+    #ph-bottom-nav {
+      padding-bottom: calc(8px + env(safe-area-inset-bottom)) !important;
+    }
+    main:not(.msg-chat-area) {
+      padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
+    }
   }
 }
 

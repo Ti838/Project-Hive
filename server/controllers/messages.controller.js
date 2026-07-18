@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { getIo } from '../services/socket.service.js';
 
 // ── Get all team conversations for the current user ──────────────────────────
 export async function getTeamConversations(req, res, next) {
@@ -446,10 +447,20 @@ export async function deleteMessage(req, res, next) {
   try {
     const { id } = req.params;
     const userId = req.user.id;
-    const { data: msg } = await supabaseAdmin.from('messages').select('sender_id, room_id').eq('id', id).single();
+    const { data: msg } = await supabaseAdmin.from('messages').select('sender_id, room_id').eq('id', id).maybeSingle();
     if (!msg) return res.status(404).json({ error: 'Not found' });
     if (msg.sender_id !== userId) return res.status(403).json({ error: 'Unauthorized' });
+
+    // Delete reactions first to avoid foreign key violations
+    await supabaseAdmin.from('message_reactions').delete().eq('message_id', id);
+
     await supabaseAdmin.from('messages').delete().eq('id', id);
+
+    const io = getIo();
+    if (io) {
+      io.to(msg.room_id).emit('message:deleted', { messageId: id, roomId: msg.room_id });
+    }
+
     res.json({ ok: true, roomId: msg.room_id });
   } catch (err) { next(err); }
 }
@@ -518,6 +529,7 @@ export async function updateMessage(req, res, next) {
       .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
       .maybeSingle();
 
+    let finalMsg = updatedMsg;
     if (error) {
       // Fallback: update content only
       const { data: fallbackMsg, error: err2 } = await supabaseAdmin
@@ -527,8 +539,14 @@ export async function updateMessage(req, res, next) {
         .select(`*, sender:sender_id(id, first_name, last_name, avatar, avatar_color)`)
         .maybeSingle();
       if (err2) throw err2;
-      return res.json({ ok: true, message: fallbackMsg });
+      finalMsg = fallbackMsg;
     }
-    res.json({ ok: true, message: updatedMsg });
+
+    const io = getIo();
+    if (io && finalMsg) {
+      io.to(msg.room_id).emit('message:updated', { messageId: id, roomId: msg.room_id, content: finalMsg.content });
+    }
+
+    res.json({ ok: true, message: finalMsg });
   } catch (err) { next(err); }
 }

@@ -135,7 +135,7 @@
     const initials=((fn[0]||'').toUpperCase()+(ln[0]||'').toUpperCase())||'?';
     const badge=TYPE_BADGE[p.postType];
     const totalReact=Object.values(p.reactions||{}).reduce((s,v)=>s+v,0);
-    const EMOJIS={like:'👍',celebrate:'🎉‰',insightful:'💡¡',support:'ðŸ¤'};
+    const EMOJIS={like:'👍',celebrate:'🎉',insightful:'💡',support:'🤝'};
     return `<div class="sv-card" id="sv-post-${p.id}">
       <div class="sv-card-head">
         <div class="sv-avatar" style="background:${color}">${a.avatar?`<img src="${a.avatar}" alt="${name}">`:(initials)}</div>
