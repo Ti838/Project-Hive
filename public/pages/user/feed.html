@@ -661,51 +661,61 @@
     </div>
 
     <!-- Right Sidebar Panel -->
-    <aside class="w-[320px] flex-shrink-0 hidden xl:flex flex-col gap-4 sticky top-16 max-h-[calc(100vh-64px)] overflow-y-auto no-scrollbar pb-6" style="align-self: flex-start; margin-top: 0 !important;">
+    <aside class="w-[320px] flex-shrink-0 hidden xl:flex flex-col gap-4 sticky top-20 max-h-[calc(100vh-80px)] overflow-y-auto no-scrollbar pb-6 pt-1" style="align-self: flex-start;">
 
-      <!-- â•â•â• Profile Card â•â•â• -->
-      <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow flex flex-col">
-        <!-- Animated Gradient Banner -->
-        <div class="sb-banner h-20 relative rounded-t-2xl overflow-hidden">
-          <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px]"></div>
-          <a href="/profile" class="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[9px] font-bold text-white/90 hover:text-white bg-white/15 backdrop-blur-sm border border-white/20 transition-all hover:scale-105">View Profile</a>
+      <!-- ═══ Profile Card ═══ -->
+      <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow overflow-hidden">
+        <!-- Gradient Banner -->
+        <div class="sb-banner h-[72px] relative rounded-t-2xl overflow-hidden flex-shrink-0">
+          <div class="absolute inset-0 opacity-15 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:10px_10px]"></div>
+          <a href="/profile" class="absolute top-2.5 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold text-white/90 hover:text-white bg-white/20 backdrop-blur-sm border border-white/25 transition-all hover:bg-white/30 hover:scale-105">View Profile →</a>
         </div>
 
-        <!-- Avatar & Info -->
-        <div class="px-5 pb-4 relative flex flex-col items-center text-center -mt-9 z-10">
-          <div id="sidebar-profile-avatar" class="w-[68px] h-[68px] rounded-full border-[3px] border-surface-container-lowest bg-surface-container flex items-center justify-center font-bold text-xl text-primary shadow-lg overflow-hidden shrink-0 cursor-pointer" onclick="window.location.href='/profile'">?</div>
-          <h4 id="sidebar-profile-name" class="font-bold text-sm text-on-surface mt-2.5 hover:text-primary cursor-pointer transition-colors" onclick="window.location.href='/profile'">—</h4>
-          <p id="sidebar-profile-headline" class="text-[11px] text-on-surface-variant mt-0.5 max-w-[220px] leading-relaxed line-clamp-2">—</p>
-          <p id="sidebar-profile-university" class="text-[10px] text-primary font-semibold mt-1 flex items-center gap-1">
-            <span class="material-symbols-outlined text-[12px]">school</span>
-            <span>—</span>
+        <!-- Avatar, Name, Headline -->
+        <div class="px-5 pb-3 flex items-end gap-3 -mt-7 relative z-10">
+          <div id="sidebar-profile-avatar"
+            onclick="window.location.href='/profile'"
+            class="w-[60px] h-[60px] rounded-full border-[3px] border-surface-container-lowest bg-primary/10 flex items-center justify-center font-bold text-lg text-primary shadow-md overflow-hidden shrink-0 cursor-pointer flex-shrink-0">?</div>
+          <div class="pt-8 pb-1 min-w-0 flex-1">
+            <h4 id="sidebar-profile-name"
+              onclick="window.location.href='/profile'"
+              class="font-bold text-[13px] text-on-surface hover:text-primary cursor-pointer transition-colors truncate leading-tight">—</h4>
+            <p id="sidebar-profile-headline" class="text-[11px] text-on-surface-variant mt-0.5 truncate leading-snug">—</p>
+          </div>
+        </div>
+
+        <!-- University badge -->
+        <div class="px-5 pb-3.5">
+          <p id="sidebar-profile-university" class="text-[11px] text-primary font-semibold flex items-center gap-1.5 bg-primary/8 rounded-lg px-3 py-1.5 w-fit">
+            <span class="material-symbols-outlined text-[13px]">school</span>
+            <span class="truncate max-w-[200px]">—</span>
           </p>
         </div>
 
-        <!-- Stats -->
-        <div class="mx-4 mb-4 rounded-xl grid grid-cols-2 divide-x divide-surface-variant bg-surface-container-low border border-surface-variant py-3">
-          <div class="text-center px-3 cursor-pointer" onclick="window.location.href='/profile'">
-            <p id="stats-total-posts" class="text-xl font-black sb-stat-num">—</p>
-            <p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-wider mt-0.5">Posts</p>
+        <!-- Stats Row -->
+        <div class="mx-4 mb-4 grid grid-cols-2 rounded-xl overflow-hidden border border-surface-variant bg-surface-container-low">
+          <div class="text-center py-3 cursor-pointer hover:bg-primary/5 transition-colors" onclick="window.location.href='/profile'">
+            <p id="stats-total-posts" class="text-[22px] font-black sb-stat-num leading-none">—</p>
+            <p class="text-[9px] uppercase font-bold text-on-surface-variant tracking-widest mt-1">Posts</p>
           </div>
-          <div class="text-center px-3 cursor-pointer" onclick="window.location.href='/friends'">
-            <p id="stats-total-friends" class="text-xl font-black sb-stat-num">—</p>
-            <p class="text-[8px] uppercase font-bold text-on-surface-variant tracking-wider mt-0.5">Friends</p>
+          <div class="text-center py-3 border-l border-surface-variant cursor-pointer hover:bg-primary/5 transition-colors" onclick="window.location.href='/friends'">
+            <p id="stats-total-friends" class="text-[22px] font-black sb-stat-num leading-none">—</p>
+            <p class="text-[9px] uppercase font-bold text-on-surface-variant tracking-widest mt-1">Friends</p>
           </div>
         </div>
       </div>
 
-      <!-- â•â•â• People You Know â•â•â• -->
-      <div class="sb-card bg-white dark:bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow overflow-hidden">
-        <!-- Header with gradient background -->
+      <!-- ═══ People You Know ═══ -->
+      <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow overflow-hidden">
+        <!-- Header -->
         <div class="px-5 py-4 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 flex items-center justify-between">
-          <h3 class="font-bold text-sm text-white flex items-center gap-2.5">
+          <h3 class="font-bold text-sm text-white flex items-center gap-2">
             <span class="w-7 h-7 rounded-xl bg-white/25 backdrop-blur-sm flex items-center justify-center shadow-lg">
               <span class="material-symbols-outlined text-[16px] text-white">group_add</span>
             </span>
-            <span>People You Know</span>
+            People You Know
           </h3>
-          <a href="/pages/user/people.html" class="text-[10px] font-bold text-white/90 hover:text-white hover:underline flex items-center gap-1 bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg transition-all">
+          <a href="/pages/user/people.html" class="text-[10px] font-bold text-white/90 hover:text-white flex items-center gap-1 bg-white/15 hover:bg-white/25 px-2.5 py-1.5 rounded-lg transition-all">
             See All
             <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
           </a>
@@ -727,7 +737,7 @@
         </a>
       </div>
 
-      <!-- â•â•â• Trending in Hive â•â•â• -->
+      <!-- ═══ Trending in Hive ═══ -->
       <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow">
         <div class="px-5 py-3.5 border-b border-surface-variant flex items-center justify-between">
           <h3 class="font-bold text-[13px] text-on-surface flex items-center gap-2">
@@ -746,7 +756,7 @@
         </div>
       </div>
 
-      <!-- â•â•â• Quick Links â•â•â• -->
+      <!-- ═══ Quick Links ═══ -->
       <div class="sb-card bg-surface-container-lowest rounded-2xl border border-surface-variant feed-card-shadow">
         <div class="px-5 py-3.5 border-b border-surface-variant">
           <h3 class="font-bold text-[13px] text-on-surface flex items-center gap-2">
