@@ -1,7 +1,7 @@
 {
   "name": "projecthive",
   "version": "1.0.0",
-  "description": "ProjectHive - Student Team Collaboration Platform Phase 1",
+  "description": "ProjectHive — Complete Full-Stack Student Team Collaboration & Incubation Platform",
   "private": true,
   "scripts": {
     "dev": "http-server public -p 3000 -c-1",
