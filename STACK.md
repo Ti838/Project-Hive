@@ -225,7 +225,7 @@ server/
 ### Room Naming Convention
 
 | Room Type | Room ID Format | Example |
-|-----------|---------------|---------| 
+|-----------|---------------|---------|
 | Direct Message | `dm_[userId1]_[userId2]` (IDs sorted ascending) | `dm_abc123_xyz789` |
 | Team Chat | `team_[teamId]` | `team_team456` |
 
@@ -233,31 +233,33 @@ server/
 
 **Client → Server:**
 ```javascript
-socket.emit('join_room',    { roomId: 'team_xxx' });
-socket.emit('leave_room',   { roomId: 'team_xxx' });
-socket.emit('send_message', { roomId: 'team_xxx', content: 'Hello!' });
-socket.emit('typing',       { roomId: 'team_xxx', isTyping: true });
-socket.emit('call:initiate',{ roomId, peerId }); // Triggers Jitsi call
-socket.emit('call:accept',  { roomId });         // Accepts incoming call
-socket.emit('call:decline', { roomId });         // Rejects incoming call
-socket.emit('call:hangup',  { roomId });         // Ends active call
-socket.emit('whiteboard:draw',  { x0, y0, x1, y1, color, size, isEraser }); // Live drawing coords
-socket.emit('whiteboard:clear', {}); // Request board clear
+socket.emit('join:room',        { roomId: 'team_xxx' });
+socket.emit('leave:room',       { roomId: 'team_xxx' });
+socket.emit('message:send',     { roomId: 'team_xxx', content: 'Hello!', type: 'text' });
+socket.emit('typing:start',     { roomId: 'team_xxx' });
+socket.emit('typing:stop',      { roomId: 'team_xxx' });
+socket.emit('call:initiate',    { roomId, targetId, callerName, isWebRTC: true });
+socket.emit('call:accept',      { roomId, targetId });
+socket.emit('call:decline',     { roomId, targetId });
+socket.emit('call:hangup',      { roomId, targetId });
+socket.emit('whiteboard:draw',  { roomId, x0, y0, x1, y1, color, size, isEraser });
+socket.emit('whiteboard:clear', { roomId });
+socket.emit('heartbeat',        {});
 ```
 
 **Server → Client:**
 ```javascript
-socket.on('new_message',  ({ id, content, sender, roomId, createdAt }) => {});
-socket.on('user_typing',  ({ userId, roomId, isTyping }) => {});
-socket.on('user_online',  ({ userId }) => {});
-socket.on('user_offline', ({ userId }) => {});
-socket.on('notification', ({ type, message, data }) => {});
-socket.on('call:incoming',({ roomId, callerId, callerName }) => {});
-socket.on('call:accepted',({ roomId }) => {});
-socket.on('call:declined',({ roomId }) => {});
-socket.on('call:hungup',  ({ roomId }) => {});
-socket.on('whiteboard:draw',  ({ x0, y0, x1, y1, color, size, isEraser }) => {}); // Sync drawing coords
-socket.on('whiteboard:clear', () => {}); // Sync board clear
+socket.on('message:received',   ({ id, content, sender, roomId, createdAt, type }) => {});
+socket.on('user:typing',        ({ userId, roomId }) => {});
+socket.on('user:stop-typing',   ({ userId, roomId }) => {});
+socket.on('status:update',      ({ userId, status, lastSeen }) => {});
+socket.on('notification:new',   ({ id, type, message, title, data }) => {});
+socket.on('call:incoming',      ({ roomId, callerId, callerName, isVoiceOnly, isWebRTC }) => {});
+socket.on('call:accepted',      ({ roomId, peerId }) => {});
+socket.on('call:declined',      ({ roomId }) => {});
+socket.on('call:hungup',        ({ roomId }) => {});
+socket.on('whiteboard:draw',    (data) => {});
+socket.on('whiteboard:clear',   () => {});
 ```
 
 ### Frontend Connection

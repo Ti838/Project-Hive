@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+  </defs>
+  <!-- Honeycomb hive logo - 7 hexagons -->
+  <g transform="translate(256,256)">
+    <!-- Center hexagon -->
+    <polygon points="0,-52 45,-26 45,26 0,52 -45,26 -45,-26" fill="url(#hg)"/>
+    <!-- Top -->
+    <polygon points="0,-148 45,-122 45,-70 0,-44 -45,-70 -45,-122" fill="url(#hg)" opacity="0.92"/>
+    <!-- Top-right -->
+    <polygon points="83,-96 128,-70 128,-18 83,8 38,-18 38,-70" fill="url(#hg)" opacity="0.85"/>
+    <!-- Bottom-right -->
+    <polygon points="83,0 128,26 128,78 83,104 38,78 38,26" fill="url(#hg)" opacity="0.78"/>
+    <!-- Bottom -->
+    <polygon points="0,52 45,78 45,130 0,156 -45,130 -45,78" fill="url(#hg)" opacity="0.85"/>
+    <!-- Bottom-left -->
+    <polygon points="-83,0 -38,26 -38,78 -83,104 -128,78 -128,26" fill="url(#hg)" opacity="0.92"/>
+    <!-- Top-left -->
+    <polygon points="-83,-96 -38,-70 -38,-18 -83,8 -128,-18 -128,-70" fill="url(#hg)" opacity="0.78"/>
+  </g>
+</svg>

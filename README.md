@@ -44,90 +44,36 @@
 
 ## 🗂️ Project Structure
 
-```
+```text
 Project-Hive/
-├── public/                              # Frontend (static — served by Vercel)
+├── frontend/                            # Modern Frontend (Next.js 16 + React 19 + TypeScript + Tailwind 4)
+│   ├── src/
+│   │   ├── app/                         # App Router pages (Dashboard, Feed, Chat, Teams, Profile, Admin)
+│   │   ├── components/                  # UI, Layout (Sidebar, Topbar, MobileNav), Features
+│   │   ├── hooks/                       # useSocket (Real-time), useAuth (Guards)
+│   │   ├── lib/                         # Typed API client, Zustand stores, Utilities
+│   │   └── types/                       # Shared TypeScript models
+│   ├── public/                          # Optimized images, favicon, and brand logo
+│   ├── next.config.ts                   # Next.js Turbopack config
+│   └── package.json
+│
+├── public/                              # Legacy Static Site (Vercel deployment fallback)
 │   ├── index.html                       # Landing page
-│   ├── assets/
-│   │   ├── css/
-│   │   │   ├── ph-design.css            # CSS variable design tokens (light/dark)
-│   │   │   └── ph-system.css            # Sidebar, topbar, layout system
-│   │   ├── js/core/
-│   │   │   ├── api.js                   # Global API client (auto-detects prod/dev)
-│   │   │   ├── layout.js                # Sidebar + theme initialization
-│   │   │   ├── ph-sidebar.js            # Centralized navigation sidebar
-│   │   │   └── ph-toast.js              # Toast notification system
-│   │   └── svg/logo.png                 # Brand logo
-│   └── pages/
-│       ├── auth/
-│       │   ├── login.html               # User login
-│       │   ├── register.html            # User registration (+ Turnstile CAPTCHA)
-│       │   ├── verify-email.html        # Email verification landing
-│       │   ├── forgot-password.html     # Forgot password form
-│       │   └── reset-password.html      # Password reset form
-│       ├── user/
-│       │   ├── dashboard.html           # Main student dashboard
-│       │   ├── profile/edit.html        # Profile editor
-│       │   ├── settings.html            # Account settings
-│       │   ├── people.html              # Find people / friend requests
-│       │   ├── notifications.html       # Notification center
-│       │   ├── messages.html            # Real-time Socket.IO chat
-│       │   ├── teams.html               # Browse & join teams
-│       │   ├── teams-create.html        # Create new team
-│       │   └── projects/
-│       │       ├── showcase.html        # Project showcase gallery
-│       │       └── generator.html       # Gemini AI idea generator
-│       └── admin/
-│           ├── login.html               # Admin-only login portal
-│           └── dashboard.html           # Industrial admin control center
+│   ├── assets/                          # CSS design system, core scripts
+│   └── pages/                           # Auth, User, and Admin HTML templates
 │
-├── server/                              # Backend (Node.js + Express — hosted on Render)
-│   ├── server.js                        # Entry point + Socket.IO setup
-│   ├── app.js                           # Express app + route registration + CORS
-│   ├── config/
-│   │   ├── supabase.js                  # Supabase client (anon + service role)
-│   │   └── gemini.js                    # Google Gemini AI setup
-│   ├── controllers/
-│   │   ├── auth.controller.js           # Register, login, verify email, refresh, reset
-│   │   ├── admin.auth.controller.js     # Admin-only login + JWT guard
-│   │   ├── users.controller.js          # Profile CRUD + search
-│   │   ├── teams.controller.js          # Team management + join requests
-│   │   ├── projects.controller.js       # Project showcase CRUD
-│   │   ├── messages.controller.js       # Chat message history
-│   │   ├── notifications.controller.js  # Notification CRUD
-│   │   ├── friends.controller.js        # Friend requests + DM history
-│   │   ├── ai.controller.js             # Gemini AI idea generation
-│   │   └── admin.controller.js          # Admin operations (users, teams, projects, flags)
-│   ├── routes/
-│   │   ├── auth.routes.js               # /api/auth/*
-│   │   ├── users.routes.js              # /api/users/*
-│   │   ├── teams.routes.js              # /api/teams/*
-│   │   ├── projects.routes.js           # /api/projects/*
-│   │   ├── messages.routes.js           # /api/messages/*
-│   │   ├── notifications.routes.js      # /api/notifications/*
-│   │   ├── friends.routes.js            # /api/friends/*
-│   │   ├── ai.routes.js                 # /api/ai/*
-│   │   └── admin.routes.js              # /api/admin/* (admin JWT guard)
-│   ├── middleware/
-│   │   ├── auth.js                      # JWT verify middleware
-│   │   ├── socketAuth.js                # Socket.IO JWT auth
-│   │   ├── turnstile.js                 # Cloudflare Turnstile CAPTCHA verification
-│   │   ├── sanitize.js                  # XSS input sanitization (global)
-│   │   └── errorHandler.js             # Global error handler
-│   ├── services/
-│   │   ├── email.service.js             # Brevo SMTP (verify, welcome, reset)
-│   │   └── socket.service.js            # Socket.IO real-time event handlers
-│   ├── database/
-│   │   └── schema.sql                   # PostgreSQL schema (run in Supabase SQL editor)
-│   └── utils/
-│       └── jwt.utils.js                 # JWT sign / verify helpers
+├── server/                              # Backend Engine (Node.js + Express 4.x + Socket.IO)
+│   ├── server.js                        # HTTP + Socket.IO Server initialization
+│   ├── app.js                           # Express routing, CORS, Rate limits, Security CSP
+│   ├── config/                          # Supabase, Redis, Groq & Gemini AI connectors
+│   ├── controllers/                     # Business logic for Auth, Users, Teams, Chat, AI, Admin
+│   ├── middleware/                      # JWT verification, Supabase error handling, Uploads
+│   ├── routes/                          # REST API routes
+│   └── services/                        # Socket.IO event handlers, Email services
 │
-├── vercel.json                          # Vercel deployment config
-├── render.yaml                          # Render Blueprint config
-├── README.md                            # This file
-├── QUICKSTART.md                        # Local dev quick-start
-├── STACK.md                             # Full tech stack & service reference
-└── .gitignore
+├── ARCHITECTURE.md                      # Complete system diagrams & technical specifications
+├── STACK.md                             # Service credentials, environment vars & API contracts
+└── LICENSE                              # MIT License
 ```
 
 ---

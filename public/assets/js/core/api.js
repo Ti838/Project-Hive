@@ -126,7 +126,7 @@ const API = (() => {
 
         // Auth endpoints
         auth: {
-            register: (userData) => 
+            register: (userData) =>
                 request('/auth/register', {
                     method: 'POST',
                     body: JSON.stringify(userData),
@@ -136,9 +136,21 @@ const API = (() => {
                     method: 'POST',
                     body: JSON.stringify({ email, password }),
                 }),
-            logout: () => {
-                clearTokens();
-                window.location.href = '/login';
+            logout: async () => {
+                const refreshToken = getRefreshToken();
+                try {
+                    if (refreshToken) {
+                        await request('/auth/logout', {
+                            method: 'POST',
+                            body: JSON.stringify({ refreshToken }),
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Backend logout failed:', e);
+                } finally {
+                    clearTokens();
+                    window.location.href = '/login';
+                }
             },
         },
 

@@ -34,11 +34,20 @@ FRONTEND_URL=http://localhost:5000
 ```
 > **Minimum required:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `GROQ_API_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
-**Step 3 — Run the server**
+**Step 3 — Run the backend server**
 ```bash
+cd server
 npm run dev
 ```
-Open: **http://localhost:5000**
+Backend API & WebSocket runs at: **http://localhost:5000**
+
+**Step 4 — Run the Next.js frontend**
+```bash
+cd frontend
+npm run dev
+```
+Open in your browser: **http://localhost:3000**
+(All requests will automatically proxy and connect to the backend!)
 
 ---
 

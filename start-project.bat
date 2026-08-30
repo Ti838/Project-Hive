@@ -26,8 +26,8 @@ start cmd /k "cd server && npm run dev"
 
 timeout /t 2 /nobreak > nul
 
-echo  [2/2] Starting Frontend Server on port 3000...
-start cmd /k "npm run start"
+echo  [2/2] Starting Next.js Frontend on port 3000...
+start cmd /k "cd frontend && npm run dev"
 
 echo.
 echo  ================================================
@@ -35,6 +35,6 @@ echo   ✅ ProjectHive is starting!
 echo.
 echo   Frontend : http://localhost:3000
 echo   Backend  : http://localhost:5000/api
-echo   AI Demo  : http://localhost:3000/pages/projects/generator.html
+echo   Admin    : http://localhost:3000/admin/login
 echo  ================================================
 echo.
