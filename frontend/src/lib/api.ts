@@ -227,9 +227,44 @@ export const api = {
 
   ai: {
     generateIdeas: (body: { domain: string; skills: string[]; teamSize: number; timelineWeeks: number; constraints?: string }) =>
-      request<{ ideas: string }>('/ai/generate-ideas', { method: 'POST', body: JSON.stringify(body) }),
+      request<{ ideas: any }>('/ai/generate-ideas', { method: 'POST', body: JSON.stringify(body) }),
     chat: (message: string, imageBase64?: string) =>
       request<{ response: string }>('/ai/chat', { method: 'POST', body: JSON.stringify({ message, imageBase64 }) }),
+  },
+
+  admin: {
+    getStats: () =>
+      request<{
+        users: number; teams: number; projects: number; messages: number;
+        onlineUsers: number; newUsersToday: number; bannedUsers: number; posts: number;
+        flags: { maintenanceMode: boolean; registrationEnabled: boolean; emailVerification: boolean };
+      }>('/admin/stats'),
+    getUsers: (search = '', skip = 0, limit = 100) =>
+      request<{ users: any[]; total: number }>(`/admin/users?search=${encodeURIComponent(search)}&skip=${skip}&limit=${limit}`),
+    banUser: (id: string, ban?: boolean) =>
+      request<{ message: string; isBanned: boolean }>(`/admin/users/${id}/ban`, { method: 'PATCH', body: JSON.stringify({ ban }) }),
+    changeRole: (id: string, role: string) =>
+      request<{ message: string; user: any }>(`/admin/users/${id}/role`, { method: 'PATCH', body: JSON.stringify({ role }) }),
+    deleteUser: (id: string) =>
+      request<{ message: string }>(`/admin/users/${id}`, { method: 'DELETE' }),
+    getTeams: (skip = 0, limit = 100) =>
+      request<{ teams: any[]; total: number }>(`/admin/teams?skip=${skip}&limit=${limit}`),
+    deleteTeam: (id: string) =>
+      request<{ message: string }>(`/admin/teams/${id}`, { method: 'DELETE' }),
+    getProjects: (skip = 0, limit = 100) =>
+      request<{ projects: any[]; total: number }>(`/admin/projects?skip=${skip}&limit=${limit}`),
+    featureProject: (id: string, featured: boolean) =>
+      request<{ message: string; project: any }>(`/admin/projects/${id}/feature`, { method: 'PATCH', body: JSON.stringify({ featured }) }),
+    deleteProject: (id: string) =>
+      request<{ message: string }>(`/admin/projects/${id}`, { method: 'DELETE' }),
+    getFlags: () =>
+      request<{ maintenanceMode: boolean; registrationEnabled: boolean; emailVerification: boolean }>('/admin/flags'),
+    updateFlags: (flags: Partial<{ maintenanceMode: boolean; registrationEnabled: boolean; emailVerification: boolean }>) =>
+      request<{ message: string; flags: any }>('/admin/flags', { method: 'PATCH', body: JSON.stringify(flags) }),
+    getPosts: (search = '', skip = 0, limit = 100) =>
+      request<{ posts: any[]; total: number }>(`/admin/posts?search=${encodeURIComponent(search)}&skip=${skip}&limit=${limit}`),
+    deletePost: (id: string) =>
+      request<{ message: string }>(`/admin/posts/${id}`, { method: 'DELETE' }),
   },
 
   stats: () => request<Stats>('/stats'),
