@@ -63,7 +63,7 @@ export default function RegisterPage() {
       <div className="hidden lg:flex flex-col justify-center items-center flex-1 bg-primary p-12 text-primary-foreground">
         <div className="max-w-md text-center space-y-6">
           <div className="w-20 h-20 bg-primary-foreground/10 backdrop-blur rounded-3xl flex items-center justify-center mx-auto p-3 shadow-inner">
-            <img src="/bee-logo.png" alt="ProjectHive" className="w-14 h-14 object-contain" />
+            <img src="/logo.png" alt="ProjectHive" className="w-14 h-14 object-contain rounded-2xl" />
           </div>
           <h1 className="text-4xl font-bold">Join ProjectHive 🐝</h1>
           <p className="text-primary-foreground/80 text-lg leading-relaxed">
@@ -90,8 +90,8 @@ export default function RegisterPage() {
       <div className="flex-1 flex items-center justify-center p-6 sm:p-8 bg-background overflow-y-auto">
         <div className="w-full max-w-md space-y-6 my-auto">
           <div className="lg:hidden flex items-center gap-2">
-            <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center p-1.5">
-              <img src="/bee-logo.png" alt="ProjectHive" className="w-6 h-6 object-contain" />
+            <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center p-1.5 overflow-hidden">
+              <img src="/logo.png" alt="ProjectHive" className="w-6 h-6 object-contain rounded-lg" />
             </div>
             <span className="font-bold text-xl">ProjectHive</span>
           </div>

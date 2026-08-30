@@ -25,8 +25,8 @@ export default function LandingPage() {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center p-3 animate-bounce">
-            <img src="/bee-logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center p-2 animate-bounce">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain rounded-xl" />
           </div>
           <p className="text-xs text-muted-foreground font-medium">Entering ProjectHive…</p>
         </div>
@@ -39,8 +39,8 @@ export default function LandingPage() {
       {/* ─── Navigation Header ────────────────────────────────────────── */}
       <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center p-1">
-            <img src="/bee-logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1 overflow-hidden shadow-xs">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain rounded-lg" />
           </div>
           <span className="font-extrabold text-lg tracking-tight">ProjectHive</span>
         </div>
@@ -154,7 +154,7 @@ export default function LandingPage() {
       {/* ─── Footer ───────────────────────────────────────────────────── */}
       <footer className="mt-auto px-4 sm:px-8 py-8 max-w-6xl mx-auto w-full flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
-          <img src="/bee-logo.png" alt="ProjectHive" className="w-5 h-5 object-contain" />
+          <img src="/logo.png" alt="ProjectHive" className="w-5 h-5 object-contain" />
           <span>© 2025 ProjectHive — Open Source Student Platform</span>
         </div>
         <div className="flex gap-4">

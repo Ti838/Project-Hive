@@ -65,8 +65,8 @@ export function Sidebar() {
               {/* Mobile Header */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-border">
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 shrink-0">
-                    <img src="/bee-logo.png" alt="ProjectHive" className="w-6 h-6 object-contain" />
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
+                    <img src="/logo.png" alt="ProjectHive" className="w-6 h-6 object-contain rounded-lg" />
                   </div>
                   <span className="font-bold text-lg">ProjectHive</span>
                 </div>
@@ -147,8 +147,8 @@ export function Sidebar() {
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 shrink-0 overflow-hidden">
-            <img src="/bee-logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
+            <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
           </div>
           <AnimatePresence initial={false}>
             {!sidebarCollapsed && (

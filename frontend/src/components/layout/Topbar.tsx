@@ -50,8 +50,8 @@ export function Topbar() {
         </button>
 
         <div className="flex md:hidden items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center p-1">
-            <img src="/bee-logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1 overflow-hidden shadow-xs">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain rounded-md" />
           </div>
           <span className="font-bold text-sm">ProjectHive</span>
         </div>
