@@ -5,10 +5,22 @@
 
 import { getGeminiKey, getGroqKey, isGeminiReady, isGroqReady, isAIReady } from '../config/gemini.js';
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
-const GROQ_MODEL   = 'llama-3.3-70b-versatile';
-const GEMINI_BASE   = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GROQ_BASE     = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODELS = [
+  'qwen/qwen3.8-27b',
+  'groq/compound-mini',
+  'groq/compound',
+  'allam-2-7b',
+  'openai/gpt-oss-120b',
+];
+
+const GEMINI_MODELS = [
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+];
+
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GROQ_BASE   = 'https://api.groq.com/openai/v1/chat/completions';
 
 // Rate limiter (per-user sliding window)
 const rateLimitMap = new Map();
@@ -31,7 +43,7 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-// ── Call Gemini API ──────────────────────────────────────────────────────────
+// ── Call Gemini API with model fallback ─────────────────────────────────────
 async function callGemini(prompt, imageBase64, mimeType) {
   const apiKey = getGeminiKey();
   if (!apiKey) throw new Error('GEMINI_NOT_CONFIGURED');
@@ -42,94 +54,104 @@ async function callGemini(prompt, imageBase64, mimeType) {
   }
   parts.push({ text: prompt });
 
-  const url = `${GEMINI_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000); // 25s timeout
+  let lastError = null;
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts }],
-        generationConfig: { temperature: 0.8, topP: 0.9, maxOutputTokens: 3000 },
-      }),
-      signal: controller.signal,
-    });
+  for (const model of GEMINI_MODELS) {
+    const url = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
 
-    if (response.status === 429) {
-      const e = new Error('GEMINI_RATE_LIMIT');
-      e.status = 429;
-      e.provider = 'gemini';
-      throw e;
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: { temperature: 0.8, topP: 0.9, maxOutputTokens: 3000 },
+        }),
+        signal: controller.signal,
+      });
+
+      if (response.status === 429) {
+        const e = new Error('GEMINI_RATE_LIMIT');
+        e.status = 429;
+        e.provider = 'gemini';
+        throw e;
+      }
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `Gemini error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
+      if (text) {
+        return { text, provider: 'gemini', model };
+      }
+    } catch (e) {
+      lastError = e;
+      console.warn(`[AI] Gemini model ${model} failed: ${e.message} — trying next`);
+    } finally {
+      clearTimeout(timeout);
     }
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      const e = new Error(err?.error?.message || `Gemini error ${response.status}`);
-      e.status = response.status;
-      e.provider = 'gemini';
-      throw e;
-    }
-
-    const data = await response.json();
-    return {
-      text: data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '',
-      provider: 'gemini',
-      model: GEMINI_MODEL,
-    };
-  } finally {
-    clearTimeout(timeout);
   }
+
+  throw lastError || new Error('All Gemini models failed');
 }
 
-// ── Call Groq API (OpenAI-compatible) ────────────────────────────────────────
+// ── Call Groq API with multi-model fallback ─────────────────────────────────
 async function callGroq(prompt) {
   const apiKey = getGroqKey();
   if (!apiKey) throw new Error('GROQ_NOT_CONFIGURED');
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 25000);
+  let lastError = null;
 
-  try {
-    const response = await fetch(GROQ_BASE, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.8,
-        top_p: 0.9,
-        max_tokens: 3000,
-      }),
-      signal: controller.signal,
-    });
+  for (const model of GROQ_MODELS) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
 
-    if (response.status === 429) {
-      const e = new Error('GROQ_RATE_LIMIT');
-      e.status = 429;
-      e.provider = 'groq';
-      throw e;
+    try {
+      const response = await fetch(GROQ_BASE, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [{ role: 'user', content: prompt }],
+          temperature: 0.7,
+          top_p: 0.9,
+          max_tokens: 3000,
+        }),
+        signal: controller.signal,
+      });
+
+      if (response.status === 429) {
+        const e = new Error('GROQ_RATE_LIMIT');
+        e.status = 429;
+        e.provider = 'groq';
+        throw e;
+      }
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err?.error?.message || `Groq error ${response.status}`);
+      }
+
+      const data = await response.json();
+      const text = data?.choices?.[0]?.message?.content?.trim() || '';
+      if (text) {
+        return { text, provider: 'groq', model };
+      }
+    } catch (e) {
+      lastError = e;
+      console.warn(`[AI] Groq model ${model} failed: ${e.message} — trying next`);
+    } finally {
+      clearTimeout(timeout);
     }
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      const e = new Error(err?.error?.message || `Groq error ${response.status}`);
-      e.status = response.status;
-      e.provider = 'groq';
-      throw e;
-    }
-
-    const data = await response.json();
-    return {
-      text: data?.choices?.[0]?.message?.content?.trim() || '',
-      provider: 'groq',
-      model: GROQ_MODEL,
-    };
-  } finally {
-    clearTimeout(timeout);
   }
+
+  throw lastError || new Error('All Groq models failed');
 }
 
 // ── Smart AI Call with Automatic Fallback ────────────────────────────────────
