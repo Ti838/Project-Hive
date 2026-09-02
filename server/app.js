@@ -295,27 +295,38 @@ app.use((req, res) => {
     '/admin':              'pages/admin/login.html',
     '/admin/login':        'pages/admin/login.html',
     '/admin/dashboard':    'pages/admin/dashboard.html',
+    '/admin/mobile-blocked': 'pages/admin/mobile-blocked.html',
     '/dashboard':          'pages/user/dashboard.html',
     '/feed':               'pages/user/feed.html',
     '/messages':           'pages/user/messages.html',
     '/people':             'pages/user/people.html',
+    '/friends':            'pages/user/people.html',
     '/teams':              'pages/user/teams.html',
     '/teams/create':       'pages/user/teams-create.html',
     '/settings':           'pages/user/settings.html',
     '/notifications':      'pages/user/notifications.html',
     '/profile':            'pages/user/profile/view.html',
+    '/profile/view':       'pages/user/profile/view.html',
+    '/profile/view.html':  'pages/user/profile/view.html',
     '/profile/edit':       'pages/user/profile/edit.html',
     '/showcase':           'pages/user/projects/showcase.html',
+    '/projects':           'pages/user/projects/showcase.html',
     '/about':              'pages/info/about.html',
     '/help':               'pages/info/help.html',
     '/terms':              'pages/info/terms.html',
     '/privacy':            'pages/info/privacy.html',
     '/saved':              'pages/user/saved.html',
     '/generator':          'pages/user/projects/generator.html',
+    '/ai':                 'pages/user/projects/generator.html',
+    '/ai-generator':       'pages/user/projects/generator.html',
   };
   const target = routes[req.path];
   if (target) {
     return res.sendFile(path.join(publicDir, target));
+  }
+  // Dynamic route support: /profile/:id, /profile/view/:id, /user/:id
+  if (/^\/(profile(\/view)?|user)\/[a-zA-Z0-9_-]+$/.test(req.path)) {
+    return res.sendFile(path.join(publicDir, 'pages/user/profile/view.html'));
   }
   // For any other path, serve index.html (handles direct URL access)
   res.sendFile(path.join(publicDir, 'index.html'));

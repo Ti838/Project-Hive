@@ -224,7 +224,7 @@ table { border-collapse: collapse; }
 
   .stats, .sum-card, .teams-stats,
   .quick-actions, .analytics-grid,
-  .ph-stats, .pv-2col, .sys-grid,
+  .ph-stats, .sys-grid,
   .stat-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
@@ -420,7 +420,13 @@ table { border-collapse: collapse; }
     margin-top: 16px !important;
   }
   .pv-actions > button,
-  .pv-actions > a { flex: 1 1 0% !important; }
+  .pv-actions > a { flex: 1 1 auto !important; }
+  .pv-2col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }
 
   /* ─── Messages ─── */
   .msg-layout { height: calc(100dvh - 56px) !important; overflow: hidden !important; }

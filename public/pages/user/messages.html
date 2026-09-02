@@ -713,7 +713,7 @@
                 <span class="material-symbols-outlined text-indigo-400 text-[20px] font-bold">edit_note</span>
                 <span class="text-white text-xs font-bold font-heading">Live Board</span>
               </div>
-              
+
               <!-- Tools -->
               <button onclick="setWhiteboardTool('pen')" id="wb-tool-pen" class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center transition-all hover:bg-indigo-500" title="Pen Tool">
                 <span class="material-symbols-outlined text-[18px]">draw</span>
@@ -1618,11 +1618,11 @@
             <button class="msg-back-btn w-8 h-8 rounded-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-darkSurface-card text-gray-600 dark:text-gray-400 md:hidden" onclick="showConvPanel()">
               <span class="material-symbols-outlined text-lg">chevron_left</span>
             </button>
-            <div class="relative cursor-pointer" onclick="window.location.href='/pages/user/profile/view.html?id=${f._id||f.id}'" title="View Profile">
+            <div class="relative cursor-pointer" onclick="window.location.href='/profile/view?id=${f._id||f.id}'" title="View Profile">
               <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white text-sm shrink-0 shadow-sm" style="background:${color}">${ini(f.firstName,f.lastName)}</div>
               <span class="absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-darkSurface-panel ${hdrStatus.isOnline ? 'status-dot-online pulse' : 'hidden'}" data-user-hdr-dot="${f._id||f.id}"></span>
             </div>
-            <div class="cursor-pointer" onclick="window.location.href='/pages/user/profile/view.html?id=${f._id||f.id}'" title="View Profile">
+            <div class="cursor-pointer" onclick="window.location.href='/profile/view?id=${f._id||f.id}'" title="View Profile">
               <div class="font-heading font-bold text-sm text-gray-900 dark:text-white leading-tight hover:underline">${esc(name)}</div>
               <div id="chat-hdr-status" class="text-[11px] ${hdrStatus.cssClass} flex items-center gap-1.5 mt-0.5" data-user-hdr-activity="${f._id||f.id}" data-last-seen="${f.lastSeen||''}">
                 ${hdrStatus.isOnline ? '<span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>' : ''}
@@ -1694,7 +1694,7 @@
         } else {
           const warningArea = document.getElementById('friendship-warning-area');
           const inputArea = document.getElementById('chat-input-area');
-          
+
           if (warningArea) {
             warningArea.innerHTML = `
               <div class="flex items-center gap-3">
@@ -1716,7 +1716,7 @@
                 if (inputArea) inputArea.classList.add('hidden');
                 if (warningArea) {
                   warningArea.classList.remove('hidden');
-                  
+
                   let icon = 'person_add';
                   let title = 'Become Friends to Message';
                   let desc = 'You must be friends with this user to start a conversation.';
@@ -2180,7 +2180,7 @@
             '<div class="flex gap-3 mt-4">' +
               '<button onclick="startVoiceCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-emerald-50 rounded-2xl justify-center text-emerald-600 hover:bg-emerald-100 transition-all"><span class="material-symbols-outlined text-xl">call</span><span class="text-[9px] font-bold">Voice</span></button>' +
               '<button onclick="startCall()" class="flex flex-col items-center gap-1 w-14 h-14 bg-indigo-50 rounded-2xl justify-center text-indigo-600 hover:bg-indigo-100 transition-all"><span class="material-symbols-outlined text-xl">videocam</span><span class="text-[9px] font-bold">Video</span></button>' +
-              '<a href="/pages/user/profile/view.html?id=' + friendId + '"' +
+              '<a href="/profile/view?id=' + friendId + '"' +
                ' class="flex flex-col items-center gap-1 w-14 h-14 bg-gray-100 dark:bg-darkSurface-card rounded-2xl justify-center text-gray-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-darkSurface-hover transition-all">' +
                '<span class="material-symbols-outlined text-xl">person</span>' +
                '<span class="text-[9px] font-bold">Profile</span></a>' +
@@ -2259,7 +2259,7 @@
               ? '<span class="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">Leader</span>'
               : '<span class="text-[10px] font-semibold text-gray-400 dark:text-slate-500 bg-gray-100 dark:bg-darkSurface-card px-1.5 py-0.5 rounded">Member</span>';
 
-            const userProfileLink = `/pages/user/profile/view.html?id=${uid}`;
+            const userProfileLink = `/profile/view?id=${uid}`;
 
             return `
               <div class="flex items-center justify-between py-2 border-b border-gray-100 dark:border-darkSurface-border/40">
@@ -3158,7 +3158,7 @@
             <button onclick="openTeamChatInfo('${team._id}')" class="hidden md:flex w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl items-center justify-center transition-all shrink-0" title="Team Details">
               <span class="material-symbols-outlined text-lg">info</span>
             </button>
-            
+
             <!-- Mobile Three-Dot Dropdown Menu Button -->
             <button onclick="toggleChatDropdown(event)" class="md:hidden w-9 h-9 sm:w-10 sm:h-10 bg-gray-100 dark:bg-darkSurface-card hover:bg-gray-200 dark:hover:bg-darkSurface-hover text-gray-500 rounded-xl flex items-center justify-center transition-all shrink-0" title="More Options">
               <span class="material-symbols-outlined text-lg font-bold">more_vert</span>
@@ -3715,7 +3715,7 @@
           if (!canvas) return;
           const ctx = canvas.getContext('2d');
           if (!ctx) return;
-          
+
           const container = document.getElementById('whiteboard-container');
           if (container && container.classList.contains('hidden')) {
             container.classList.replace('hidden', 'flex');
@@ -3732,14 +3732,14 @@
           ctx.lineTo(x1, y1);
           ctx.strokeStyle = data.color;
           ctx.lineWidth = data.size;
-          
+
           if (data.isEraser) {
             ctx.globalCompositeOperation = 'destination-out';
             ctx.lineWidth = data.size * 2.5;
           } else {
             ctx.globalCompositeOperation = 'source-over';
           }
-          
+
           ctx.stroke();
           ctx.closePath();
           ctx.globalCompositeOperation = 'source-over';
@@ -3824,7 +3824,7 @@
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
-        
+
         setupVoiceOnlyUI(false);
         startOutgoingRing();
         setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
@@ -3857,7 +3857,7 @@
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
         document.getElementById('jitsi-container').classList.add('hidden');
         document.getElementById('webrtc-container').classList.remove('hidden');
-        
+
         setupVoiceOnlyUI(true);
         startOutgoingRing();
         setCallConnectionStatus(friendOnline ? 'calling' : 'offline');
@@ -3886,8 +3886,8 @@
         const muteIcon = document.getElementById('mute-icon');
         if (muteBtn && muteIcon) {
           muteIcon.textContent = isMuted ? 'mic_off' : 'mic';
-          muteBtn.className = isMuted 
-            ? "w-11 h-11 sm:w-12 sm:h-12 bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-rose-500/20 shadow-lg shadow-rose-600/20 touch-manipulation" 
+          muteBtn.className = isMuted
+            ? "w-11 h-11 sm:w-12 sm:h-12 bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-rose-500/20 shadow-lg shadow-rose-600/20 touch-manipulation"
             : "w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation";
         }
 
@@ -3895,15 +3895,15 @@
         const camIcon = document.getElementById('camera-icon');
         if (camBtn && camIcon) {
           camIcon.textContent = isCameraOff ? 'videocam_off' : 'videocam';
-          camBtn.className = isCameraOff 
-            ? "w-11 h-11 sm:w-12 sm:h-12 bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-rose-500/20 shadow-lg shadow-rose-600/20 touch-manipulation" 
+          camBtn.className = isCameraOff
+            ? "w-11 h-11 sm:w-12 sm:h-12 bg-rose-600/80 hover:bg-rose-500/80 active:bg-rose-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-rose-500/20 shadow-lg shadow-rose-600/20 touch-manipulation"
             : "w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation";
         }
 
         const screenBtn = document.getElementById('btn-screenshare');
         if (screenBtn) {
-          screenBtn.className = isSharingScreen 
-            ? "w-11 h-11 sm:w-12 sm:h-12 bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-emerald-500/20 shadow-lg shadow-emerald-600/20 touch-manipulation" 
+          screenBtn.className = isSharingScreen
+            ? "w-11 h-11 sm:w-12 sm:h-12 bg-emerald-600/80 hover:bg-emerald-500/80 active:bg-emerald-700/80 text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-emerald-500/20 shadow-lg shadow-emerald-600/20 touch-manipulation"
             : "w-11 h-11 sm:w-12 sm:h-12 bg-white/10 hover:bg-white/20 active:bg-white/30 backdrop-blur-md text-white rounded-full flex items-center justify-center transition-all active:scale-[0.9] border border-white/10 touch-manipulation";
         }
       }
@@ -3966,7 +3966,7 @@
         const voiceAvText = document.getElementById('voice-avatar-text');
         const voiceCallerName = document.getElementById('voice-caller-name');
         const waitingStatusLabel = document.getElementById('waiting-status-label');
-        
+
         if (voiceAvText) voiceAvText.textContent = ini(f.firstName, f.lastName);
         if (voiceCallerName) voiceCallerName.textContent = name;
         if (waitingStatusLabel) waitingStatusLabel.textContent = 'Ringing';
@@ -4054,16 +4054,16 @@
           isDragging = true;
           const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
           const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-          
+
           startX = clientX;
           startY = clientY;
-          
+
           const rect = pip.getBoundingClientRect();
           const parentRect = pip.parentElement.getBoundingClientRect();
-          
+
           initialLeft = rect.left - parentRect.left;
           initialTop = rect.top - parentRect.top;
-          
+
           pip.style.right = 'auto';
           pip.style.bottom = 'auto';
           pip.style.left = `${initialLeft}px`;
@@ -4075,19 +4075,19 @@
           if (!isDragging) return;
           const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
           const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-          
+
           const dx = clientX - startX;
           const dy = clientY - startY;
-          
+
           const parentRect = pip.parentElement.getBoundingClientRect();
           const pipRect = pip.getBoundingClientRect();
-          
+
           let newLeft = initialLeft + dx;
           let newTop = initialTop + dy;
-          
+
           newLeft = Math.max(0, Math.min(newLeft, parentRect.width - pipRect.width));
           newTop = Math.max(0, Math.min(newTop, parentRect.height - pipRect.height));
-          
+
           pip.style.left = `${newLeft}px`;
           pip.style.top = `${newTop}px`;
         };
@@ -4108,7 +4108,7 @@
       // Join embedded Jitsi call container
       async function openJitsiFrame(roomId, voiceOnly = false) {
         document.getElementById('call-modal').classList.replace('hidden', 'flex');
-        
+
         if (voiceOnly) {
           document.getElementById('jitsi-container').classList.add('hidden');
           document.getElementById('webrtc-container').classList.remove('hidden');
@@ -4120,7 +4120,7 @@
           document.getElementById('webrtc-container').classList.add('hidden');
           startLocalPreview();
         }
-        
+
         // Show our custom control bar and reset states
         const controlBar = document.getElementById('call-control-bar');
         if (controlBar) {
@@ -4180,7 +4180,7 @@
           }
         };
         jitsiApiInstance = new JitsiMeetExternalAPI(domain, options);
-        
+
         function switchToVideoMode() {
           const jitsiContainer = document.getElementById('jitsi-container');
           const webrtcContainer = document.getElementById('webrtc-container');
@@ -4305,12 +4305,12 @@
         document.getElementById('jitsi-container').classList.add('hidden');
 
         const modal = document.getElementById('call-modal');
-        
+
         if (modal) modal.classList.replace('flex', 'hidden');
         const wbContainer = document.getElementById('whiteboard-container');
         if (wbContainer) wbContainer.classList.replace('flex', 'hidden');
         if (typeof clearWhiteboardLocal === 'function') clearWhiteboardLocal();
-        
+
         // Show control bar & buttons back for next call
         const controlBar = document.getElementById('call-control-bar');
         if (controlBar) {
@@ -4463,7 +4463,7 @@
         if (ringtoneAudio) { ringtoneAudio.stop(); ringtoneAudio = null; }
       }
 
-      
+
       // ── Whiteboard Logic ──
       let wbCanvas, wbCtx;
       let wbDrawing = false;
@@ -4476,7 +4476,7 @@
       window.toggleWhiteboard = function() {
         const container = document.getElementById('whiteboard-container');
         if (!container) return;
-        
+
         if (container.classList.contains('hidden')) {
           container.classList.replace('hidden', 'flex');
           initWhiteboard();
@@ -4487,7 +4487,7 @@
 
       window.setWhiteboardTool = function(tool) {
         wbTool = tool;
-        document.getElementById('wb-tool-pen').className = tool === 'pen' 
+        document.getElementById('wb-tool-pen').className = tool === 'pen'
           ? 'w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center transition-all'
           : 'w-8 h-8 rounded-lg text-white/70 hover:bg-white/10 flex items-center justify-center transition-all';
         document.getElementById('wb-tool-eraser').className = tool === 'eraser'
@@ -4510,7 +4510,7 @@
         wbCanvas = document.getElementById('whiteboard-canvas');
         if (!wbCanvas) return;
         wbCtx = wbCanvas.getContext('2d');
-        
+
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
 
@@ -4537,7 +4537,7 @@
         wbCanvas.height = rect.height;
 
         wbCtx.drawImage(tempCanvas, 0, 0);
-        
+
         wbCtx.lineCap = 'round';
         wbCtx.lineJoin = 'round';
       }
@@ -4566,7 +4566,7 @@
       function draw(e) {
         if (!wbDrawing || !wbCanvas) return;
         e.preventDefault();
-        
+
         const coords = getCoords(e);
         const x = coords.x;
         const y = coords.y;
@@ -4582,12 +4582,12 @@
         };
 
         drawSegment(
-          wbLastX, 
-          wbLastY, 
-          x, 
-          y, 
-          drawData.color, 
-          drawData.size, 
+          wbLastX,
+          wbLastY,
+          x,
+          y,
+          drawData.color,
+          drawData.size,
           drawData.isEraser
         );
 
@@ -4606,14 +4606,14 @@
         wbCtx.lineTo(x1, y1);
         wbCtx.strokeStyle = color;
         wbCtx.lineWidth = size;
-        
+
         if (isEraser) {
           wbCtx.globalCompositeOperation = 'destination-out';
           wbCtx.lineWidth = size * 2.5;
         } else {
           wbCtx.globalCompositeOperation = 'source-over';
         }
-        
+
         wbCtx.stroke();
         wbCtx.closePath();
         wbCtx.globalCompositeOperation = 'source-over';

@@ -16,8 +16,17 @@ export default function PeoplePage() {
   const [requested, setRequested] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    api.users.getPeople(1, 30).then((res) => {
-      if (res.ok && res.users) setPeople(res.users);
+    api.users.getPeople(1, 60).then((res) => {
+      if (res.ok && res.users) {
+        // Deduplicate users by ID
+        const seen = new Set<string>();
+        const unique = res.users.filter((u) => {
+          if (!u.id || seen.has(u.id)) return false;
+          seen.add(u.id);
+          return true;
+        });
+        setPeople(unique);
+      }
       setLoading(false);
     });
   }, []);
@@ -36,7 +45,7 @@ export default function PeoplePage() {
   );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Discover Teammates</h1>
         <p className="text-sm text-muted-foreground">Find collaborators by university, major, and technical skillset</p>
@@ -54,7 +63,7 @@ export default function PeoplePage() {
       </div>
 
       {loading ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="h-48 rounded-2xl bg-muted animate-pulse" />
           ))}
@@ -65,7 +74,7 @@ export default function PeoplePage() {
           <p className="font-medium">No students match your search criteria.</p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {filtered.map((student) => {
             const name = displayName(student);
             const color = student.avatar_color || getAvatarColor(student.id);
@@ -79,12 +88,12 @@ export default function PeoplePage() {
                 className="bg-card border border-border rounded-2xl p-5 flex flex-col gap-4 hover:border-primary/40 hover:shadow-md transition-all"
               >
                 <div className="flex items-start gap-3.5">
-                  <div className="relative shrink-0">
+                  <Link href={`/profile/view?id=${student.id}`} className="relative shrink-0 group">
                     {student.avatar ? (
-                      <img src={student.avatar} alt={name} className="w-12 h-12 rounded-xl object-cover" />
+                      <img src={student.avatar} alt={name} className="w-12 h-12 rounded-xl object-cover group-hover:opacity-90 transition-opacity" />
                     ) : (
                       <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-base font-bold"
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-white text-base font-bold group-hover:scale-105 transition-transform"
                         style={{ backgroundColor: color }}
                       >
                         {getInitials(name)}
@@ -93,10 +102,12 @@ export default function PeoplePage() {
                     {student.online_status === 'online' && (
                       <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-card" />
                     )}
-                  </div>
+                  </Link>
 
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-sm truncate">{name}</h3>
+                    <Link href={`/profile/view?id=${student.id}`} className="font-bold text-sm truncate block hover:text-primary transition-colors">
+                      {name}
+                    </Link>
                     {student.university && (
                       <p className="text-xs text-muted-foreground truncate flex items-center gap-1 mt-0.5">
                         <GraduationCap className="w-3 h-3 shrink-0" />
@@ -128,12 +139,12 @@ export default function PeoplePage() {
                   </div>
                 )}
 
-                <div className="mt-auto pt-2 flex items-center gap-2">
+                <div className="mt-auto pt-2 flex items-center gap-2 flex-wrap sm:flex-nowrap">
                   <button
                     onClick={() => sendFriendReq(student.id)}
                     disabled={isReq}
                     className={cn(
-                      'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium transition-colors',
+                      'flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl text-xs font-medium transition-colors min-h-[38px]',
                       isReq
                         ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                         : 'bg-primary text-primary-foreground hover:bg-primary/90'
@@ -143,8 +154,15 @@ export default function PeoplePage() {
                     {isReq ? 'Connected' : 'Connect'}
                   </button>
                   <Link
+                    href={`/profile/view?id=${student.id}`}
+                    className="py-2 px-3 rounded-xl border border-border text-xs font-semibold hover:bg-accent transition-colors flex items-center gap-1 min-h-[38px]"
+                    title="View Profile"
+                  >
+                    Profile
+                  </Link>
+                  <Link
                     href={`/messages`}
-                    className="p-2 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                    className="p-2 rounded-xl border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-colors min-h-[38px] flex items-center justify-center"
                     title="Send message"
                   >
                     <MessageSquare className="w-4 h-4" />

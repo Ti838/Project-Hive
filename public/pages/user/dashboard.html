@@ -318,12 +318,12 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
         <span id="topbar-unread" class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface hidden"></span>
       </div>
     </div>
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='/profile'" title="View Profile">
       <div class="text-right hidden sm:block">
-        <p class="font-label-md text-label-md text-on-surface" id="dash-username">—</p>
+        <p class="font-label-md text-label-md text-on-surface hover:text-primary transition-colors" id="dash-username">—</p>
         <p class="text-[11px] text-on-surface-variant" id="dash-role">Student</p>
       </div>
-      <div id="dash-avatar" class="w-10 h-10 rounded-full border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm">?</div>
+      <div id="dash-avatar" class="w-10 h-10 rounded-full border-2 border-primary/10 bg-primary/10 flex items-center justify-center font-bold text-primary text-sm hover:scale-105 transition-transform">?</div>
     </div>
   </div>
 
@@ -614,14 +614,14 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
       `;
       document.body.appendChild(modal);
     }
-    
+
     const iconColor = danger ? '#ef4444' : '#6366f1';
     const iconBg = danger ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)';
     const iconBorder = danger ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)';
     const confirmBtnColor = danger ? '#ef4444' : '#6366f1';
     const confirmBtnHoverBg = danger ? 'rgba(239,68,68,0.06)' : 'rgba(99,102,241,0.06)';
-    
-    const iconSvg = danger 
+
+    const iconSvg = danger
       ? `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`
       : `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
@@ -696,14 +696,14 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
 
     const btnCancel = modal.querySelector('#ph-confirm-cancel');
     const btnConfirm = modal.querySelector('#ph-confirm-ok');
-    
+
     btnCancel.addEventListener('mouseenter', () => btnCancel.style.background = 'var(--bg-surface-variant, #f1f5f9)');
     btnCancel.addEventListener('mouseleave', () => btnCancel.style.background = 'none');
     btnConfirm.addEventListener('mouseenter', () => btnConfirm.style.background = confirmBtnHoverBg);
     btnConfirm.addEventListener('mouseleave', () => btnConfirm.style.background = 'none');
 
     const container = modal.querySelector('.lo-card');
-    
+
     function hide() {
       modal.style.opacity = '0';
       modal.style.pointerEvents = 'none';
@@ -715,7 +715,7 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
       hide();
       if (typeof onConfirm === 'function') onConfirm();
     });
-    
+
     modal.addEventListener('click', (e) => {
       if (e.target === modal) hide();
     });
@@ -798,7 +798,7 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
     const t = setInterval(() => { cur = Math.min(cur + step, target); el.textContent = cur; if (cur >= target) clearInterval(t); }, 40);
   }
 
-  
+
   /* Renderers */
   function renderNotifications(list) {
     const el = document.getElementById('notif-list');
@@ -889,7 +889,7 @@ body, header.fixed, aside, main, section, .bg-surface-container-lowest,
             av.innerHTML = ini;
           }
         }
-        
+
         const pct = Math.round(u.profileCompletion ?? u.completion_percentage ?? 0);
         const el_pct = document.getElementById('dash-profile-pct');
         const el_bar = document.getElementById('dash-profile-bar');
@@ -1248,7 +1248,7 @@ window.toggleNotificationDropdown = function() {
   const dropdown = document.getElementById('notification-dropdown');
   const backdrop = document.getElementById('notification-dropdown-backdrop');
   if (!dropdown) return;
-  
+
   if (dropdown.classList.contains('hidden')) {
     dropdown.classList.remove('hidden');
     backdrop.classList.remove('hidden');
@@ -1268,13 +1268,13 @@ window.toggleNotificationDropdown = function() {
 async function loadDropdownNotifications() {
   const listEl = document.getElementById('dropdown-notif-list');
   if (!listEl) return;
-  
+
   try {
     const r = await fetch(API_BASE + '/api/notifications?limit=6', { headers: H });
     if (r.ok) {
       const d = await r.json();
       const list = d.notifications || d || [];
-      
+
       const unread = list.filter(n => !n.read).length;
       const dot = document.getElementById('topbar-unread');
       const dotMob = document.getElementById('topbar-unread-mobile');
@@ -1295,7 +1295,7 @@ async function loadDropdownNotifications() {
         const dateStr = new Date(n.created_at || n.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
         const isUnread = !n.read;
         const borderClass = isUnread ? 'border-l-4 border-indigo-500 bg-indigo-50/30 dark:bg-indigo-950/10' : 'border-l border-gray-100 dark:border-darkSurface-border';
-        
+
         let icon = 'notifications';
         if (n.type === 'friend_request' || n.type === 'friend') icon = 'person_add';
         else if (n.type === 'team' || n.type === 'team_join') icon = 'group';
@@ -1329,10 +1329,10 @@ window.clickDropdownNotification = async function(id, link) {
   try {
     await fetch(API_BASE + `/api/notifications/${id}/read`, { method: 'PUT', headers: H });
   } catch (e) {}
-  
+
   toggleNotificationDropdown();
   if (typeof window.fetchNotifications === 'function') window.fetchNotifications();
-  
+
   if (link) {
     window.location.href = link;
   }

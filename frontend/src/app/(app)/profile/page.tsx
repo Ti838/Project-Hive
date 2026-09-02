@@ -3,10 +3,12 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useSearchParams } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GitBranch, ExternalLink, Globe, Edit2, Save, X, Loader2 } from 'lucide-react';
+import { GitBranch, ExternalLink, Globe, Edit2, Save, X, Loader2, UserX, MessageSquare, UserPlus, Check, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { displayName, getInitials, getAvatarColor, cn } from '@/lib/utils';
@@ -25,7 +27,6 @@ const profileSchema = z.object({
   portfolio_url: z.string().url('Invalid URL').optional().or(z.literal('')),
 });
 type ProfileForm = z.infer<typeof profileSchema>;
-
 
 // ─── Skill tag editor ──────────────────────────────────────────────────────────
 function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: string[]) => void }) {
@@ -64,33 +65,62 @@ function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: str
   );
 }
 
-export default function ProfilePage() {
-  const { user, updateUser } = useAuthStore();
+export default function ProfilePage({ paramsId }: { paramsId?: string }) {
+  const searchParams = useSearchParams();
+  const queryId = searchParams.get('id') || searchParams.get('uid') || paramsId;
+
+  const { user: currentUser, updateUser } = useAuthStore();
+  const [profileUser, setProfileUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
+  const [friendRequested, setFriendRequested] = useState(false);
+
+  const isOwnProfile = !queryId || queryId === currentUser?.id;
+  const activeUser = isOwnProfile ? currentUser : profileUser;
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema) as any,
   });
 
   useEffect(() => {
-    if (user) {
-      reset({
-        first_name: user.first_name,
-        last_name: user.last_name,
-        bio: user.bio ?? '',
-        university: user.university ?? '',
-        department: user.department ?? '',
-        year_of_study: user.year_of_study ?? undefined,
-        github_url: user.github_url ?? '',
-        linkedin_url: user.linkedin_url ?? '',
-        portfolio_url: user.portfolio_url ?? '',
+    if (isOwnProfile) {
+      if (currentUser) {
+        setProfileUser(currentUser);
+        reset({
+          first_name: currentUser.first_name,
+          last_name: currentUser.last_name,
+          bio: currentUser.bio ?? '',
+          university: currentUser.university ?? '',
+          department: currentUser.department ?? '',
+          year_of_study: currentUser.year_of_study ?? undefined,
+          github_url: currentUser.github_url ?? '',
+          linkedin_url: currentUser.linkedin_url ?? '',
+          portfolio_url: currentUser.portfolio_url ?? '',
+        });
+        setSkills(currentUser.skills ?? []);
+        setNotFound(false);
+      }
+      setLoading(false);
+    } else if (queryId) {
+      setLoading(true);
+      api.users.getById(queryId).then((res) => {
+        if (res.ok && res.id) {
+          setProfileUser(res);
+          setNotFound(false);
+        } else {
+          setNotFound(true);
+        }
+        setLoading(false);
+      }).catch(() => {
+        setNotFound(true);
+        setLoading(false);
       });
-      setSkills(user.skills ?? []);
     }
-  }, [user]);
+  }, [queryId, isOwnProfile, currentUser]);
 
   const onSubmit: SubmitHandler<ProfileForm> = async (data) => {
     setSaving(true);
@@ -116,27 +146,67 @@ export default function ProfilePage() {
     setSaving(false);
   };
 
+  const handleConnect = async () => {
+    if (!profileUser?.id) return;
+    setFriendRequested(true);
+    await api.friends.requests.send(profileUser.id);
+  };
 
-  const name = displayName(user ?? undefined);
-  const avatarColor = user?.avatar_color || getAvatarColor(user?.id ?? '');
+  if (loading) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto space-y-6 animate-pulse">
+        <div className="h-40 bg-muted rounded-2xl" />
+        <div className="space-y-3 pt-6">
+          <div className="h-7 bg-muted rounded-lg w-48" />
+          <div className="h-4 bg-muted rounded-lg w-32" />
+          <div className="h-16 bg-muted rounded-xl" />
+        </div>
+      </div>
+    );
+  }
+
+  if (notFound || !activeUser) {
+    return (
+      <div className="p-6 max-w-lg mx-auto text-center py-20">
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+          <UserX className="w-8 h-8" />
+        </div>
+        <h1 className="text-xl font-bold mb-2">Student Profile Not Found</h1>
+        <p className="text-sm text-muted-foreground mb-6">
+          The profile you are looking for does not exist, was removed, or the link is invalid.
+        </p>
+        <div className="flex gap-3 justify-center">
+          <Link href="/people" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-xl hover:bg-primary/90 transition-colors">
+            Discover Teammates
+          </Link>
+          <Link href="/dashboard" className="px-4 py-2 border border-border text-sm font-medium rounded-xl hover:bg-accent transition-colors">
+            Go to Dashboard
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const name = displayName(activeUser ?? undefined);
+  const avatarColor = activeUser?.avatar_color || getAvatarColor(activeUser?.id ?? '');
 
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
       {/* Banner + Avatar */}
       <div className="relative">
         <div
           className="h-40 rounded-2xl"
           style={{
-            background: user?.banner
-              ? `url(${user.banner}) center/cover`
+            background: activeUser?.banner
+              ? `url(${activeUser.banner}) center/cover`
               : `linear-gradient(135deg, ${avatarColor}44 0%, ${avatarColor}22 100%)`,
             backgroundColor: avatarColor + '33',
           }}
         />
         <div className="absolute -bottom-8 left-6">
           <div className="relative">
-            {user?.avatar ? (
-              <img src={user.avatar} alt={name} className="w-20 h-20 rounded-2xl border-4 border-background object-cover" />
+            {activeUser?.avatar ? (
+              <img src={activeUser.avatar} alt={name} className="w-20 h-20 rounded-2xl border-4 border-background object-cover" />
             ) : (
               <div
                 className="w-20 h-20 rounded-2xl border-4 border-background flex items-center justify-center text-white text-2xl font-bold"
@@ -146,40 +216,69 @@ export default function ProfilePage() {
               </div>
             )}
             {/* Online dot */}
-            <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+            {activeUser?.online_status === 'online' && (
+              <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+            )}
           </div>
         </div>
 
-        {/* Edit button */}
-        <button
-          onClick={() => setEditing(!editing)}
-          className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-background/80 backdrop-blur-sm border border-border rounded-lg text-sm font-medium hover:bg-background transition-colors"
-        >
-          {editing ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
-          {editing ? 'Cancel' : 'Edit Profile'}
-        </button>
+        {/* Action Button: Edit or Connect */}
+        <div className="absolute top-4 right-4 flex items-center gap-2">
+          {isOwnProfile ? (
+            <button
+              onClick={() => setEditing(!editing)}
+              className="flex items-center gap-2 px-3 py-2 bg-background/80 backdrop-blur-sm border border-border rounded-lg text-sm font-medium hover:bg-background transition-colors"
+            >
+              {editing ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+              {editing ? 'Cancel' : 'Edit Profile'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleConnect}
+                disabled={friendRequested}
+                className={cn(
+                  'flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm',
+                  friendRequested
+                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                )}
+              >
+                {friendRequested ? <Check className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
+                {friendRequested ? 'Request Sent' : 'Connect'}
+              </button>
+              <Link
+                href={`/messages`}
+                className="p-2 bg-background/80 backdrop-blur-sm border border-border rounded-xl text-muted-foreground hover:text-foreground hover:bg-background transition-colors"
+                title="Send message"
+              >
+                <MessageSquare className="w-4 h-4" />
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Identity */}
       <div className="pt-10">
         <h1 className="text-2xl font-bold">{name}</h1>
-        {user?.university && <p className="text-muted-foreground text-sm">{user.university}{user.department ? ` · ${user.department}` : ''}</p>}
-        {user?.bio && <p className="mt-2 text-sm leading-relaxed">{user.bio}</p>}
+        {activeUser?.university && <p className="text-muted-foreground text-sm">{activeUser.university}{activeUser.department ? ` · ${activeUser.department}` : ''}</p>}
+        {activeUser?.bio && <p className="mt-2 text-sm leading-relaxed">{activeUser.bio}</p>}
 
         {/* Social links */}
         <div className="flex gap-3 mt-3">
-          {user?.github_url && (
-            <a href={user.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          {activeUser?.github_url && (
+            <a href={activeUser.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <GitBranch className="w-4 h-4" /> GitHub
             </a>
           )}
-          {user?.linkedin_url && (
-            <a href={user.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          {activeUser?.linkedin_url && (
+            <a href={activeUser.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <ExternalLink className="w-4 h-4" /> LinkedIn
             </a>
           )}
-          {user?.portfolio_url && (
-            <a href={user.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          {activeUser?.portfolio_url && (
+            <a href={activeUser.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
               <Globe className="w-4 h-4" /> Portfolio
             </a>
           )}
@@ -187,9 +286,9 @@ export default function ProfilePage() {
         </div>
 
         {/* Skills */}
-        {!editing && (user?.skills?.length ?? 0) > 0 && (
+        {!editing && (activeUser?.skills?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
-            {user?.skills?.map((skill) => (
+            {activeUser?.skills?.map((skill: string) => (
               <span key={skill} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
                 {skill}
               </span>
@@ -281,17 +380,17 @@ export default function ProfilePage() {
         </motion.form>
       )}
 
-      {/* Profile completion */}
-      {(user?.profile_completion ?? 0) < 100 && (
+      {/* Profile completion (own profile only) */}
+      {isOwnProfile && (currentUser?.profile_completion ?? 0) < 100 && (
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm font-medium">Profile Completion</p>
-            <span className="text-sm font-bold text-primary">{user?.profile_completion ?? 0}%</span>
+            <span className="text-sm font-bold text-primary">{currentUser?.profile_completion ?? 0}%</span>
           </div>
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
-              animate={{ width: `${user?.profile_completion ?? 0}%` }}
+              animate={{ width: `${currentUser?.profile_completion ?? 0}%` }}
               transition={{ duration: 0.8, ease: 'easeOut' }}
               className="h-full bg-primary rounded-full"
             />
@@ -302,3 +401,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

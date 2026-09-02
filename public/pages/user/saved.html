@@ -140,7 +140,7 @@
       <div class="sv-card-head">
         <div class="sv-avatar" style="background:${color}">${a.avatar?`<img src="${a.avatar}" alt="${name}">`:(initials)}</div>
         <div class="sv-meta">
-          <div class="sv-name" onclick="location.href='/profile?id=${a.id||a._id}'">${name}</div>
+          <div class="sv-name" onclick="location.href='/profile/view?id=${a.id||a._id}'" style="cursor:pointer">${name}</div>
           <div class="sv-info">${esc(a.university||'')}${a.university?' • ':''}${ago(p.createdAt)}</div>
         </div>
       </div>

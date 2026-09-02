@@ -190,16 +190,20 @@ body{background:var(--bg);color:var(--tx);margin:0}
     });
     myFriends.clear();
     myFriendsList.forEach(f => { if(f._id) myFriends.add(f._id); });
-    
+
     inReqs=Array.isArray(pendingVal)?pendingVal:(pendingVal.requests||[]);
     recList=Array.isArray(recsVal)?recsVal:(recsVal.recommendations||[]);
-    document.getElementById('st-total').textContent=allUsers.length;
-    document.getElementById('st-friends').textContent=myFriends.size;
-    document.getElementById('st-pending').textContent=inReqs.length;
+
+    // Deduplicate total count calculation
+    const uniqueUserIds = new Set(allUsers.map(u => u._id || u.id).filter(Boolean));
+    if (myId) uniqueUserIds.delete(myId);
+    document.getElementById('st-total').textContent = uniqueUserIds.size;
+    document.getElementById('st-friends').textContent = myFriends.size;
+    document.getElementById('st-pending').textContent = inReqs.length;
     if(inReqs.length){document.getElementById('req-badge').style.display='flex';document.getElementById('req-cnt').textContent=inReqs.length;}
     render();
 
-    // Populate university filter dropdown
+    // Populate university filter dropdown (deduplicated)
     const unis = [...new Set(allUsers.map(u => u.university).filter(Boolean))].sort();
     const sel = document.getElementById('uni-filter');
     if (sel) { unis.forEach(u => { const o = document.createElement('option'); o.value = u; o.textContent = u; sel.appendChild(o); }); }
@@ -209,7 +213,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     if (tabParam && ['discover','recommended','friends','requests'].includes(tabParam)) {
       switchTab(tabParam);
     }
-    const uid = params.get('uid');
+    const uid = params.get('uid') || params.get('id');
     if (uid) {
       setTimeout(() => {
         if (typeof showUserProfile === 'function') showUserProfile(uid);
@@ -229,25 +233,45 @@ body{background:var(--bg);color:var(--tx);margin:0}
   function render(){
     const g=document.getElementById('fp-grid');
     if(tab==='friends'){
-      g.innerHTML=myFriendsList.length?myFriendsList.map(u=>card(u,'friends')).join(''):empty('handshake','No friends yet','Discover people and add them!');return;
+      const seenF = new Set();
+      const dedupFriends = myFriendsList.filter(f => {
+        const id = f._id || f.id;
+        if (!id || seenF.has(id)) return false;
+        seenF.add(id);
+        return true;
+      });
+      g.innerHTML=dedupFriends.length?dedupFriends.map(u=>card(u,'friends')).join(''):empty('handshake','No friends yet','Discover people and connect with them!');
+      return;
     }
     if(tab==='recommended'){
-      g.innerHTML=recList.length?recList.map(u=>{
-        const id=u.id||u._id;
+      const seenR = new Set();
+      const dedupRecs = [];
+      recList.forEach(u => {
+        const id = u.id || u._id;
+        if (!id || id === myId || seenR.has(id)) return;
+        seenR.add(id);
         let mutualText = '';
         if (u.mutualCount > 0) {
-          const names = u.mutualFriends.map(f => f.name).join(', ');
+          const names = (u.mutualFriends || []).map(f => f.name || f.firstName || '').filter(Boolean).join(', ');
           mutualText = `<div style="font-size:11px;color:#8b5cf6;font-weight:600;margin-top:2px;" title="${names}">${u.mutualCount} mutual friend${u.mutualCount > 1 ? 's' : ''}</div>`;
         } else {
           mutualText = `<div style="font-size:11px;color:var(--sub);margin-top:2px;">Suggested for you</div>`;
         }
-        return card({ ...u, _id: id, mutualHtml: mutualText }, myFriends.has(id)?'friends':sentReqs.has(id)?'sent':'none');
-      }).join(''):empty('group_add','No recommendations yet','Expand your network to get recommendations!');
+        dedupRecs.push({ ...u, _id: id, mutualHtml: mutualText });
+      });
+      g.innerHTML=dedupRecs.length?dedupRecs.map(u=>card(u, myFriends.has(u._id)?'friends':sentReqs.has(u._id)?'sent':'none')).join(''):empty('group_add','No recommendations yet','Expand your network to get recommendations!');
       return;
     }
     if(tab==='requests'){
       if(!inReqs.length){g.innerHTML=empty('pending','No pending requests','You are all caught up!');return;}
-      g.innerHTML='<div style="display:flex;flex-direction:column;gap:12px;grid-column:1/-1">'+inReqs.map(req=>{
+      const seenReq = new Set();
+      const dedupReqs = inReqs.filter(req => {
+        const reqId = req._id || req.id;
+        if (!reqId || seenReq.has(reqId)) return false;
+        seenReq.add(reqId);
+        return true;
+      });
+      g.innerHTML='<div style="display:flex;flex-direction:column;gap:12px;grid-column:1/-1">'+dedupReqs.map(req=>{
         const u=req.sender||req;
         const nm=`${u.firstName||''} ${u.lastName||''}`.trim()||'Someone';
         const c=u.avatarColor||avC(nm);
@@ -257,12 +281,12 @@ body{background:var(--bg);color:var(--tx);margin:0}
           : ((u.firstName?.[0]||'')+(u.lastName?.[0]||'')).toUpperCase()||'?';
         return `<div class="req-card">
           <div class="req-av" style="background:${u.avatar ? 'transparent' : c};cursor:pointer;" onclick="showUserProfile('${uid}')" title="View Profile">${avatarHtml}</div>
-          <div style="flex:1">
-            <div style="font-size:14px;font-weight:800;color:var(--tx);cursor:pointer;" onclick="showUserProfile('${uid}')" title="View Profile" class="hover-primary">${nm}</div>
-            <div style="font-size:12px;color:var(--sub)">${u.university||''} ${u.major?'• '+u.major:''}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:800;color:var(--tx);cursor:pointer;" onclick="showUserProfile('${uid}')" title="View Profile" class="hover-primary truncate">${nm}</div>
+            <div style="font-size:12px;color:var(--sub);truncate">${u.university||''} ${u.major?'• '+u.major:''}</div>
             <div style="font-size:12px;color:var(--ac);font-weight:600;margin-top:4px">Wants to connect with you</div>
           </div>
-          <div style="display:flex;gap:8px">
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn-add" style="background:linear-gradient(135deg,#10b981,#059669);flex:none;padding:8px 14px" onclick="respond('${req._id||req.id}','accept',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">check</span>Accept</button>
             <button class="btn-add" style="background:rgba(239,68,68,.1);color:#ef4444;border:1.5px solid rgba(239,68,68,.2);flex:none;padding:8px 14px" onclick="respond('${req._id||req.id}','reject',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">close</span>Decline</button>
           </div>
@@ -270,9 +294,19 @@ body{background:var(--bg);color:var(--tx);margin:0}
       }).join('')+'</div>';
       return;
     }
-    let list=allUsers.filter(u=>{const id=u._id||u.id;return id!==myId && !myFriends.has(id);});
+
+    // Discover tab: Strictly deduplicate by user ID
+    const seenIds = new Set();
+    let list = [];
+    allUsers.forEach(u => {
+      const id = u._id || u.id;
+      if (!id || id === myId || myFriends.has(id) || seenIds.has(id)) return;
+      seenIds.add(id);
+      list.push(u);
+    });
+
     const q=document.getElementById('s-inp').value.trim().toLowerCase();
-    if(q)list=list.filter(u=>`${u.firstName} ${u.lastName} ${u.university||''} ${(u.skills||[]).map(s=>s.name||s).join(' ')}`.toLowerCase().includes(q));
+    if(q)list=list.filter(u=>`${u.firstName||''} ${u.lastName||''} ${u.university||''} ${(u.skills||[]).map(s=>s.name||s).join(' ')}`.toLowerCase().includes(q));
     if(filter==='available')list=list.filter(u=>!u.status||u.status==='available');
     if(filter==='web')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/react|vue|html|css|javascript|web|next/)));
     if(filter==='ai')list=list.filter(u=>(u.skills||[]).some(s=>(s.name||s).toLowerCase().match(/python|ml|ai|machine|tensor|pytorch/)));
@@ -302,7 +336,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
     } else if(state==='sent'){
       btn=`<button class="btn-add sent" disabled><span style="font-family:'Material Symbols Outlined';font-size:14px">schedule</span>Sent</button>`;
     } else {
-      btn=`<button class="btn-add" onclick="addFriend('${id}',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_add</span>Add Friend</button>`;
+      btn=`<button class="btn-add" onclick="addFriend('${id}',this)"><span style="font-family:'Material Symbols Outlined';font-size:14px">person_add</span>Connect</button>`;
     }
     const isOnline = u.onlineStatus === 'online' || u.online_status === 'online';
     return `<div class="ucard">
@@ -320,6 +354,10 @@ body{background:var(--bg);color:var(--tx);margin:0}
       </div>
       <div class="ucard-foot">
         ${btn}
+        <button class="btn-add" onclick="showUserProfile('${id}')" style="background:var(--sf2);color:var(--tx);border:1.5px solid var(--bd);flex:0 0 auto;padding:8px 12px" title="View Profile">
+          <span style="font-family:'Material Symbols Outlined';font-size:14px">visibility</span>
+          <span>Profile</span>
+        </button>
         <button class="btn-msg" onclick="window.location.href='/messages?chat=${id}'" title="Message" aria-label="Message">chat</button>
       </div>
     </div>`;
@@ -355,14 +393,14 @@ body{background:var(--bg);color:var(--tx);margin:0}
       `;
       document.body.appendChild(modal);
     }
-    
+
     const iconColor = danger ? '#ef4444' : '#6366f1';
     const iconBg = danger ? 'rgba(239,68,68,0.08)' : 'rgba(99,102,241,0.08)';
     const iconBorder = danger ? 'rgba(239,68,68,0.15)' : 'rgba(99,102,241,0.15)';
     const confirmBtnColor = danger ? '#ef4444' : '#6366f1';
     const confirmBtnHoverBg = danger ? 'rgba(239,68,68,0.06)' : 'rgba(99,102,241,0.06)';
-    
-    const iconSvg = danger 
+
+    const iconSvg = danger
       ? `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`
       : `<svg viewBox="0 0 24 24" width="26" height="26" stroke="${iconColor}" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
 
@@ -437,14 +475,14 @@ body{background:var(--bg);color:var(--tx);margin:0}
 
     const btnCancel = modal.querySelector('#ph-confirm-cancel');
     const btnConfirm = modal.querySelector('#ph-confirm-ok');
-    
+
     btnCancel.addEventListener('mouseenter', () => btnCancel.style.background = 'var(--bg-surface-variant, #f1f5f9)');
     btnCancel.addEventListener('mouseleave', () => btnCancel.style.background = 'none');
     btnConfirm.addEventListener('mouseenter', () => btnConfirm.style.background = confirmBtnHoverBg);
     btnConfirm.addEventListener('mouseleave', () => btnConfirm.style.background = 'none');
 
     const container = modal.querySelector('.lo-card');
-    
+
     function hide() {
       modal.style.opacity = '0';
       modal.style.pointerEvents = 'none';
@@ -456,7 +494,7 @@ body{background:var(--bg);color:var(--tx);margin:0}
       hide();
       if (typeof onConfirm === 'function') onConfirm();
     });
-    
+
     modal.addEventListener('click', (e) => {
       if (e.target === modal) hide();
     });
