@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import http from 'http';
+import jwt from 'jsonwebtoken';
 import app from './app.js';
 import { supabaseAdmin } from './config/supabase.js';
 
@@ -63,6 +64,16 @@ async function triage() {
     console.error('   ❌ Auth handshake failed:', e.message);
   }
 
+  // Also create a student token for student endpoints if testUser exists
+  let studentToken = token;
+  if (testUser && process.env.JWT_SECRET) {
+    studentToken = jwt.sign(
+      { id: testUser.id, email: testUser.email, role: testUser.role || 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+  }
+
   if (!token) {
     console.error('\n❌ ABORTING PROTECTED ENDPOINTS: No token obtained.');
     server.close();
@@ -75,22 +86,27 @@ async function triage() {
     'Authorization': `Bearer ${token}`,
   };
 
-  const endpoints = [
-    { name: '/api/users/me', path: '/users/me', expectedField: 'id' },
-    { name: '/api/posts', path: '/posts', expectedField: 'posts' },
-    { name: '/api/teams', path: '/teams', expectedField: 'teams' },
-    { name: '/api/teams/my-teams', path: '/teams/my-teams', expectedField: 'teams' },
-    { name: '/api/projects', path: '/projects', expectedField: 'projects' },
-    { name: '/api/users/people', path: '/users/people', expectedField: 'users' },
-    { name: '/api/notifications', path: '/notifications', expectedField: 'notifications' },
-    { name: '/api/friends', path: '/friends', expectedField: 'friends' },
-    { name: '/api/posts/saved', path: '/posts/saved', expectedField: 'posts' },
-    { name: '/api/admin/stats', path: '/admin/stats', expectedField: 'users' },
+    const endpoints = [
+    { name: '/api/users/me', path: '/users/me', expectedField: 'id', useToken: studentToken },
+    { name: '/api/posts', path: '/posts', expectedField: 'posts', useToken: studentToken },
+    { name: '/api/teams', path: '/teams', expectedField: 'teams', useToken: studentToken },
+    { name: '/api/teams/my-teams', path: '/teams/my-teams', expectedField: 'teams', useToken: studentToken },
+    { name: '/api/projects', path: '/projects', expectedField: 'projects', useToken: studentToken },
+    { name: '/api/users/people', path: '/users/people', expectedField: 'users', useToken: studentToken },
+    { name: '/api/notifications', path: '/notifications', expectedField: 'notifications', useToken: studentToken },
+    { name: '/api/friends', path: '/friends', expectedField: 'friends', useToken: studentToken },
+    { name: '/api/posts/saved', path: '/posts/saved', expectedField: 'posts', useToken: studentToken },
+    { name: '/api/admin/stats', path: '/admin/stats', expectedField: 'users', useToken: token },
   ];
 
   for (const ep of endpoints) {
     try {
-      const res = await fetch(`${BASE}${ep.path}`, { headers });
+      const res = await fetch(`${BASE}${ep.path}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${ep.useToken || token}`,
+        }
+      });
       const data = await res.json();
       const hasExpected = data && (data[ep.expectedField] !== undefined || data.data !== undefined || data.id !== undefined);
       console.log(`   ${ep.name.padEnd(22)} -> Status: ${res.status} | OK: ${data.ok ?? res.ok} | Has '${ep.expectedField}': ${hasExpected} | Payload Keys: [${Object.keys(data).slice(0, 5).join(', ')}]`);
