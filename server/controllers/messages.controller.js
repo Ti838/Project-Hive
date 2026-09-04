@@ -108,10 +108,10 @@ export async function saveMessage(req, res, next) {
 
     const { data: message, error } = await supabaseAdmin
       .from('messages')
-      .insert({ 
-        room_id: roomId, 
-        sender_id: userId, 
-        content, 
+      .insert({
+        room_id: roomId,
+        sender_id: userId,
+        content,
         type: type || 'text',
         read_by: [userId],
         reply_to: reply_to || null,
@@ -132,7 +132,7 @@ export async function getDmHistory(req, res, next) {
     const myId = req.user.id;
     const { friendId } = req.params;
     const { skip = 0, limit = 50 } = req.query;
-    
+
     // Support either room_id (uuid_uuid) or single friendId
     const roomId = friendId.includes('_') ? friendId : [myId, friendId].sort().join('_');
 
@@ -364,10 +364,10 @@ export async function sendDirectMessage(req, res, next) {
     // Save the message
     const { data: message, error } = await supabaseAdmin
       .from('messages')
-      .insert({ 
-        room_id: roomId, 
-        sender_id: senderId, 
-        content: content.trim(), 
+      .insert({
+        room_id: roomId,
+        sender_id: senderId,
+        content: content.trim(),
         read_by: [senderId],
         reply_to: reply_to || null,
         reply_to_content: reply_to_content || null,
