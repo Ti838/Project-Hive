@@ -139,6 +139,56 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', service: 'projecthive-backend', timestamp: new Date() });
 });
 
+// Database & Subsystem Health Check
+app.get('/api/health/db', async (req, res) => {
+  const startTime = Date.now();
+  try {
+    const { supabaseAdmin } = await import('./config/supabase.js');
+    const [
+      { count: usersCount, error: uErr },
+      { count: teamsCount, error: tErr },
+      { count: projectsCount, error: pErr },
+      { count: postsCount, error: poErr },
+      { data: buckets, error: bErr }
+    ] = await Promise.all([
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('posts').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.storage.listBuckets(),
+    ]);
+
+    const latencyMs = Date.now() - startTime;
+    const hasError = uErr || tErr || pErr || poErr || bErr;
+
+    return res.status(hasError ? 503 : 200).json({
+      status: hasError ? 'degraded' : 'healthy',
+      database: 'Supabase PostgreSQL',
+      latencyMs,
+      tables: {
+        users: uErr ? { ok: false, error: uErr.message } : { ok: true, count: usersCount },
+        teams: tErr ? { ok: false, error: tErr.message } : { ok: true, count: teamsCount },
+        projects: pErr ? { ok: false, error: pErr.message } : { ok: true, count: projectsCount },
+        posts: poErr ? { ok: false, error: poErr.message } : { ok: true, count: postsCount },
+      },
+      storage: {
+        ok: !bErr,
+        bucketCount: buckets?.length || 0,
+        buckets: (buckets || []).map(b => ({ name: b.name, public: b.public })),
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    return res.status(500).json({
+      status: 'unhealthy',
+      database: 'Supabase PostgreSQL',
+      error: 'SUPABASE_QUERY_FAILED',
+      message: err.message,
+      timestamp: new Date().toISOString(),
+    });
+  }
+});
+
 // Public stats — for homepage (no auth required)
 app.get('/api/stats', async (req, res) => {
   try {

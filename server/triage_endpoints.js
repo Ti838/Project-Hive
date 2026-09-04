@@ -22,6 +22,9 @@ async function triage() {
     const healthRes = await fetch(`${BASE}/health`);
     console.log('   /api/health -> Status:', healthRes.status, await healthRes.json());
 
+    const dbHealthRes = await fetch(`${BASE}/health/db`);
+    console.log('   /api/health/db -> Status:', dbHealthRes.status, await dbHealthRes.json());
+
     const statsRes = await fetch(`${BASE}/stats`);
     console.log('   /api/stats -> Status:', statsRes.status, await statsRes.json());
   } catch (e) {
