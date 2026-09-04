@@ -37,10 +37,28 @@ function camelizeUser(user) {
   result.linkedin_url = user.linkedin_url || user.linkedin || null;
   result.portfolio = user.portfolio || user.portfolio_url || null;
   result.portfolio_url = user.portfolio_url || user.portfolio || null;
-  result.year_of_study = user.year_of_study || user.yearOfStudy || null;
-  result.yearOfStudy = user.yearOfStudy || user.year_of_study || null;
-  result.completion_percentage = user.completion_percentage ?? user.profileCompletion ?? 0;
-  result.profileCompletion = user.profileCompletion ?? user.completion_percentage ?? 0;
+  const skillsList = Array.isArray(user.skills) ? user.skills : [];
+  const fields = [
+    Boolean(user.first_name || user.firstName),
+    Boolean(user.last_name || user.lastName),
+    Boolean(user.avatar || user.avatar_color || user.avatarColor),
+    Boolean(user.bio && String(user.bio).trim().length > 5),
+    Boolean(user.university),
+    Boolean(user.major || user.department),
+    Boolean(user.year_of_study || user.yearOfStudy),
+    Boolean(skillsList.length > 0),
+    Boolean(user.github || user.github_url || user.linkedin || user.linkedin_url || user.portfolio || user.portfolio_url),
+  ];
+  const calculatedPercent = Math.round((fields.filter(Boolean).length / fields.length) * 100);
+  const finalCompletion = (user.completion_percentage && user.completion_percentage > 0)
+    ? user.completion_percentage
+    : (user.profile_completion && user.profile_completion > 0)
+    ? user.profile_completion
+    : calculatedPercent;
+
+  result.completion_percentage = finalCompletion;
+  result.profile_completion = finalCompletion;
+  result.profileCompletion = finalCompletion;
   result.online_status = user.online_status || user.onlineStatus || 'offline';
   result.onlineStatus = user.onlineStatus || user.online_status || 'offline';
   result.is_public = user.is_public ?? user.isPublic ?? true;

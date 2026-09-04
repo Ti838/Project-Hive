@@ -726,23 +726,62 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
       )}
 
       {/* Profile completion (own profile only) */}
-      {isOwnProfile && (currentUser?.profile_completion ?? 0) < 100 && (
-        <div className="bg-card border border-border rounded-xl p-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium">Profile Completion</p>
-            <span className="text-sm font-bold text-primary">{currentUser?.profile_completion ?? 0}%</span>
+      {isOwnProfile && (() => {
+        const u = activeUser || currentUser;
+        const skillsList = Array.isArray(u?.skills) ? u.skills : [];
+        const fields = [
+          Boolean(u?.first_name || u?.firstName),
+          Boolean(u?.last_name || u?.lastName),
+          Boolean(u?.avatar || u?.avatar_color || u?.avatarColor),
+          Boolean(u?.bio && String(u.bio).trim().length > 5),
+          Boolean(u?.university),
+          Boolean(u?.department || u?.major),
+          Boolean(u?.year_of_study || u?.yearOfStudy),
+          Boolean(skillsList.length > 0),
+          Boolean(u?.github || u?.github_url || u?.linkedin || u?.linkedin_url || u?.portfolio || u?.portfolio_url),
+        ];
+        const calc = Math.round((fields.filter(Boolean).length / fields.length) * 100);
+        const completionPct = (u?.completion_percentage && u.completion_percentage > 0)
+          ? u.completion_percentage
+          : (u?.profile_completion && u.profile_completion > 0)
+          ? u.profile_completion
+          : (u?.profileCompletion && u.profileCompletion > 0)
+          ? u.profileCompletion
+          : calc;
+
+        return (
+          <div className="bg-card border border-border rounded-2xl p-5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-primary" />
+                <p className="text-sm font-bold text-foreground">Profile Strength & Completion</p>
+              </div>
+              <span className={cn(
+                'text-xs font-extrabold px-2.5 py-0.5 rounded-full',
+                completionPct >= 80 ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-primary/15 text-primary'
+              )}>
+                {completionPct}%
+              </span>
+            </div>
+            <div className="h-2.5 bg-muted rounded-full overflow-hidden p-0.5 border border-border/50">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(100, Math.max(8, completionPct))}%` }}
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className={cn(
+                  'h-full rounded-full transition-all',
+                  completionPct >= 80 ? 'bg-emerald-500' : 'bg-primary'
+                )}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {completionPct >= 100
+                ? '🎉 Excellent! Your profile is complete and highlighted to potential teammates.'
+                : 'Add your university, bio, technical skills, and social links to attract top teammates.'}
+            </p>
           </div>
-          <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${currentUser?.profile_completion ?? 0}%` }}
-              transition={{ duration: 0.8, ease: 'easeOut' }}
-              className="h-full bg-primary rounded-full"
-            />
-          </div>
-          <p className="text-xs text-muted-foreground mt-2">Complete your profile to attract better teammates.</p>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

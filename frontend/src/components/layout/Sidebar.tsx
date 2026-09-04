@@ -55,6 +55,18 @@ export function Sidebar() {
     setMobileMenuOpen(false);
   }, [pathname, setMobileMenuOpen]);
 
+  // Keyboard shortcut: Cmd/Ctrl + B to toggle Sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleSidebar]);
+
   const navItems = NAV_ITEMS;
 
   return (
@@ -159,30 +171,48 @@ export function Sidebar() {
       <motion.aside
         animate={{ width: sidebarCollapsed ? 70 : 260 }}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="hidden md:flex relative flex-col h-full bg-card border-r border-border shrink-0 z-40"
+        className="hidden md:flex relative flex-col h-full bg-card border-r border-border shrink-0 z-40 overflow-hidden"
       >
-        {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-border shrink-0 overflow-hidden">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
-            <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
+        {/* Header with Logo + Internal Collapse Button */}
+        <div className="flex items-center justify-between px-3.5 py-4 border-b border-border shrink-0 h-16">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title={sidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
+              className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs hover:bg-primary/20 transition-all cursor-pointer tap-press"
+            >
+              <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
+            </button>
+            <AnimatePresence initial={false}>
+              {!sidebarCollapsed && (
+                <motion.span
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="font-bold text-lg tracking-tight whitespace-nowrap truncate text-foreground"
+                >
+                  ProjectHive
+                </motion.span>
+              )}
+            </AnimatePresence>
           </div>
-          <AnimatePresence initial={false}>
-            {!sidebarCollapsed && (
-              <motion.span
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-                className="font-bold text-lg tracking-tight whitespace-nowrap"
-              >
-                ProjectHive
-              </motion.span>
-            )}
-          </AnimatePresence>
+
+          {!sidebarCollapsed && (
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Collapse sidebar (Ctrl+B)"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors tap-press cursor-pointer shrink-0"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-0.5 px-2">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-0.5 px-2">
           {navItems.map(({ href, label, icon: Icon, isAdmin }) => {
             const active = pathname === href || pathname.startsWith(href + '/');
             return (
@@ -190,7 +220,7 @@ export function Sidebar() {
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group relative',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative',
                   isAdmin && 'text-amber-500 bg-amber-500/10 border border-amber-500/20 font-semibold mb-1',
                   active
                     ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
@@ -213,7 +243,7 @@ export function Sidebar() {
                 </AnimatePresence>
                 {/* Tooltip when collapsed */}
                 {sidebarCollapsed && (
-                  <div className="absolute left-full ml-2 px-2 py-1 bg-popover text-popover-foreground text-xs rounded-md shadow-md border border-border opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
+                  <div className="absolute left-full ml-2 px-2.5 py-1 bg-popover text-popover-foreground text-xs font-semibold rounded-lg shadow-md border border-border opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
                     {label}
                   </div>
                 )}
@@ -223,7 +253,7 @@ export function Sidebar() {
         </nav>
 
         {/* User footer */}
-        <div className="border-t border-border p-3 shrink-0 overflow-hidden">
+        <div className="border-t border-border p-3 shrink-0">
           <div className={cn('flex items-center gap-3', sidebarCollapsed && 'justify-center')}>
             {/* Avatar */}
             <Link href="/profile" className="relative shrink-0">
@@ -271,20 +301,19 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Collapse toggle button (clear, prominent, not clipped) */}
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="absolute top-1/2 -right-3.5 -translate-y-1/2 z-50 flex items-center justify-center w-7 h-7 rounded-full bg-card dark:bg-zinc-900 border border-border shadow-md text-foreground hover:bg-accent hover:border-primary/60 transition-all cursor-pointer ring-2 ring-background tap-press"
-        >
-          {sidebarCollapsed ? (
-            <ChevronRight className="w-4 h-4 text-foreground" />
-          ) : (
-            <ChevronLeft className="w-4 h-4 text-foreground" />
-          )}
-        </button>
+        {/* Collapsed expand toggle row at bottom */}
+        {sidebarCollapsed && (
+          <div className="p-2 border-t border-border flex justify-center shrink-0">
+            <button
+              type="button"
+              onClick={toggleSidebar}
+              title="Expand sidebar (Ctrl+B)"
+              className="w-8 h-8 rounded-lg bg-muted/60 hover:bg-accent text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors tap-press cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
       </motion.aside>
     </>
   );
