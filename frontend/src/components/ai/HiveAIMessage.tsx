@@ -182,3 +182,4 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
     </div>
   );
 }
+

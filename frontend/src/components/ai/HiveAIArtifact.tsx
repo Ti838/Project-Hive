@@ -120,3 +120,4 @@ export function HiveAIArtifact({ artifact, onSaveToProject, className }: HiveAIA
     </div>
   );
 }
+

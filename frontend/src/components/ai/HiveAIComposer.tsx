@@ -199,3 +199,4 @@ export function HiveAIComposer({
     </div>
   );
 }
+
