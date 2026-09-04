@@ -8,14 +8,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Rss, MessageSquare, Users, FolderKanban,
   Bell, Settings, LogOut, ChevronLeft, ChevronRight, Sparkles,
-  Bookmark, UserCircle, X,
+  Bookmark, UserCircle, X, ShieldCheck, type LucideIcon,
 } from 'lucide-react';
 import { useAuthStore, useUIStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 
-const NAV_ITEMS = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  isAdmin?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard',    label: 'Dashboard',   icon: LayoutDashboard },
   { href: '/feed',         label: 'Feed',         icon: Rss },
   { href: '/messages',     label: 'Messages',     icon: MessageSquare },
@@ -47,6 +54,10 @@ export function Sidebar() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname, setMobileMenuOpen]);
+
+  const navItems = user?.role === 'admin'
+    ? [{ href: '/admin/dashboard', label: 'Admin Console', icon: ShieldCheck, isAdmin: true }, ...NAV_ITEMS]
+    : NAV_ITEMS;
 
   return (
     <>
@@ -86,7 +97,7 @@ export function Sidebar() {
 
               {/* Mobile Nav */}
               <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-1">
-                {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+                {navItems.map(({ href, label, icon: Icon, isAdmin }) => {
                   const active = pathname === href || pathname.startsWith(href + '/');
                   return (
                     <Link
@@ -95,9 +106,10 @@ export function Sidebar() {
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
                         'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                        isAdmin && 'text-amber-500 bg-amber-500/10 border border-amber-500/20 font-semibold',
                         active
                           ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
-                          : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                          : !isAdmin && 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                       )}
                     >
                       <Icon className="w-5 h-5 shrink-0" />
@@ -173,7 +185,7 @@ export function Sidebar() {
 
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-4 space-y-0.5 px-2">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          {navItems.map(({ href, label, icon: Icon, isAdmin }) => {
             const active = pathname === href || pathname.startsWith(href + '/');
             return (
               <Link
@@ -181,9 +193,10 @@ export function Sidebar() {
                 href={href}
                 className={cn(
                   'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 group relative',
+                  isAdmin && 'text-amber-500 bg-amber-500/10 border border-amber-500/20 font-semibold mb-1',
                   active
                     ? 'bg-primary text-primary-foreground shadow-sm font-semibold'
-                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    : !isAdmin && 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 )}
               >
                 <Icon className="w-5 h-5 shrink-0" />

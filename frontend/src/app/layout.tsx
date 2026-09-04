@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta charSet="utf-8" />
         <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
       </head>
-      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground selection:bg-primary/20 overscroll-none`}>
+      <body className={`${inter.variable} font-sans antialiased bg-background text-foreground selection:bg-primary/20`}>
         {children}
       </body>
     </html>

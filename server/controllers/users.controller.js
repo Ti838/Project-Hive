@@ -52,6 +52,44 @@ const toClient = (user) => camelizeUser(sanitize(user));
 export async function getCurrentUser(req, res, next) {
   try {
     const userId = req.user.id;
+    const userEmail = (req.user.email || '').toLowerCase();
+    const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || '').toLowerCase();
+    const isAdminUser = userId === 'admin' || req.user.role === 'admin' || (ADMIN_EMAIL && userEmail === ADMIN_EMAIL);
+
+    // If root admin without a regular database row, return safe root admin payload
+    if (userId === 'admin') {
+      const { data: dbUser } = await supabaseAdmin
+        .from('users')
+        .select('*, skills(*)')
+        .eq('email', userEmail || ADMIN_EMAIL)
+        .maybeSingle();
+
+      if (!dbUser) {
+        return res.json({
+          id: 'admin',
+          email: userEmail || ADMIN_EMAIL,
+          firstName: 'Super',
+          lastName: 'Admin',
+          first_name: 'Super',
+          last_name: 'Admin',
+          role: 'admin',
+          is_verified: true,
+          isVerified: true,
+          friendCount: 0,
+          followerCount: 0,
+          followingCount: 0,
+          projectCount: 0,
+          postCount: 0,
+          teamsCount: 0,
+          communitiesCount: 0,
+        });
+      }
+
+      const clientAdmin = toClient(dbUser);
+      clientAdmin.role = 'admin';
+      return res.json(clientAdmin);
+    }
+
     const { data: user, error } = await supabaseAdmin
       .from('users')
       .select('*, skills(*)')
@@ -82,6 +120,9 @@ export async function getCurrentUser(req, res, next) {
     const communitiesCount = joinedTeams.filter(t => t.category?.startsWith('community:')).length;
 
     const clientUser = toClient(user);
+    if (isAdminUser) {
+      clientUser.role = 'admin';
+    }
     clientUser.friendCount = friendCount || 0;
     clientUser.followerCount = followerCount || 0;
     clientUser.followingCount = followingCount || 0;
