@@ -126,13 +126,15 @@ export async function saveMessage(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// ── GET DM history between current user and friendId ─────────────────────────
+// ── GET DM history between current user and friendId (or by roomId) ─────────
 export async function getDmHistory(req, res, next) {
   try {
     const myId = req.user.id;
     const { friendId } = req.params;
     const { skip = 0, limit = 50 } = req.query;
-    const roomId = [myId, friendId].sort().join('_');
+    
+    // Support either room_id (uuid_uuid) or single friendId
+    const roomId = friendId.includes('_') ? friendId : [myId, friendId].sort().join('_');
 
     const { data: messages, error } = await supabaseAdmin
       .from('messages')
@@ -165,7 +167,6 @@ export async function getDmHistory(req, res, next) {
     res.json({ messages: messagesWithReactions, roomId });
   } catch (err) { next(err); }
 }
-
 
 export async function getConversations(req, res, next) {
   try {
@@ -237,27 +238,45 @@ export async function getConversations(req, res, next) {
 
         const unreadCount = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId)).length;
 
+        const friendObj = {
+          _id: friend.id,
+          id: friend.id,
+          first_name: friend.first_name,
+          last_name: friend.last_name,
+          firstName: friend.first_name,
+          lastName: friend.last_name,
+          name: `${friend.first_name || ''} ${friend.last_name || ''}`.trim(),
+          avatar: friend.avatar,
+          avatar_color: friend.avatar_color,
+          avatarColor: friend.avatar_color,
+          online_status: friend.online_status,
+          onlineStatus: friend.online_status,
+          last_seen: friend.last_seen,
+          lastSeen: friend.last_seen,
+          university: friend.university,
+          major: friend.major
+        };
+
+        const lastMsgObj = lastMsg ? {
+          id: lastMsg.id,
+          content: lastMsg.content,
+          type: lastMsg.type,
+          sender: lastMsg.sender_id,
+          sender_id: lastMsg.sender_id,
+          created_at: lastMsg.created_at,
+          createdAt: lastMsg.created_at
+        } : null;
+
         conversations.push({
           _id: roomId,
+          id: roomId,
+          roomId,
           friendId: friend.id,
-          friend: {
-            _id: friend.id,
-            id: friend.id,
-            firstName: friend.first_name,
-            lastName: friend.last_name,
-            avatar: friend.avatar,
-            avatarColor: friend.avatar_color,
-            onlineStatus: friend.online_status,
-            lastSeen: friend.last_seen,
-            university: friend.university,
-            major: friend.major
-          },
-
-          lastMessage: lastMsg ? {
-            content: lastMsg.content,
-            sender: lastMsg.sender_id,
-            createdAt: lastMsg.created_at
-          } : null,
+          friend: friendObj,
+          user: friendObj,
+          last_message: lastMsgObj,
+          lastMessage: lastMsgObj,
+          unread_count: unreadCount,
           unreadCount
         });
       }
@@ -265,8 +284,8 @@ export async function getConversations(req, res, next) {
 
     // Sort by last message time (recent first), then by name
     conversations.sort((a, b) => {
-      const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
-      const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt || a.lastMessage.created_at).getTime() : 0;
+      const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt || b.lastMessage.created_at).getTime() : 0;
       if (timeA !== timeB) return timeB - timeA;
       const nameA = `${a.friend?.firstName || ''} ${a.friend?.lastName || ''}`.toLowerCase();
       const nameB = `${b.friend?.firstName || ''} ${b.friend?.lastName || ''}`.toLowerCase();

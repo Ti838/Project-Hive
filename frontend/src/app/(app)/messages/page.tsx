@@ -435,7 +435,7 @@ export default function MessagesPage() {
   const chatFileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const roomId = selectedUser ? [user?.id, selectedUser.id].sort().join('_dm_') : null;
+  const roomId = selectedUser && user?.id ? [user.id, selectedUser.id].sort().join('_') : null;
 
   const { startCall: triggerLiveKitCall } = useCallStore();
 
@@ -531,9 +531,16 @@ export default function MessagesPage() {
     window.addEventListener('resize', handleResize);
 
     api.messages.getDMs().then((res) => {
-      if (res.ok && res.conversations) setConversations(res.conversations);
+      if (res.ok && res.conversations) {
+        const norm = res.conversations.map((c: any) => ({
+          user: c.user || c.friend,
+          last_message: c.last_message || c.lastMessage,
+          unread_count: c.unread_count ?? c.unreadCount ?? 0,
+        })).filter((c: any) => c.user);
+        setConversations(norm);
+      }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -555,7 +562,7 @@ export default function MessagesPage() {
     socket.readMessage({ roomId, friendId: selectedUser.id });
 
     return () => { socket.leaveRoom(); };
-  }, [selectedUser]);
+  }, [selectedUser, roomId]);
 
   // Scroll to bottom without bouncing page
   useEffect(() => {

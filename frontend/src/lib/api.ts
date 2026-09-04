@@ -210,10 +210,10 @@ export const api = {
   },
 
   messages: {
-    getRoom: (roomId: string, limit = 50, skip = 0) =>
-      request<{ messages: Message[] }>(`/messages/${roomId}?limit=${limit}&skip=${skip}`),
+    getRoom: (roomIdOrFriendId: string, limit = 50, skip = 0) =>
+      request<{ messages: Message[]; roomId?: string }>(`/messages/${roomIdOrFriendId}?limit=${limit}&skip=${skip}`),
     getDMs: () =>
-      request<{ conversations: Array<{ user: User; last_message: Message; unread_count: number }> }>('/friends/conversations'),
+      request<{ conversations: Array<{ user: User; friend?: User; last_message: Message; lastMessage?: Message; unread_count: number; unreadCount?: number }> }>('/messages/conversations'),
     react: (id: string, emoji: string) =>
       request<{ ok: boolean; action: 'added' | 'removed' }>(`/messages/${id}/react`, {
         method: 'POST',
