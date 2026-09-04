@@ -1,13 +1,13 @@
 'use client';
 // ─── Profile Page ──────────────────────────────────────────────────────────────
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GitBranch, ExternalLink, Globe, Edit2, Save, X, Loader2, UserX, MessageSquare, UserPlus, Check, ArrowLeft } from 'lucide-react';
+import { GitBranch, ExternalLink, Globe, Edit2, Save, X, Loader2, UserX, MessageSquare, UserPlus, Check, ArrowLeft, Camera, ImagePlus } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
@@ -135,6 +135,99 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
   const [friendRequested, setFriendRequested] = useState(false);
   const [endorsedSkills, setEndorsedSkills] = useState<Record<string, number>>({});
   const [userEndorsedSet, setUserEndorsedSet] = useState<Set<string>>(new Set());
+
+  // Image Upload States & Refs
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select a valid image file (JPEG, PNG, WEBP)');
+      setTimeout(() => setUploadError(null), 3500);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image size must be under 5MB');
+      setTimeout(() => setUploadError(null), 3500);
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = reader.result as string;
+        const res = await api.users.update({ avatar: base64 });
+        if (res.ok && res.user) {
+          updateUser(res.user);
+          setProfileUser((prev) => (prev ? { ...prev, avatar: res.user.avatar } : res.user));
+          setSavedMsg('Profile photo updated!');
+          setTimeout(() => setSavedMsg(''), 3000);
+        } else {
+          setUploadError('Failed to save profile picture');
+          setTimeout(() => setUploadError(null), 3500);
+        }
+      } catch (err: any) {
+        setUploadError(err?.message || 'Error uploading profile photo');
+        setTimeout(() => setUploadError(null), 3500);
+      } finally {
+        setUploadingAvatar(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleBannerFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please select a valid image file (JPEG, PNG, WEBP)');
+      setTimeout(() => setUploadError(null), 3500);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Banner image size must be under 5MB');
+      setTimeout(() => setUploadError(null), 3500);
+      return;
+    }
+
+    setUploadingBanner(true);
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const base64 = reader.result as string;
+        const res = await api.users.update({ banner_image: base64 } as any);
+        if (res.ok && res.user) {
+          updateUser(res.user);
+          setProfileUser((prev) => (prev ? { ...prev, banner: res.user.banner, banner_image: res.user.banner_image } : res.user));
+          setSavedMsg('Cover photo updated!');
+          setTimeout(() => setSavedMsg(''), 3000);
+        } else {
+          setUploadError('Failed to save cover photo');
+          setTimeout(() => setUploadError(null), 3500);
+        }
+      } catch (err: any) {
+        setUploadError(err?.message || 'Error uploading banner photo');
+        setTimeout(() => setUploadError(null), 3500);
+      } finally {
+        setUploadingBanner(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleEndorseSkill = async (skillName: string) => {
     if (!profileUser?.id || isOwnProfile) return;
@@ -297,32 +390,108 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
 
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6">
+      {/* Hidden File Inputs for Profile Photo & Banner */}
+      {isOwnProfile && (
+        <>
+          <input
+            type="file"
+            ref={avatarInputRef}
+            onChange={handleAvatarFileChange}
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            aria-label="Upload profile photo"
+          />
+          <input
+            type="file"
+            ref={bannerInputRef}
+            onChange={handleBannerFileChange}
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="hidden"
+            aria-label="Upload cover banner photo"
+          />
+        </>
+      )}
+
+      {/* Upload Error Banner */}
+      {uploadError && (
+        <div className="p-3 bg-destructive/10 border border-destructive/20 text-destructive text-xs rounded-xl font-medium flex items-center justify-between">
+          <span>{uploadError}</span>
+          <button onClick={() => setUploadError(null)} className="p-1 hover:bg-destructive/20 rounded-lg">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Banner + Avatar */}
       <div className="relative">
         <div
-          className="h-40 rounded-2xl"
+          className="h-40 sm:h-48 rounded-2xl relative overflow-hidden group shadow-inner transition-all"
           style={{
-            background: activeUser?.banner
-              ? `url(${activeUser.banner}) center/cover`
+            background: activeUser?.banner || activeUser?.banner_image
+              ? `url(${activeUser?.banner || activeUser?.banner_image}) center/cover no-repeat`
               : `linear-gradient(135deg, ${avatarColor}44 0%, ${avatarColor}22 100%)`,
             backgroundColor: avatarColor + '33',
           }}
-        />
+        >
+          {isOwnProfile && (
+            <button
+              type="button"
+              onClick={() => bannerInputRef.current?.click()}
+              disabled={uploadingBanner}
+              className="absolute top-3 left-3 px-3 py-1.5 bg-black/50 hover:bg-black/70 backdrop-blur-md border border-white/20 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm active:scale-95"
+              title="Change Cover Banner"
+            >
+              {uploadingBanner ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <ImagePlus className="w-3.5 h-3.5" />
+              )}
+              <span>{uploadingBanner ? 'Uploading…' : 'Edit Cover'}</span>
+            </button>
+          )}
+        </div>
+
+        {/* Avatar Area */}
         <div className="absolute -bottom-8 left-6">
-          <div className="relative">
+          <div className="relative group">
             {activeUser?.avatar ? (
-              <img src={activeUser.avatar} alt={name} className="w-20 h-20 rounded-2xl border-4 border-background object-cover" />
+              <img
+                src={activeUser.avatar}
+                alt={name}
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-4 border-background object-cover shadow-md bg-card"
+              />
             ) : (
               <div
-                className="w-20 h-20 rounded-2xl border-4 border-background flex items-center justify-center text-white text-2xl font-bold"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-4 border-background flex items-center justify-center text-white text-2xl sm:text-3xl font-bold shadow-md"
                 style={{ backgroundColor: avatarColor }}
               >
                 {getInitials(name)}
               </div>
             )}
-            {/* Online dot */}
+
+            {/* Avatar Upload Trigger Overlay */}
+            {isOwnProfile && (
+              <button
+                type="button"
+                onClick={() => avatarInputRef.current?.click()}
+                disabled={uploadingAvatar}
+                className="absolute inset-0 rounded-2xl bg-black/40 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity border-4 border-transparent backdrop-blur-xs cursor-pointer active:scale-95"
+                title="Upload Profile Picture"
+              >
+                {uploadingAvatar ? (
+                  <Loader2 className="w-6 h-6 animate-spin text-white" />
+                ) : (
+                  <>
+                    <Camera className="w-5 h-5 text-white" />
+                    <span className="text-[9px] font-semibold mt-0.5">Change</span>
+                  </>
+                )}
+              </button>
+            )}
+
+            {/* Online status indicator */}
             {activeUser?.online_status === 'online' && (
-              <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background" />
+              <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-background shadow-xs z-10" />
             )}
           </div>
         </div>
@@ -332,7 +501,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
           {isOwnProfile ? (
             <button
               onClick={() => setEditing(!editing)}
-              className="flex items-center gap-2 px-3 py-2 bg-background/80 backdrop-blur-sm border border-border rounded-lg text-sm font-medium hover:bg-background transition-colors"
+              className="flex items-center gap-2 px-3.5 py-2 bg-background/90 backdrop-blur-md border border-border/80 rounded-xl text-sm font-semibold hover:bg-background transition-all shadow-xs active:scale-95"
             >
               {editing ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
               {editing ? 'Cancel' : 'Edit Profile'}

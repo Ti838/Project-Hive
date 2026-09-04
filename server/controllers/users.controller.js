@@ -17,31 +17,44 @@ function sanitize(user) {
   return safe;
 }
 
-// ─── Helper: convert snake_case DB fields → camelCase for client ──────────────
+// ─── Helper: convert snake_case DB fields → canonical format for client ──────────────
 function camelizeUser(user) {
   if (!user) return null;
-  const keyMap = {
-    first_name: 'firstName',
-    last_name: 'lastName',
-    avatar_color: 'avatarColor',
-    banner_image: 'bannerImage',
-    year_of_study: 'yearOfStudy',
-    completion_percentage: 'profileCompletion',
-    online_status: 'onlineStatus',
-    is_public: 'isPublic',
-    is_verified: 'isVerified',
-    is_banned: 'isBanned',
-    hours_per_week: 'hoursPerWeek',
-    created_at: 'createdAt',
-    updated_at: 'updatedAt',
-  };
   const result = { ...user };
-  for (const [k, v] of Object.entries(user)) {
-    result[k] = v;
-    if (keyMap[k]) {
-      result[keyMap[k]] = v;
-    }
-  }
+  result.firstName = user.firstName || user.first_name || '';
+  result.lastName = user.lastName || user.last_name || '';
+  result.first_name = user.first_name || user.firstName || '';
+  result.last_name = user.last_name || user.lastName || '';
+  result.avatar = user.avatar || null;
+  result.avatar_color = user.avatar_color || user.avatarColor || '#6366F1';
+  result.avatarColor = user.avatarColor || user.avatar_color || '#6366F1';
+  result.banner = user.banner || user.banner_image || user.bannerImage || null;
+  result.banner_image = user.banner_image || user.bannerImage || user.banner || null;
+  result.bannerImage = user.bannerImage || user.banner_image || user.banner || null;
+  result.github = user.github || user.github_url || null;
+  result.github_url = user.github_url || user.github || null;
+  result.linkedin = user.linkedin || user.linkedin_url || null;
+  result.linkedin_url = user.linkedin_url || user.linkedin || null;
+  result.portfolio = user.portfolio || user.portfolio_url || null;
+  result.portfolio_url = user.portfolio_url || user.portfolio || null;
+  result.year_of_study = user.year_of_study || user.yearOfStudy || null;
+  result.yearOfStudy = user.yearOfStudy || user.year_of_study || null;
+  result.completion_percentage = user.completion_percentage ?? user.profileCompletion ?? 0;
+  result.profileCompletion = user.profileCompletion ?? user.completion_percentage ?? 0;
+  result.online_status = user.online_status || user.onlineStatus || 'offline';
+  result.onlineStatus = user.onlineStatus || user.online_status || 'offline';
+  result.is_public = user.is_public ?? user.isPublic ?? true;
+  result.isPublic = user.isPublic ?? user.is_public ?? true;
+  result.is_verified = user.is_verified ?? user.isVerified ?? false;
+  result.isVerified = user.isVerified ?? user.is_verified ?? false;
+  result.is_banned = user.is_banned ?? user.isBanned ?? false;
+  result.isBanned = user.isBanned ?? user.is_banned ?? false;
+  result.hours_per_week = user.hours_per_week ?? user.hoursPerWeek ?? 10;
+  result.hoursPerWeek = user.hoursPerWeek ?? user.hours_per_week ?? 10;
+  result.created_at = user.created_at || user.createdAt || new Date().toISOString();
+  result.createdAt = user.createdAt || user.created_at || new Date().toISOString();
+  result.updated_at = user.updated_at || user.updatedAt || new Date().toISOString();
+  result.updatedAt = user.updatedAt || user.updated_at || new Date().toISOString();
   return result;
 }
 
@@ -241,11 +254,24 @@ export async function getUserProfile(req, res, next) {
 export async function updateProfile(req, res, next) {
   try {
     const userId = req.user.id;
-    const {
-      firstName, lastName, bio, university, major, yearOfStudy,
-      avatar, bannerImage, avatarColor, status, hoursPerWeek,
-      github, linkedin, portfolio, isPublic, skills
-    } = req.body;
+    const body = req.body || {};
+
+    const firstName = body.firstName !== undefined ? body.firstName : body.first_name;
+    const lastName = body.lastName !== undefined ? body.lastName : body.last_name;
+    const bio = body.bio;
+    const university = body.university;
+    const major = body.major !== undefined ? body.major : body.department;
+    const yearOfStudy = body.yearOfStudy !== undefined ? body.yearOfStudy : body.year_of_study;
+    const avatar = body.avatar;
+    const bannerImage = body.bannerImage !== undefined ? body.bannerImage : (body.banner_image !== undefined ? body.banner_image : body.banner);
+    const avatarColor = body.avatarColor !== undefined ? body.avatarColor : body.avatar_color;
+    const status = body.status;
+    const hoursPerWeek = body.hoursPerWeek !== undefined ? body.hoursPerWeek : body.hours_per_week;
+    const github = body.github !== undefined ? body.github : body.github_url;
+    const linkedin = body.linkedin !== undefined ? body.linkedin : body.linkedin_url;
+    const portfolio = body.portfolio !== undefined ? body.portfolio : body.portfolio_url;
+    const isPublic = body.isPublic !== undefined ? body.isPublic : body.is_public;
+    const skills = body.skills;
 
     // Build update object (snake_case for Supabase)
     const updates = {};
@@ -254,12 +280,12 @@ export async function updateProfile(req, res, next) {
     if (bio !== undefined)          updates.bio = bio;
     if (university !== undefined)   updates.university = university;
     if (major !== undefined)        updates.major = major;
-    if (yearOfStudy !== undefined)  updates.year_of_study = yearOfStudy;
+    if (yearOfStudy !== undefined)  updates.year_of_study = yearOfStudy ? parseInt(yearOfStudy) : null;
     if (avatar !== undefined)       updates.avatar = avatar;
     if (bannerImage !== undefined)  updates.banner_image = bannerImage;
     if (avatarColor !== undefined)  updates.avatar_color = avatarColor;
     if (status !== undefined)       updates.status = status;
-    if (hoursPerWeek !== undefined) updates.hours_per_week = hoursPerWeek;
+    if (hoursPerWeek !== undefined) updates.hours_per_week = hoursPerWeek ? parseInt(hoursPerWeek) : 10;
     if (github !== undefined)       updates.github = github;
     if (linkedin !== undefined)     updates.linkedin = linkedin;
     if (portfolio !== undefined)    updates.portfolio = portfolio;

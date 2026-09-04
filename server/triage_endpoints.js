@@ -33,7 +33,7 @@ async function triage() {
       .from('users')
       .select('*')
       .limit(1);
-    
+
     if (error || !users || users.length === 0) {
       console.error('   ❌ No users found in Supabase database:', error);
     } else {
@@ -44,7 +44,7 @@ async function triage() {
     // Test Admin Login with .env credentials
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@projecthive.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'ProjectHive@Admin2026!';
-    
+
     const adminLoginRes = await fetch(`${BASE}/admin/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -109,3 +109,4 @@ async function triage() {
 }
 
 triage();
+

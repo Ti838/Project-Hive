@@ -14,23 +14,36 @@ export interface User {
   avatar_color?: string;
   avatarColor?: string;
   banner?: string;
+  banner_image?: string;
+  bannerImage?: string;
   bio?: string;
   university?: string;
   department?: string;
+  major?: string;
   student_id?: string;
   year_of_study?: number;
+  yearOfStudy?: number;
   skills?: string[];
   interests?: string[];
+  github?: string;
   github_url?: string;
+  linkedin?: string;
   linkedin_url?: string;
+  portfolio?: string;
   portfolio_url?: string;
   online_status?: 'online' | 'offline' | 'away';
+  onlineStatus?: 'online' | 'offline' | 'away';
   last_seen?: string;
+  lastSeen?: string;
   is_verified: boolean;
+  isVerified?: boolean;
   is_banned?: boolean;
-  role?: 'user' | 'admin';
+  isBanned?: boolean;
+  role?: 'user' | 'admin' | 'student';
   profile_completion?: number;
+  profileCompletion?: number;
   created_at: string;
+  createdAt?: string;
 }
 
 export interface Team {

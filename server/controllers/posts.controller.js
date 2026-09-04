@@ -3,26 +3,60 @@ import { getIo, broadcastNotification } from '../services/socket.service.js';
 
 // ── Helper: normalize post data ───────────────────────────────────────────────
 function normPost(p) {
+  if (!p) return null;
+
+  const reactionCount = p.reactions && typeof p.reactions === 'object' && !Array.isArray(p.reactions)
+    ? Object.values(p.reactions).reduce((a, b) => a + (typeof b === 'number' ? b : 1), 0)
+    : (Array.isArray(p.reactions) ? p.reactions.length : (p.reaction_count || p.reactionCount || 0));
+
+  const authorObj = p.author ? {
+    id: p.author.id,
+    first_name: p.author.first_name || p.author.firstName || '',
+    last_name: p.author.last_name || p.author.lastName || '',
+    firstName: p.author.first_name || p.author.firstName || '',
+    lastName: p.author.last_name || p.author.lastName || '',
+    avatar: p.author.avatar || null,
+    avatar_color: p.author.avatar_color || p.author.avatarColor || '#6366F1',
+    avatarColor: p.author.avatarColor || p.author.avatar_color || '#6366F1',
+    university: p.author.university || '',
+    online_status: p.author.online_status || p.author.onlineStatus || 'offline',
+    onlineStatus: p.author.online_status || p.author.onlineStatus || 'offline',
+    last_seen: p.author.last_seen || p.author.lastSeen || null,
+    lastSeen: p.author.last_seen || p.author.lastSeen || null,
+  } : null;
+
+  const images = Array.isArray(p.images) && p.images.length > 0
+    ? p.images
+    : (p.image_url ? [p.image_url] : (p.imageUrl ? [p.imageUrl] : []));
+
   return {
     id: p.id,
-    content: p.content,
-    postType: p.post_type,
-    createdAt: p.created_at,
-    updatedAt: p.updated_at,
-    imageUrl: p.image_url || null,
-    linkMetadata: p.link_metadata || null,
-    author: p.author ? {
-      id: p.author.id,
-      firstName: p.author.first_name,
-      lastName: p.author.last_name,
-      avatar: p.author.avatar,
-      university: p.author.university,
-      onlineStatus: p.author.online_status,
-      lastSeen: p.author.last_seen,
-    } : null,
-    reactions: p.reactions || [],
-    commentsCount: p.comments_count || 0,
-    myReaction: p.my_reaction || null,
+    author_id: p.author_id || p.authorId || (p.author ? p.author.id : null),
+    authorId: p.author_id || p.authorId || (p.author ? p.author.id : null),
+    content: p.content || '',
+    type: p.post_type || p.type || p.postType || 'general',
+    post_type: p.post_type || p.type || p.postType || 'general',
+    postType: p.post_type || p.type || p.postType || 'general',
+    created_at: p.created_at || p.createdAt || new Date().toISOString(),
+    createdAt: p.created_at || p.createdAt || new Date().toISOString(),
+    updated_at: p.updated_at || p.updatedAt,
+    updatedAt: p.updated_at || p.updatedAt,
+    image_url: p.image_url || p.imageUrl || (images[0] || null),
+    imageUrl: p.image_url || p.imageUrl || (images[0] || null),
+    images,
+    link_metadata: p.link_metadata || p.linkMetadata || null,
+    linkMetadata: p.link_metadata || p.linkMetadata || null,
+    author: authorObj,
+    reactions: p.reactions || {},
+    reaction_count: reactionCount,
+    reactionCount: reactionCount,
+    comments_count: p.comments_count || p.commentsCount || p.comment_count || 0,
+    comment_count: p.comments_count || p.commentsCount || p.comment_count || 0,
+    commentsCount: p.comments_count || p.commentsCount || p.comment_count || 0,
+    my_reaction: p.my_reaction || p.myReaction || p.user_reaction || null,
+    myReaction: p.my_reaction || p.myReaction || p.user_reaction || null,
+    user_reaction: p.my_reaction || p.myReaction || p.user_reaction || null,
+    poll_options: p.poll_options || p.pollOptions || null,
   };
 }
 
