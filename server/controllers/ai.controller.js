@@ -14,13 +14,14 @@ import {
   isAIReady,
 } from '../config/gemini.js';
 
-// Verified working Groq models (as of 2025)
+// Verified working Groq models
 const GROQ_MODELS = [
-  'llama-3.3-70b-versatile',
-  'llama-3.1-70b-versatile',
-  'llama3-70b-8192',
-  'mixtral-8x7b-32768',
-  'gemma2-9b-it',
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'qwen/qwen3.8-27b',
+  'qwen/qwen3.6-27b',
+  'groq/compound',
+  'groq/compound-mini',
 ];
 
 const GEMINI_MODELS = [
@@ -30,20 +31,19 @@ const GEMINI_MODELS = [
   'gemini-1.5-pro',
 ];
 
-// Note: "openrouter/free" is NOT a valid model ID — removed.
-// These are actual free-tier model IDs on OpenRouter.
+// Active verified free-tier models on OpenRouter
 const OPENROUTER_MODELS = [
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'google/gemini-2.0-flash-exp:free',
-  'qwen/qwen-2.5-coder-32b-instruct:free',
-  'mistralai/mistral-small-3.1-24b-instruct:free',
-  'microsoft/phi-3-mini-128k-instruct:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'nvidia/nemotron-3.5-lightning:free',
+  'cohere/north-mini-code:free',
+  'minimax/minimax-m3:free',
+  'z-ai/glm-5.2:free',
+  'liquid/lfm-2.5-2.6b:free',
 ];
 
 const OPENROUTER_VISION_MODELS = [
-  'google/gemini-2.0-flash-exp:free',
-  'meta-llama/llama-3.2-11b-vision-instruct:free',
-  'qwen/qwen2.5-vl-7b-instruct:free',
+  'google/gemma-4-26b-a4b-it:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
 ];
 
 const GEMINI_BASE     = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -534,3 +534,187 @@ Guidelines:
     next(error);
   }
 }
+
+// ── Centralized Hive AI Capability Execution ─────────────────────────────────
+// Supports all 11 unified capabilities through one standard API contract
+export async function executeHiveAICapability(req, res, next) {
+  try {
+    if (!isAIReady()) {
+      return res.status(503).json({ error: 'Hive AI service is currently unavailable. Ensure GROQ_API_KEY or GEMINI_API_KEY is configured.' });
+    }
+
+    const userId = req.user?.id || req.user?.userId || 'anon';
+    if (!checkLimit(`hiveai-${userId}`, 60)) {
+      return res.status(429).json({ error: 'Rate limit reached: 60 Hive AI operations per hour. Please wait a moment.' });
+    }
+
+    const {
+      capability = 'copilot_chat',
+      prompt: userPrompt = '',
+      parameters = {},
+      context = {},
+      imageBase64,
+      mimeType
+    } = req.body;
+
+    if (!userPrompt?.trim() && !imageBase64 && !parameters.domain && !parameters.topic) {
+      return res.status(400).json({ error: 'A prompt, topic, or file attachment is required.' });
+    }
+
+    // Capability-Specific System Prompt Builder
+    let systemInstruction = `You are Hive AI — the Central Engineering Intelligence Layer for ProjectHive.
+You provide minimal, authoritative, production-grade engineering advice, system architectures, and technical artifacts.
+Do not produce boilerplate filler or generic disclaimers. Focus on actionable, structured output.`;
+
+    switch (capability) {
+      case 'project_generator':
+        systemInstruction = `You are Hive AI Project Generator.
+Create a complete, production-grade engineering blueprint for a university/hackathon software project.
+Structure your response into clear, distinct sections:
+### 1. Problem Statement & Core Value
+### 2. MVP Feature Scope
+### 3. Architecture & Data Flow
+### 4. Recommended Tech Stack
+### 5. Step-by-Step Implementation Milestones (Week-by-Week)
+### 6. Database Schema Overview (PostgreSQL/Supabase)
+### 7. Technical Risks & Testing Strategy
+Use clean Markdown with bold headers, bullet lists, and code fences where helpful.`;
+        break;
+
+      case 'idea_analyzer':
+        systemInstruction = `You are Hive AI Idea Analyzer.
+Analyze the submitted software project concept thoroughly.
+Provide:
+### 1. Executive Summary & Problem-Solution Fit
+### 2. Novelty & Innovation Score (Rate 1-10 with rationale)
+### 3. Technical Feasibility & Complexity Level (Beginner / Intermediate / Advanced)
+### 4. Key Strengths & Competitive Edge
+### 5. Potential Pitfalls & Technical Risks
+### 6. Three Actionable Improvement Recommendations`;
+        break;
+
+      case 'project_critic':
+        systemInstruction = `You are Hive AI Project Critic.
+Act as a Principal Software Architect reviewing a project proposal, codebase, or architecture.
+Provide constructive, rigorous critique:
+### 1. Overall Architectural Assessment
+### 2. Critical Security & Performance Vulnerabilities (Priority: HIGH)
+### 3. Missing Edge Cases & Scalability Bottlenecks (Priority: MEDIUM)
+### 4. Code Quality & UX Refinements (Priority: LOW)
+### 5. Final Recommendations & Verification Checklist`;
+        break;
+
+      case 'research_assistant':
+        systemInstruction = `You are Hive AI Research Assistant.
+Provide a deep technical investigation and comparative analysis on the requested topic.
+Structure:
+### 1. Core Technical Fundamentals
+### 2. Technology / Architecture Comparison Matrix
+### 3. Trade-offs & Production Considerations (Latency, Cost, DX, Scalability)
+### 4. Recommended Industry Best Practices
+### 5. Verified Technical References & Documentation Pointers`;
+        break;
+
+      case 'documentation_ai':
+        systemInstruction = `You are Hive AI Documentation Specialist.
+Generate comprehensive, production-standard documentation (e.g. GitHub README, API Reference, Architecture Guide).
+Include:
+- Project title & catchy badges
+- Overview & features list
+- Tech stack overview
+- Installation & environment configuration (.env variables)
+- API Route reference table with request/response examples
+- License & contributing guidelines
+Return ready-to-use Markdown formatted inside clean code blocks.`;
+        break;
+
+      case 'code_assistant':
+        systemInstruction = `You are Hive AI Code Assistant & Debugger.
+Analyze the code snippet or technical challenge.
+Provide:
+### 1. Root Cause & Bug Diagnosis
+### 2. Corrected, Production-Ready Code (Full syntax-highlighted block)
+### 3. Key Edge Cases Handled & Complexity (Time / Space)
+### 4. Recommended Unit Tests (Jest / Vitest / PyTest)`;
+        break;
+
+      case 'architecture_design':
+        systemInstruction = `You are Hive AI Architecture & System Designer.
+Design robust, scalable system topology and data pipelines.
+Include:
+### 1. High-Level Architecture Topology (Clients, Gateways, Microservices/Monolith, Cache, DB)
+### 2. Data Flow & Event Lifecycle
+### 3. Database ER Model & Indexing Strategy
+### 4. Caching & Realtime Layer (Redis, Socket.IO, WebRTC SFU)
+### 5. Deployment & CI/CD Pipeline Blueprint`;
+        break;
+
+      case 'project_health':
+        systemInstruction = `You are Hive AI Project Health Assessor.
+Evaluate the current project status, team deliverables, and velocity.
+Provide:
+### 1. Overall Project Health Status (HEALTHY · ON TRACK / AT RISK / ACTION REQUIRED)
+### 2. Blocker Analysis & Critical Path Bottlenecks
+### 3. Code & Documentation Readiness
+### 4. Priority Tasks for This Sprint`;
+        break;
+
+      case 'team_ai':
+        systemInstruction = `You are Hive AI Team Collaboration & Skill Gap Analyzer.
+Analyze team composition, member skills, and project requirements.
+Provide:
+### 1. Team Skill Matrix & Coverage
+### 2. Identified Skill Gaps (Roles Needed, e.g. Backend Engineer, UI/UX Designer)
+### 3. Recommended Task Distribution & Ownership
+### 4. Collaboration Best Practices for This Squad`;
+        break;
+
+      case 'career_ai':
+        systemInstruction = `You are Hive AI Career & Technical Identity Advisor.
+Transform student engineering builds into high-impact portfolio assets.
+Provide:
+### 1. 30-Second Elevator Pitch (YCombinator & Recruiter Ready)
+### 2. High-Impact Resume / Portfolio Bullet Points (STAR Method: Situation, Task, Action, Result)
+### 3. Recommended Technical Skills to Highlight
+### 4. Follow-up Interview Talking Points & Deep-Dive Questions to Prepare For`;
+        break;
+
+      default:
+        systemInstruction = `You are Hive AI — Senior Engineering Copilot for ProjectHive.
+Provide direct, clean, production-grade technical mentorship and guidance.`;
+        break;
+    }
+
+    // Build context string
+    let contextBlock = '';
+    if (context.currentRoute) contextBlock += `\n[Context] Current Workspace: ${context.currentRoute}`;
+    if (context.projectName) contextBlock += `\n[Context] Project: ${context.projectName}`;
+    if (context.techStack) contextBlock += `\n[Context] Tech Stack: ${Array.isArray(context.techStack) ? context.techStack.join(', ') : context.techStack}`;
+    if (context.teamName) contextBlock += `\n[Context] Team: ${context.teamName}`;
+
+    // Combine prompt
+    const fullPrompt = `${systemInstruction}\n${contextBlock}\n\nTask / User Input:\n${userPrompt || JSON.stringify(parameters, null, 2)}`;
+
+    const result = await callAI(fullPrompt, imageBase64, mimeType);
+
+    return res.json({
+      ok: true,
+      capability,
+      output: result.text,
+      provider: result.provider,
+      model: result.model,
+      timestamp: new Date().toISOString(),
+      metadata: {
+        tokensEstimated: Math.round(result.text.length / 4),
+        capability,
+      }
+    });
+  } catch (error) {
+    console.error('[Hive AI Execution] Error:', error.message);
+    if (error.status === 429) {
+      return res.status(429).json({ error: 'Hive AI rate limit reached. Please wait a moment.' });
+    }
+    next(error);
+  }
+}
+

@@ -3,11 +3,14 @@ import http from 'http';
 import jwt from 'jsonwebtoken';
 import app from './app.js';
 import { supabaseAdmin } from './config/supabase.js';
+import { initializeGemini } from './config/gemini.js';
 
 async function triage() {
   console.log('====================================================');
   console.log('🔍 PROJECT HIVE EMERGENCY RUNTIME TRIAGE TEST');
   console.log('====================================================\n');
+
+  initializeGemini();
 
   // Start internal server
   const server = http.createServer(app);
@@ -116,6 +119,26 @@ async function triage() {
     } catch (e) {
       console.log(`   ❌ ${ep.name} crashed: ${e.message}`);
     }
+  }
+
+  console.log('\n4. Testing Hive AI Central Execution Gateway (/api/ai/execute):');
+  try {
+    const aiRes = await fetch(`${BASE}/ai/execute`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${studentToken || token}`,
+      },
+      body: JSON.stringify({
+        capability: 'copilot_chat',
+        prompt: 'Hello Hive AI! Confirm you are operational in 10 words.',
+      }),
+    });
+    const aiData = await aiRes.json();
+    console.log(`   /api/ai/execute       -> Status: ${aiRes.status} | OK: ${aiData.ok} | Provider: ${aiData.provider} | Model: ${aiData.model}`);
+    console.log(`   Sample Output: "${(aiData.output || '').slice(0, 100)}..."`);
+  } catch (e) {
+    console.log(`   ❌ AI execute failed: ${e.message}`);
   }
 
   server.close();

@@ -209,3 +209,51 @@ export interface ApiResponse<T = unknown> {
   status?: number;
   ok?: boolean;
 }
+
+// ─── Hive AI Unified Types ───────────────────────────────────────────────────
+
+export type HiveAICapabilityType =
+  | 'project_generator'
+  | 'idea_analyzer'
+  | 'project_critic'
+  | 'research_assistant'
+  | 'documentation_ai'
+  | 'code_assistant'
+  | 'architecture_design'
+  | 'project_health'
+  | 'team_ai'
+  | 'career_ai'
+  | 'copilot_chat';
+
+export interface HiveAIContext {
+  currentRoute?: string;
+  projectId?: string;
+  projectName?: string;
+  teamId?: string;
+  teamName?: string;
+  techStack?: string[];
+  userId?: string;
+}
+
+export interface HiveAIMessageItem {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  capability?: HiveAICapabilityType;
+  imageUrl?: string;
+  provider?: string;
+  model?: string;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface HiveAIArtifactData {
+  id: string;
+  title: string;
+  type: 'blueprint' | 'analysis' | 'critique' | 'docs' | 'code' | 'schema' | 'pitch';
+  content: string;
+  capability: HiveAICapabilityType;
+  tags?: string[];
+  createdAt: string;
+}
+

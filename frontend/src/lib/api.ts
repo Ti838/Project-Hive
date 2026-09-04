@@ -275,8 +275,27 @@ export const api = {
   },
 
   ai: {
+    execute: (body: {
+      capability: import('@/types').HiveAICapabilityType;
+      prompt?: string;
+      parameters?: Record<string, any>;
+      context?: import('@/types').HiveAIContext;
+      imageBase64?: string;
+      mimeType?: string;
+    }) =>
+      request<{
+        ok: boolean;
+        capability: import('@/types').HiveAICapabilityType;
+        output: string;
+        provider?: string;
+        model?: string;
+        timestamp: string;
+        metadata?: { tokensEstimated?: number; capability?: string };
+      }>('/ai/execute', { method: 'POST', body: JSON.stringify(body) }),
+
     generateIdeas: (body: { domain: string; skills: string[]; teamSize: number; timelineWeeks: number; constraints?: string }) =>
       request<{ ideas: any }>('/ai/generate-ideas', { method: 'POST', body: JSON.stringify(body) }),
+
     chat: (message: string, imageBase64?: string, context?: Record<string, unknown>) =>
       request<{ ok: boolean; reply: string; provider?: string; model?: string }>('/ai/chat', {
         method: 'POST',

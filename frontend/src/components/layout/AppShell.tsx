@@ -9,7 +9,7 @@ import { Topbar } from '@/components/layout/Topbar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { useSocket } from '@/hooks/useSocket';
 import { CallManager } from '@/components/calling/CallManager';
-import { HiveMindCopilot } from '@/components/ai/HiveMindCopilot';
+import { HiveAICopilotDrawer } from '@/components/ai/HiveAICopilotDrawer';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, login } = useAuthStore();
@@ -46,12 +46,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <MobileNav />
       </div>
 
-
       {/* Global LiveKit Native Calling Manager (Ringing, Overlays & PiP Widget) */}
       <CallManager />
 
-      {/* Global HiveMind Multimodal Engineering Copilot */}
-      <HiveMindCopilot />
+      {/* Global Hive AI Multimodal Engineering Copilot Drawer */}
+      <HiveAICopilotDrawer />
     </div>
   );
 }
