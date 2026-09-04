@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",
+    "@tailwindcss/postcss": "^4",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "framer-motion": "^13.1.1",
@@ -21,17 +22,16 @@
     "react-hook-form": "^7.87.0",
     "socket.io-client": "^4.8.3",
     "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4",
     "zod": "^4.5.4",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
-    "tailwindcss": "^4",
     "typescript": "^5"
   }
 }
