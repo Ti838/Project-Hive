@@ -5,13 +5,18 @@ import path from 'path';
 console.log('🚀 [ProjectHive] Starting automated production build...');
 
 try {
-  // 1. Install frontend dependencies
+  // 1. Install frontend dependencies cleanly
   console.log('📦 [ProjectHive] Installing frontend dependencies...');
-  execSync('npm --prefix frontend install --include=dev', { stdio: 'inherit' });
+  execSync('npm install --prefix frontend', { stdio: 'inherit' });
 
-  // 2. Build Next.js application
+  // 2. Build Next.js application inside frontend directory using npx next build
   console.log('🏗️ [ProjectHive] Building Next.js app in frontend/...');
-  execSync('npm --prefix frontend run build', { stdio: 'inherit' });
+  const frontendDir = path.resolve('frontend');
+  execSync('npx next build', {
+    cwd: frontendDir,
+    stdio: 'inherit',
+    env: { ...process.env, NODE_ENV: 'production' }
+  });
 
   // 3. Sync .next build directory to root .next
   const srcNext = path.resolve('frontend', '.next');
@@ -36,6 +41,7 @@ try {
 
   console.log('🎉 [ProjectHive] Production build completed with 100% success!');
 } catch (error) {
-  console.error('💥 [ProjectHive] Build process failed:', error.message);
+  console.error('💥 [ProjectHive] Build process failed with error:');
+  console.error(error.message || error);
   process.exit(1);
 }
