@@ -121,3 +121,25 @@ export function sanitizeAndDecodeText(input: string | null | undefined): string 
   return text;
 }
 
+/**
+ * Extract clean readable text from description strings.
+ * If a description was stored as a JSON string (e.g. {"text":"...", "github":"..."}),
+ * this safely parses and returns the human-readable text.
+ */
+export function parseDescription(input: string | null | undefined): string {
+  if (!input) return '';
+  if (typeof input !== 'string') return String(input);
+  const trimmed = input.trim();
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === 'object' && parsed !== null) {
+        return parsed.text || parsed.description || parsed.content || parsed.bio || trimmed;
+      }
+    } catch {
+      // Not valid JSON, return as is
+    }
+  }
+  return sanitizeAndDecodeText(input);
+}
+

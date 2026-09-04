@@ -6,6 +6,22 @@ function sanitizeSearch(input) {
   return input.replace(/[%_(),.;'"\\=<>!#|&\-\[\]{}^~`]/g, '').replace(/\s+/g, ' ').trim().substring(0, 100);
 }
 
+function cleanDescription(desc) {
+  if (!desc || typeof desc !== 'string') return desc || '';
+  const trimmed = desc.trim();
+  if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === 'object' && parsed !== null) {
+        return parsed.text || parsed.description || parsed.content || parsed.bio || trimmed;
+      }
+    } catch {
+      // Return raw if not JSON
+    }
+  }
+  return desc;
+}
+
 // ─── CREATE TEAM ──────────────────────────────────────────────────────────────
 export async function createTeam(req, res, next) {
   try {
@@ -16,7 +32,7 @@ export async function createTeam(req, res, next) {
       .from('teams')
       .insert({
         name,
-        description: description || '',
+        description: cleanDescription(description) || '',
         max_size: maxMembers || 5,
         category: category || '',
         tags: tags || [],
@@ -75,6 +91,7 @@ export async function getTeams(req, res, next) {
 
     const normalized = (teams || []).map(t => ({
       ...t,
+      description: cleanDescription(t.description),
       max_members: t.max_size,
       member_count: t.team_members?.length || 0,
     }));
@@ -101,6 +118,7 @@ export async function getTeamDetail(req, res, next) {
       .single();
 
     if (error || !team) return res.status(404).json({ error: 'Team not found' });
+    team.description = cleanDescription(team.description);
     res.json(team);
   } catch (err) { next(err); }
 }

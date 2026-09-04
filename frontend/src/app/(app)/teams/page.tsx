@@ -9,7 +9,7 @@ import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useCallStore } from '@/lib/callStore';
 import { useSocket } from '@/hooks/useSocket';
-import { cn, getInitials, getAvatarColor, timeAgo } from '@/lib/utils';
+import { cn, getInitials, getAvatarColor, timeAgo, parseDescription } from '@/lib/utils';
 import type { Team } from '@/types';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -106,7 +106,9 @@ function TeamCard({
 
       {/* Description */}
       {team.description && (
-        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">{team.description}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 leading-relaxed">
+          {parseDescription(team.description)}
+        </p>
       )}
 
       {/* Skills */}

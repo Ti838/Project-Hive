@@ -16,7 +16,7 @@ import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useCallStore } from '@/lib/callStore';
 import { useSocket } from '@/hooks/useSocket';
-import { displayName, timeAgo, getInitials, getAvatarColor, cn, sanitizeAndDecodeText } from '@/lib/utils';
+import { displayName, timeAgo, getInitials, getAvatarColor, cn, sanitizeAndDecodeText, parseDescription } from '@/lib/utils';
 import type { Team, TeamMember, Message } from '@/types';
 
 type WorkspaceTab = 'overview' | 'chat' | 'settings';
@@ -476,7 +476,7 @@ export default function TeamWorkspacePage() {
                   </h2>
                 </div>
                 <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">
-                  {team.description || 'This squad has not published a detailed mission statement yet.'}
+                  {parseDescription(team.description) || 'This squad has not published a detailed mission statement yet.'}
                 </p>
 
                 {team.tags && team.tags.length > 0 && (
