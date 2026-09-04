@@ -29,6 +29,7 @@ import { getFlags, loadFlagsFromDB } from './controllers/admin.controller.js';
 import postsRoutes from './routes/posts.routes.js';
 import storiesRoutes from './routes/stories.routes.js';
 import callsRoutes from './routes/calls.routes.js';
+import githubRoutes from './routes/github.routes.js';
 
 const app = express();
 
@@ -258,13 +259,14 @@ app.use('/api', (req, res, next) => {
 app.use('/api/users', usersRoutes);
 app.use('/api/teams', teamsRoutes);
 app.use('/api/projects', projectsRoutes);
+app.use('/api/github', githubRoutes); // GitHub Developer Collaboration Core
 app.use('/api/messages', messagesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
-app.use('/api', postsRoutes);   // feed, posts, reactions, comments
 app.use('/api/stories', storiesRoutes); // stories
 app.use('/api/calls', callsRoutes); // native LiveKit calling
+app.use('/api', postsRoutes);   // feed, posts, reactions, comments
 
 // TURN credentials endpoint
 app.get('/api/turn-credentials', async (req, res) => {

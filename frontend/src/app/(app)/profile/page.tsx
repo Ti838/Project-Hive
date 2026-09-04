@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { GitBranch, ExternalLink, Globe, Edit2, Save, X, Loader2, UserX, MessageSquare, UserPlus, Check, ArrowLeft, Camera, ImagePlus } from 'lucide-react';
+import { GitBranch, ExternalLink, Globe, Edit2, Save, X, Loader2, UserX, MessageSquare, UserPlus, Check, ArrowLeft, Camera, ImagePlus, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';

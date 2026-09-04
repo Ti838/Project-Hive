@@ -279,7 +279,7 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
 }
 
 // ── Smart AI Cascading Router (Groq -> Gemini -> OpenRouter) ────────────────
-async function callAI(prompt, imageBase64, mimeType) {
+export async function callAI(prompt, imageBase64, mimeType) {
   const geminiAvailable = isGeminiReady();
   const groqAvailable = isGroqReady();
   const openRouterAvailable = isOpenRouterReady();

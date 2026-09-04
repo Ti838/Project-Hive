@@ -42,6 +42,7 @@ export interface User {
   role?: 'user' | 'admin' | 'student';
   profile_completion?: number;
   profileCompletion?: number;
+  completion_percentage?: number;
   created_at: string;
   createdAt?: string;
 }
@@ -82,6 +83,7 @@ export interface Project {
   tech_stack?: string[];
   demo_url?: string;
   repo_url?: string;
+  github_url?: string;
   image_url?: string;
   is_featured?: boolean;
   likes_count?: number;
@@ -256,4 +258,183 @@ export interface HiveAIArtifactData {
   tags?: string[];
   createdAt: string;
 }
+
+// ─── GitHub Developer Collaboration Types ─────────────────────────────────────
+
+export interface GitHubRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  owner: {
+    login: string;
+    avatarUrl: string;
+    htmlUrl: string;
+    type: string;
+  };
+  description: string | null;
+  isPrivate: boolean;
+  htmlUrl: string;
+  defaultBranch: string;
+  language: string | null;
+  starsCount: number;
+  forksCount: number;
+  openIssuesCount: number;
+  watchersCount: number;
+  createdAt: string;
+  updatedAt: string;
+  pushedAt: string;
+  topics: string[];
+  license: string | null;
+}
+
+export interface GitHubCommit {
+  sha: string;
+  shortSha: string;
+  message: string;
+  author: {
+    name: string;
+    email: string;
+    date: string;
+    username: string;
+    avatarUrl: string | null;
+    htmlUrl: string | null;
+  };
+  htmlUrl: string;
+  commentCount: number;
+}
+
+export interface GitHubBranch {
+  name: string;
+  commitSha: string;
+  protected: boolean;
+}
+
+export interface GitHubIssue {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed';
+  user: {
+    username: string;
+    avatarUrl: string;
+    htmlUrl: string;
+  };
+  labels: Array<{ name: string; color: string; description?: string }>;
+  assignees: Array<{ username: string; avatarUrl: string }>;
+  commentsCount: number;
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+  htmlUrl: string;
+}
+
+export interface GitHubPullRequest {
+  id: number;
+  number: number;
+  title: string;
+  body: string | null;
+  state: 'open' | 'closed';
+  isDraft: boolean;
+  mergedAt: string | null;
+  user: {
+    username: string;
+    avatarUrl: string;
+    htmlUrl: string;
+  };
+  headBranch: string;
+  baseBranch: string;
+  createdAt: string;
+  updatedAt: string;
+  closedAt: string | null;
+  htmlUrl: string;
+  diffUrl: string;
+}
+
+export interface GitHubWorkflowRun {
+  id: number;
+  name: string;
+  status: 'queued' | 'in_progress' | 'completed';
+  conclusion: 'success' | 'failure' | 'cancelled' | 'skipped' | null;
+  branch: string;
+  commitSha: string;
+  commitMessage: string;
+  event: string;
+  createdAt: string;
+  updatedAt: string;
+  htmlUrl: string;
+  durationMs: number;
+}
+
+export interface GitHubRelease {
+  id: number;
+  tagName: string;
+  name: string;
+  body: string;
+  isDraft: boolean;
+  isPrerelease: boolean;
+  publishedAt: string;
+  author: {
+    username: string;
+    avatarUrl: string;
+  };
+  htmlUrl: string;
+  assets: Array<{
+    name: string;
+    size: number;
+    downloadCount: number;
+    browserDownloadUrl: string;
+  }>;
+}
+
+export interface ProjectHealthMetrics {
+  overallScore: number;
+  status: 'Healthy' | 'Moderate' | 'Needs Attention';
+  breakdown: {
+    ciStability: { score: number; label: string };
+    developmentVelocity: { score: number; label: string };
+    issueResolution: { score: number; label: string };
+    prMergeRate: { score: number; label: string };
+    documentation: { score: number; label: string };
+  };
+  stats: {
+    stars: number;
+    forks: number;
+    openIssues: number;
+    recentCommitsCount: number;
+    ciRunsCount: number;
+  };
+}
+
+export interface GitHubUserProfile {
+  username: string;
+  name: string | null;
+  avatarUrl: string;
+  bio: string | null;
+  company: string | null;
+  blog: string | null;
+  location: string | null;
+  publicReposCount: number;
+  followersCount: number;
+  followingCount: number;
+  htmlUrl: string;
+  createdAt: string;
+  pinnedRepos: Array<{
+    id: number;
+    name: string;
+    fullName: string;
+    description: string | null;
+    language: string | null;
+    stars: number;
+    forks: number;
+    htmlUrl: string;
+  }>;
+  organizations: Array<{
+    id: number;
+    login: string;
+    avatarUrl: string;
+    description: string | null;
+  }>;
+}
+
 

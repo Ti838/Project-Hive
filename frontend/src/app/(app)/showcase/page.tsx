@@ -5,8 +5,9 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FolderKanban, Heart, ExternalLink, GitBranch, Search, Plus,
-  X, Check, AlertCircle, Sparkles, Globe, Layers
+  X, Check, AlertCircle, Sparkles, Globe, Layers, Code2
 } from 'lucide-react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { displayName, getAvatarColor, cn } from '@/lib/utils';
 import type { Project } from '@/types';
@@ -240,7 +241,15 @@ export default function ShowcasePage() {
                   <span className="text-muted-foreground font-medium">
                     by {displayName(proj.creator ?? undefined)}
                   </span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <Link
+                      href={`/projects/${proj.id}/development`}
+                      className="flex items-center gap-1 px-2.5 py-1.5 text-xs text-accent bg-accent/10 hover:bg-accent/20 rounded-xl border border-accent/20 tap-press transition-colors"
+                      title="Open Developer Workspace"
+                    >
+                      <Code2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Workspace</span>
+                    </Link>
                     {proj.repo_url && (
                       <a
                         href={proj.repo_url}

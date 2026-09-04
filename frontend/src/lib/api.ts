@@ -1,6 +1,8 @@
-// ─── ProjectHive — Typed API Client ───────────────────────────────────────────
-
-import type { User, Team, TeamMember, Project, Message, Notification, Post, PostComment, FriendRequest, Stats } from '@/types';
+import type {
+  User, Team, TeamMember, Project, Message, Notification, Post, PostComment, FriendRequest, Stats,
+  GitHubRepo, GitHubCommit, GitHubBranch, GitHubIssue, GitHubPullRequest, GitHubWorkflowRun, GitHubRelease,
+  ProjectHealthMetrics, GitHubUserProfile
+} from '@/types';
 
 const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
@@ -383,5 +385,48 @@ export const api = {
 
     getHistory: () =>
       request<{ success: boolean; calls: any[] }>('/calls/history'),
+  },
+
+  github: {
+    getStatus: () =>
+      request<{ connected: boolean; username: string | null; profile?: GitHubUserProfile }>('/github/status'),
+    connect: (body: { username?: string; token?: string }) =>
+      request<{ message: string; connected: boolean; username: string; profile: GitHubUserProfile }>('/github/connect', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
+    disconnect: () =>
+      request<{ message: string; connected: boolean }>('/github/disconnect', { method: 'POST' }),
+    getUserProfile: (username: string) =>
+      request<GitHubUserProfile>(`/github/user/${encodeURIComponent(username)}`),
+    getRepoOverview: (owner: string, repo: string) =>
+      request<GitHubRepo>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`),
+    getRepoReadme: (owner: string, repo: string) =>
+      request<{ name: string; path: string; sha: string; content: string; htmlUrl?: string }>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/readme`),
+    getRepoTree: (owner: string, repo: string, branch?: string) =>
+      request<{ sha: string; truncated: boolean; tree: Array<{ path: string; mode: string; type: 'blob' | 'tree'; size?: number; sha: string }> }>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/tree${branch ? `?branch=${encodeURIComponent(branch)}` : ''}`),
+    getRepoFile: (owner: string, repo: string, path: string, branch?: string) =>
+      request<{ type: string; name: string; path: string; content: string; size: number; htmlUrl?: string }>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/file?path=${encodeURIComponent(path)}${branch ? `&branch=${encodeURIComponent(branch)}` : ''}`),
+    getRepoCommits: (owner: string, repo: string, branch?: string, limit = 30) =>
+      request<GitHubCommit[]>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/commits?limit=${limit}${branch ? `&branch=${encodeURIComponent(branch)}` : ''}`),
+    getRepoBranches: (owner: string, repo: string) =>
+      request<GitHubBranch[]>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/branches`),
+    getRepoIssues: (owner: string, repo: string, state = 'all', limit = 30) =>
+      request<GitHubIssue[]>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/issues?state=${state}&limit=${limit}`),
+    getRepoPulls: (owner: string, repo: string, state = 'all', limit = 30) =>
+      request<GitHubPullRequest[]>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls?state=${state}&limit=${limit}`),
+    getPullDetail: (owner: string, repo: string, pullNumber: number) =>
+      request<GitHubPullRequest & { files: Array<{ filename: string; status: string; additions: number; deletions: number; patch?: string }> }>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls/${pullNumber}`),
+    getRepoActions: (owner: string, repo: string, limit = 15) =>
+      request<GitHubWorkflowRun[]>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/actions?limit=${limit}`),
+    getRepoReleases: (owner: string, repo: string, limit = 10) =>
+      request<GitHubRelease[]>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/releases?limit=${limit}`),
+    getProjectHealth: (owner: string, repo: string) =>
+      request<ProjectHealthMetrics>(`/github/repo/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/health`),
+    performAiReview: (body: { title: string; description?: string; patch: string; filename?: string }) =>
+      request<{ review: string; provider?: string; model?: string; timestamp: string }>('/github/ai-review', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
   },
 };
