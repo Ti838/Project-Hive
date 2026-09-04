@@ -190,7 +190,7 @@ app.get('/api/health/db', async (req, res) => {
   }
 });
 
-// Public stats — for homepage (no auth required)
+// Public stats — for homepage & dashboard (no auth required)
 app.get('/api/stats', async (req, res) => {
   try {
     const { supabaseAdmin } = await import('./config/supabase.js');
@@ -199,7 +199,7 @@ app.get('/api/stats', async (req, res) => {
       { count: teams },
       { count: projects },
     ] = await Promise.all([
-      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
       supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
     ]);
@@ -208,13 +208,20 @@ app.get('/api/stats', async (req, res) => {
     const { data: uniData } = await supabaseAdmin
       .from('users')
       .select('university')
-      .neq('university', null)
+      .not('university', 'is', null)
       .neq('university', '');
-    const universities = new Set((uniData || []).map(u => u.university?.trim().toLowerCase())).size;
+    const universities = new Set((uniData || []).map(u => u.university?.trim().toLowerCase()).filter(Boolean)).size;
 
-    res.json({ users: users || 0, teams: teams || 0, projects: projects || 0, universities });
+    res.json({
+      ok: true,
+      users: users || 0,
+      teams: teams || 0,
+      projects: projects || 0,
+      universities: universities || 0,
+    });
   } catch (err) {
-    res.json({ users: 0, teams: 0, projects: 0, universities: 0 });
+    console.error('[Stats API] Error:', err);
+    res.json({ ok: true, users: 0, teams: 0, projects: 0, universities: 0 });
   }
 });
 

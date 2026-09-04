@@ -33,17 +33,24 @@ const GEMINI_MODELS = [
 
 // Active verified free-tier models on OpenRouter
 const OPENROUTER_MODELS = [
-  'google/gemma-4-26b-a4b-it:free',
+  'openrouter/free',
   'nvidia/nemotron-3.5-lightning:free',
-  'cohere/north-mini-code:free',
+  'google/gemma-4-31b-it:free',
+  'google/gemma-4-26b-a4b-it:free',
   'minimax/minimax-m3:free',
+  'minimax/minimax-m2.7:free',
+  'cohere/north-mini-code:free',
   'z-ai/glm-5.2:free',
   'liquid/lfm-2.5-2.6b:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
 ];
 
 const OPENROUTER_VISION_MODELS = [
+  'google/gemma-4-31b-it:free',
   'google/gemma-4-26b-a4b-it:free',
   'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'openrouter/free',
 ];
 
 const GEMINI_BASE     = 'https://generativelanguage.googleapis.com/v1beta/models';

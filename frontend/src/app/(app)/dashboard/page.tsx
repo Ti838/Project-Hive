@@ -77,14 +77,31 @@ export default function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [s, p, t] = await Promise.all([
+      const [sRes, pRes, tRes] = await Promise.allSettled([
         api.stats(),
         api.posts.list(1, 5),
         api.teams.myTeams(),
       ]);
-      if (s.ok) setStats(s as unknown as Stats);
-      if (p.ok && p.posts) setPosts(p.posts);
-      if (t.ok && t.teams) setMyTeams(t.teams);
+
+      let hasSuccess = false;
+
+      if (sRes.status === 'fulfilled' && sRes.value?.ok) {
+        setStats(sRes.value as unknown as Stats);
+        hasSuccess = true;
+      }
+      if (pRes.status === 'fulfilled' && pRes.value?.ok && pRes.value.posts) {
+        setPosts(pRes.value.posts);
+        hasSuccess = true;
+      }
+      if (tRes.status === 'fulfilled' && tRes.value?.ok && tRes.value.teams) {
+        setMyTeams(tRes.value.teams);
+        hasSuccess = true;
+      }
+
+      // If all three rejected due to total network failure
+      if (!hasSuccess && sRes.status === 'rejected' && pRes.status === 'rejected' && tRes.status === 'rejected') {
+        setError('Unable to reach the hive network. Please check your connection.');
+      }
     } catch (err: any) {
       setError('Unable to reach the hive network. Please check your connection.');
     } finally {
