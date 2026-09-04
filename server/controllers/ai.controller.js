@@ -14,13 +14,13 @@ import {
   isAIReady,
 } from '../config/gemini.js';
 
+// Verified working Groq models (as of 2025)
 const GROQ_MODELS = [
   'llama-3.3-70b-versatile',
-  'qwen/qwen3.8-27b',
-  'groq/compound-mini',
-  'groq/compound',
-  'allam-2-7b',
-  'openai/gpt-oss-120b',
+  'llama-3.1-70b-versatile',
+  'llama3-70b-8192',
+  'mixtral-8x7b-32768',
+  'gemma2-9b-it',
 ];
 
 const GEMINI_MODELS = [
@@ -30,18 +30,20 @@ const GEMINI_MODELS = [
   'gemini-1.5-pro',
 ];
 
+// Note: "openrouter/free" is NOT a valid model ID — removed.
+// These are actual free-tier model IDs on OpenRouter.
 const OPENROUTER_MODELS = [
-  'openrouter/free',
   'meta-llama/llama-3.3-70b-instruct:free',
   'google/gemini-2.0-flash-exp:free',
   'qwen/qwen-2.5-coder-32b-instruct:free',
   'mistralai/mistral-small-3.1-24b-instruct:free',
+  'microsoft/phi-3-mini-128k-instruct:free',
 ];
 
 const OPENROUTER_VISION_MODELS = [
-  'openrouter/free',
   'google/gemini-2.0-flash-exp:free',
   'meta-llama/llama-3.2-11b-vision-instruct:free',
+  'qwen/qwen2.5-vl-7b-instruct:free',
 ];
 
 const GEMINI_BASE     = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -238,14 +240,33 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
 
       if (!response.ok) {
         const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `OpenRouter error ${response.status}`);
+        const errMsg = err?.error?.message || `OpenRouter error ${response.status}`;
+        // Treat "model output must contain either output text or tool calls" as a skip
+        if (errMsg.includes('model output must contain') || errMsg.includes('model output error')) {
+          console.warn(`[AI] OpenRouter model ${model} returned empty output — skipping to next model`);
+          continue;
+        }
+        throw new Error(errMsg);
       }
 
       const data = await response.json();
+      // Check for inline error in the response body (some OpenRouter models return 200 with error)
+      if (data?.error) {
+        const inlineErr = data.error?.message || JSON.stringify(data.error);
+        if (inlineErr.includes('model output must contain') || inlineErr.includes('model output error')) {
+          console.warn(`[AI] OpenRouter model ${model} inline error (empty output) — skipping`);
+          continue;
+        }
+        throw new Error(inlineErr);
+      }
+
       const text = data?.choices?.[0]?.message?.content?.trim() || '';
+      const finishReason = data?.choices?.[0]?.finish_reason;
       if (text) {
         return { text, provider: 'openrouter', model };
       }
+      // Empty content — model produced nothing, skip to next
+      console.warn(`[AI] OpenRouter model ${model} returned empty content (finish_reason: ${finishReason}) — skipping`);
     } catch (e) {
       lastError = e;
       console.warn(`[AI] OpenRouter model ${model} failed: ${e.message} — trying next`);
