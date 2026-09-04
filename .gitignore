@@ -10,6 +10,28 @@ pnpm-debug.log*
 out/
 dist/
 build/
+public/routes-manifest.json
+public/app-path-routes-manifest.json
+public/build-manifest.json
+public/fallback-build-manifest.json
+public/images-manifest.json
+public/prerender-manifest.json
+public/required-server-files.json
+public/required-server-files.js
+public/next-server.js.nft.json
+public/next-minimal-server.js.nft.json
+public/export-marker.json
+public/BUILD_ID
+public/trace
+public/trace-build
+public/turbopack
+public/turbopack/
+public/server/
+public/static/
+public/cache/
+public/diagnostics/
+public/types/
+public/package.json
 
 # ─── Environment Variables (NEVER commit secrets) ────────────────────
 .env
