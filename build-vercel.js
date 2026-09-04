@@ -6,8 +6,8 @@ console.log('🚀 [ProjectHive] Starting automated production build...');
 
 try {
   // 1. Install frontend dependencies cleanly
-  console.log('📦 [ProjectHive] Installing frontend dependencies...');
-  execSync('npm install --prefix frontend', { stdio: 'inherit' });
+  console.log('📦 [ProjectHive] Installing frontend dependencies (including devDependencies)...');
+  execSync('npm install --prefix frontend --include=dev', { stdio: 'inherit' });
 
   // 2. Build Next.js application inside frontend directory using npx next build
   console.log('🏗️ [ProjectHive] Building Next.js app in frontend/...');
