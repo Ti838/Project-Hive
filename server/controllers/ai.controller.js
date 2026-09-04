@@ -531,7 +531,7 @@ Guidelines:
     if (error.status === 429) {
       return res.status(429).json({ error: 'AI rate limit reached. Please wait a moment.' });
     }
-    next(error);
+    return res.status(500).json({ error: error.message || 'Hive AI request failed. Please try again.' });
   }
 }
 
@@ -714,7 +714,11 @@ Provide direct, clean, production-grade technical mentorship and guidance.`;
     if (error.status === 429) {
       return res.status(429).json({ error: 'Hive AI rate limit reached. Please wait a moment.' });
     }
-    next(error);
+    return res.status(500).json({
+      error: error.message?.includes('AI_NOT_CONFIGURED')
+        ? 'Hive AI service is initializing or no API key is configured on the server. Please check GROQ_API_KEY in Render dashboard.'
+        : (error.message || 'Hive AI request failed. Please try again.')
+    });
   }
 }
 
