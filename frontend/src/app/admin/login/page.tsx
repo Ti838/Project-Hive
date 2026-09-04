@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, Loader2, ArrowLeft, Smartphone } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
@@ -62,25 +62,44 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-background text-foreground">
-      {/* Top Header */}
-      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+      {/* ─── Mobile Device Restriction Screen (Phone Block) ─────────────────── */}
+      <div className="md:hidden flex-1 flex flex-col items-center justify-center p-6 text-center bg-background">
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center mb-4 shadow-inner">
+          <Smartphone className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold tracking-tight mb-2">Desktop Workstation Required</h2>
+        <p className="text-sm text-muted-foreground max-w-xs mb-6 leading-relaxed">
+          For institutional security compliance, the Admin Console cannot be accessed on mobile phones. Please log in from an authorized desktop workstation.
+        </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
+          className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Back to Home</span>
+          Return to ProjectHive
         </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
-        </Link>
-      </header>
+      </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
+      {/* ─── Desktop Admin Portal ────────────────────────────────────────── */}
+      <div className="hidden md:flex flex-col flex-1">
+        {/* Top Header */}
+        <header className="w-full px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
+          >
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span>Back to Home</span>
+          </Link>
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
+              <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+            </div>
+            <span className="font-extrabold text-base tracking-tight">ProjectHive</span>
+          </Link>
+        </header>
+
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-8 shadow-2xl my-auto">
           <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" /> Back to user sign in
           </Link>
@@ -147,6 +166,7 @@ export default function AdminLoginPage() {
             {isSubmitting ? 'Verifying Credentials…' : 'Enter Admin Console'}
           </button>
         </form>
+      </div>
       </div>
       </div>
     </div>

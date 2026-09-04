@@ -196,17 +196,11 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-border/60 text-center space-y-2">
+            <div className="mt-6 pt-6 border-t border-border/60 text-center">
               <p className="text-xs text-muted-foreground">
                 Don&apos;t have an account?{' '}
                 <Link href="/register" className="text-primary font-semibold hover:underline">
                   Create one free
-                </Link>
-              </p>
-              <p className="text-[11px] text-muted-foreground/80">
-                Are you an administrator?{' '}
-                <Link href="/admin/login" className="text-muted-foreground hover:text-foreground underline">
-                  Admin login
                 </Link>
               </p>
             </div>

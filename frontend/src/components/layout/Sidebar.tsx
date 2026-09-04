@@ -55,9 +55,7 @@ export function Sidebar() {
     setMobileMenuOpen(false);
   }, [pathname, setMobileMenuOpen]);
 
-  const navItems = user?.role === 'admin'
-    ? [{ href: '/admin/dashboard', label: 'Admin Console', icon: ShieldCheck, isAdmin: true }, ...NAV_ITEMS]
-    : NAV_ITEMS;
+  const navItems = NAV_ITEMS;
 
   return (
     <>

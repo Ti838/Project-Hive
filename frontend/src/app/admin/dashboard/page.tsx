@@ -348,22 +348,41 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-amber-500/20">
-      {/* ─── Top Enterprise Navbar ──────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-base tracking-tight">ProjectHive Enterprise Console</h1>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                Root Admin
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">Industrial governance, real-time telemetry & moderation suite</p>
-          </div>
+      {/* ─── Mobile Device Restriction Screen (Phone Block) ─────────────────── */}
+      <div className="md:hidden min-h-screen w-full flex flex-col items-center justify-center p-6 text-center bg-background">
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center mb-4 shadow-inner">
+          <Smartphone className="w-8 h-8" />
         </div>
+        <h2 className="text-xl font-bold tracking-tight mb-2">Desktop Workstation Required</h2>
+        <p className="text-sm text-muted-foreground max-w-xs mb-6 leading-relaxed">
+          For institutional security compliance, the Admin Console cannot be accessed on mobile phones. Please log in from an authorized desktop workstation.
+        </p>
+        <Link
+          href="/"
+          className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
+        >
+          Return to ProjectHive
+        </Link>
+      </div>
+
+      {/* ─── Desktop Admin Control Center ─────────────────────────────────── */}
+      <div className="hidden md:block">
+        {/* ─── Top Enterprise Navbar ──────────────────────────────────────── */}
+        <header className="sticky top-0 z-50 bg-background/90 backdrop-blur-md border-b border-border px-8 py-3.5 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-inner">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-extrabold text-base tracking-tight">ProjectHive Enterprise Console</h1>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  Root Admin
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">Industrial governance, real-time telemetry & moderation suite</p>
+            </div>
+          </div>
 
         <div className="flex items-center gap-2.5">
           <Link
@@ -1474,6 +1493,7 @@ export default function AdminDashboardPage() {
           </div>
         )}
       </main>
+      </div>
     </div>
   );
 }

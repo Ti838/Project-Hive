@@ -355,7 +355,6 @@ export default function LandingPage() {
             <Link href="/login" className="hover:text-foreground transition-colors">Sign In</Link>
             <Link href="/register" className="hover:text-foreground transition-colors">Register</Link>
             <Link href="/forgot-password" className="hover:text-foreground transition-colors">Forgot Password</Link>
-            <Link href="/admin/login" className="hover:text-foreground transition-colors">Admin Console</Link>
           </div>
         </div>
       </footer>
