@@ -84,6 +84,7 @@ export interface Message {
   reply_to_sender?: string;
   created_at: string;
   sender?: User;
+  reactions?: Array<{ emoji: string; user_id: string }>;
 }
 
 export interface Notification {

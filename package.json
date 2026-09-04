@@ -4,9 +4,10 @@
   "description": "ProjectHive — Complete Full-Stack Student Team Collaboration & Incubation Platform",
   "private": true,
   "scripts": {
-    "dev": "http-server public -p 3000 -c-1",
-    "build": "echo 'No build needed for static site'",
-    "start": "http-server public -p 3000 -c-1"
+    "dev": "npm --prefix frontend run dev",
+    "build": "npm --prefix frontend run build",
+    "start": "npm --prefix frontend run start",
+    "server": "npm --prefix server run dev"
   },
   "keywords": [
     "student",

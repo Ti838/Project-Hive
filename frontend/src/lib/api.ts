@@ -2,14 +2,19 @@
 
 import type { User, Team, TeamMember, Project, Message, Notification, Post, PostComment, FriendRequest, Stats } from '@/types';
 
-const RENDER_URL = 'https://projecthive-backend.onrender.com';
+const DEFAULT_API_URL = 'https://projecthive-backend.onrender.com/api';
 
-function getBaseUrl(): string {
-  if (typeof window === 'undefined') return `${RENDER_URL}/api`;
-  const { hostname } = window.location;
-  return hostname === 'localhost' || hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'
-    : `${RENDER_URL}/api`;
+export function getBaseUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    const { hostname } = window.location;
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:5000/api';
+    }
+  }
+  return DEFAULT_API_URL;
 }
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────
@@ -104,9 +109,9 @@ export const api = {
     register: (body: { first_name: string; last_name: string; email: string; password: string; university?: string; turnstileToken?: string }) =>
       request<{ message: string }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
 
-    login: (email: string, password: string) =>
+    login: (email: string, password: string, deviceMeta?: any) =>
       request<{ accessToken: string; refreshToken: string; user: User }>('/auth/login', {
-        method: 'POST', body: JSON.stringify({ email, password }),
+        method: 'POST', body: JSON.stringify({ email, password, deviceMeta }),
       }),
 
     logout: async () => {
@@ -124,6 +129,16 @@ export const api = {
 
     verifyEmail: (token: string) =>
       request<{ message: string }>(`/auth/verify-email?token=${token}`),
+
+    googleCodeExchange: (code: string) =>
+      request<{ message: string; accessToken: string; refreshToken: string; user: User }>('/auth/google/code', {
+        method: 'POST', body: JSON.stringify({ code }),
+      }),
+
+    googleCallback: (userData: { email: string; googleId: string; firstName?: string; lastName?: string; avatar?: string | null }) =>
+      request<{ message: string; accessToken: string; refreshToken: string; user: User }>('/auth/google/callback', {
+        method: 'POST', body: JSON.stringify(userData),
+      }),
   },
 
   users: {
@@ -137,6 +152,8 @@ export const api = {
     },
     getPeople: (page = 1, limit = 20) =>
       request<{ users: User[]; total: number }>(`/users?page=${page}&limit=${limit}`),
+    endorseSkill: (userId: string, skillId: string) =>
+      request<{ endorsed: boolean; endorsements: number }>(`/users/${userId}/skills/${skillId}/endorse`, { method: 'POST' }),
   },
 
   teams: {
@@ -157,10 +174,19 @@ export const api = {
     leave: (id: string) =>
       request<{ message: string }>(`/teams/${id}/leave`, { method: 'POST' }),
     getMembers: (id: string) => request<{ members: TeamMember[] }>(`/teams/${id}/members`),
+    getRequests: (id: string) =>
+      request<{ requests?: any[] } | any[]>(`/teams/${id}/requests`),
     getJoinRequests: (id: string) =>
       request<{ requests: Array<{ id: string; user: User; created_at: string }> }>(`/teams/${id}/requests`),
-    respondToRequest: (teamId: string, userId: string, action: 'accept' | 'reject') =>
-      request<{ message: string }>(`/teams/${teamId}/requests/${userId}/${action}`, { method: 'POST' }),
+    respondToRequest: (teamId: string, requestId: string, action: 'accept' | 'reject') =>
+      request<{ message: string }>(`/teams/${teamId}/requests/${requestId}/${action}`, { method: 'POST' }),
+    kickMember: (teamId: string, memberId: string) =>
+      request<{ message: string; ok: boolean }>(`/teams/${teamId}/members/${memberId}`, { method: 'DELETE' }),
+    transferLeadership: (teamId: string, newLeaderId: string) =>
+      request<{ message: string; ok: boolean }>(`/teams/${teamId}/transfer-leadership`, {
+        method: 'POST',
+        body: JSON.stringify({ newLeaderId }),
+      }),
   },
 
   projects: {
@@ -184,6 +210,16 @@ export const api = {
       request<{ messages: Message[] }>(`/messages/${roomId}?limit=${limit}&skip=${skip}`),
     getDMs: () =>
       request<{ conversations: Array<{ user: User; last_message: Message; unread_count: number }> }>('/friends/conversations'),
+    react: (id: string, emoji: string) =>
+      request<{ ok: boolean; action: 'added' | 'removed' }>(`/messages/${id}/react`, {
+        method: 'POST',
+        body: JSON.stringify({ emoji }),
+      }),
+    markAsRead: (friendId: string) =>
+      request<{ ok: boolean }>('/messages/read', {
+        method: 'POST',
+        body: JSON.stringify({ friendId }),
+      }),
   },
 
   notifications: {
@@ -207,6 +243,19 @@ export const api = {
       request<{ comments: PostComment[] }>(`/posts/${id}/comments`),
     comment: (id: string, content: string) =>
       request<{ comment: PostComment }>(`/posts/${id}/comments`, { method: 'POST', body: JSON.stringify({ content }) }),
+    save: (id: string) =>
+      request<{ saved: boolean; message: string }>(`/posts/${id}/save`, { method: 'POST' }),
+    getSaved: (page = 1, limit = 20) =>
+      request<{ posts: Post[]; total: number }>(`/posts/saved?page=${page}&limit=${limit}`),
+  },
+
+  stories: {
+    list: () =>
+      request<{ groups: Array<{ author: User; stories: Array<{ id: string; mediaUrl: string; mediaType: string; caption?: string; createdAt: string; expiresAt: string; viewCount: number; hasViewed: boolean }>; hasUnviewed: boolean }> }>('/stories'),
+    create: (data: { mediaUrl: string; mediaType?: 'image' | 'video'; caption?: string }) =>
+      request<{ story: any }>('/stories', { method: 'POST', body: JSON.stringify(data) }),
+    view: (id: string) =>
+      request<{ message: string }>(`/stories/${id}/view`, { method: 'POST' }),
   },
 
   friends: {
@@ -228,8 +277,11 @@ export const api = {
   ai: {
     generateIdeas: (body: { domain: string; skills: string[]; teamSize: number; timelineWeeks: number; constraints?: string }) =>
       request<{ ideas: any }>('/ai/generate-ideas', { method: 'POST', body: JSON.stringify(body) }),
-    chat: (message: string, imageBase64?: string) =>
-      request<{ response: string }>('/ai/chat', { method: 'POST', body: JSON.stringify({ message, imageBase64 }) }),
+    chat: (message: string, imageBase64?: string, context?: Record<string, unknown>) =>
+      request<{ ok: boolean; reply: string; provider?: string; model?: string }>('/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message, imageBase64, context }),
+      }),
   },
 
   admin: {
@@ -265,8 +317,52 @@ export const api = {
       request<{ posts: any[]; total: number }>(`/admin/posts?search=${encodeURIComponent(search)}&skip=${skip}&limit=${limit}`),
     deletePost: (id: string) =>
       request<{ message: string }>(`/admin/posts/${id}`, { method: 'DELETE' }),
+    getTickets: (skip = 0, limit = 100) =>
+      request<{ tickets: any[]; total: number }>(`/admin/tickets?skip=${skip}&limit=${limit}`),
+    resolveTicket: (id: string, status = 'resolved') =>
+      request<{ message: string; ticket: any }>(`/admin/tickets/${id}/resolve`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+    deleteTicket: (id: string) =>
+      request<{ message: string }>(`/admin/tickets/${id}`, { method: 'DELETE' }),
+    getAuditLogs: (skip = 0, limit = 50) =>
+      request<{ logs: any[]; total: number }>(`/admin/audit-logs?skip=${skip}&limit=${limit}`),
+    getHealth: () =>
+      request<{
+        timestamp: string;
+        uptimeSeconds: number;
+        memory: { rssMb: number; heapUsedMb: number };
+        services: Array<{ name: string; status: string; ping: string; ok: boolean; activeCalls?: number; url?: string }>;
+      }>('/admin/health'),
+    superAdminLogin: (email: string, password: string) =>
+      request<{ success: boolean; token: string; user: any; message?: string }>('/admin/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      }),
   },
 
   stats: () => request<Stats>('/stats'),
   turnCredentials: () => request<{ iceServers: RTCIceServer[] }>('/turn-credentials'),
+
+  calls: {
+    getToken: (body: {
+      scope: 'direct' | 'team' | 'project';
+      targetId?: string;
+      roomName?: string;
+      callType?: 'audio' | 'video';
+    }) =>
+      request<{
+        success: boolean;
+        token: string;
+        roomName: string;
+        livekitUrl: string;
+        callType: 'audio' | 'video';
+        scope: string;
+        caller: { id: string; name: string; avatar?: string };
+      }>('/calls/token', { method: 'POST', body: JSON.stringify(body) }),
+
+    end: (roomName: string) =>
+      request<{ success: boolean }>('/calls/end', { method: 'POST', body: JSON.stringify({ roomName }) }),
+
+    getHistory: () =>
+      request<{ success: boolean; calls: any[] }>('/calls/history'),
+  },
 };

@@ -22,7 +22,8 @@ import {
   handleCallDecline,
   handleCallHangup,
   handleGroupCallInitiate,
-
+  handleMessageReact,
+  handleMessageRead,
 } from './services/socket.service.js';
 
 const PORT = process.env.PORT || 5000;
@@ -40,15 +41,15 @@ async function startServer() {
     await loadFlagsFromDB();
     console.log('[ProjectHive] 🚩 System flags loaded from DB');
 
-    // Initialize Gemini AI (optional)
+    // Initialize AI Providers (Groq Primary + Gemini Fallback/Vision + OpenRouter Free Cascade)
     try {
-      if (process.env.GEMINI_API_KEY) {
+      if (process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.OPENROUTER_API_KEY) {
         initializeGemini();
       } else {
-        console.warn('[ProjectHive] ⚠️  GEMINI_API_KEY not set — AI generator disabled');
+        console.warn('[ProjectHive] ⚠️ No AI API key set (GEMINI_API_KEY / GROQ_API_KEY / OPENROUTER_API_KEY) — AI engine disabled');
       }
     } catch (err) {
-      console.warn('[ProjectHive] Gemini init failed (non-fatal):', err.message);
+      console.warn('[ProjectHive] AI init failed (non-fatal):', err.message);
     }
 
     // HTTP server
@@ -107,6 +108,8 @@ async function startServer() {
       socket.on('message:send',(data) => handleSendMessage(socket, io, data));
       socket.on('typing:start',(data) => handleTyping(socket, io, { ...data, isTyping: true }));
       socket.on('typing:stop', (data) => handleTyping(socket, io, { ...data, isTyping: false }));
+      socket.on('message:react', (data) => handleMessageReact(socket, io, data));
+      socket.on('message:read',  (data) => handleMessageRead(socket, io, data));
       
       // Video Call Events
       socket.on('call:initiate', (data) => handleCallInitiate(socket, data));

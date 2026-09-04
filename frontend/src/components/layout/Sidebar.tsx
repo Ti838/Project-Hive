@@ -1,6 +1,7 @@
 'use client';
 // ─── ProjectHive Sidebar & Responsive Drawer ───────────────────────────────────
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -42,6 +43,11 @@ export function Sidebar() {
   const avatarColor = user?.avatar_color || getAvatarColor(user?.id || '');
   const name = displayName(user ?? undefined);
 
+  // Auto-close mobile drawer on route navigation
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname, setMobileMenuOpen]);
+
   return (
     <>
       {/* ─── Mobile Drawer Overlay ────────────────────────────────────────── */}
@@ -53,14 +59,14 @@ export function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 md:hidden"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-y-0 left-0 w-72 bg-card border-r border-border flex flex-col z-50 md:hidden shadow-2xl"
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card border-r border-border flex flex-col z-50 md:hidden shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom,16px))] pt-[env(safe-area-inset-top,0px)]"
             >
               {/* Mobile Header */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-border">
@@ -143,7 +149,7 @@ export function Sidebar() {
       <motion.aside
         animate={{ width: sidebarCollapsed ? 70 : 260 }}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="hidden md:flex relative flex-col h-screen bg-card border-r border-border shrink-0 overflow-hidden z-40"
+        className="hidden md:flex relative flex-col h-full bg-card border-r border-border shrink-0 overflow-hidden z-40"
       >
         {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-5 border-b border-border">

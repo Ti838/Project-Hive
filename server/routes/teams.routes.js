@@ -17,6 +17,7 @@ router.delete('/:id',         authMiddleware,         teamsController.deleteTeam
 router.post('/:id/leave',                                authMiddleware, teamsController.leaveTeam);
 router.post('/:id/members',                              authMiddleware, teamsController.addMember);
 router.delete('/:id/members/:memberId',                  authMiddleware, teamsController.kickMember);
+router.post('/:id/transfer-leadership',                  authMiddleware, teamsController.transferLeadership);
 
 // Join requests
 router.post('/:teamId/join',                             authMiddleware, teamsController.postJoinRequest);

@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Users, FolderKanban, GraduationCap, UserCheck, Plus, ArrowRight,
-  Sparkles, Compass, MessageSquare, Trophy, ChevronRight,
+  Sparkles, Compass, MessageSquare, Trophy, ChevronRight, RefreshCw, AlertCircle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
@@ -22,7 +22,7 @@ function StatCard({ label, value, icon: Icon, color, trend }: {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between card-hover shadow-xs"
+      className="bg-card/90 dark:bg-card/60 backdrop-blur-xs border border-border/50 dark:border-white/10 rounded-2xl p-5 flex items-center justify-between card-hover shadow-xs"
     >
       <div className="flex items-center gap-4">
         <div className={cn('p-3 rounded-2xl shrink-0 shadow-inner', color)}>
@@ -34,7 +34,7 @@ function StatCard({ label, value, icon: Icon, color, trend }: {
         </div>
       </div>
       {trend && (
-        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full">
+        <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full">
           {trend}
         </span>
       )}
@@ -48,8 +48,8 @@ function QuickAction({ href, icon: Icon, label, desc, color }: {
 }) {
   return (
     <Link href={href} className={cn(
-      'group flex items-center gap-4 p-4 rounded-2xl border border-border bg-card',
-      'card-hover shadow-xs transition-all duration-200'
+      'group flex items-center gap-4 p-4 rounded-2xl border border-border/50 dark:border-white/10 bg-card/90 dark:bg-card/60 backdrop-blur-xs',
+      'card-hover shadow-xs hover:shadow-md tap-press transition-all duration-200'
     )}>
       <div className={cn('p-3 rounded-xl shrink-0', color)}>
         <Icon className="w-5 h-5" />
@@ -71,17 +71,29 @@ export default function DashboardPage() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [myTeams, setMyTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    Promise.all([
-      api.stats(),
-      api.posts.list(1, 5),
-      api.teams.myTeams(),
-    ]).then(([s, p, t]) => {
+  const loadDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [s, p, t] = await Promise.all([
+        api.stats(),
+        api.posts.list(1, 5),
+        api.teams.myTeams(),
+      ]);
       if (s.ok) setStats(s as unknown as Stats);
       if (p.ok && p.posts) setPosts(p.posts);
       if (t.ok && t.teams) setMyTeams(t.teams);
-    }).finally(() => setLoading(false));
+    } catch (err: any) {
+      setError('Unable to reach the hive network. Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
   }, []);
 
   const name = displayName(user ?? undefined);
@@ -109,24 +121,48 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/teams/create"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors shadow-sm"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 tap-press transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4" /> Create Team
           </Link>
           <Link
             href="/generator"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card border border-border text-sm font-medium hover:bg-accent transition-colors"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-card/80 backdrop-blur-xs border border-border/60 text-sm font-medium hover:bg-accent tap-press transition-colors shadow-2xs"
           >
             <Sparkles className="w-4 h-4 text-amber-500" /> AI Studio
           </Link>
         </div>
       </motion.div>
 
+      {/* ─── Network Error Alert ────────────────────────────────────────── */}
+      {error && (
+        <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-destructive">
+          <div className="flex items-center gap-3 text-sm">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <button
+            onClick={loadDashboardData}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-xs font-semibold hover:bg-destructive/90 tap-press transition-colors shrink-0 shadow-xs"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Reconnect
+          </button>
+        </div>
+      )}
+
       {/* ─── Stat Cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-24 rounded-2xl bg-muted/60 skeleton-shimmer" />
+            <div key={i} className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-4 w-full">
+                <div className="w-11 h-11 rounded-2xl bg-muted/70 skeleton-shimmer shrink-0" />
+                <div className="space-y-2 flex-1">
+                  <div className="h-6 w-14 rounded-md bg-muted/80 skeleton-shimmer" />
+                  <div className="h-3 w-20 rounded-md bg-muted/60 skeleton-shimmer" />
+                </div>
+              </div>
+            </div>
           ))
         ) : (
           <>
@@ -169,7 +205,7 @@ export default function DashboardPage() {
       {/* ─── Two-Column: Teams & Feed ──────────────────────────────────── */}
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Left: My Teams */}
-        <div className="lg:col-span-5 bg-card border border-border rounded-2xl p-6 flex flex-col gap-4 shadow-xs">
+        <div className="lg:col-span-5 bg-card/90 dark:bg-card/60 backdrop-blur-xs border border-border/50 dark:border-white/10 rounded-2xl p-6 flex flex-col gap-4 shadow-xs">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-base">Your Teams</h2>
             <Link href="/teams" className="text-xs text-primary font-semibold hover:underline flex items-center gap-0.5">
@@ -180,13 +216,19 @@ export default function DashboardPage() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-16 rounded-xl bg-muted/60 skeleton-shimmer" />
+                <div key={i} className="flex items-center gap-3 p-3 rounded-xl border border-border bg-card">
+                  <div className="w-10 h-10 rounded-xl bg-muted/70 skeleton-shimmer shrink-0" />
+                  <div className="space-y-1.5 flex-1">
+                    <div className="h-4 w-28 bg-muted/80 rounded-md skeleton-shimmer" />
+                    <div className="h-3 w-20 bg-muted/60 rounded-md skeleton-shimmer" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : myTeams.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-xl">
               <Users className="w-10 h-10 mx-auto mb-2 opacity-30" />
-              <p className="text-sm font-medium">You haven't joined a team yet</p>
+              <p className="text-sm font-medium">You haven&apos;t joined a team yet</p>
               <Link href="/teams" className="text-xs text-primary font-semibold mt-2 inline-block hover:underline">
                 Explore recruiting teams →
               </Link>
@@ -197,7 +239,7 @@ export default function DashboardPage() {
                 <Link
                   key={team.id}
                   href={`/teams`}
-                  className="flex items-center gap-3 p-3 rounded-xl border border-border hover:bg-accent/50 transition-colors"
+                  className="flex items-center gap-3 p-3 rounded-xl border border-border/50 hover:bg-accent/50 transition-colors"
                 >
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0"
@@ -227,7 +269,19 @@ export default function DashboardPage() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-20 rounded-xl bg-muted/60 skeleton-shimmer" />
+                <div key={i} className="p-4 rounded-xl border border-border bg-muted/20 space-y-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-full bg-muted/70 skeleton-shimmer shrink-0" />
+                    <div className="space-y-1 flex-1">
+                      <div className="h-3.5 w-24 bg-muted/80 rounded-md skeleton-shimmer" />
+                      <div className="h-2.5 w-16 bg-muted/60 rounded-md skeleton-shimmer" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-full bg-muted/70 rounded-md skeleton-shimmer" />
+                    <div className="h-3 w-3/4 bg-muted/60 rounded-md skeleton-shimmer" />
+                  </div>
+                </div>
               ))}
             </div>
           ) : posts.length === 0 ? (

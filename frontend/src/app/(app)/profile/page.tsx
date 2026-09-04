@@ -38,16 +38,22 @@ function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: str
   };
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
-        {skills.map((skill) => (
-          <span key={skill} className="flex items-center gap-1 bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full">
-            {skill}
-            <button onClick={() => onChange(skills.filter((s) => s !== skill))}>
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-      </div>
+      {skills.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {skills.map((skill) => (
+            <span key={skill} className="inline-flex items-center gap-1.5 bg-primary/10 text-primary text-xs font-medium px-3 py-1.5 rounded-full">
+              {skill}
+              <button
+                type="button"
+                onClick={() => onChange(skills.filter((s) => s !== skill))}
+                className="p-0.5 hover:bg-primary/20 rounded-full transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="flex gap-2">
         <input
           type="text"
@@ -55,11 +61,59 @@ function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: str
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), add())}
           placeholder="Add a skill (press Enter)"
-          className="flex-1 text-sm bg-muted rounded-lg px-3 py-2 border border-transparent focus:border-primary focus:outline-none"
+          autoCapitalize="words"
+          className="flex-1 h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border border-transparent focus:border-primary focus:outline-none"
         />
-        <button onClick={add} className="px-3 py-2 bg-secondary rounded-lg text-sm font-medium hover:bg-accent transition-colors">
+        <button
+          type="button"
+          onClick={add}
+          className="h-12 px-5 bg-secondary rounded-xl text-sm font-medium hover:bg-accent transition-colors shrink-0"
+        >
           Add
         </button>
+      </div>
+    </div>
+  );
+}
+
+function ProfileSkeleton() {
+  return (
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto space-y-6 animate-pulse">
+      {/* Banner + Avatar */}
+      <div className="relative">
+        <div className="h-40 rounded-2xl bg-muted" />
+        <div className="absolute -bottom-8 left-6">
+          <div className="w-20 h-20 rounded-2xl border-4 border-background bg-muted-foreground/20" />
+        </div>
+        <div className="absolute top-4 right-4 h-9 w-28 rounded-lg bg-background/60" />
+      </div>
+
+      {/* Identity */}
+      <div className="pt-10 space-y-3">
+        <div className="h-7 bg-muted rounded-lg w-52" />
+        <div className="h-4 bg-muted rounded w-40" />
+        <div className="h-16 bg-muted rounded-xl w-full" />
+
+        {/* Social links */}
+        <div className="flex gap-3 pt-1">
+          <div className="h-5 w-20 bg-muted rounded" />
+          <div className="h-5 w-20 bg-muted rounded" />
+          <div className="h-5 w-20 bg-muted rounded" />
+        </div>
+
+        {/* Skills */}
+        <div className="flex gap-2 pt-2">
+          <div className="h-6 w-16 bg-muted rounded-full" />
+          <div className="h-6 w-20 bg-muted rounded-full" />
+          <div className="h-6 w-14 bg-muted rounded-full" />
+          <div className="h-6 w-24 bg-muted rounded-full" />
+        </div>
+      </div>
+
+      {/* Completion card */}
+      <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+        <div className="h-4 bg-muted rounded w-32" />
+        <div className="h-2 bg-muted rounded-full w-full" />
       </div>
     </div>
   );
@@ -72,12 +126,49 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
   const { user: currentUser, updateUser } = useAuthStore();
   const [profileUser, setProfileUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [editing, setEditing] = useState(false);
   const [skills, setSkills] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
   const [friendRequested, setFriendRequested] = useState(false);
+  const [endorsedSkills, setEndorsedSkills] = useState<Record<string, number>>({});
+  const [userEndorsedSet, setUserEndorsedSet] = useState<Set<string>>(new Set());
+
+  const handleEndorseSkill = async (skillName: string) => {
+    if (!profileUser?.id || isOwnProfile) return;
+    const currentCount = endorsedSkills[skillName] ?? 0;
+    const isEndorsed = userEndorsedSet.has(skillName);
+
+    // Optimistic toggle
+    setUserEndorsedSet(prev => {
+      const next = new Set(prev);
+      if (isEndorsed) next.delete(skillName);
+      else next.add(skillName);
+      return next;
+    });
+    setEndorsedSkills(prev => ({
+      ...prev,
+      [skillName]: isEndorsed ? Math.max(0, currentCount - 1) : currentCount + 1,
+    }));
+
+    try {
+      await api.users.endorseSkill(profileUser.id, skillName);
+    } catch {
+      // Revert on failure
+      setUserEndorsedSet(prev => {
+        const next = new Set(prev);
+        if (isEndorsed) next.add(skillName);
+        else next.delete(skillName);
+        return next;
+      });
+      setEndorsedSkills(prev => ({
+        ...prev,
+        [skillName]: currentCount,
+      }));
+    }
+  };
 
   const isOwnProfile = !queryId || queryId === currentUser?.id;
   const activeUser = isOwnProfile ? currentUser : profileUser;
@@ -86,7 +177,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     resolver: zodResolver(profileSchema) as any,
   });
 
-  useEffect(() => {
+  const loadProfile = () => {
     if (isOwnProfile) {
       if (currentUser) {
         setProfileUser(currentUser);
@@ -107,6 +198,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
       setLoading(false);
     } else if (queryId) {
       setLoading(true);
+      setFetchError(null);
       api.users.getById(queryId).then((res) => {
         if (res.ok && res.id) {
           setProfileUser(res);
@@ -115,11 +207,15 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
           setNotFound(true);
         }
         setLoading(false);
-      }).catch(() => {
-        setNotFound(true);
+      }).catch((e: any) => {
+        setFetchError(e?.message || 'Failed to load user profile');
         setLoading(false);
       });
     }
+  };
+
+  useEffect(() => {
+    loadProfile();
   }, [queryId, isOwnProfile, currentUser]);
 
   const onSubmit: SubmitHandler<ProfileForm> = async (data) => {
@@ -153,14 +249,23 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
   };
 
   if (loading) {
+    return <ProfileSkeleton />;
+  }
+
+  if (fetchError) {
     return (
-      <div className="p-6 max-w-3xl mx-auto space-y-6 animate-pulse">
-        <div className="h-40 bg-muted rounded-2xl" />
-        <div className="space-y-3 pt-6">
-          <div className="h-7 bg-muted rounded-lg w-48" />
-          <div className="h-4 bg-muted rounded-lg w-32" />
-          <div className="h-16 bg-muted rounded-xl" />
+      <div className="p-6 max-w-lg mx-auto text-center py-20">
+        <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive flex items-center justify-center mx-auto mb-4">
+          <UserX className="w-8 h-8" />
         </div>
+        <h1 className="text-xl font-bold mb-2">Failed to Load Profile</h1>
+        <p className="text-sm text-muted-foreground mb-6">{fetchError}</p>
+        <button
+          onClick={loadProfile}
+          className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
@@ -285,14 +390,40 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
 
         </div>
 
-        {/* Skills */}
+        {/* Skills & Endorsements */}
         {!editing && (activeUser?.skills?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-2 mt-4">
-            {activeUser?.skills?.map((skill: string) => (
-              <span key={skill} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-                {skill}
-              </span>
-            ))}
+            {activeUser?.skills?.map((skill: string) => {
+              const count = endorsedSkills[skill] ?? 0;
+              const isEndorsed = userEndorsedSet.has(skill);
+              return (
+                <div
+                  key={skill}
+                  className="inline-flex items-center gap-1.5 text-xs bg-card border border-border/70 rounded-full pl-3 pr-2 py-1 shadow-2xs"
+                >
+                  <span className="font-medium text-foreground">{skill}</span>
+                  {count > 0 && (
+                    <span className="bg-primary/10 text-primary text-[10px] font-bold px-1.5 py-0.2 rounded-full">
+                      {count}
+                    </span>
+                  )}
+                  {!isOwnProfile && (
+                    <button
+                      onClick={() => handleEndorseSkill(skill)}
+                      className={cn(
+                        'text-[10px] font-semibold px-2 py-0.5 rounded-full tap-press transition-colors ml-1',
+                        isEndorsed
+                          ? 'bg-primary text-primary-foreground shadow-xs'
+                          : 'bg-muted hover:bg-primary/10 hover:text-primary text-muted-foreground'
+                      )}
+                      title="Endorse this student's skill"
+                    >
+                      {isEndorsed ? '✓ Endorsed' : '+ Endorse'}
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -303,79 +434,124 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           onSubmit={handleSubmit(onSubmit)}
-          className="bg-card border border-border rounded-xl p-6 space-y-5"
+          className="bg-card border border-border rounded-2xl p-6 space-y-5 shadow-sm"
         >
           <h2 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Edit Profile</h2>
 
           <div className="grid sm:grid-cols-2 gap-4">
             {/* First Name */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium">First Name</label>
-              <input {...register('first_name')} className={cn('w-full text-sm bg-muted rounded-lg px-3 py-2 border focus:outline-none focus:border-primary', errors.first_name ? 'border-destructive' : 'border-transparent')} />
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">First Name</label>
+              <input
+                {...register('first_name')}
+                autoCapitalize="words"
+                autoComplete="given-name"
+                className={cn(
+                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border focus:outline-none focus:border-primary transition-colors',
+                  errors.first_name ? 'border-destructive' : 'border-transparent'
+                )}
+              />
               {errors.first_name && <p className="text-xs text-destructive">{errors.first_name.message}</p>}
             </div>
             {/* Last Name */}
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Last Name</label>
-              <input {...register('last_name')} className={cn('w-full text-sm bg-muted rounded-lg px-3 py-2 border focus:outline-none focus:border-primary', errors.last_name ? 'border-destructive' : 'border-transparent')} />
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Last Name</label>
+              <input
+                {...register('last_name')}
+                autoCapitalize="words"
+                autoComplete="family-name"
+                className={cn(
+                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border focus:outline-none focus:border-primary transition-colors',
+                  errors.last_name ? 'border-destructive' : 'border-transparent'
+                )}
+              />
               {errors.last_name && <p className="text-xs text-destructive">{errors.last_name.message}</p>}
             </div>
           </div>
 
           {/* Bio */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Bio</label>
-            <textarea {...register('bio')} rows={3} className="w-full text-sm bg-muted rounded-lg px-3 py-2 border border-transparent focus:border-primary focus:outline-none resize-none" placeholder="Tell others about yourself…" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Bio</label>
+            <textarea
+              {...register('bio')}
+              rows={3}
+              className="w-full min-h-[96px] text-base sm:text-sm bg-muted rounded-xl p-4 border border-transparent focus:border-primary focus:outline-none resize-none transition-colors"
+              placeholder="Tell others about yourself…"
+            />
             {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium">University</label>
-              <input {...register('university')} className="w-full text-sm bg-muted rounded-lg px-3 py-2 border border-transparent focus:border-primary focus:outline-none" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">University</label>
+              <input
+                {...register('university')}
+                autoCapitalize="words"
+                className="w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border border-transparent focus:border-primary focus:outline-none transition-colors"
+              />
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium">Department</label>
-              <input {...register('department')} className="w-full text-sm bg-muted rounded-lg px-3 py-2 border border-transparent focus:border-primary focus:outline-none" />
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Department</label>
+              <input
+                {...register('department')}
+                autoCapitalize="words"
+                className="w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border border-transparent focus:border-primary focus:outline-none transition-colors"
+              />
             </div>
           </div>
 
           {/* Skills */}
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Skills</label>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Skills</label>
             <SkillEditor skills={skills} onChange={setSkills} />
           </div>
 
           {/* Links */}
           <div className="space-y-3">
-            <label className="text-sm font-medium">Links</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Social & Portfolio Links</label>
             {[
               { name: 'github_url' as const, placeholder: 'https://github.com/username', label: 'GitHub' },
               { name: 'linkedin_url' as const, placeholder: 'https://linkedin.com/in/username', label: 'LinkedIn' },
               { name: 'portfolio_url' as const, placeholder: 'https://yoursite.com', label: 'Portfolio' },
             ].map(({ name, placeholder, label }) => (
-              <div key={name} className="space-y-1">
+              <div key={name} className="space-y-1.5">
                 <label className="text-xs text-muted-foreground">{label}</label>
-                <input {...register(name)} placeholder={placeholder} className={cn('w-full text-sm bg-muted rounded-lg px-3 py-2 border focus:outline-none focus:border-primary', errors[name] ? 'border-destructive' : 'border-transparent')} />
+                <input
+                  {...register(name)}
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder={placeholder}
+                  className={cn(
+                    'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border focus:outline-none focus:border-primary transition-colors',
+                    errors[name] ? 'border-destructive' : 'border-transparent'
+                  )}
+                />
                 {errors[name] && <p className="text-xs text-destructive">{errors[name]?.message}</p>}
               </div>
             ))}
           </div>
 
           {/* Submit */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-medium disabled:opacity-50 hover:bg-primary/90 transition-colors"
+              className="h-12 flex items-center justify-center gap-2 px-6 bg-primary text-primary-foreground rounded-xl text-sm font-semibold disabled:opacity-50 disabled:pointer-events-none hover:bg-primary/90 transition-all shadow-sm active:scale-[0.99]"
             >
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              Save Changes
+              {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+              {saving ? 'Saving…' : 'Save Changes'}
             </button>
-            <button type="button" onClick={() => setEditing(false)} className="px-4 py-2.5 rounded-xl text-sm font-medium border border-border hover:bg-accent transition-colors">
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              className="h-12 px-5 rounded-xl text-sm font-medium border border-border hover:bg-accent transition-colors"
+            >
               Cancel
             </button>
-            {savedMsg && <span className="text-sm text-green-600 font-medium">{savedMsg}</span>}
+            {savedMsg && <span className="text-sm text-green-600 font-semibold">{savedMsg}</span>}
           </div>
         </motion.form>
       )}

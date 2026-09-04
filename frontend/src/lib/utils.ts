@@ -62,3 +62,43 @@ export function formatCount(n: number): string {
   if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
   return String(n);
 }
+
+/**
+ * Cleanly decode numeric HTML entities (&#...;), hex entities (&#x...;),
+ * and escaped Unicode sequences (\u00xx / \u{...}) so native symbols and emojis
+ * render correctly without mojibake or raw escape sequences.
+ */
+export function sanitizeAndDecodeText(input: string | null | undefined): string {
+  if (!input) return '';
+  let text = String(input);
+
+  // Decode numeric decimal entities: &#1234;
+  text = text.replace(/&#(\d+);/g, (_, dec) => {
+    try {
+      return String.fromCodePoint(parseInt(dec, 10));
+    } catch {
+      return _;
+    }
+  });
+
+  // Decode numeric hex entities: &#x1f600;
+  text = text.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+    try {
+      return String.fromCodePoint(parseInt(hex, 16));
+    } catch {
+      return _;
+    }
+  });
+
+  // Decode escaped Unicode sequences like \u00e9 or \uD83D\uDE00
+  text = text.replace(/\\u([0-9a-fA-F]{4})/g, (_, hex) => {
+    try {
+      return String.fromCharCode(parseInt(hex, 16));
+    } catch {
+      return _;
+    }
+  });
+
+  return text;
+}
+

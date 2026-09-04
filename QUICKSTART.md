@@ -1,173 +1,151 @@
-# ProjectHive — Quick Start Guide 🐝
+<p align="center">
+  <img src="frontend/public/logo.png" width="140" alt="ProjectHive Logo" />
+</p>
 
-## 🚀 Start in 3 Steps
+<h1 align="center">ProjectHive 🐝 — Developer Quick Start Guide</h1>
 
-**Step 1 — Install backend dependencies**
+<p align="center">
+  <strong>Complete Local Setup & Development Environment Guide for Next.js 16 + Node.js</strong>
+</p>
+
+---
+
+## 1. Fast Track Startup Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as Developer
+    participant Git as GitHub Repo
+    participant Backend as Node.js / Express Server (:5000)
+    participant Frontend as Next.js 16 App Router (:3000)
+    participant DB as Supabase PostgreSQL
+
+    Dev->>Git: git clone https://github.com/Ti838/Project-Hive.git
+    Dev->>Backend: npm install && npm run dev
+    Backend->>DB: Verify PostgreSQL connection & pool health
+    Backend-->>Dev: Ready on http://localhost:5000 (API + WebSocket)
+
+    Dev->>Frontend: npm install && npm run dev
+    Frontend-->>Dev: Ready on http://localhost:3000 (Next.js 16 Dev Server)
+    Frontend->>Backend: Handshake & Real-Time Sync
+```
+
+---
+
+## 2. Step-by-Step Local Setup
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/Ti838/Project-Hive.git
+cd Project-Hive
+```
+
+### Step 2: Configure the Backend Server
 ```bash
 cd server
 npm install
+cp .env.example .env
 ```
 
-**Step 2 — Configure environment variables**
-
-Create `server/.env` (copy from `.env.example`):
+Open `server/.env` and ensure the following keys are populated:
 ```env
-NODE_ENV=development
 PORT=5000
+NODE_ENV=development
 
+# Supabase PostgreSQL
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-JWT_SECRET=your-jwt-secret
+# JWT Token Secret
+JWT_SECRET=your_super_secret_jwt_key_here
 
-BREVO_API_KEY=your_brevo_api_key
-BREVO_FROM_EMAIL=noreply@yourdomain.com
+# Free Tier AI Keys
+GROQ_API_KEY=gsk_...
+GEMINI_API_KEY=AIzaSy...
+OPENROUTER_API_KEY=sk-or-v1-...
 
-GEMINI_API_KEY=your_key_from_https://aistudio.google.com/apikey
-GROQ_API_KEY=your_key_from_https://console.groq.com/keys
+# LiveKit SFU Calling
+LIVEKIT_URL=wss://project-hive-o0q9p17e.livekit.cloud
+LIVEKIT_API_KEY=your_livekit_key
+LIVEKIT_API_SECRET=your_livekit_secret
 
+# Default Admin Account
 ADMIN_EMAIL=admin@projecthive.com
-ADMIN_PASSWORD=YourSecureAdminPassword
-
-FRONTEND_URL=http://localhost:5000
+ADMIN_PASSWORD=AdminPassword123!
 ```
-> **Minimum required:** `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `JWT_SECRET`, `GROQ_API_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
-**Step 3 — Run the backend server**
+Start the backend:
 ```bash
-cd server
 npm run dev
 ```
-Backend API & WebSocket runs at: **http://localhost:5000**
+*Backend API and WebSocket gateway will listen on **`http://localhost:5000`**.*
 
-**Step 4 — Run the Next.js frontend**
+---
+
+### Step 3: Configure the Next.js Frontend
+In a new terminal window:
 ```bash
 cd frontend
+npm install
+cp .env.example .env.local
+```
+
+Verify your `frontend/.env.local`:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+NEXT_PUBLIC_LIVEKIT_URL=wss://project-hive-o0q9p17e.livekit.cloud
+```
+
+Start the Next.js development server:
+```bash
 npm run dev
 ```
-Open in your browser: **http://localhost:3000**
-(All requests will automatically proxy and connect to the backend!)
+*Frontend will launch at **`http://localhost:3000`** with Turbopack and React 19 fast refresh enabled.*
 
 ---
 
-## 👑 Admin Panel
+## 3. Production App Router Navigation Matrix
 
-The admin panel has its **own dedicated login** — separate from the regular user login.
-
-1. Go to: `http://localhost:5000/pages/admin/login.html`
-2. Enter your `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`
-3. You are redirected to the industrial admin dashboard
-
-### What admin can do:
-| Section | Actions |
-|---------|---------|
-| **Users** | View all, search, ban/unban, change role, delete |
-| **Teams** | View all, filter by status, delete |
-| **Projects** | View all, feature/unfeature, delete |
-| **Analytics** | Charts for user roles & team status |
-| **System** | Toggle maintenance mode, enable/disable registration |
-| **Health** | Live backend API & database status check |
-
----
-
-## 📄 All Pages
-
-| URL | Page |
-|-----|------|
-| `/` | Landing page |
-| `/pages/auth/login.html` | User login |
-| `/pages/auth/register.html` | User registration |
-| `/pages/auth/verify-email.html` | Email verification |
-| `/pages/auth/forgot-password.html` | Forgot password |
-| `/pages/auth/reset-password.html` | Reset password |
-| `/pages/auth/callback.html` | OAuth callback |
-| `/pages/user/dashboard.html` | Student dashboard |
-| `/pages/user/feed.html` | Social feed |
-| `/pages/user/profile/view.html` | View profile |
-| `/pages/user/profile/edit.html` | Edit profile |
-| `/pages/user/settings.html` | Account settings |
-| `/pages/user/people.html` | Find people |
-| `/pages/user/notifications.html` | Notifications |
-| `/pages/user/messages.html` | Real-time chat |
-| `/pages/user/saved.html` | Saved posts & projects |
-| `/pages/user/teams.html` | Browse teams |
-| `/pages/user/teams-create.html` | Create team |
-| `/pages/user/projects/showcase.html` | Project showcase |
-| `/pages/user/projects/generator.html` | AI project generator |
-| `/pages/admin/login.html` | Admin login portal |
-| `/pages/admin/dashboard.html` | Admin control center |
-| `/pages/info/about.html` | About ProjectHive |
-| `/pages/info/help.html` | Help & FAQ |
-| `/pages/info/privacy.html` | Privacy policy |
-| `/pages/info/terms.html` | Terms of service |
+| Route | Page / Workspace | Access Control |
+|---|---|---|
+| `/` | Marketing Landing Page | Public |
+| `/login` | Responsive User Sign In | Public |
+| `/register` | Student Onboarding & University Affiliation | Public |
+| `/dashboard` | Student Dashboard & Activity Feed | Authenticated |
+| `/feed` | Community Posts, Polls & Media Feed | Authenticated |
+| `/teams` | Squad & Teammate Discovery Hub | Authenticated |
+| `/teams/[id]` | Discord-Grade Dedicated Squad Workspace | Authenticated |
+| `/teams/create` | Squad Creation Studio | Authenticated |
+| `/messages` | WhatsApp-Grade Real-Time Messaging | Authenticated |
+| `/projects` | Showcase Capstone Portfolio | Authenticated |
+| `/generator` | AI Project Proposal Studio | Authenticated |
+| `/profile` | User Profile & Skill Matrix | Authenticated |
+| `/settings` | Account Security & Preferences | Authenticated |
+| `/admin/login` | Enterprise Administrator Sign In | Role-gated |
+| `/admin/dashboard` | Enterprise Telemetry & Governance Console | Role-gated (`role: admin`) |
 
 ---
 
-## 🎨 Theme
+## 4. Verification & Testing Commands
 
-Click the 🌙 toggle in the sidebar to switch Dark / Light mode. Preference is saved to `localStorage`.
-
-To change accent colour → **Settings → Appearance → Accent Color**
-
-The admin panel has its own independent dark/light toggle.
-
----
-
-## 🔌 Key API Endpoints (Quick Reference)
-
+To verify that all TypeScript types, Next.js page generation, and Tailwind styles compile cleanly for production:
 ```bash
-# Auth
-POST /api/auth/register
-POST /api/auth/login
-POST /api/auth/refresh
-
-# Users
-GET  /api/users/me
-PUT  /api/users/me
-
-# Teams
-GET  /api/teams
-POST /api/teams
-
-# Projects
-GET  /api/projects
-POST /api/projects
-
-# AI
-POST /api/ai/generate-ideas
-
-# Admin (requires admin JWT)
-POST /api/admin/auth/login
-GET  /api/admin/stats
-GET  /api/admin/flags
-PATCH /api/admin/flags
+npm --prefix frontend run build
+```
+Expected output:
+```text
+✓ Compiled successfully
+✓ Generating static pages (27/27) in 2.7s
+Exit code: 0
 ```
 
 ---
 
-## 🗄️ Database
+## 📜 License
 
-All tables are in **Supabase PostgreSQL**. Run the schema once:
+This project is open-source software licensed under the **[MIT License](LICENSE)**.
 
-1. Open [Supabase SQL Editor](https://supabase.com/dashboard/project/iekfvgjxkmgduxdvkuxf/editor)
-2. Copy & paste contents of `server/database/schema.sql`
-3. Click **Run**
-
----
-
-## 📦 Deploy to Production
-
-```bash
-git add .
-git commit -m "your message"
-git push origin main
-# Vercel auto-deploys frontend (~30s)
-# Render auto-deploys backend (~2 min)
-```
-
-Live URL: **https://projecthive-bd.vercel.app**
-
----
-
-*ProjectHive © 2026 🐝*
+Copyright (c) 2025-2026 ProjectHive Contributors.

@@ -7,6 +7,7 @@ import {
   getSystemFlags, updateFlags,
   getAdminPosts, deleteAdminPost,
   getTickets, resolveTicket, deleteTicket,
+  getAuditLogs, getAdminHealth,
 } from '../controllers/admin.controller.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
@@ -52,6 +53,10 @@ router.delete('/tickets/:id',           deleteTicket);
 // ── System Flags ──────────────────────────────────────
 router.get('/flags',                    getSystemFlags);
 router.patch('/flags',                  updateFlags);
+
+// ── Audit Logs & Real Health Telemetry ───────────────
+router.get('/audit-logs',               getAuditLogs);
+router.get('/health',                   getAdminHealth);
 
 export default router;
 

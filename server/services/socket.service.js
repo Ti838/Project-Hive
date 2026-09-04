@@ -146,6 +146,79 @@ export function handleTyping(socket, io, data) {
   }
 }
 
+export async function handleMessageReact(socket, io, data) {
+  try {
+    const { messageId, roomId, emoji } = data;
+    if (!messageId || !emoji) return;
+    const userId = socket.userId;
+
+    const { data: existing } = await supabaseAdmin
+      .from('message_reactions')
+      .select('id')
+      .eq('message_id', messageId)
+      .eq('user_id', userId)
+      .eq('emoji', emoji)
+      .maybeSingle();
+
+    let action = 'added';
+    if (existing) {
+      await supabaseAdmin.from('message_reactions').delete().eq('id', existing.id);
+      action = 'removed';
+    } else {
+      await supabaseAdmin.from('message_reactions').insert({
+        message_id: messageId,
+        user_id: userId,
+        emoji,
+      });
+    }
+
+    const targetRoom = roomId || socket.roomId;
+    if (targetRoom) {
+      io.to(targetRoom).emit('message:reaction', {
+        messageId,
+        roomId: targetRoom,
+        emoji,
+        userId,
+        action,
+      });
+    }
+  } catch (err) {
+    console.error('[ProjectHive] Reaction error:', err.message);
+  }
+}
+
+export async function handleMessageRead(socket, io, data) {
+  try {
+    const { roomId, friendId, messageIds } = data;
+    const targetRoom = roomId || (friendId ? [socket.userId, friendId].sort().join('_') : socket.roomId);
+    if (!targetRoom) return;
+
+    // Update in database
+    if (friendId) {
+      const { data: msgs } = await supabaseAdmin
+        .from('messages')
+        .select('id, read_by')
+        .eq('room_id', targetRoom)
+        .neq('sender_id', socket.userId);
+
+      const toUpdate = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(socket.userId));
+      for (const msg of toUpdate) {
+        const newReadBy = [...(msg.read_by || []), socket.userId];
+        await supabaseAdmin.from('messages').update({ read_by: newReadBy }).eq('id', msg.id);
+      }
+    }
+
+    io.to(targetRoom).emit('message:read_receipt', {
+      roomId: targetRoom,
+      readBy: socket.userId,
+      messageIds: messageIds || [],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error('[ProjectHive] Read receipt error:', err.message);
+  }
+}
+
 export function broadcastNotification(io, recipientId, notification) {
   const userSockets = getUserSockets(recipientId);
   userSockets.forEach(socket => {

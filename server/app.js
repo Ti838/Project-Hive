@@ -28,6 +28,7 @@ import { adminLogin } from './controllers/admin.auth.controller.js';
 import { getFlags, loadFlagsFromDB } from './controllers/admin.controller.js';
 import postsRoutes from './routes/posts.routes.js';
 import storiesRoutes from './routes/stories.routes.js';
+import callsRoutes from './routes/calls.routes.js';
 
 const app = express();
 
@@ -225,6 +226,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
 app.use('/api/stories', storiesRoutes); // stories
+app.use('/api/calls', callsRoutes); // native LiveKit calling
 
 // TURN credentials endpoint
 app.get('/api/turn-credentials', async (req, res) => {

@@ -73,8 +73,14 @@ export async function getTeams(req, res, next) {
     const { data: teams, error, count } = await q;
     if (error) throw error;
 
+    const normalized = (teams || []).map(t => ({
+      ...t,
+      max_members: t.max_size,
+      member_count: t.team_members?.length || 0,
+    }));
+
     res.json({
-      teams: teams || [],
+      teams: normalized,
       pagination: { total: count || 0, skip: parseInt(skip), limit: parseInt(limit), hasMore: parseInt(skip) + parseInt(limit) < (count || 0) },
     });
   } catch (err) { next(err); }
@@ -425,3 +431,89 @@ export async function addMember(req, res, next) {
     res.json({ ok: true, message: 'Member added successfully' });
   } catch (err) { next(err); }
 }
+
+// ─── TRANSFER LEADERSHIP (by current leader) ──────────────────────────────────
+export async function transferLeadership(req, res, next) {
+  try {
+    const leaderId = req.user.id;
+    const { id: teamId } = req.params;
+    const { newLeaderId } = req.body;
+
+    if (!newLeaderId) return res.status(400).json({ error: 'newLeaderId is required' });
+    if (newLeaderId === leaderId) return res.status(400).json({ error: 'You are already the leader' });
+
+    // Verify current user is leader
+    const { data: currentLeaderMem } = await supabaseAdmin
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', leaderId)
+      .single();
+
+    if (!currentLeaderMem || currentLeaderMem.role !== 'leader') {
+      return res.status(403).json({ error: 'Only the current team leader can transfer leadership' });
+    }
+
+    // Verify target user is an existing member
+    const { data: targetMem } = await supabaseAdmin
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', newLeaderId)
+      .maybeSingle();
+
+    if (!targetMem) {
+      return res.status(404).json({ error: 'Target user is not a member of this team' });
+    }
+
+    // Update teams table leader_id
+    const { error: teamUpdateErr } = await supabaseAdmin
+      .from('teams')
+      .update({ leader_id: newLeaderId })
+      .eq('id', teamId);
+
+    if (teamUpdateErr) throw teamUpdateErr;
+
+    // Promote new leader
+    await supabaseAdmin
+      .from('team_members')
+      .update({ role: 'leader' })
+      .eq('team_id', teamId)
+      .eq('user_id', newLeaderId);
+
+    // Demote current user to member
+    await supabaseAdmin
+      .from('team_members')
+      .update({ role: 'member' })
+      .eq('team_id', teamId)
+      .eq('user_id', leaderId);
+
+    // Get team info for notification
+    const { data: team } = await supabaseAdmin
+      .from('teams')
+      .select('name')
+      .eq('id', teamId)
+      .single();
+
+    const notifTitle = 'Leadership Transferred';
+    const notifMsg = `You are now the team leader of ${team?.name || 'the team'}!`;
+
+    await supabaseAdmin.from('notifications').insert({
+      user_id: newLeaderId,
+      type: 'team',
+      title: notifTitle,
+      message: notifMsg,
+      data: { teamId },
+    });
+
+    broadcastNotification(getIo(), newLeaderId, {
+      type: 'team',
+      title: notifTitle,
+      message: notifMsg,
+      metadata: { teamId },
+    });
+
+    res.json({ ok: true, message: 'Leadership transferred successfully' });
+  } catch (err) { next(err); }
+}
+

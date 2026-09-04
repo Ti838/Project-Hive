@@ -1,4 +1,8 @@
-# ProjectHive — Complete Tech Stack & Service Reference 🐝
+<p align="center">
+  <img src="frontend/public/logo.png" width="140" alt="ProjectHive Logo" />
+</p>
+
+<h1 align="center">ProjectHive — Complete Tech Stack & Service Reference 🐝</h1>
 
 > This document contains every service, technology, URL, and configuration detail used in ProjectHive.
 > **Keep the Environment Variables section private — contains sensitive credentials.**
@@ -7,26 +11,16 @@
 
 ## 🏗️ Architecture Overview
 
+```mermaid
+graph TD
+    User["Student User / Administrator"] -->|HTTPS| Frontend["Frontend — Next.js 16 App Router (Vercel)"]
+    Frontend -->|REST API & Socket.IO| Backend["Backend Engine — Node.js & Express (Render)"]
+    Backend --> Supabase[("Supabase PostgreSQL")]
+    Backend --> Brevo["Brevo SMTP (Transactional Email)"]
+    Backend --> AICluster["Cascading AI Engine (Groq + Gemini + OpenRouter)"]
+    Frontend <-->|WebRTC SFU Tracks| LiveKit["LiveKit Cloud SFU (Audio/Video Calling)"]
 ```
-┌──────────────────────────────────────────────────────────────┐
-│                        USER / ADMIN                          │
-└─────────────────────────────┬────────────────────────────────┘
-                              │  HTTPS
-┌─────────────────────────────▼────────────────────────────────┐
-│            FRONTEND — Vercel (Static Site)                   │
-│         https://projecthive-bd.vercel.app                   │
-│   Pure HTML + CSS + Vanilla JavaScript (no build step)      │
-└─────────────────────────────┬────────────────────────────────┘
-                              │  REST API + WebSocket (WSS)
-┌─────────────────────────────▼────────────────────────────────┐
-│            BACKEND — Render (Node.js)                        │
-│        https://projecthive-backend.onrender.com             │
-│           Express.js + Socket.IO + JWT Auth                 │
-└──────────┬──────────────────┬──────────────────┬────────────┘
-           │                  │                  │
-      Supabase           Brevo SMTP         Google Gemini
-   (PostgreSQL DB)         (Email)           (AI / LLM)
-```
+
 
 ---
 
@@ -497,5 +491,5 @@ npm run dev
 | Cloudflare Turnstile | https://dash.cloudflare.com/turnstile |
 
 ---
-
-*ProjectHive © 2026 🐝 — Built for university students*
+ 
+*ProjectHive © 2025-2026 🐝 — Licensed under the [MIT License](LICENSE).*

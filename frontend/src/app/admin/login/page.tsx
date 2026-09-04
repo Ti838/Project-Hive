@@ -12,6 +12,8 @@ import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
+import { getExactDeviceDetails } from '@/lib/deviceFingerprint';
+
 const schema = z.object({
   email: z.string().email('Valid admin email is required'),
   password: z.string().min(1, 'Admin password is required'),
@@ -30,22 +32,35 @@ export default function AdminLoginPage() {
 
   const onSubmit = async (data: Form) => {
     setServerError('');
-    const res = await api.auth.login(data.email, data.password);
-    if (!res.ok || res.error) {
-      setServerError(res.error ?? 'Invalid administrative credentials');
+    const deviceMeta = await getExactDeviceDetails();
+    
+    // 1. Try standard DB admin login first
+    const res = await api.auth.login(data.email, data.password, deviceMeta);
+    if (res.ok && res.user && res.user.role === 'admin') {
+      login(res.user, res.accessToken, res.refreshToken);
+      router.push('/admin/dashboard');
       return;
     }
-    if (res.user?.role !== 'admin') {
-      setServerError('Access denied. This account does not possess administrative privileges.');
+
+    // 2. If DB login failed or not an admin, attempt Root Super-Admin (.env credentials)
+    const superRes = await api.admin.superAdminLogin(data.email, data.password);
+    if (superRes.ok && superRes.token && superRes.user) {
+      login(superRes.user, superRes.token, superRes.token);
+      router.push('/admin/dashboard');
       return;
     }
-    login(res.user, res.accessToken, res.refreshToken);
-    router.push('/admin/dashboard');
+
+    // 3. Both failed - report clean error
+    setServerError(
+      res.user?.role !== 'admin' && res.ok
+        ? 'Access denied. This account does not possess administrative privileges.'
+        : (superRes.error || res.error || 'Invalid administrative credentials')
+    );
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-2xl p-8 shadow-xl">
+    <div className="min-h-[100dvh] w-full flex items-center justify-center p-4 sm:p-6 bg-background overflow-x-hidden">
+      <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
         <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to user portal
         </Link>
@@ -54,7 +69,7 @@ export default function AdminLoginPage() {
           <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
             <ShieldCheck className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold">Admin Console</h1>
+          <h1 className="text-2xl font-bold tracking-tight">Admin Console</h1>
           <p className="text-xs text-muted-foreground">Authorized University Administrators & Moderators Only</p>
         </div>
 
@@ -66,7 +81,7 @@ export default function AdminLoginPage() {
               type="email"
               placeholder="admin@projecthive.edu"
               className={cn(
-                'w-full text-sm bg-muted rounded-xl px-4 py-3 border focus:outline-none focus:border-amber-500 transition-colors',
+                'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border focus:outline-none focus:border-amber-500 transition-colors',
                 errors.email ? 'border-destructive' : 'border-transparent'
               )}
             />
@@ -81,14 +96,15 @@ export default function AdminLoginPage() {
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
                 className={cn(
-                  'w-full text-sm bg-muted rounded-xl px-4 py-3 pr-10 border focus:outline-none focus:border-amber-500 transition-colors',
+                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 pr-12 border focus:outline-none focus:border-amber-500 transition-colors',
                   errors.password ? 'border-destructive' : 'border-transparent'
                 )}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground touch-target flex items-center justify-center"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -105,7 +121,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 transition-colors shadow-sm"
+            className="w-full h-12 min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 tap-press transition-colors shadow-sm"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
             {isSubmitting ? 'Verifying Credentials…' : 'Enter Admin Console'}
@@ -115,4 +131,5 @@ export default function AdminLoginPage() {
     </div>
   );
 }
+
 

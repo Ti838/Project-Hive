@@ -7,7 +7,8 @@ import {
   ShieldCheck, Users, FolderKanban, GraduationCap, ArrowLeft, LogOut,
   CheckCircle2, AlertTriangle, Search, Ban, UserX, ShieldAlert, Sparkles,
   ToggleLeft, ToggleRight, Trash2, Star, RefreshCw, Activity, Terminal,
-  Sliders, MessageSquare, Radio, Check, X,
+  Sliders, MessageSquare, Radio, Check, X, Newspaper, LifeBuoy, Server,
+  Cpu, HardDrive, Clock, ExternalLink, Smartphone, Globe,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -15,7 +16,7 @@ import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { displayName, timeAgo, getInitials, getAvatarColor, cn } from '@/lib/utils';
 
-type AdminTab = 'overview' | 'users' | 'teams' | 'projects' | 'system' | 'audit';
+type AdminTab = 'overview' | 'users' | 'teams' | 'projects' | 'moderation' | 'tickets' | 'system' | 'audit';
 
 interface AdminStats {
   users: number;
@@ -33,13 +34,28 @@ interface AdminStats {
   };
 }
 
+interface ServiceHealth {
+  name: string;
+  status: string;
+  ping: string;
+  ok: boolean;
+  activeCalls?: number;
+  url?: string;
+}
+
 export default function AdminDashboardPage() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+
+  // Health Telemetry state
+  const [healthServices, setHealthServices] = useState<ServiceHealth[]>([]);
+  const [systemUptime, setSystemUptime] = useState<number>(0);
+  const [memoryInfo, setMemoryInfo] = useState<{ rssMb: number; heapUsedMb: number } | null>(null);
+  const [loadingHealth, setLoadingHealth] = useState(false);
 
   // Users tab state
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -55,6 +71,19 @@ export default function AdminDashboardPage() {
   const [projectsList, setProjectsList] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
 
+  // Moderation tab state
+  const [postsList, setPostsList] = useState<any[]>([]);
+  const [postSearch, setPostSearch] = useState('');
+  const [loadingPosts, setLoadingPosts] = useState(false);
+
+  // Tickets tab state
+  const [ticketsList, setTicketsList] = useState<any[]>([]);
+  const [loadingTickets, setLoadingTickets] = useState(false);
+
+  // Audit Logs state
+  const [auditLogsList, setAuditLogsList] = useState<any[]>([]);
+  const [loadingAuditLogs, setLoadingAuditLogs] = useState(false);
+
   // System Flags state
   const [flags, setFlags] = useState({
     maintenanceMode: false,
@@ -64,21 +93,23 @@ export default function AdminDashboardPage() {
   const [flagUpdating, setFlagUpdating] = useState(false);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
-  // Audit Log items
-  const [auditLogs, setAuditLogs] = useState<Array<{ id: string; time: string; action: string; user: string; level: 'info' | 'warn' | 'crit' }>>([
-    { id: '1', time: 'Just now', action: 'Admin session authenticated', user: user?.email || 'admin@projecthive.com', level: 'info' },
-    { id: '2', time: '2m ago', action: 'Supabase connection pool healthy', user: 'System Telemetry', level: 'info' },
-    { id: '3', time: '5m ago', action: 'Groq LLM endpoint heartbeat validated', user: 'AI Engine', level: 'info' },
-  ]);
-
-  // Auth Guard
+  // Auth Guard: Block unauthenticated users and non-admin roles
   useEffect(() => {
-    if (user && user.role !== 'admin') {
+    if (isLoading) return;
+
+    if (!isAuthenticated || !user) {
+      router.replace('/admin/login');
+      return;
+    }
+
+    if (user.role !== 'admin') {
       router.replace('/dashboard');
       return;
     }
+
     loadOverview();
-  }, [user]);
+    loadHealth();
+  }, [user, isAuthenticated, isLoading, router]);
 
   const showToast = (msg: string) => {
     setActionSuccess(msg);
@@ -93,6 +124,17 @@ export default function AdminDashboardPage() {
       if (res.flags) setFlags(res.flags);
     }
     setLoadingStats(false);
+  };
+
+  const loadHealth = async () => {
+    setLoadingHealth(true);
+    const res = await api.admin.getHealth();
+    if (res.ok && res.services) {
+      setHealthServices(res.services);
+      if (res.uptimeSeconds) setSystemUptime(res.uptimeSeconds);
+      if (res.memory) setMemoryInfo(res.memory);
+    }
+    setLoadingHealth(false);
   };
 
   const loadUsers = async () => {
@@ -122,10 +164,44 @@ export default function AdminDashboardPage() {
     setLoadingProjects(false);
   };
 
+  const loadPosts = async () => {
+    setLoadingPosts(true);
+    const res = await api.admin.getPosts(postSearch);
+    if (res.ok && res.posts) {
+      setPostsList(res.posts);
+    }
+    setLoadingPosts(false);
+  };
+
+  const loadTickets = async () => {
+    setLoadingTickets(true);
+    const res = await api.admin.getTickets();
+    if (res.ok && res.tickets) {
+      setTicketsList(res.tickets);
+    }
+    setLoadingTickets(false);
+  };
+
+  const loadAuditLogs = async () => {
+    setLoadingAuditLogs(true);
+    const res = await api.admin.getAuditLogs();
+    if (res.ok && res.logs) {
+      setAuditLogsList(res.logs);
+    }
+    setLoadingAuditLogs(false);
+  };
+
   useEffect(() => {
+    if (activeTab === 'overview') {
+      loadOverview();
+      loadHealth();
+    }
     if (activeTab === 'users') loadUsers();
     if (activeTab === 'teams') loadTeams();
     if (activeTab === 'projects') loadProjects();
+    if (activeTab === 'moderation') loadPosts();
+    if (activeTab === 'tickets') loadTickets();
+    if (activeTab === 'audit') loadAuditLogs();
   }, [activeTab]);
 
   const handleBanToggle = async (userId: string, currentBanned: boolean) => {
@@ -135,13 +211,13 @@ export default function AdminDashboardPage() {
       setUsersList((prev) =>
         prev.map((u) => (u.id === userId || u._id === userId ? { ...u, isBanned: !currentBanned } : u))
       );
-      setAuditLogs((prev) => [
+      setAuditLogsList((prev: any[]) => [
         {
           id: String(Date.now()),
-          time: 'Just now',
-          action: currentBanned ? `Unbanned user ID: ${userId}` : `Banned user ID: ${userId}`,
-          user: user?.email || 'admin',
-          level: 'warn',
+          created_at: new Date().toISOString(),
+          action: currentBanned ? 'UNBAN_USER' : 'BAN_USER',
+          details: `User ID: ${userId}`,
+          admin_email: user?.email || 'admin',
         },
         ...prev,
       ]);
@@ -187,6 +263,44 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleDeleteProject = async (projectId: string) => {
+    if (!confirm('Are you sure you want to permanently delete this project?')) return;
+    const res = await api.admin.deleteProject(projectId);
+    if (res.ok) {
+      showToast('Project deleted successfully');
+      setProjectsList((prev) => prev.filter((p) => p.id !== projectId));
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm('Are you sure you want to remove this post for violating community standards?')) return;
+    const res = await api.admin.deletePost(postId);
+    if (res.ok) {
+      showToast('Post removed from community feed');
+      setPostsList((prev) => prev.filter((p) => p.id !== postId));
+    }
+  };
+
+  const handleResolveTicket = async (ticketId: string, currentStatus: string) => {
+    const nextStatus = currentStatus === 'resolved' ? 'open' : 'resolved';
+    const res = await api.admin.resolveTicket(ticketId, nextStatus);
+    if (res.ok) {
+      showToast(`Support ticket marked as ${nextStatus.toUpperCase()}`);
+      setTicketsList((prev) =>
+        prev.map((t) => (t.id === ticketId ? { ...t, status: nextStatus } : t))
+      );
+    }
+  };
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (!confirm('Permanently delete this support ticket?')) return;
+    const res = await api.admin.deleteTicket(ticketId);
+    if (res.ok) {
+      showToast('Support ticket deleted');
+      setTicketsList((prev) => prev.filter((t) => t.id !== ticketId));
+    }
+  };
+
   const handleFlagToggle = async (key: 'maintenanceMode' | 'registrationEnabled' | 'emailVerification') => {
     setFlagUpdating(true);
     const nextVal = !flags[key];
@@ -195,13 +309,13 @@ export default function AdminDashboardPage() {
     if (res.ok) {
       setFlags(updated);
       showToast(`System Flag [${key}] set to ${nextVal ? 'ENABLED' : 'DISABLED'}`);
-      setAuditLogs((prev) => [
+      setAuditLogsList((prev: any[]) => [
         {
           id: String(Date.now()),
-          time: 'Just now',
-          action: `System flag updated: ${key} -> ${nextVal}`,
-          user: user?.email || 'admin',
-          level: key === 'maintenanceMode' ? 'crit' : 'info',
+          created_at: new Date().toISOString(),
+          action: 'UPDATE_FLAGS',
+          details: `${key}: ${nextVal}`,
+          admin_email: user?.email || 'admin',
         },
         ...prev,
       ]);
@@ -220,6 +334,17 @@ export default function AdminDashboardPage() {
     if (userFilter === 'admin') return u.role === 'admin';
     return true;
   });
+
+  if (isLoading || !isAuthenticated || !user || user.role !== 'admin') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 rounded-full border-4 border-amber-500 border-t-transparent animate-spin" />
+          <p className="text-sm text-muted-foreground font-medium">Verifying admin credentials…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground selection:bg-amber-500/20">
@@ -272,13 +397,15 @@ export default function AdminDashboardPage() {
       </AnimatePresence>
 
       {/* ─── Navigation Tabs ────────────────────────────────────────────── */}
-      <div className="border-b border-border bg-card/40 px-4 sm:px-8">
-        <div className="flex items-center gap-2 overflow-x-auto py-2.5 max-w-7xl mx-auto scrollbar-none">
+      <div className="border-b border-border bg-card/40 px-4 sm:px-8 sticky top-14 z-20 backdrop-blur-md">
+        <div className="flex items-center gap-2 overflow-x-auto py-2.5 max-w-7xl mx-auto scrollbar-none touch-momentum">
           {[
-            { id: 'overview', label: 'Telemetry & Overview', icon: Activity },
+            { id: 'overview', label: 'Telemetry & Health', icon: Activity },
             { id: 'users', label: `Users & Moderation (${stats?.users ?? 0})`, icon: Users },
             { id: 'teams', label: `Teams (${stats?.teams ?? 0})`, icon: ShieldAlert },
             { id: 'projects', label: `Projects (${stats?.projects ?? 0})`, icon: FolderKanban },
+            { id: 'moderation', label: `Content Moderation (${stats?.posts ?? 0})`, icon: Newspaper },
+            { id: 'tickets', label: `Support Tickets (${ticketsList.length || 0})`, icon: LifeBuoy },
             { id: 'system', label: 'System Flags & Kill Switches', icon: Sliders },
             { id: 'audit', label: 'Live Audit Log', icon: Terminal },
           ].map((tab) => {
@@ -289,7 +416,7 @@ export default function AdminDashboardPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as AdminTab)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all',
+                  'flex items-center gap-2 px-3.5 py-2 min-h-[38px] rounded-xl text-xs font-semibold whitespace-nowrap tap-press transition-all',
                   active
                     ? 'bg-primary text-primary-foreground shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
@@ -323,44 +450,63 @@ export default function AdminDashboardPage() {
                     <s.icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="text-xl font-bold tracking-tight">{loadingStats ? '…' : s.value}</p>
+                    {loadingStats ? (
+                      <div className="h-6 w-14 rounded-md bg-muted/80 skeleton-shimmer my-0.5" />
+                    ) : (
+                      <p className="text-xl font-bold tracking-tight">{s.value}</p>
+                    )}
                     <p className="text-[11px] text-muted-foreground font-medium">{s.label}</p>
                   </div>
                 </div>
               ))}
             </div>
 
+
             {/* Infrastructure Real-Time Health Grid */}
             <div className="grid lg:grid-cols-2 gap-6">
               <div className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-bold text-sm flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Infrastructure Node Status
-                  </h2>
-                  <button onClick={loadOverview} className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground">
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <h2 className="font-bold text-sm">Live Infrastructure Health & Telemetry</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {systemUptime > 0 && (
+                      <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                        Up: {Math.floor(systemUptime / 3600)}h {Math.floor((systemUptime % 3600) / 60)}m
+                      </span>
+                    )}
+                    {memoryInfo && (
+                      <span className="text-[10px] font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+                        Heap: {memoryInfo.heapUsedMb}MB
+                      </span>
+                    )}
+                    <button onClick={loadHealth} disabled={loadingHealth} className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground">
+                      <RefreshCw className={cn("w-3.5 h-3.5", loadingHealth && "animate-spin")} />
+                    </button>
+                  </div>
                 </div>
                 <div className="space-y-2.5 text-xs">
-                  {[
-                    { name: 'Supabase PostgreSQL Cluster', status: 'Healthy · 100% SLA', ping: '12ms', ok: true },
-                    { name: 'Socket.IO Real-time WebSocket', status: 'Connected · Gateway Up', ping: '8ms', ok: true },
-                    { name: 'Groq Llama-3.3-70B API Engine', status: 'Operational · Primary', ping: '95ms', ok: true },
-                    { name: 'Google Gemini 2.5 Flash Fallback', status: 'Standby / Vision Ready', ping: '120ms', ok: true },
-                    { name: 'WebRTC STUN/TURN Signaling Node', status: 'Relay Active', ping: '15ms', ok: true },
-                    { name: 'Brevo SMTP Email Dispatcher', status: 'Operational', ping: '45ms', ok: true },
-                  ].map((node) => (
-                    <div key={node.name} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
-                      <div className="flex items-center gap-2.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        <span className="font-medium text-foreground">{node.name}</span>
-                      </div>
-                      <div className="flex items-center gap-3 text-muted-foreground font-mono">
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{node.status}</span>
-                        <span className="text-[10px] bg-muted px-2 py-0.5 rounded-md">{node.ping}</span>
-                      </div>
+                  {loadingHealth && healthServices.length === 0 ? (
+                    <div className="p-6 text-center text-muted-foreground text-xs">
+                      Probing infrastructure nodes and LiveKit SFU…
                     </div>
-                  ))}
+                  ) : (
+                    healthServices.map((node) => (
+                      <div key={node.name} className="flex items-center justify-between p-3 rounded-xl bg-muted/30 border border-border">
+                        <div className="flex items-center gap-2.5">
+                          <span className={cn("w-2 h-2 rounded-full", node.ok ? "bg-emerald-500 animate-pulse" : "bg-rose-500")} />
+                          <span className="font-medium text-foreground">{node.name}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-muted-foreground font-mono">
+                          <span className={cn("font-semibold", node.ok ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500")}>
+                            {node.status}
+                          </span>
+                          <span className="text-[10px] bg-muted px-2 py-0.5 rounded-md">{node.ping}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
 
@@ -463,12 +609,13 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Users Table */}
-            <div className="overflow-x-auto rounded-xl border border-border">
+            {/* Desktop Users Table */}
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
               <table className="w-full text-left text-xs">
                 <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-bold border-b border-border">
                   <tr>
                     <th className="p-3.5">User</th>
+                    <th className="p-3.5">Device & Network</th>
                     <th className="p-3.5">University</th>
                     <th className="p-3.5">Role</th>
                     <th className="p-3.5">Status</th>
@@ -478,14 +625,33 @@ export default function AdminDashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {loadingUsers ? (
-                    <tr>
-                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                        Loading users from Supabase…
-                      </td>
-                    </tr>
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-8 h-8 rounded-full bg-muted/80 skeleton-shimmer shrink-0" />
+                            <div className="space-y-1.5">
+                              <div className="h-3.5 w-24 bg-muted/80 skeleton-shimmer rounded" />
+                              <div className="h-2.5 w-32 bg-muted/60 skeleton-shimmer rounded" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3.5">
+                          <div className="space-y-1.5">
+                            <div className="h-3 w-28 bg-muted/70 skeleton-shimmer rounded" />
+                            <div className="h-2.5 w-20 bg-muted/50 skeleton-shimmer rounded" />
+                          </div>
+                        </td>
+                        <td className="p-3.5"><div className="h-3 w-20 bg-muted/70 skeleton-shimmer rounded" /></td>
+                        <td className="p-3.5"><div className="h-4 w-14 bg-muted/70 skeleton-shimmer rounded-full" /></td>
+                        <td className="p-3.5"><div className="h-4 w-14 bg-muted/70 skeleton-shimmer rounded-full" /></td>
+                        <td className="p-3.5"><div className="h-3 w-16 bg-muted/60 skeleton-shimmer rounded" /></td>
+                        <td className="p-3.5 text-right"><div className="h-7 w-20 bg-muted/70 skeleton-shimmer rounded-lg ml-auto" /></td>
+                      </tr>
+                    ))
                   ) : filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="p-8 text-center text-muted-foreground">
                         No users found matching query.
                       </td>
                     </tr>
@@ -505,6 +671,30 @@ export default function AdminDashboardPage() {
                                 {u.firstName ? `${u.firstName} ${u.lastName || ''}` : u.email}
                               </p>
                               <p className="text-[11px] text-muted-foreground">{u.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex flex-col gap-1">
+                            <div className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground">
+                              <Smartphone className="w-3 h-3 text-primary shrink-0" />
+                              <span className="truncate max-w-[170px]" title={u.lastLoginDeviceModel || 'Standard Web'}>
+                                {u.lastLoginDeviceModel || 'Web Browser'}
+                              </span>
+                              {u.lastLoginBrowser && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  ({u.lastLoginBrowser})
+                                </span>
+                              )}
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+                              <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
+                              <span>{u.lastLoginIp || '127.0.0.1'}</span>
+                              {(u.lastLoginCity || u.lastLoginCountry) && (
+                                <span className="text-[9px] bg-muted px-1.5 py-0.2 rounded">
+                                  {[u.lastLoginCity, u.lastLoginCountry].filter(Boolean).join(', ')}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -569,8 +759,123 @@ export default function AdminDashboardPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Stacked Cards (Zero Horizontal Scroll) */}
+            <div className="md:hidden space-y-3">
+              {loadingUsers ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="p-4 rounded-2xl border border-border bg-card space-y-3 animate-pulse">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-muted skeleton-shimmer" />
+                      <div className="space-y-1.5 flex-1">
+                        <div className="h-3.5 w-28 bg-muted rounded skeleton-shimmer" />
+                        <div className="h-2.5 w-40 bg-muted rounded skeleton-shimmer" />
+                      </div>
+                    </div>
+                    <div className="h-4 w-24 bg-muted rounded skeleton-shimmer" />
+                  </div>
+                ))
+              ) : filteredUsers.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground rounded-2xl border border-border bg-card">
+                  No users found matching query.
+                </div>
+              ) : (
+                filteredUsers.map((u) => (
+                  <div key={u.id || u._id} className="p-4 rounded-2xl border border-border bg-card space-y-3 shadow-xs">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-inner"
+                          style={{ backgroundColor: u.avatarColor || getAvatarColor(u.id || 'x') }}
+                        >
+                          {getInitials(`${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email)}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-xs text-foreground truncate">
+                            {u.firstName ? `${u.firstName} ${u.lastName || ''}` : u.email}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
+                          <p className="text-[10px] text-muted-foreground">{u.university || 'No university'}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-1 shrink-0">
+                        <span
+                          className={cn(
+                            'px-2 py-0.5 rounded-full text-[9px] font-bold uppercase',
+                            u.role === 'admin'
+                              ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20'
+                              : 'bg-muted text-muted-foreground'
+                          )}
+                        >
+                          {u.role || 'student'}
+                        </span>
+                        {u.isBanned ? (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-destructive/10 text-destructive">
+                            Banned
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Hardware / IP Info */}
+                    <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-border/60 text-[11px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                        <Smartphone className="w-3 h-3 text-primary shrink-0" />
+                        {u.lastLoginDeviceModel || 'Web Browser'}
+                      </span>
+                      <span className="font-mono text-[10px]">
+                        {u.lastLoginIp || '127.0.0.1'}
+                      </span>
+                      {(u.lastLoginCity || u.lastLoginCountry) && (
+                        <span className="text-[9px] bg-muted px-1.5 py-0.5 rounded">
+                          {[u.lastLoginCity, u.lastLoginCountry].filter(Boolean).join(', ')}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Mobile Touch Action Bar (min 44px targets) */}
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
+                      <button
+                        onClick={() => handleRoleToggle(u.id || u._id, u.role)}
+                        className="min-h-[44px] flex items-center justify-center gap-1 rounded-xl border border-border bg-muted/40 hover:bg-accent text-xs font-semibold text-foreground tap-press transition-colors"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Role</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleBanToggle(u.id || u._id, u.isBanned)}
+                        className={cn(
+                          'min-h-[44px] flex items-center justify-center gap-1 rounded-xl border text-xs font-semibold tap-press transition-colors',
+                          u.isBanned
+                            ? 'border-emerald-500/30 text-emerald-600 bg-emerald-500/5'
+                            : 'border-destructive/30 text-destructive bg-destructive/5'
+                        )}
+                      >
+                        <Ban className="w-3.5 h-3.5" />
+                        <span>{u.isBanned ? 'Unban' : 'Ban'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteUser(u.id || u._id)}
+                        className="min-h-[44px] flex items-center justify-center gap-1 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold tap-press transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
+
 
         {/* ─── TAB 3: TEAMS ─────────────────────────────────────────────── */}
         {activeTab === 'teams' && (
@@ -669,6 +974,12 @@ export default function AdminDashboardPage() {
                       >
                         <Star className="w-3 h-3" /> {proj.is_featured ? 'Unfeature' : 'Feature on Showcase'}
                       </button>
+                      <button
+                        onClick={() => handleDeleteProject(proj.id)}
+                        className="text-destructive hover:underline font-semibold flex items-center gap-1"
+                      >
+                        <Trash2 className="w-3 h-3" /> Delete
+                      </button>
                     </div>
                   </div>
                 ))
@@ -677,7 +988,361 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* ─── TAB 5: SYSTEM FLAGS ──────────────────────────────────────── */}
+        {/* ─── TAB 5: CONTENT MODERATION (FEED POSTS) ───────────────────── */}
+        {activeTab === 'moderation' && (
+          <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold">Community Feed & Content Moderation</h2>
+                <p className="text-xs text-muted-foreground">Scan public posts, audit uploaded media attachments, and enforce guidelines</p>
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <input
+                    type="text"
+                    value={postSearch}
+                    onChange={(e) => setPostSearch(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && loadPosts()}
+                    placeholder="Search post content…"
+                    className="text-xs bg-muted rounded-xl pl-9 pr-3.5 py-2 border border-transparent focus:border-primary focus:outline-none w-56"
+                  />
+                </div>
+                <button
+                  onClick={loadPosts}
+                  className="p-2 rounded-xl bg-muted hover:bg-accent text-xs font-semibold"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", loadingPosts && "animate-spin")} />
+                </button>
+              </div>
+            </div>
+
+            {/* Desktop Posts Table */}
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-bold border-b border-border">
+                  <tr>
+                    <th className="p-3.5">Author</th>
+                    <th className="p-3.5">Post Content</th>
+                    <th className="p-3.5">Attachment</th>
+                    <th className="p-3.5">Type</th>
+                    <th className="p-3.5">Posted</th>
+                    <th className="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {loadingPosts ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="p-3.5">
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-28 bg-muted/80 skeleton-shimmer rounded" />
+                            <div className="h-2.5 w-36 bg-muted/60 skeleton-shimmer rounded" />
+                          </div>
+                        </td>
+                        <td className="p-3.5"><div className="h-3.5 w-48 bg-muted/70 skeleton-shimmer rounded" /></td>
+                        <td className="p-3.5"><div className="h-9 w-9 bg-muted/70 skeleton-shimmer rounded-lg" /></td>
+                        <td className="p-3.5"><div className="h-4 w-14 bg-muted/70 skeleton-shimmer rounded-full" /></td>
+                        <td className="p-3.5"><div className="h-3 w-16 bg-muted/60 skeleton-shimmer rounded" /></td>
+                        <td className="p-3.5 text-right"><div className="h-7 w-20 bg-muted/70 skeleton-shimmer rounded-lg ml-auto" /></td>
+                      </tr>
+                    ))
+                  ) : postsList.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                        No community posts found matching query.
+                      </td>
+                    </tr>
+                  ) : (
+                    postsList.map((post) => (
+                      <tr key={post.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="p-3.5">
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              {post.author?.firstName ? `${post.author.firstName} ${post.author.lastName || ''}` : post.author?.email || 'Unknown User'}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">{post.author?.university || post.author?.email}</p>
+                          </div>
+                        </td>
+                        <td className="p-3.5 max-w-xs">
+                          <p className="line-clamp-2 text-muted-foreground">{post.content || '—'}</p>
+                        </td>
+                        <td className="p-3.5">
+                          {post.imageUrl ? (
+                            <a href={post.imageUrl} target="_blank" rel="noreferrer" className="block w-10 h-10 rounded-lg overflow-hidden border border-border hover:opacity-80">
+                              <img src={post.imageUrl} alt="Attachment" className="w-full h-full object-cover" />
+                            </a>
+                          ) : (
+                            <span className="text-muted-foreground text-[11px]">None</span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-muted text-muted-foreground">
+                            {post.postType || 'general'}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-muted-foreground">{timeAgo(post.createdAt)}</td>
+                        <td className="p-3.5 text-right">
+                          <button
+                            onClick={() => handleDeletePost(post.id)}
+                            title="Delete violating post"
+                            className="p-1.5 rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10 inline-flex items-center gap-1 font-semibold"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>Remove</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Moderation Stacked Cards (Zero Horizontal Scroll) */}
+            <div className="md:hidden space-y-3">
+              {loadingPosts ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="p-4 rounded-2xl border border-border bg-card space-y-2.5 animate-pulse">
+                    <div className="h-3.5 w-32 bg-muted rounded skeleton-shimmer" />
+                    <div className="h-3 w-full bg-muted rounded skeleton-shimmer" />
+                    <div className="h-3 w-3/4 bg-muted rounded skeleton-shimmer" />
+                  </div>
+                ))
+              ) : postsList.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground rounded-2xl border border-border bg-card">
+                  No community posts found matching query.
+                </div>
+              ) : (
+                postsList.map((post) => (
+                  <div key={post.id} className="p-4 rounded-2xl border border-border bg-card space-y-3 shadow-xs">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-xs text-foreground">
+                          {post.author?.firstName ? `${post.author.firstName} ${post.author.lastName || ''}` : post.author?.email || 'Unknown User'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{post.author?.university || post.author?.email}</p>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-muted text-muted-foreground">
+                        {post.postType || 'general'}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-muted-foreground line-clamp-3">{post.content || 'No text content'}</p>
+
+                    {post.imageUrl && (
+                      <a href={post.imageUrl} target="_blank" rel="noreferrer" className="block w-full max-h-48 rounded-xl overflow-hidden border border-border">
+                        <img src={post.imageUrl} alt="Post Attachment" className="w-full h-full object-cover" />
+                      </a>
+                    )}
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <span className="text-[11px] text-muted-foreground">{timeAgo(post.createdAt)}</span>
+                      <button
+                        onClick={() => handleDeletePost(post.id)}
+                        className="min-h-[44px] px-3 flex items-center justify-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 text-destructive text-xs font-semibold tap-press"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Delete Post</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ─── TAB 6: SUPPORT TICKETS ───────────────────────────────────── */}
+        {activeTab === 'tickets' && (
+          <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-base font-bold">Student Support & Helpdesk Tickets</h2>
+                <p className="text-xs text-muted-foreground">Resolve platform inquiries, bug reports, and user feedback</p>
+              </div>
+              <button onClick={loadTickets} className="p-2 rounded-xl bg-muted hover:bg-accent text-xs font-semibold">
+                <RefreshCw className={cn("w-3.5 h-3.5", loadingTickets && "animate-spin")} />
+              </button>
+            </div>
+
+            {/* Desktop Tickets Table */}
+            <div className="hidden md:block overflow-x-auto rounded-xl border border-border">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-muted/50 text-muted-foreground uppercase text-[10px] font-bold border-b border-border">
+                  <tr>
+                    <th className="p-3.5">Student</th>
+                    <th className="p-3.5">Category</th>
+                    <th className="p-3.5">Subject & Message</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5">Submitted</th>
+                    <th className="p-3.5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {loadingTickets ? (
+                    Array.from({ length: 4 }).map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="p-3.5">
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-24 bg-muted/80 skeleton-shimmer rounded" />
+                            <div className="h-2.5 w-32 bg-muted/60 skeleton-shimmer rounded" />
+                          </div>
+                        </td>
+                        <td className="p-3.5"><div className="h-4 w-16 bg-muted/70 skeleton-shimmer rounded-full" /></td>
+                        <td className="p-3.5">
+                          <div className="space-y-1.5">
+                            <div className="h-3.5 w-32 bg-muted/80 skeleton-shimmer rounded" />
+                            <div className="h-2.5 w-48 bg-muted/60 skeleton-shimmer rounded" />
+                          </div>
+                        </td>
+                        <td className="p-3.5"><div className="h-4 w-14 bg-muted/70 skeleton-shimmer rounded-full" /></td>
+                        <td className="p-3.5"><div className="h-3 w-16 bg-muted/60 skeleton-shimmer rounded" /></td>
+                        <td className="p-3.5 text-right"><div className="h-7 w-24 bg-muted/70 skeleton-shimmer rounded-lg ml-auto" /></td>
+                      </tr>
+                    ))
+                  ) : ticketsList.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                        No support tickets opened. System operating cleanly!
+                      </td>
+                    </tr>
+                  ) : (
+                    ticketsList.map((ticket) => (
+                      <tr key={ticket.id} className="hover:bg-muted/20 transition-colors">
+                        <td className="p-3.5">
+                          <p className="font-semibold text-foreground">
+                            {ticket.author?.firstName ? `${ticket.author.firstName} ${ticket.author.lastName || ''}` : 'Student'}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">{ticket.author?.email || '—'}</p>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-primary/10 text-primary">
+                            {ticket.category || 'General'}
+                          </span>
+                        </td>
+                        <td className="p-3.5 max-w-sm">
+                          <p className="font-semibold text-foreground">{ticket.subject}</p>
+                          <p className="line-clamp-2 text-muted-foreground mt-0.5">{ticket.message}</p>
+                        </td>
+                        <td className="p-3.5">
+                          <span
+                            className={cn(
+                              'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                              ticket.status === 'resolved'
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                            )}
+                          >
+                            {ticket.status || 'open'}
+                          </span>
+                        </td>
+                        <td className="p-3.5 text-muted-foreground">{timeAgo(ticket.createdAt)}</td>
+                        <td className="p-3.5 text-right">
+                          <div className="inline-flex items-center gap-2">
+                            <button
+                              onClick={() => handleResolveTicket(ticket.id, ticket.status)}
+                              className={cn(
+                                'px-2.5 py-1 rounded-lg text-xs font-semibold border',
+                                ticket.status === 'resolved'
+                                ? 'border-muted text-muted-foreground hover:bg-muted'
+                                : 'border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10'
+                              )}
+                            >
+                              {ticket.status === 'resolved' ? 'Reopen' : 'Resolve'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTicket(ticket.id)}
+                              className="p-1.5 rounded-lg border border-destructive/20 text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Tickets Stacked Cards (Zero Horizontal Scroll) */}
+            <div className="md:hidden space-y-3">
+              {loadingTickets ? (
+                Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="p-4 rounded-2xl border border-border bg-card space-y-2.5 animate-pulse">
+                    <div className="h-3.5 w-28 bg-muted rounded skeleton-shimmer" />
+                    <div className="h-3.5 w-44 bg-muted rounded skeleton-shimmer" />
+                    <div className="h-3 w-full bg-muted rounded skeleton-shimmer" />
+                  </div>
+                ))
+              ) : ticketsList.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground rounded-2xl border border-border bg-card">
+                  No support tickets opened. System operating cleanly!
+                </div>
+              ) : (
+                ticketsList.map((ticket) => (
+                  <div key={ticket.id} className="p-4 rounded-2xl border border-border bg-card space-y-3 shadow-xs">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-xs text-foreground">
+                          {ticket.author?.firstName ? `${ticket.author.firstName} ${ticket.author.lastName || ''}` : 'Student'}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">{ticket.author?.email || '—'}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-primary/10 text-primary">
+                          {ticket.category || 'General'}
+                        </span>
+                        <span
+                          className={cn(
+                            'px-2 py-0.5 rounded-full text-[9px] font-bold uppercase',
+                            ticket.status === 'resolved'
+                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                          )}
+                        >
+                          {ticket.status || 'open'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-xs text-foreground">{ticket.subject}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ticket.message}</p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <span className="text-[11px] text-muted-foreground">{timeAgo(ticket.createdAt)}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleResolveTicket(ticket.id, ticket.status)}
+                          className={cn(
+                            'min-h-[44px] px-3.5 rounded-xl text-xs font-semibold border tap-press transition-colors',
+                            ticket.status === 'resolved'
+                              ? 'border-muted text-muted-foreground bg-muted/30'
+                              : 'border-emerald-500/30 text-emerald-600 bg-emerald-500/10'
+                          )}
+                        >
+                          {ticket.status === 'resolved' ? 'Reopen' : 'Resolve'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteTicket(ticket.id)}
+                          className="min-h-[44px] w-11 flex items-center justify-center rounded-xl border border-destructive/30 bg-destructive/10 text-destructive tap-press"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ─── TAB 7: SYSTEM FLAGS ──────────────────────────────────────── */}
         {activeTab === 'system' && (
           <div className="bg-card border border-border rounded-2xl p-6 space-y-6 shadow-xs max-w-3xl">
             <div>
@@ -711,7 +1376,7 @@ export default function AdminDashboardPage() {
                   <button
                     onClick={() => handleFlagToggle(item.key)}
                     disabled={flagUpdating}
-                    className="p-1 text-primary hover:opacity-80 transition-opacity shrink-0"
+                    className="p-1 text-primary hover:opacity-80 transition-opacity shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
                   >
                     {flags[item.key] ? (
                       <ToggleRight className="w-8 h-8 text-primary" />
@@ -725,44 +1390,86 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* ─── TAB 6: AUDIT LOG ─────────────────────────────────────────── */}
+        {/* ─── TAB 8: AUDIT LOG ─────────────────────────────────────────── */}
         {activeTab === 'audit' && (
           <div className="bg-card border border-border rounded-2xl p-6 space-y-4 shadow-xs font-mono text-xs">
             <div className="flex items-center justify-between border-b border-border pb-3">
               <div className="flex items-center gap-2 font-bold text-sm font-sans">
                 <Terminal className="w-4 h-4 text-amber-500" />
-                <span>Live Administrative Audit Trail</span>
+                <span>Persistent Administrative Audit Trail ({auditLogsList.length})</span>
               </div>
-              <span className="text-[10px] text-emerald-500 flex items-center gap-1 font-sans">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live Stream
-              </span>
+              <div className="flex items-center gap-3 font-sans">
+                <span className="text-[10px] text-emerald-500 flex items-center gap-1 font-sans">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> Live DB Sync
+                </span>
+                <button
+                  onClick={loadAuditLogs}
+                  className="p-1.5 rounded-lg bg-muted hover:bg-accent text-muted-foreground"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", loadingAuditLogs && "animate-spin")} />
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2 max-h-96 overflow-y-auto">
-              {auditLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-center justify-between p-2.5 rounded-xl bg-muted/40 border border-border/60"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-[10px] text-muted-foreground">[{log.time}]</span>
-                    <span
-                      className={cn(
-                        'px-1.5 py-0.5 rounded text-[9px] uppercase font-bold',
-                        log.level === 'crit'
-                          ? 'bg-destructive/20 text-destructive'
-                          : log.level === 'warn'
-                          ? 'bg-amber-500/20 text-amber-500'
-                          : 'bg-primary/10 text-primary'
-                      )}
-                    >
-                      {log.level}
-                    </span>
-                    <span className="text-foreground">{log.action}</span>
+              {loadingAuditLogs ? (
+                Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="p-3 rounded-xl bg-muted/40 border border-border/60 animate-pulse flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="h-3 w-16 bg-muted skeleton-shimmer rounded" />
+                      <div className="h-4 w-20 bg-muted skeleton-shimmer rounded" />
+                      <div className="h-3 w-48 bg-muted skeleton-shimmer rounded" />
+                    </div>
+                    <div className="h-3 w-24 bg-muted skeleton-shimmer rounded shrink-0" />
                   </div>
-                  <span className="text-[11px] text-muted-foreground font-sans">{log.user}</span>
+                ))
+              ) : auditLogsList.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground font-sans text-xs">
+                  No administrative events recorded yet.
                 </div>
-              ))}
+              ) : (
+                auditLogsList.map((log) => (
+                  <div
+                    key={log.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-muted/30 border border-border/60 gap-2"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        [{timeAgo(log.created_at || log.createdAt)}]
+                      </span>
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded text-[9px] uppercase font-bold shrink-0',
+                          (log.action.includes('BAN') || log.action.includes('DELETE'))
+                            ? 'bg-destructive/20 text-destructive'
+                            : log.action.includes('UPDATE') || log.action.includes('CHANGE')
+                            ? 'bg-amber-500/20 text-amber-500'
+                            : 'bg-primary/10 text-primary'
+                        )}
+                      >
+                        {log.action}
+                      </span>
+                      <span className="text-foreground text-xs font-sans truncate max-w-md">
+                        {typeof log.details === 'string' ? log.details : JSON.stringify(log.details)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-sans shrink-0">
+                      <span>{log.admin_email || log.adminEmail || 'System'}</span>
+                      {log.device_model && (
+                        <span className="text-[10px] text-primary/80 flex items-center gap-1 font-mono">
+                          <Smartphone className="w-2.5 h-2.5" />
+                          {log.device_model}
+                        </span>
+                      )}
+                      {log.ip_address && (
+                        <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded font-mono">
+                          {log.ip_address}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

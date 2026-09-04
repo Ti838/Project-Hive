@@ -4,6 +4,7 @@ import { supabase, supabaseAdmin } from '../config/supabase.js';
 import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.utils.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../services/email.service.js';
 import { getFlags } from './admin.controller.js';
+import { getClientIp, getClientGeo } from '../utils/ipResolver.js';
 
 // ─── Helper: strip sensitive fields ──────────────────────────────────────────
 function sanitizeUser(user) {
@@ -305,12 +306,38 @@ export async function login(req, res, next) {
 
     // Keep last 5 refresh tokens (multi-device support)
     const tokens = [...(user.refresh_tokens || []), refreshToken].slice(-5);
-    await supabaseAdmin
-      .from('users')
-      .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
-      .eq('id', user.id);
+    
+    // Extract real client IP and Geo from request
+    const clientIp = getClientIp(req);
+    const { country, city } = getClientGeo(req);
+    const deviceMeta = req.body.deviceMeta || {};
 
-    console.log('[ProjectHive] ✅ User logged in:', user.email, '| role:', user.role);
+    try {
+      await supabaseAdmin
+        .from('users')
+        .update({
+          refresh_tokens: tokens,
+          last_seen: new Date().toISOString(),
+          online_status: 'online',
+          last_login_ip: clientIp,
+          last_login_country: country,
+          last_login_city: city,
+          last_login_device_model: deviceMeta.deviceModel || null,
+          last_login_os: deviceMeta.os || null,
+          last_login_browser: deviceMeta.browser || null,
+          last_login_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+    } catch (dbErr) {
+      console.warn('[ProjectHive] Non-fatal: Could not update hardware tracking fields:', dbErr.message);
+      // Fallback update without new columns if migration is pending
+      await supabaseAdmin
+        .from('users')
+        .update({ refresh_tokens: tokens, last_seen: new Date().toISOString(), online_status: 'online' })
+        .eq('id', user.id);
+    }
+
+    console.log('[ProjectHive] ✅ User logged in:', user.email, '| role:', user.role, '| device:', deviceMeta.deviceModel || 'Unknown', '| ip:', clientIp);
 
     setAuthCookies(res, accessToken, refreshToken);
 

@@ -1,147 +1,444 @@
-# ProjectHive 🐝 — System Architecture & Technical Specifications
+<p align="center">
+  <img src="frontend/public/logo.png" width="140" alt="ProjectHive Logo" />
+</p>
 
-> High-Performance Student Collaboration, Real-Time Networking, and Project Incubation Platform.
+<h1 align="center">ProjectHive 🐝 — System Architecture & Technical Specifications</h1>
+
+<p align="center">
+  <strong>Comprehensive Engineering Blueprints, Multi-Model Routing, LiveKit SFU Calling & Entity-Relationship Schemas</strong>
+</p>
 
 ---
 
-## 1. High-Level Architecture Overview
+## 1. Master System Topology & Infrastructure Blueprint
+
+ProjectHive implements a microservices-inspired monolithic edge architecture. Next.js 16 App Router handles the client tier and static pre-rendering on Vercel, while Node.js/Express and Socket.IO power the stateful real-time backend on Render. Persistent data resides in Supabase PostgreSQL, media streams are handled by LiveKit Cloud SFU, and AI reasoning is distributed across a 4-tier cascading model pool.
 
 ```mermaid
 graph TD
-    subgraph Client Layer [Next.js 16 Client & Static Web]
-        App[Next.js App Router]
-        ZStore[Zustand Global Store]
-        SocketHook[useSocket Realtime Hook]
-        Tailwind[Tailwind CSS v4 & Lucide]
+    %% Clients
+    subgraph Client_Ecosystem ["Client Tier (Next.js 16 App Router / React 19)"]
+        BrowserMobile["Mobile Client (< 640px)"]
+        BrowserDesktop["Desktop Client (>= 1024px)"]
+        AppShell["Global AppShell & Topbar"]
+        HiveMindWidget["HiveMind AI Copilot (STT / TTS / Vision)"]
+        LiveKitWidget["MinimizedCallWidget (PiP Docking)"]
+        SocketEngine["useSocket Client Hook"]
+        StoreLayer["Zustand State Stores (Auth, UI, Call)"]
     end
 
-    subgraph CDN & Edge [Vercel Edge Network]
-        Vercel[Vercel Serverless / Static CDN]
+    %% Edge CDN
+    subgraph Edge_Infrastructure ["Edge & Routing Tier (Vercel)"]
+        VercelCDN["Vercel Global CDN & Static Assets"]
+        NextServer["Next.js SSR & Server Actions Runtime"]
     end
 
-    subgraph Backend Services [Render.com Node.js Runtime]
-        Express[Express 4.x REST API Engine]
-        SocketServer[Socket.IO 4.x WebSocket Gateway]
-        AuthGuard[JWT & Rate Limiter Middleware]
-        ErrorHandler[Central PostgreSQL/Supabase Error Handler]
+    %% Backend Engine
+    subgraph Backend_Gateway ["Backend Gateway (Render.com Node.js Engine)"]
+        ExpressRouter["Express 4.x Gateway"]
+        AuthMiddleware["JWT Authentication Guard"]
+        RateLimiter["express-rate-limit (OWASP)"]
+        LiveKitTokenService["LiveKit AccessToken Issuer"]
+        SocketCluster["Socket.IO 4.x WebSocket Hub"]
+        DBConnector["Supabase JS / pg Connection Pool"]
     end
 
-    subgraph Data & Cloud Layer
-        Supabase[(Supabase PostgreSQL Database)]
-        Brevo[Brevo SMTP Transactional Mail]
-        Groq[Groq AI - Llama 3 Fast Inference]
-        Gemini[Google Gemini 1.5 Fallback AI]
-        WebRTC[WebRTC Signaling & Jitsi Relay]
+    %% Multi-Model AI Engine
+    subgraph AI_Inference_Cluster ["Cascading AI Cluster (100% Free Tier)"]
+        GroqTier["Tier 1: Groq Cloud (Llama-3.3-70B-versatile)"]
+        GeminiTier["Tier 2: Google Gemini Flash (Vision & Text)"]
+        OpenRouterTier["Tier 3: OpenRouter Free Failover Pool"]
+        WebSpeechTier["Tier 4: Browser Web Speech API (STT & TTS)"]
     end
 
-    App --> Vercel
-    App -->|REST API over HTTPS| Express
-    SocketHook <-->|Bi-directional WSS| SocketServer
-    Express --> AuthGuard
-    AuthGuard --> ErrorHandler
-    Express --> Supabase
-    Express --> Brevo
-    Express --> Groq
-    Express --> Gemini
-    SocketServer <--> WebRTC
-    SocketServer --> Supabase
+    %% Cloud Services & Persistence
+    subgraph Persistence_Media ["Cloud Infrastructure & Real-Time Media"]
+        PostgreSQL[("Supabase PostgreSQL Database")]
+        LiveKitCluster["LiveKit Cloud SFU Media Server"]
+        BrevoSMTP["Brevo SMTP Transactional Mailer"]
+    end
+
+    %% Connections
+    BrowserMobile --> VercelCDN
+    BrowserDesktop --> VercelCDN
+    VercelCDN --> NextServer
+    NextServer --> AppShell
+    AppShell --> StoreLayer
+    StoreLayer --> SocketEngine
+
+    AppShell -->|HTTPS REST API| ExpressRouter
+    SocketEngine <-->|WSS Bi-directional| SocketCluster
+    ExpressRouter --> AuthMiddleware
+    AuthMiddleware --> RateLimiter
+    RateLimiter --> DBConnector
+    DBConnector --> PostgreSQL
+    SocketCluster --> PostgreSQL
+
+    ExpressRouter --> LiveKitTokenService
+    LiveKitTokenService -->|Minted JWT Token| LiveKitWidget
+    LiveKitWidget <-->|WebRTC SFU Tracks| LiveKitCluster
+
+    HiveMindWidget <--> WebSpeechTier
+    ExpressRouter --> GroqTier
+    GroqTier -.->|Failover on Quota/Limit| GeminiTier
+    GeminiTier -.->|Failover on Quota/Limit| OpenRouterTier
+    ExpressRouter --> BrevoSMTP
 ```
 
 ---
 
-## 2. Real-Time WebSocket Communication Flow
+## 2. Database Entity-Relationship Diagram (ERD)
+
+The persistent database schema is hosted on Supabase (PostgreSQL), utilizing foreign key constraints, cascading deletions, and indexed lookups for fast retrieval across users, squads, messages, feed posts, tickets, and audit trails.
+
+```mermaid
+erDiagram
+    USERS ||--o{ TEAM_MEMBERS : "joins"
+    USERS ||--o{ TEAMS : "owns/leads"
+    USERS ||--o{ TEAM_JOIN_REQUESTS : "applies"
+    USERS ||--o{ MESSAGES : "sends"
+    USERS ||--o{ POSTS : "publishes"
+    USERS ||--o{ POST_REACTIONS : "reacts"
+    USERS ||--o{ TICKETS : "files"
+    USERS ||--o{ AUDIT_LOGS : "triggers (admin)"
+
+    TEAMS ||--o{ TEAM_MEMBERS : "contains"
+    TEAMS ||--o{ TEAM_JOIN_REQUESTS : "receives"
+    TEAMS ||--o{ MESSAGES : "hosts group chat"
+
+    POSTS ||--o{ POST_REACTIONS : "accumulates"
+
+    USERS {
+        uuid id PK
+        string email UK
+        string password_hash
+        string first_name
+        string last_name
+        string university
+        string role "student | admin"
+        string avatar_color
+        string bio
+        string[] skills
+        string github_url
+        string linkedin_url
+        boolean is_banned
+        string last_login_ip
+        string last_login_device
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    TEAMS {
+        uuid id PK
+        string name
+        string description
+        string category
+        uuid leader_id FK
+        integer max_size
+        string recruiting_status "recruiting | full"
+        string[] required_skills
+        timestamp created_at
+    }
+
+    TEAM_MEMBERS {
+        uuid id PK
+        uuid team_id FK
+        uuid user_id FK
+        string role "leader | member"
+        timestamp joined_at
+    }
+
+    TEAM_JOIN_REQUESTS {
+        uuid id PK
+        uuid team_id FK
+        uuid user_id FK
+        string status "pending | accepted | rejected"
+        string message
+        timestamp created_at
+    }
+
+    MESSAGES {
+        uuid id PK
+        uuid sender_id FK
+        uuid receiver_id FK "nullable for team chat"
+        uuid team_id FK "nullable for 1:1 chat"
+        text content
+        string image_url
+        string status "sent | delivered | read"
+        jsonb reactions
+        timestamp created_at
+    }
+
+    POSTS {
+        uuid id PK
+        uuid author_id FK
+        text content
+        string image_url
+        string post_type "general | project | question"
+        timestamp created_at
+    }
+
+    POST_REACTIONS {
+        uuid id PK
+        uuid post_id FK
+        uuid user_id FK
+        string emoji
+        timestamp created_at
+    }
+
+    TICKETS {
+        uuid id PK
+        uuid user_id FK
+        string subject
+        text message
+        string category
+        string status "open | in_progress | resolved"
+        timestamp created_at
+    }
+
+    AUDIT_LOGS {
+        uuid id PK
+        string action "BAN_USER | DELETE_TEAM | UPDATE_FLAG"
+        string admin_email
+        jsonb details
+        string ip_address
+        string device_model
+        timestamp created_at
+    }
+
+    SYSTEM_FLAGS {
+        string key PK
+        boolean value
+        string description
+        timestamp updated_at
+    }
+```
+
+---
+
+## 3. Multimodal AI Cascading Engine
+
+The AI Copilot ("HiveMind AI") implements an intelligent 4-tier routing and failover cascade. It automatically prioritizes visual reasoning when images or diagrams are detected, and executes text and code synthesis through Groq with automated fallbacks.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Student / Developer
+    participant UI as HiveMind Copilot (Frontend)
+    participant Speech as Web Speech Engine (Browser)
+    participant Gateway as Backend AI Controller
+    participant Groq as Tier 1: Groq Cloud (Llama 3.3 70B)
+    participant Gemini as Tier 2: Google Gemini 2.5 Flash
+    participant OpenRouter as Tier 3: OpenRouter Free Pool
+
+    alt User initiates Speech Dictation
+        User->>Speech: Speaks into microphone
+        Speech-->>UI: Live transcribed text
+    end
+
+    alt User attaches Screenshot / Diagram (or Ctrl+V)
+        User->>UI: Paste clipboard image (Base64)
+    end
+
+    User->>UI: Click Send Prompt
+    UI->>Gateway: POST /api/ai/chat { message, imageBase64, context }
+
+    alt Image Input Detected (Vision Route)
+        Gateway->>Gemini: gemini-2.5-flash (with inline image data)
+        alt Gemini Vision Succeeds
+            Gemini-->>Gateway: Formatted reasoning & code
+        else Gemini Vision Quota Exceeded / Error
+            Gateway->>OpenRouter: Failover to openrouter/free (multimodal model)
+            OpenRouter-->>Gateway: Formatted reasoning & code
+        end
+    else Pure Text / Code Request
+        Gateway->>Groq: llama-3.3-70b-versatile
+        alt Groq Inference Succeeds
+            Groq-->>Gateway: Ultra-fast token response (~250 tokens/s)
+        else Groq Rate Limited (HTTP 429)
+            Gateway->>Gemini: gemini-2.5-flash
+            alt Gemini Succeeds
+                Gemini-->>Gateway: Formatted response
+            else Gemini Rate Limited
+                Gateway->>OpenRouter: openrouter/free pool
+                OpenRouter-->>Gateway: Fallback response
+            end
+        end
+    end
+
+    Gateway-->>UI: 200 OK { ok: true, reply, provider, model }
+    UI-->>User: Render Markdown with syntax-highlighted code & copy action
+
+    alt Auto-Speech TTS Enabled
+        UI->>Speech: window.speechSynthesis.speak(sanitizedText)
+        Speech-->>User: Natural audio playback
+    end
+```
+
+---
+
+## 4. LiveKit Cloud SFU Audio/Video Calling & PiP Docking
+
+ProjectHive replaces legacy P2P mesh topologies with a high-performance **Selective Forwarding Unit (SFU)** cluster hosted on LiveKit Cloud. This enables multi-participant video calls with minimal client CPU and bandwidth overhead.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Caller as Initiator (Squad Member)
+    participant Frontend as ProjectHive Client
+    participant Server as Backend Express Gateway
+    participant LiveKitCloud as LiveKit Cloud SFU Cluster
+    actor RemotePeer as Remote Teammate
+
+    Caller->>Frontend: Click "Start Squad Call" (/teams/[id])
+    Frontend->>Server: POST /api/calls/token { roomName: teamId, participantName: user.name }
+    Server->>Server: Generate LiveKit JWT with VideoGrant { roomJoin: true, canPublish: true }
+    Server-->>Frontend: 200 OK { token, liveKitUrl }
+
+    Frontend->>LiveKitCloud: Connect via WSS with LiveKit JWT
+    LiveKitCloud-->>Frontend: Connection Established (Participant Joined)
+
+    Frontend->>LiveKitCloud: Publish Local Camera & Mic Tracks
+    LiveKitCloud->>RemotePeer: Notify "track_published"
+    RemotePeer->>LiveKitCloud: Subscribe to Remote Tracks
+    LiveKitCloud-->>RemotePeer: Forward Video/Audio RTP Stream
+
+    alt Minimized Mode (Picture-in-Picture)
+        Caller->>Frontend: Click "Minimize Call"
+        Frontend->>Frontend: Mount MinimizedCallWidget
+        Note over Frontend: Mobile: Dock top-right (top-4 right-4)<br/>Desktop: Dock bottom-right (bottom-20 right-4)
+    end
+
+    alt Reconnection & Network Degradation
+        LiveKitCloud->>Frontend: Signal connection quality: 'poor'
+        Frontend->>Frontend: Auto-downgrade video resolution (Dynacast)
+    end
+
+    Caller->>Frontend: Click "End Call"
+    Frontend->>LiveKitCloud: room.disconnect()
+    LiveKitCloud->>RemotePeer: Participant disconnected
+```
+
+---
+
+## 5. Real-Time Socket.IO Bi-directional Event Pipeline
+
+The messaging system powers both direct messaging (`/messages`) and embedded squad channels (`/teams/[id]`). It supports optimistic UI updates, delivery status updates, and emoji reaction broadcasts.
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor Alice as Student A (Client)
-    participant SocketGateway as Socket.IO Gateway
-    participant SupabaseDB as Supabase Database
+    participant SocketGateway as Socket.IO Hub (server.js)
+    participant DB as Supabase PostgreSQL
     actor Bob as Student B (Client)
 
-    Alice->>SocketGateway: connect (with Bearer JWT)
-    SocketGateway-->>Alice: connect_acknowledged
-    SocketGateway->>Bob: status:update { userId: Alice, status: 'online' }
+    Alice->>SocketGateway: connect(auth: { token: BearerJWT })
+    SocketGateway-->>Alice: Connection Verified
+    SocketGateway->>Bob: Emit 'user:online' { userId: Alice }
 
-    Alice->>SocketGateway: join:room { roomId: "room_123" }
-    Bob->>SocketGateway: join:room { roomId: "room_123" }
+    Alice->>SocketGateway: Emit 'message:send' { recipientId: Bob, content: "Hello!" }
+    SocketGateway->>DB: INSERT INTO messages (sender_id, receiver_id, content, status='sent')
+    DB-->>SocketGateway: Record created { id: msg_01, status: 'sent' }
 
-    Alice->>SocketGateway: typing:start { roomId: "room_123" }
-    SocketGateway->>Bob: user:typing { userId: Alice }
+    SocketGateway-->>Alice: Emit 'message:sent' { messageId: msg_01, status: 'sent' }
+    SocketGateway->>Bob: Emit 'message:new' { message: msg_01 }
 
-    Alice->>SocketGateway: message:send { roomId: "room_123", content: "Hey!" }
-    SocketGateway->>SupabaseDB: INSERT into messages
-    SocketGateway->>Bob: message:received { id, sender, content: "Hey!" }
-    SocketGateway-->>Alice: message:received (echo acknowledgement)
+    Bob->>SocketGateway: Emit 'message:read' { messageId: msg_01, senderId: Alice }
+    SocketGateway->>DB: UPDATE messages SET status='read' WHERE id=msg_01
+    SocketGateway->>Alice: Emit 'message:status_updated' { messageId: msg_01, status: 'read' }
 
-    Alice->>SocketGateway: typing:stop { roomId: "room_123" }
-    SocketGateway->>Bob: user:stop-typing { userId: Alice }
+    Bob->>SocketGateway: Emit 'message:react' { messageId: msg_01, emoji: '🔥' }
+    SocketGateway->>DB: UPDATE messages SET reactions = reactions || '🔥'
+    SocketGateway->>Alice: Emit 'message:reaction_added' { messageId: msg_01, emoji: '🔥', userId: Bob }
 ```
 
 ---
 
-## 3. WebRTC Voice & Video Signaling Sequence
+## 6. Team Collaboration & Join Request State Machine
+
+Squad workflows are modeled as a deterministic state machine to ensure member counts never exceed squad capacity and leadership is securely preserved.
 
 ```mermaid
-sequenceDiagram
-    autonumber
-    actor Caller as Caller
-    participant Server as Socket.IO Signaling Server
-    actor Callee as Callee
+stateDiagram-v2
+    [*] --> TeamCreated: Leader creates Squad
 
-    Caller->>Server: call:initiate { roomId, targetId, callerName, isWebRTC: true }
-    Server->>Callee: call:incoming { roomId, callerId, callerName }
+    state TeamCreated {
+        [*] --> ActivelyRecruiting: Member Count < Max Size
+        ActivelyRecruiting --> SquadFull: Member Count == Max Size
+        SquadFull --> ActivelyRecruiting: Member leaves or is kicked
+    }
 
-    alt Call Accepted
-        Callee->>Server: call:accept { roomId, targetId }
-        Server->>Caller: call:accepted { roomId, peerId }
-        Note over Caller,Callee: WebRTC P2P / TURN Stream Established
-    else Call Declined
-        Callee->>Server: call:decline { roomId, targetId }
-        Server->>Caller: call:declined { roomId }
-    end
+    state JoinRequestLifecycle {
+        [*] --> PendingRequest: Student submits Join Request
+        PendingRequest --> Accepted: Leader approves request
+        PendingRequest --> Rejected: Leader declines request
+    }
+
+    Accepted --> MemberAdded: Insert into team_members
+    MemberAdded --> TeamCreated: Increment member_count
+
+    state LeadershipLifecycle {
+        LeaderRole --> MemberRole: Leader transfers ownership
+        MemberRole --> LeaderRole: Target user becomes Leader
+    }
 ```
 
 ---
 
-## 4. Authentication & Token Refresh Flow
+## 7. Security, OWASP & Auth Token Lifecycle
+
+ProjectHive maintains zero-trust security standards across all endpoints and browser sessions:
 
 ```mermaid
 sequenceDiagram
     autonumber
     actor User as User Browser
-    participant API as Backend Auth Router
+    participant Gateway as Express Auth Router
     participant DB as Supabase DB
 
-    User->>API: POST /api/auth/login { email, password }
-    API->>DB: Query user + verify bcrypt hash
-    API-->>User: 200 OK { accessToken (15m), refreshToken (7d), user }
-    Note over User: Tokens stored in Secure LocalStorage / State
+    User->>Gateway: POST /api/auth/login { email, password }
+    Gateway->>DB: Query user by email
+    DB-->>Gateway: User Record with bcrypt hash
+    Gateway->>Gateway: bcrypt.compare(password, password_hash)
 
-    User->>API: GET /api/users/me (with expired token)
-    API-->>User: 401 Unauthorized
+    alt Invalid Credentials
+        Gateway-->>User: 401 Unauthorized { message: "Invalid email or password" }
+    else Valid Credentials
+        Gateway->>Gateway: Sign Access Token (15 min expiry)
+        Gateway->>Gateway: Sign Refresh Token (7 days expiry)
+        Gateway->>DB: Store active refresh token hash
+        Gateway-->>User: 200 OK { accessToken, refreshToken, user }
+    end
 
-    User->>API: POST /api/auth/refresh { refreshToken }
-    API->>DB: Verify active refresh token
-    API-->>User: 200 OK { new accessToken, new refreshToken }
-    User->>API: Retry GET /api/users/me (with new token)
-    API-->>User: 200 OK { userProfile }
+    Note over User: Subsequent Request with Expired Access Token
+    User->>Gateway: GET /api/teams (with expired Bearer token)
+    Gateway-->>User: 401 Unauthorized { code: "TOKEN_EXPIRED" }
+
+    User->>Gateway: POST /api/auth/refresh { refreshToken }
+    Gateway->>DB: Verify active refresh token in database
+    Gateway->>Gateway: Issue new Access Token (15 min) & rotated Refresh Token
+    Gateway-->>User: 200 OK { accessToken: newAccess, refreshToken: newRefresh }
+    User->>Gateway: Retry GET /api/teams (with newAccess)
+    Gateway-->>User: 200 OK { teams: [...] }
 ```
 
 ---
 
-## 5. Security & International Compliance Standards
+## 8. International Responsive Design System Standards
 
-1. **OWASP Top 10 Protections**:
-   - **XSS Prevention**: DOMPurify and custom input sanitization on all user-submitted markdown and message bodies.
-   - **CSRF & Injection**: Strict CORS origin regex filters (`*.vercel.app` & explicit localhost) and parameterized SQL queries via Supabase JS client.
-   - **Rate Limiting**: `express-rate-limit` protecting auth endpoints (20 req / 15 min) and global endpoints (100 req / 15 min).
-2. **WCAG 2.1 Accessibility**:
-   - Semantic HTML5 landmarks (`<aside>`, `<main>`, `<header>`, `<nav>`).
-   - High-contrast color ratios complying with AA standard in both Light and Dark modes.
-   - Fully keyboard-accessible navigation and ARIA attributes for screen readers.
-3. **Data Integrity & Privacy**:
-   - Passwords salted and hashed with **bcryptjs (cost factor 10)**.
-   - Stateless JWT tokens signed with SHA-256 HMAC secrets.
-   - Graceful server shutdown hooks ensuring database pool cleanup.
+1. **Dynamic Viewport Height (`100dvh`)**: All full-screen viewports enforce `min-height: 100dvh` in `globals.css` and template containers to prevent layout jumps when mobile address bars expand or collapse.
+2. **iOS Safari Auto-Zoom Prevention**: Form text inputs enforce `text-base sm:text-sm` (minimum 16px computed font size on mobile viewports) to prevent browser auto-zooming on focus.
+3. **WCAG 2.1 AAA Touch Targets**: All interactive elements (navigation buttons, dropdown toggles, modal closures, and action pills) enforce a strict minimum boundary of `44x44px` (`.touch-target`).
+4. **Dual Presentation Data Layouts**:
+   - Desktop (`>= 768px`): High-density tabular views (`hidden md:block`).
+   - Mobile (`< 768px`): Zero-horizontal-scroll stacked card views (`md:hidden`) with hardware, network, and contextual actions.
+5. **Zero Cumulative Layout Shift (CLS)**: Skeletons (`.skeleton-shimmer`) match the exact pixel dimensions of resolved data components, eliminating page jumpiness during async fetching.
 
+---
+
+## 📜 License
+
+This architecture and codebase are licensed under the **[MIT License](LICENSE)**.
+
+Copyright (c) 2025-2026 ProjectHive Contributors.
