@@ -35,9 +35,12 @@ function camelizeUser(user) {
     created_at: 'createdAt',
     updated_at: 'updatedAt',
   };
-  const result = {};
+  const result = { ...user };
   for (const [k, v] of Object.entries(user)) {
-    result[keyMap[k] || k] = v;
+    result[k] = v;
+    if (keyMap[k]) {
+      result[keyMap[k]] = v;
+    }
   }
   return result;
 }

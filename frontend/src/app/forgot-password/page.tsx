@@ -34,11 +34,29 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-2xl p-8 shadow-sm">
-        <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back to sign in
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      {/* Top Header */}
+      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
         </Link>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
+        </Link>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-8 shadow-xl">
+          <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to sign in
+          </Link>
 
         {submitted ? (
           <div className="text-center space-y-4 py-4">
@@ -97,6 +115,7 @@ export default function ForgotPasswordPage() {
             </form>
           </>
         )}
+        </div>
       </div>
     </div>
   );

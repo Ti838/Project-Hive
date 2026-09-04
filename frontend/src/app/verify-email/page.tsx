@@ -114,17 +114,36 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
-      <Suspense fallback={
-        <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-4 text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center text-primary">
-            <Loader2 className="w-8 h-8 animate-spin" />
+    <div className="min-h-screen flex flex-col bg-background text-foreground">
+      {/* Top Header */}
+      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
+        >
+          <ArrowRight className="w-4 h-4 rotate-180 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
+        </Link>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
           </div>
-          <p className="text-sm text-muted-foreground">Connecting to verification service…</p>
-        </div>
-      }>
-        <VerifyEmailContent />
-      </Suspense>
+          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
+        </Link>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center p-6">
+        <Suspense fallback={
+          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-4 text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-3xl flex items-center justify-center text-primary">
+              <Loader2 className="w-8 h-8 animate-spin" />
+            </div>
+            <p className="text-sm text-muted-foreground">Connecting to verification service…</p>
+          </div>
+        }>
+          <VerifyEmailContent />
+        </Suspense>
+      </div>
     </div>
   );
 }

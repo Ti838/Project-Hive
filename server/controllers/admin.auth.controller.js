@@ -96,11 +96,27 @@ export async function adminLogin(req, res) {
       maxAge: 4 * 60 * 60 * 1000 // 4 hours
     });
 
+    const adminUser = {
+      id: 'admin',
+      email: ADMIN_EMAIL,
+      first_name: 'Super',
+      last_name: 'Admin',
+      firstName: 'Super',
+      lastName: 'Admin',
+      role: 'admin',
+      is_verified: true,
+      isVerified: true,
+    };
+
     return res.json({
       ok: true,
+      success: true,
       message: 'Admin login successful.',
       token,
-      admin: { email: ADMIN_EMAIL, role: 'admin' },
+      accessToken: token,
+      refreshToken: token,
+      user: adminUser,
+      admin: adminUser,
     });
   } catch (err) {
     console.error('[Admin] Login error:', err.message);

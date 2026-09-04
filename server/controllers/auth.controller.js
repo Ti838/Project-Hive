@@ -55,13 +55,19 @@ export async function register(req, res, next) {
       return res.status(403).json({ error: 'New user registration is currently disabled by administrators.' });
     }
 
-    const { firstName, lastName, email, password, university, major, yearOfStudy } = req.body;
+    const firstName = (req.body.firstName || req.body.first_name || '').trim();
+    const lastName  = (req.body.lastName  || req.body.last_name  || '').trim();
+    const email     = (req.body.email || '').toLowerCase().trim();
+    const password  = req.body.password || '';
+    const university = (req.body.university || '').trim();
+    const major     = (req.body.major || req.body.department || '').trim();
+    const yearOfStudy = req.body.yearOfStudy || req.body.year_of_study || null;
 
     if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({ error: 'All required fields must be filled.' });
+      return res.status(400).json({ error: 'All required fields (first name, last name, email, password) must be filled.' });
     }
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters.' });
     }
 
     // Check existing user
@@ -306,7 +312,7 @@ export async function login(req, res, next) {
 
     // Keep last 5 refresh tokens (multi-device support)
     const tokens = [...(user.refresh_tokens || []), refreshToken].slice(-5);
-    
+
     // Extract real client IP and Geo from request
     const clientIp = getClientIp(req);
     const { country, city } = getClientGeo(req);
@@ -345,13 +351,17 @@ export async function login(req, res, next) {
       message: 'Login successful',
       user: {
         id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
         firstName: user.first_name,
         lastName: user.last_name,
         email: user.email,
         university: user.university,
         avatar: user.avatar,
+        avatar_color: user.avatar_color,
         avatarColor: user.avatar_color,
         role: user.role,
+        is_verified: user.is_verified,
         isVerified: user.is_verified,
       },
       accessToken,

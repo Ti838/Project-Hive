@@ -1,5 +1,5 @@
 'use client';
-// ─── Register Page ─────────────────────────────────────────────────────────────
+// ─── ProjectHive — Modern Register Page ───────────────────────────────────────
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -7,14 +7,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff, Loader2, CheckCircle2 } from 'lucide-react';
+import {
+  Eye, EyeOff, Loader2, ArrowLeft, Lock, Mail,
+  User, School, Sparkles, Users, Video, CheckCircle2, ShieldCheck
+} from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { BANGLADESH_UNIVERSITIES } from '@/lib/universities';
 
 const registerSchema = z.object({
   first_name: z.string().min(2, 'First name must be at least 2 characters'),
   last_name:  z.string().min(2, 'Last name must be at least 2 characters'),
-  email:      z.string().email('Enter a valid university email address'),
+  email:      z.string().email('Please enter a valid university email address'),
   university: z.string().min(2, 'University name is required'),
   password:   z.string().min(6, 'Password must be at least 6 characters'),
   confirm_password: z.string(),
@@ -31,7 +35,7 @@ export default function RegisterPage() {
   const [successMsg, setSuccessMsg] = useState('');
   const router = useRouter();
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   });
 
@@ -54,190 +58,307 @@ export default function RegisterPage() {
     setSuccessMsg('Account created successfully! Redirecting to login…');
     setTimeout(() => {
       router.push('/login');
-    }, 2000);
+    }, 1800);
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex overflow-x-hidden">
-      {/* Left branding */}
-      <div className="hidden lg:flex flex-col justify-center items-center flex-1 bg-primary p-8 xl:p-12 text-primary-foreground">
-        <div className="max-w-md text-center space-y-6">
-          <div className="w-20 h-20 bg-primary-foreground/10 backdrop-blur rounded-3xl flex items-center justify-center mx-auto p-3 shadow-inner">
-            <img src="/logo.png" alt="ProjectHive" className="w-14 h-14 object-contain rounded-2xl" />
-          </div>
-          <h1 className="text-3xl xl:text-4xl font-bold">Join ProjectHive 🐝</h1>
-          <p className="text-primary-foreground/80 text-base xl:text-lg leading-relaxed">
-            The all-in-one collaboration hub for students. Find teams, build incredible projects, and expand your network.
-          </p>
-          <div className="space-y-3 pt-4 text-left bg-primary-foreground/10 p-5 rounded-2xl">
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle2 className="w-5 h-5 text-amber-300 shrink-0" />
-              <span>Connect with passionate student developers</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle2 className="w-5 h-5 text-amber-300 shrink-0" />
-              <span>Real-time voice, video & messaging</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <CheckCircle2 className="w-5 h-5 text-amber-300 shrink-0" />
-              <span>AI-powered project idea brainstorming</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen w-full bg-background text-foreground flex flex-col selection:bg-primary/20">
+      {/* ─── Top Navigation Bar with Back to Home ───────────────────── */}
+      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
+        </Link>
 
-      {/* Right form */}
-      <div className="flex-1 flex items-center justify-center px-4 py-8 sm:px-8 md:px-12 bg-background min-h-[100dvh] overflow-y-auto">
-        <div className="w-full max-w-md space-y-6 my-auto">
-          <div className="lg:hidden flex items-center gap-2.5">
-            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center p-2 overflow-hidden">
-              <img src="/logo.png" alt="ProjectHive" className="w-6 h-6 object-contain rounded-lg" />
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
+        </Link>
+      </header>
+
+      {/* ─── Main Content Split Layout ──────────────────────────────── */}
+      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-8 lg:p-12">
+        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-8 lg:p-10 shadow-xl backdrop-blur-xl">
+
+          {/* Left Feature Branding (Desktop) */}
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[560px]">
+            <div className="space-y-6">
+              <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center p-3 shadow-inner">
+                <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+              </div>
+
+              <div>
+                <h1 className="text-3xl font-black tracking-tight">Join ProjectHive</h1>
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+                  Join thousands of student developers, designers, and innovators building the next generation of software.
+                </p>
+              </div>
+
+              <div className="space-y-4 pt-2">
+                {[
+                  {
+                    title: 'Form Hackathon Squads',
+                    desc: 'Match with peers by university, field of study, and technical stacks.',
+                    icon: Users,
+                  },
+                  {
+                    title: 'Live Audio/Video Calling',
+                    desc: 'Connect in real-time with low-latency WebRTC and in-call whiteboard.',
+                    icon: Video,
+                  },
+                  {
+                    title: 'AI Project Studio',
+                    desc: 'Brainstorm ideas, architecture, and task timelines with Gemini & Groq.',
+                    icon: Sparkles,
+                  },
+                ].map((f, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-background/50 border border-border/60 text-xs">
+                    <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0 mt-0.5">
+                      <f.icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">{f.title}</p>
+                      <p className="text-muted-foreground text-[11px] mt-0.5">{f.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <span className="font-bold text-xl tracking-tight">ProjectHive</span>
+
+            <div className="pt-6 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
+              <span>Free for all university students</span>
+              <span className="font-semibold text-primary">Open Community</span>
+            </div>
           </div>
 
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Create an account</h2>
-            <p className="text-muted-foreground mt-1 text-xs sm:text-sm">Join thousands of students building the future</p>
-          </div>
+          {/* Right Form */}
+          <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-2 max-w-lg mx-auto w-full">
+            {/* Quick Switch Tabs */}
+            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-6 border border-border/60 text-center text-xs font-semibold">
+              <Link
+                href="/login"
+                className="py-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Sign In
+              </Link>
+              <span className="py-2 rounded-lg bg-background text-foreground shadow-xs">Create Account</span>
+            </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5 mb-5">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Create your account</h2>
+              <p className="text-xs sm:text-sm text-muted-foreground">Fill in your information to get started for free</p>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+              {/* Name fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-muted-foreground" /> First Name
+                  </label>
+                  <input
+                    {...register('first_name')}
+                    autoCapitalize="words"
+                    autoComplete="given-name"
+                    placeholder="Alex"
+                    className={cn(
+                      'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                      errors.first_name ? 'border-destructive' : 'border-border/80'
+                    )}
+                  />
+                  {errors.first_name && <p className="text-xs text-destructive">{errors.first_name.message}</p>}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
+                    <User className="w-3.5 h-3.5 text-muted-foreground" /> Last Name
+                  </label>
+                  <input
+                    {...register('last_name')}
+                    autoCapitalize="words"
+                    autoComplete="family-name"
+                    placeholder="Morgan"
+                    className={cn(
+                      'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                      errors.last_name ? 'border-destructive' : 'border-border/80'
+                    )}
+                  />
+                  {errors.last_name && <p className="text-xs text-destructive">{errors.last_name.message}</p>}
+                </div>
+              </div>
+
+              {/* University */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
+                    <School className="w-3.5 h-3.5 text-muted-foreground" /> University / Institution (UGC Approved)
+                  </label>
+                  <span className="text-[10px] text-muted-foreground">Select or Type</span>
+                </div>
+                <div className="relative">
+                  <input
+                    {...register('university')}
+                    list="ugc-universities"
+                    autoCapitalize="words"
+                    autoComplete="off"
+                    placeholder="Search university (e.g. DU, BUET, NSU, BRACU, SUST...)"
+                    className={cn(
+                      'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                      errors.university ? 'border-destructive' : 'border-border/80'
+                    )}
+                  />
+                  <datalist id="ugc-universities">
+                    {BANGLADESH_UNIVERSITIES.map((uni) => (
+                      <option key={uni} value={uni} />
+                    ))}
+                  </datalist>
+                </div>
+                {errors.university && <p className="text-xs text-destructive">{errors.university.message}</p>}
+
+                {/* Popular UGC University Quick Chips */}
+                <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                  <span className="text-[10px] text-muted-foreground mr-1">Popular:</span>
+                  {[
+                    'University of Dhaka (DU)',
+                    'BUET',
+                    'North South University (NSU)',
+                    'BRAC University (BRACU)',
+                    'IUB',
+                    'AIUB',
+                    'AUST',
+                    'SUST',
+                    'UIU',
+                    'EWU',
+                    'DIU',
+                    'KUET',
+                    'RUET',
+                    'CUET'
+                  ].map((chip) => (
+                    <button
+                      key={chip}
+                      type="button"
+                      onClick={() => {
+                        const match = BANGLADESH_UNIVERSITIES.find((u) => u.toLowerCase().includes(chip.toLowerCase())) || chip;
+                        setValue('university', match, { shouldValidate: true });
+                      }}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-muted hover:bg-primary/10 hover:text-primary border border-border/60 transition-colors"
+                    >
+                      {chip}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Email */}
               <div className="space-y-1">
-                <label className="text-xs font-medium">First Name</label>
+                <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
+                  <Mail className="w-3.5 h-3.5 text-muted-foreground" /> Email Address
+                </label>
                 <input
-                  {...register('first_name')}
-                  autoCapitalize="words"
-                  autoComplete="given-name"
-                  placeholder="Alex"
+                  {...register('email')}
+                  type="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  spellCheck={false}
+                  placeholder="you@university.edu"
                   className={cn(
-                    'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-3.5 border focus:outline-none focus:border-primary transition-colors',
-                    errors.first_name ? 'border-destructive' : 'border-transparent'
+                    'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                    errors.email ? 'border-destructive' : 'border-border/80'
                   )}
                 />
-                {errors.first_name && <p className="text-xs text-destructive">{errors.first_name.message}</p>}
+                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-medium">Last Name</label>
-                <input
-                  {...register('last_name')}
-                  autoCapitalize="words"
-                  autoComplete="family-name"
-                  placeholder="Morgan"
-                  className={cn(
-                    'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-3.5 border focus:outline-none focus:border-primary transition-colors',
-                    errors.last_name ? 'border-destructive' : 'border-transparent'
-                  )}
-                />
-                {errors.last_name && <p className="text-xs text-destructive">{errors.last_name.message}</p>}
+              {/* Passwords */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground" /> Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      {...register('password')}
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="new-password"
+                      placeholder="Min 6 characters"
+                      className={cn(
+                        'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 pr-10 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                        errors.password ? 'border-destructive' : 'border-border/80'
+                      )}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-1 rounded-lg"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground" /> Confirm Password
+                  </label>
+                  <input
+                    {...register('confirm_password')}
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    placeholder="Repeat password"
+                    className={cn(
+                      'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                      errors.confirm_password ? 'border-destructive' : 'border-border/80'
+                    )}
+                  />
+                  {errors.confirm_password && <p className="text-xs text-destructive">{errors.confirm_password.message}</p>}
+                </div>
               </div>
+
+              {/* Server error */}
+              {serverError && (
+                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
+                  {serverError}
+                </div>
+              )}
+
+              {/* Success message */}
+              {successMsg && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 active:scale-[0.98] transition-all shadow-md mt-2"
+              >
+                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {isSubmitting ? 'Creating account…' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="mt-5 pt-5 border-t border-border/60 text-center">
+              <p className="text-xs text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/login" className="text-primary font-semibold hover:underline">
+                  Sign in
+                </Link>
+              </p>
             </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium">University / Institution</label>
-              <input
-                {...register('university')}
-                autoCapitalize="words"
-                autoComplete="organization"
-                placeholder="e.g. University of Dhaka"
-                className={cn(
-                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-3.5 border focus:outline-none focus:border-primary transition-colors',
-                  errors.university ? 'border-destructive' : 'border-transparent'
-                )}
-              />
-              {errors.university && <p className="text-xs text-destructive">{errors.university.message}</p>}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium">Email Address</label>
-              <input
-                {...register('email')}
-                type="email"
-                inputMode="email"
-                autoCapitalize="none"
-                autoComplete="email"
-                spellCheck={false}
-                placeholder="you@university.edu"
-                className={cn(
-                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-3.5 border focus:outline-none focus:border-primary transition-colors',
-                  errors.email ? 'border-destructive' : 'border-transparent'
-                )}
-              />
-              {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium">Password</label>
-              <div className="relative">
-                <input
-                  {...register('password')}
-                  type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  placeholder="Min 6 characters"
-                  className={cn(
-                    'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-3.5 pr-12 border focus:outline-none focus:border-primary transition-colors',
-                    errors.password ? 'border-destructive' : 'border-transparent'
-                  )}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground touch-target flex items-center justify-center"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-medium">Confirm Password</label>
-              <input
-                {...register('confirm_password')}
-                type="password"
-                autoComplete="new-password"
-                placeholder="Re-enter password"
-                className={cn(
-                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-3.5 border focus:outline-none focus:border-primary transition-colors',
-                  errors.confirm_password ? 'border-destructive' : 'border-transparent'
-                )}
-              />
-              {errors.confirm_password && <p className="text-xs text-destructive">{errors.confirm_password.message}</p>}
-            </div>
-
-            {serverError && (
-              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-                {serverError}
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 shrink-0" /> {successMsg}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full h-12 min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 active:scale-[0.98] tap-press transition-all shadow-sm"
-            >
-              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              {isSubmitting ? 'Creating account…' : 'Create Account'}
-            </button>
-          </form>
-
-          <p className="text-center text-xs sm:text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link href="/login" className="text-primary font-medium hover:underline">Sign in</Link>
-          </p>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
-
-

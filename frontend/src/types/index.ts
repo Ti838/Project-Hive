@@ -1,3 +1,4 @@
+
 // ─── ProjectHive — Shared TypeScript Types ────────────────────────────────────
 
 export interface User {
@@ -5,9 +6,13 @@ export interface User {
   email: string;
   first_name: string;
   last_name: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
   username?: string;
   avatar?: string;
   avatar_color?: string;
+  avatarColor?: string;
   banner?: string;
   bio?: string;
   university?: string;

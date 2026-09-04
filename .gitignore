@@ -75,3 +75,4 @@ stitch_login.json
 
 # Sensitive Docs (contains credentials)
 STACK.md
+.hermes/

@@ -6,8 +6,8 @@
 import nodemailer from 'nodemailer';
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
-  ? (process.env.FRONTEND_URL_PROD || 'https://projecthive-bd.vercel.app')
-  : 'http://localhost:5000';
+  ? (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || 'https://projecthive-bd.vercel.app')
+  : (process.env.FRONTEND_URL || 'http://localhost:3000');
 
 const FROM_EMAIL = process.env.GMAIL_USER || process.env.BREVO_FROM_EMAIL || 'timonbiswas33@gmail.com';
 const FROM_NAME  = 'ProjectHive';

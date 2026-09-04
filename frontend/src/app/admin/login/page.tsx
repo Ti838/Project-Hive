@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
   const onSubmit = async (data: Form) => {
     setServerError('');
     const deviceMeta = await getExactDeviceDetails();
-    
+
     // 1. Try standard DB admin login first
     const res = await api.auth.login(data.email, data.password, deviceMeta);
     if (res.ok && res.user && res.user.role === 'admin') {
@@ -44,8 +44,10 @@ export default function AdminLoginPage() {
 
     // 2. If DB login failed or not an admin, attempt Root Super-Admin (.env credentials)
     const superRes = await api.admin.superAdminLogin(data.email, data.password);
-    if (superRes.ok && superRes.token && superRes.user) {
-      login(superRes.user, superRes.token, superRes.token);
+    const adminUser = (superRes as any)?.user || (superRes as any)?.admin;
+    const adminToken = (superRes as any)?.token || (superRes as any)?.accessToken;
+    if (superRes.ok && adminToken && adminUser) {
+      login(adminUser, adminToken, adminToken);
       router.push('/admin/dashboard');
       return;
     }
@@ -59,11 +61,29 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex items-center justify-center p-4 sm:p-6 bg-background overflow-x-hidden">
-      <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
-        <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Back to user portal
+    <div className="min-h-screen w-full flex flex-col bg-background text-foreground">
+      {/* Top Header */}
+      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
         </Link>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
+            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
+        </Link>
+      </header>
+
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
+        <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl my-auto">
+          <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-4 h-4" /> Back to user sign in
+          </Link>
 
         <div className="text-center space-y-2">
           <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
@@ -127,6 +147,7 @@ export default function AdminLoginPage() {
             {isSubmitting ? 'Verifying Credentials…' : 'Enter Admin Console'}
           </button>
         </form>
+      </div>
       </div>
     </div>
   );

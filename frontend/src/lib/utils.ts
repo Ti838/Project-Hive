@@ -22,19 +22,38 @@ export function timeAgo(dateString: string): string {
 }
 
 /** Get user display name */
-export function displayName(user: { first_name: string; last_name: string } | null | undefined): string {
+export function displayName(
+  user:
+    | {
+        first_name?: string;
+        last_name?: string;
+        firstName?: string;
+        lastName?: string;
+        name?: string;
+        username?: string;
+        email?: string;
+      }
+    | null
+    | undefined
+): string {
   if (!user) return 'Unknown';
-  return `${user.first_name} ${user.last_name}`.trim();
+  const first = (user.firstName ?? user.first_name ?? '').trim();
+  const last = (user.lastName ?? user.last_name ?? '').trim();
+  const full = `${first} ${last}`.trim();
+  if (full && full !== 'undefined undefined' && full !== 'undefined') return full;
+  if (user.name && user.name !== 'undefined undefined') return user.name;
+  if (user.username) return user.username;
+  if (user.email) return user.email.split('@')[0];
+  return 'User';
 }
 
 /** Get initials for avatar fallback */
 export function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+  if (!name || name === 'undefined undefined' || name === 'undefined') return 'U';
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
 /** Generate a consistent color from a user ID or string */
