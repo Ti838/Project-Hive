@@ -13,7 +13,8 @@ const router = Router();
 router.use(authMiddleware);
 
 // Feed
-router.get('/feed', getFeed);
+router.get('/feed',  getFeed);
+router.get('/posts', getFeed);
 
 // Saved Posts
 router.get('/posts/saved', getSavedPosts);   // ⚠️ must be before /posts/:id
