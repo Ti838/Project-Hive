@@ -2,7 +2,7 @@
   <img src="frontend/public/logo.png" width="140" alt="ProjectHive Logo" />
 </p>
 
-<h1 align="center">ProjectHive 🐝</h1>
+<h1 align="center">ProjectHive </h1>
 
 <p align="center">
   <strong>The Next-Generation Collaboration, Teammate Discovery & Project Incubation Platform for Universities</strong>
