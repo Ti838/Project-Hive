@@ -174,8 +174,11 @@ export async function listUsers(req, res, next) {
       .from('users')
       .select('id, first_name, last_name, avatar, avatar_color, university, major, online_status, last_seen, role', { count: 'exact' })
       .eq('is_verified', true)
-      .eq('is_banned', false)
-      .neq('id', req.user.id);
+      .eq('is_banned', false);
+
+    if (req.user?.id) {
+      q = q.neq('id', req.user.id);
+    }
 
     const s = sanitizeSearch(search);
     if (s) q = q.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,university.ilike.%${s}%`);
@@ -269,6 +272,43 @@ export async function getUserProfile(req, res, next) {
 }
 
 // ─── UPDATE PROFILE ──────────────────────────────────────────────────────────
+// Helper: Upload base64 image data to Supabase Storage bucket and return public URL
+async function uploadBase64ToStorage(base64Str, bucketName, userId, prefix) {
+  if (!base64Str || typeof base64Str !== 'string' || !base64Str.startsWith('data:image/')) {
+    return base64Str;
+  }
+  try {
+    const matches = base64Str.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    if (!matches || matches.length !== 3) return base64Str;
+    const contentType = matches[1];
+    const buffer = Buffer.from(matches[2], 'base64');
+    const ext = contentType.split('/')[1] || 'png';
+    const filePath = `${userId}/${prefix}_${Date.now()}.${ext}`;
+
+    const { data, error } = await supabaseAdmin.storage
+      .from(bucketName)
+      .upload(filePath, buffer, {
+        contentType,
+        upsert: true,
+      });
+
+    if (error) {
+      console.warn(`[Supabase Storage] Failed to upload to ${bucketName}:`, error.message);
+      return base64Str;
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from(bucketName)
+      .getPublicUrl(filePath);
+
+    return publicUrlData?.publicUrl || base64Str;
+  } catch (err) {
+    console.error(`[Supabase Storage] Upload error:`, err);
+    return base64Str;
+  }
+}
+
+// ─── UPDATE CURRENT USER PROFILE (PUT/PATCH /api/users/me) ───────────────────
 export async function updateProfile(req, res, next) {
   try {
     const userId = req.user.id;
@@ -280,8 +320,8 @@ export async function updateProfile(req, res, next) {
     const university = body.university;
     const major = body.major !== undefined ? body.major : body.department;
     const yearOfStudy = body.yearOfStudy !== undefined ? body.yearOfStudy : body.year_of_study;
-    const avatar = body.avatar;
-    const bannerImage = body.bannerImage !== undefined ? body.bannerImage : (body.banner_image !== undefined ? body.banner_image : body.banner);
+    let avatar = body.avatar;
+    let bannerImage = body.bannerImage !== undefined ? body.bannerImage : (body.banner_image !== undefined ? body.banner_image : body.banner);
     const avatarColor = body.avatarColor !== undefined ? body.avatarColor : body.avatar_color;
     const status = body.status;
     const hoursPerWeek = body.hoursPerWeek !== undefined ? body.hoursPerWeek : body.hours_per_week;
@@ -290,6 +330,14 @@ export async function updateProfile(req, res, next) {
     const portfolio = body.portfolio !== undefined ? body.portfolio : body.portfolio_url;
     const isPublic = body.isPublic !== undefined ? body.isPublic : body.is_public;
     const skills = body.skills;
+
+    // Handle base64 image uploads to Supabase Storage
+    if (avatar && typeof avatar === 'string' && avatar.startsWith('data:image/')) {
+      avatar = await uploadBase64ToStorage(avatar, 'avatars', userId, 'avatar');
+    }
+    if (bannerImage && typeof bannerImage === 'string' && bannerImage.startsWith('data:image/')) {
+      bannerImage = await uploadBase64ToStorage(bannerImage, 'banners', userId, 'banner');
+    }
 
     // Build update object (snake_case for Supabase)
     const updates = {};

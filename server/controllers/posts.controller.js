@@ -63,45 +63,57 @@ function normPost(p) {
 // GET /api/feed — own + friends' posts (+ all users if sparse), latest first
 export async function getFeed(req, res, next) {
   try {
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
     const { page = 1, limit = 20, sortBy = 'recent' } = req.query;
     const offset = (page - 1) * limit;
 
-    // Get friend IDs (friends table stores mutual rows: user_id → friend_id)
-    const { data: friendships } = await supabaseAdmin
-      .from('friends')
-      .select('friend_id')
-      .eq('user_id', userId);
+    let friendIds = [];
+    if (userId) {
+      // Get friend IDs (friends table stores mutual rows: user_id → friend_id)
+      const { data: friendships } = await supabaseAdmin
+        .from('friends')
+        .select('friend_id')
+        .eq('user_id', userId);
+      friendIds = (friendships || []).map(f => f.friend_id);
+    }
 
-    const friendIds = (friendships || []).map(f => f.friend_id);
-    const authorIds = [userId, ...friendIds];
+    const authorIds = userId ? [userId, ...friendIds] : [];
 
-    // Fetch friend posts first
-    let { data: posts, error } = await supabaseAdmin
-      .from('posts')
-      .select(`
-        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
-      `)
-      .in('author_id', authorIds)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + +limit - 1);
-
-    if (error) throw error;
-
-    // If fewer than 5 friend posts → also fetch posts from all users (Discover mode)
-    if ((posts || []).length < 5 && offset === 0) {
-      const { data: allPosts } = await supabaseAdmin
+    let posts = [];
+    if (authorIds.length > 0) {
+      // Fetch friend posts first
+      const { data: friendPosts, error } = await supabaseAdmin
         .from('posts')
         .select(`
           id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
           author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
         `)
-        .not('author_id', 'in', `(${authorIds.join(',')})`)
+        .in('author_id', authorIds)
         .order('created_at', { ascending: false })
-        .limit(+limit - (posts || []).length);
+        .range(offset, offset + +limit - 1);
 
-      posts = [...(posts || []), ...(allPosts || [])].sort(
+      if (error) throw error;
+      posts = friendPosts || [];
+    }
+
+    // If fewer than 5 friend posts (or guest mode) → also fetch posts from all users (Discover mode)
+    if (posts.length < 5 && offset === 0) {
+      let q = supabaseAdmin
+        .from('posts')
+        .select(`
+          id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
+          author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        `);
+
+      if (authorIds.length > 0) {
+        q = q.not('author_id', 'in', `(${authorIds.join(',')})`);
+      }
+
+      const { data: allPosts } = await q
+        .order('created_at', { ascending: false })
+        .limit(+limit - posts.length);
+
+      posts = [...posts, ...(allPosts || [])].sort(
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
     }
@@ -111,25 +123,35 @@ export async function getFeed(req, res, next) {
     let reactionsMap = {}, commentsMap = {}, myReactions = {};
 
     if (postIds.length > 0) {
-      const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
+      const queries = [
         supabaseAdmin.from('post_reactions').select('post_id, type, user_id').in('post_id', postIds).then(r => r, () => ({ data: [] })),
         supabaseAdmin.from('post_comments').select('post_id').in('post_id', postIds).then(r => r, () => ({ data: [] })),
-        supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId).then(r => r, () => ({ data: [] })),
-      ]);
+      ];
+
+      if (userId) {
+        queries.push(
+          supabaseAdmin.from('post_reactions').select('post_id, type').in('post_id', postIds).eq('user_id', userId).then(r => r, () => ({ data: [] }))
+        );
+      }
+
+      const [reactionsRes, commentsRes, mineRes] = await Promise.all(queries);
+      const reactions = reactionsRes?.data || [];
+      const comments = commentsRes?.data || [];
+      const mine = mineRes?.data || [];
 
       // Group reactions by post + type
-      (reactions || []).forEach(r => {
+      reactions.forEach(r => {
         if (!reactionsMap[r.post_id]) reactionsMap[r.post_id] = {};
         reactionsMap[r.post_id][r.type] = (reactionsMap[r.post_id][r.type] || 0) + 1;
       });
 
       // Comment counts
-      (comments || []).forEach(c => {
+      comments.forEach(c => {
         commentsMap[c.post_id] = (commentsMap[c.post_id] || 0) + 1;
       });
 
       // My reactions
-      (mine || []).forEach(r => { myReactions[r.post_id] = r.type; });
+      mine.forEach(r => { myReactions[r.post_id] = r.type; });
     }
 
     let result = (posts || []).map(p => normPost({

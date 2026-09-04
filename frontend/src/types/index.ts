@@ -39,6 +39,10 @@ export interface User {
   isVerified?: boolean;
   is_banned?: boolean;
   isBanned?: boolean;
+  is_public?: boolean;
+  isPublic?: boolean;
+  hours_per_week?: number;
+  hoursPerWeek?: number;
   role?: 'user' | 'admin' | 'student';
   profile_completion?: number;
   profileCompletion?: number;

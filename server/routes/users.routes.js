@@ -4,8 +4,8 @@ import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
-router.get('/',             authMiddleware,         usersController.listUsers);
-router.get('/people',       authMiddleware,         usersController.listUsers);
+router.get('/',             optionalAuthMiddleware, usersController.listUsers);
+router.get('/people',       optionalAuthMiddleware, usersController.listUsers);
 router.get('/me',           authMiddleware,         usersController.getCurrentUser);
 router.get('/search',       optionalAuthMiddleware, usersController.searchUsers);
 router.get('/global-search',authMiddleware,         usersController.globalSearch);

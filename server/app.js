@@ -218,23 +218,10 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
-// Mobile blocking middleware for admin API routes
-const blockMobileAdminAPI = (req, res, next) => {
-  const ua = req.get('user-agent') || '';
-  const isMobileUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua);
-  if (isMobileUa) {
-    return res.status(403).json({
-      error: 'Admin access is restricted to desktop devices only',
-      code: 'MOBILE_ADMIN_BLOCKED'
-    });
-  }
-  next();
-};
-
 // Auth and Admin routes are exempted from maintenance mode
 app.use('/api/auth', authRoutes);
-app.post('/api/admin/auth/login', blockMobileAdminAPI, adminLogin);
-app.use('/api/admin', blockMobileAdminAPI, adminRoutes);
+app.post('/api/admin/auth/login', adminLogin);
+app.use('/api/admin', adminRoutes);
 // DEV ONLY: promote-me endpoint — only register in non-production
 if (process.env.NODE_ENV !== 'production') {
   app.use('/api/admin', adminDevRouter);

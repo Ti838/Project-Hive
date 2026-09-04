@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import {
   getFeed, createPost, deletePost, editPost,
   reactToPost, getComments, addComment, deleteComment, editComment,
@@ -9,37 +9,34 @@ import {
 
 const router = Router();
 
-// All routes require authentication
-router.use(authMiddleware);
-
-// Feed
-router.get('/feed',  getFeed);
-router.get('/posts', getFeed);
+// Feed & Read Routes (optionalAuth allows browsing)
+router.get('/feed',  optionalAuthMiddleware, getFeed);
+router.get('/posts', optionalAuthMiddleware, getFeed);
 
 // Saved Posts
-router.get('/posts/saved', getSavedPosts);   // ⚠️ must be before /posts/:id
+router.get('/posts/saved', authMiddleware, getSavedPosts);   // ⚠️ must be before /posts/:id
 
 // Utilities
-router.get('/utils/scrape-metadata', scrapeMetadata);
+router.get('/utils/scrape-metadata', optionalAuthMiddleware, scrapeMetadata);
 
 // Posts CRUD
-router.post('/posts',             createPost);
-router.get('/posts/user/:userId', getUserPosts); // must be before /:id
-router.get('/posts/:id',          getPostById);
-router.patch('/posts/:id',        editPost);     // ✅ NEW — edit own post
-router.delete('/posts/:id',       deletePost);
+router.post('/posts',             authMiddleware, createPost);
+router.get('/posts/user/:userId', optionalAuthMiddleware, getUserPosts); // must be before /:id
+router.get('/posts/:id',          optionalAuthMiddleware, getPostById);
+router.patch('/posts/:id',        authMiddleware, editPost);
+router.delete('/posts/:id',       authMiddleware, deletePost);
 
-// Reactions
-router.post('/posts/:id/react',   reactToPost);
-router.post('/posts/:id/vote',    votePoll); // ✅ NEW — poll voting
+// Reactions & Polls
+router.post('/posts/:id/react',   authMiddleware, reactToPost);
+router.post('/posts/:id/vote',    authMiddleware, votePoll);
 
 // Save / Unsave
-router.post('/posts/:id/save',    savePost);     // ✅ NEW — bookmark toggle
+router.post('/posts/:id/save',    authMiddleware, savePost);
 
 // Comments
-router.get('/posts/:id/comments',          getComments);
-router.post('/posts/:id/comments',         addComment);
-router.patch('/posts/:id/comments/:cid',   editComment);  // ✅ NEW — edit comment
-router.delete('/posts/:id/comments/:cid',  deleteComment);
+router.get('/posts/:id/comments',         optionalAuthMiddleware, getComments);
+router.post('/posts/:id/comments',        authMiddleware, addComment);
+router.patch('/posts/:id/comments/:cid',  authMiddleware, editComment);
+router.delete('/posts/:id/comments/:cid', authMiddleware, deleteComment);
 
 export default router;

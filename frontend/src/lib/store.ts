@@ -83,33 +83,51 @@ export const useSocketStore = create<SocketState>()((set) => ({
 
 interface UIState {
   sidebarCollapsed: boolean;
+  sidebarWidth: number;
   mobileMenuOpen: boolean;
   unreadNotifications: number;
+  hiveAiEnabled: boolean;
+  copilotOpen: boolean;
   toggleSidebar: () => void;
   setSidebarCollapsed: (v: boolean) => void;
+  setSidebarWidth: (w: number) => void;
   setMobileMenuOpen: (v: boolean) => void;
   toggleMobileMenu: () => void;
   setUnreadNotifications: (n: number) => void;
   decrementUnread: () => void;
+  setHiveAiEnabled: (v: boolean) => void;
+  setCopilotOpen: (v: boolean) => void;
+  toggleCopilot: () => void;
 }
 
 export const useUIStore = create<UIState>()(
   persist(
     (set, get) => ({
       sidebarCollapsed: false,
+      sidebarWidth: 260,
       mobileMenuOpen: false,
       unreadNotifications: 0,
+      hiveAiEnabled: true,
+      copilotOpen: false,
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
+      setSidebarWidth: (sidebarWidth) => set({ sidebarWidth: Math.min(380, Math.max(200, sidebarWidth)) }),
       setMobileMenuOpen: (mobileMenuOpen) => set({ mobileMenuOpen }),
       toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
       setUnreadNotifications: (unreadNotifications) => set({ unreadNotifications }),
       decrementUnread: () => set((s) => ({ unreadNotifications: Math.max(0, s.unreadNotifications - 1) })),
+      setHiveAiEnabled: (hiveAiEnabled) => set({ hiveAiEnabled }),
+      setCopilotOpen: (copilotOpen) => set({ copilotOpen }),
+      toggleCopilot: () => set((s) => ({ copilotOpen: !s.copilotOpen })),
     }),
     {
       name: 'ph-ui-store',
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ sidebarCollapsed: state.sidebarCollapsed }),
+      partialize: (state) => ({
+        sidebarCollapsed: state.sidebarCollapsed,
+        sidebarWidth: state.sidebarWidth,
+        hiveAiEnabled: state.hiveAiEnabled,
+      }),
     }
   )
 );

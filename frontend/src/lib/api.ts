@@ -156,6 +156,8 @@ export const api = {
       request<{ users: User[]; total: number }>(`/users?page=${page}&limit=${limit}`),
     endorseSkill: (userId: string, skillId: string) =>
       request<{ endorsed: boolean; endorsements: number }>(`/users/${userId}/skills/${skillId}/endorse`, { method: 'POST' }),
+    changePassword: (data: { currentPassword?: string; newPassword?: string }) =>
+      request<{ message: string }>('/users/me/password', { method: 'PATCH', body: JSON.stringify(data) }),
   },
 
   teams: {
