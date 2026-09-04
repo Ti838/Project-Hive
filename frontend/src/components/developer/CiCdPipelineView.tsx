@@ -104,3 +104,4 @@ export function CiCdPipelineView({ actions, loading }: Props) {
     </div>
   );
 }
+

@@ -126,3 +126,4 @@ export function ConnectRepoModal({ isOpen, onClose, currentRepoUrl, onConnected 
     </AnimatePresence>
   );
 }
+

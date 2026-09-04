@@ -141,3 +141,4 @@ export function PullRequestsView({ pulls, loading, onReviewPr }: Props) {
     </div>
   );
 }
+

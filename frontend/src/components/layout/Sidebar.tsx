@@ -173,41 +173,43 @@ export function Sidebar() {
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
         className="hidden md:flex relative flex-col h-full bg-card border-r border-border shrink-0 z-40 overflow-hidden"
       >
-        {/* Header with Logo + Internal Collapse Button */}
-        <div className="flex items-center justify-between px-3.5 py-4 border-b border-border shrink-0 h-16">
-          <div className="flex items-center gap-2.5 min-w-0">
+        {/* Header with Logo + Collapse/Expand Trigger */}
+        <div className={cn(
+          "flex items-center px-3 py-4 border-b border-border shrink-0 h-16 transition-all",
+          sidebarCollapsed ? "justify-center" : "justify-between"
+        )}>
+          {sidebarCollapsed ? (
             <button
               type="button"
               onClick={toggleSidebar}
-              title={sidebarCollapsed ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"}
-              className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs hover:bg-primary/20 transition-all cursor-pointer tap-press"
+              title="Expand sidebar (Ctrl+B)"
+              className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs hover:bg-primary/25 hover:border-primary/40 transition-all cursor-pointer tap-press group relative"
             >
-              <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
+              <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg group-hover:scale-105 transition-transform" />
+              <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
+                <ChevronRight className="w-4 h-4 text-primary" />
+              </div>
             </button>
-            <AnimatePresence initial={false}>
-              {!sidebarCollapsed && (
-                <motion.span
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="font-bold text-lg tracking-tight whitespace-nowrap truncate text-foreground"
-                >
+          ) : (
+            <>
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
+                  <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
+                </div>
+                <span className="font-bold text-lg tracking-tight whitespace-nowrap truncate text-foreground">
                   ProjectHive
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </div>
+                </span>
+              </div>
 
-          {!sidebarCollapsed && (
-            <button
-              type="button"
-              onClick={toggleSidebar}
-              title="Collapse sidebar (Ctrl+B)"
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors tap-press cursor-pointer shrink-0"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
+              <button
+                type="button"
+                onClick={toggleSidebar}
+                title="Collapse sidebar (Ctrl+B)"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent transition-colors tap-press cursor-pointer shrink-0"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </>
           )}
         </div>
 

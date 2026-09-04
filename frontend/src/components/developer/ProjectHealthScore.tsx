@@ -101,3 +101,4 @@ export function ProjectHealthScore({ health, loading }: Props) {
     </div>
   );
 }
+

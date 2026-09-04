@@ -161,3 +161,4 @@ export function IssuesView({ issues, loading, onLinkTask, onAskAi }: Props) {
     </div>
   );
 }
+

@@ -106,3 +106,4 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
     </div>
   );
 }
+
