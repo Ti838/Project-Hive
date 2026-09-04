@@ -61,19 +61,7 @@ app.use(helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
-// Block admin UI on phones and tablets. Admin is intentionally desktop-only.
-const adminMobileBlockHtml = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Desktop Only - ProjectHive</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0f172a;color:#e2e8f0;font-family:Inter,system-ui,sans-serif;padding:24px;text-align:center}.box{max-width:420px}.badge{display:inline-flex;margin-bottom:16px;padding:6px 10px;border-radius:999px;background:#ef44441f;color:#fca5a5;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}h1{font-size:24px;margin:0 0 10px}p{margin:0;color:#94a3b8;line-height:1.6}</style></head><body><main class="box"><div class="badge">Restricted</div><h1>Admin is available on PC only</h1><p>For security and accuracy, ProjectHive admin tools are blocked on mobile devices. Please open this page from a desktop or laptop browser.</p></main></body></html>`;
-app.use((req, res, next) => {
-  const isAdminPath = req.path === '/admin' || req.path.startsWith('/admin/') || req.path.startsWith('/pages/admin/');
-  if (!isAdminPath) return next();
-  const ua = req.get('user-agent') || '';
-  const isMobileUa = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Tablet/i.test(ua);
-  if (isMobileUa) return res.status(403).type('html').send(adminMobileBlockHtml);
-  next();
-});
-// Serve static frontend files from /public
-const publicDir = path.resolve(__dirname, '..', 'public');
-app.use(express.static(publicDir));
+
 
 // CORS
 const corsOptions = {
@@ -281,57 +269,23 @@ app.get('/api/turn-credentials', async (req, res) => {
 });
 
 
-// 404 handler for API routes only — HTML pages are served by express.static above
+// Health check for Render deployment
+app.get('/', (req, res) => {
+  res.json({
+    status: 'healthy',
+    service: 'ProjectHive Headless Backend API',
+    version: '2.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Headless API fallback: returns JSON for unmatched routes
 app.use((req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API route not found' });
-  }
-  // ── Clean URL routing — serve correct HTML for user-friendly paths ──
-  const routes = {
-    '/login':              'pages/auth/login.html',
-    '/register':           'pages/auth/register.html',
-    '/forgot-password':    'pages/auth/forgot-password.html',
-    '/reset-password':     'pages/auth/reset-password.html',
-    '/verify-email':       'pages/auth/verify-email.html',
-    '/auth/callback':      'pages/auth/callback.html',
-    '/admin':              'pages/admin/login.html',
-    '/admin/login':        'pages/admin/login.html',
-    '/admin/dashboard':    'pages/admin/dashboard.html',
-    '/admin/mobile-blocked': 'pages/admin/mobile-blocked.html',
-    '/dashboard':          'pages/user/dashboard.html',
-    '/feed':               'pages/user/feed.html',
-    '/messages':           'pages/user/messages.html',
-    '/people':             'pages/user/people.html',
-    '/friends':            'pages/user/people.html',
-    '/teams':              'pages/user/teams.html',
-    '/teams/create':       'pages/user/teams-create.html',
-    '/settings':           'pages/user/settings.html',
-    '/notifications':      'pages/user/notifications.html',
-    '/profile':            'pages/user/profile/view.html',
-    '/profile/view':       'pages/user/profile/view.html',
-    '/profile/view.html':  'pages/user/profile/view.html',
-    '/profile/edit':       'pages/user/profile/edit.html',
-    '/showcase':           'pages/user/projects/showcase.html',
-    '/projects':           'pages/user/projects/showcase.html',
-    '/about':              'pages/info/about.html',
-    '/help':               'pages/info/help.html',
-    '/terms':              'pages/info/terms.html',
-    '/privacy':            'pages/info/privacy.html',
-    '/saved':              'pages/user/saved.html',
-    '/generator':          'pages/user/projects/generator.html',
-    '/ai':                 'pages/user/projects/generator.html',
-    '/ai-generator':       'pages/user/projects/generator.html',
-  };
-  const target = routes[req.path];
-  if (target) {
-    return res.sendFile(path.join(publicDir, target));
-  }
-  // Dynamic route support: /profile/:id, /profile/view/:id, /user/:id
-  if (/^\/(profile(\/view)?|user)\/[a-zA-Z0-9_-]+$/.test(req.path)) {
-    return res.sendFile(path.join(publicDir, 'pages/user/profile/view.html'));
-  }
-  // For any other path, serve index.html (handles direct URL access)
-  res.sendFile(path.join(publicDir, 'index.html'));
+  res.status(404).json({
+    ok: false,
+    error: 'Endpoint not found',
+    path: req.originalUrl
+  });
 });
 
 // Error handler (must be last)

@@ -1,0 +1,31 @@
+# ─── GitHub Linguist Overrides ───────────────────────────────────────
+# Enforce accurate repository language statistics:
+# Primary Languages: TypeScript (React/Next.js) & JavaScript (Node.js/Express)
+
+# Language Definitions
+*.ts                  linguist-language=TypeScript
+*.tsx                 linguist-language=TypeScript
+*.js                  linguist-language=JavaScript
+*.mjs                 linguist-language=JavaScript
+*.css                 linguist-language=CSS
+
+# Generated & Dependency Files (Ignored in Language Bar)
+package-lock.json     linguist-generated=true
+*.min.js              linguist-generated=true
+*.min.css             linguist-generated=true
+*.map                 linguist-generated=true
+
+# Documentation & Config
+*.md                  linguist-documentation=true
+*.json                linguist-documentation=true
+
+# Exclude Legacy Directories (if ever present in history or branches)
+public/**             linguist-vendored
+scratch/**            linguist-vendored
+temp_scripts/**       linguist-vendored
+brain/**              linguist-vendored
+frontend/public/**    linguist-vendored
+
+# ─── Line Endings ──────────────────────────────────────────────────
+* text=auto eol=lf
+*.bat text eol=crlf
