@@ -273,8 +273,7 @@ app.get('/api/turn-credentials', async (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'ProjectHive Headless Backend API',
-    version: '2.0.0',
+    service: 'ProjectHive Backend API',
     timestamp: new Date().toISOString()
   });
 });

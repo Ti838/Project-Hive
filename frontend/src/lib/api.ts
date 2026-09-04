@@ -2,7 +2,7 @@
 
 import type { User, Team, TeamMember, Project, Message, Notification, Post, PostComment, FriendRequest, Stats } from '@/types';
 
-const DEFAULT_API_URL = 'https://projecthive-backend.onrender.com/api';
+const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 export function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
@@ -14,7 +14,7 @@ export function getBaseUrl(): string {
       return 'http://localhost:5000/api';
     }
   }
-  return DEFAULT_API_URL;
+  return DEFAULT_API_URL.replace(/\/+$/, '');
 }
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────

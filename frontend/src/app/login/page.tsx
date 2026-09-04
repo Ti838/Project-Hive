@@ -101,7 +101,7 @@ export default function LoginPage() {
 
             <div className="pt-6 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
               <span>Trusted by student builders</span>
-              <span className="font-semibold text-primary">v2.0 Active</span>
+              <span className="font-semibold text-primary">Live Platform</span>
             </div>
           </div>
 

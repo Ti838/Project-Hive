@@ -33,8 +33,8 @@ export default function LandingPage() {
               <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col">
-              <span className="font-extrabold text-lg tracking-tight flex items-center gap-1.5">
-                ProjectHive <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold border border-primary/20">v2.0</span>
+              <span className="font-extrabold text-lg tracking-tight">
+                ProjectHive
               </span>
               <span className="text-[10px] text-muted-foreground font-medium hidden sm:inline">Student Collaboration Platform</span>
             </div>

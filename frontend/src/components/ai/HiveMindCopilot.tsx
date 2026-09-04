@@ -375,9 +375,6 @@ export function HiveMindCopilot() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5">
                     <h3 className="font-bold text-xs text-foreground truncate">HiveMind Copilot</h3>
-                    <span className="text-[9px] font-mono uppercase px-1.5 py-0.2 rounded-full bg-primary/10 text-primary border border-primary/20">
-                      v2.0
-                    </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
