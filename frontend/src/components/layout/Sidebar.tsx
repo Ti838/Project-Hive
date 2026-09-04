@@ -159,10 +159,10 @@ export function Sidebar() {
       <motion.aside
         animate={{ width: sidebarCollapsed ? 70 : 260 }}
         transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
-        className="hidden md:flex relative flex-col h-full bg-card border-r border-border shrink-0 overflow-hidden z-40"
+        className="hidden md:flex relative flex-col h-full bg-card border-r border-border shrink-0 z-40"
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-border">
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-border shrink-0 overflow-hidden">
           <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
             <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
           </div>
@@ -182,7 +182,7 @@ export function Sidebar() {
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto py-4 space-y-0.5 px-2">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-4 space-y-0.5 px-2">
           {navItems.map(({ href, label, icon: Icon, isAdmin }) => {
             const active = pathname === href || pathname.startsWith(href + '/');
             return (
@@ -223,7 +223,7 @@ export function Sidebar() {
         </nav>
 
         {/* User footer */}
-        <div className="border-t border-border p-3">
+        <div className="border-t border-border p-3 shrink-0 overflow-hidden">
           <div className={cn('flex items-center gap-3', sidebarCollapsed && 'justify-center')}>
             {/* Avatar */}
             <Link href="/profile" className="relative shrink-0">
@@ -271,12 +271,19 @@ export function Sidebar() {
           </div>
         </div>
 
-        {/* Collapse toggle */}
+        {/* Collapse toggle button (clear, prominent, not clipped) */}
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="absolute top-1/2 -right-3 -translate-y-1/2 z-50 flex items-center justify-center w-6 h-6 rounded-full bg-card border border-border shadow-sm text-muted-foreground hover:text-foreground transition-colors"
+          aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className="absolute top-1/2 -right-3.5 -translate-y-1/2 z-50 flex items-center justify-center w-7 h-7 rounded-full bg-card dark:bg-zinc-900 border border-border shadow-md text-foreground hover:bg-accent hover:border-primary/60 transition-all cursor-pointer ring-2 ring-background tap-press"
         >
-          {sidebarCollapsed ? <ChevronRight className="w-3.5 h-3.5" /> : <ChevronLeft className="w-3.5 h-3.5" />}
+          {sidebarCollapsed ? (
+            <ChevronRight className="w-4 h-4 text-foreground" />
+          ) : (
+            <ChevronLeft className="w-4 h-4 text-foreground" />
+          )}
         </button>
       </motion.aside>
     </>
