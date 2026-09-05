@@ -238,7 +238,7 @@ export const api = {
         method: 'POST', body: JSON.stringify({ code }),
       }),
 
-    googleCallback: (userData: { email: string; googleId: string; firstName?: string; lastName?: string; avatar?: string | null }) =>
+    googleCallback: (userData: { email: string; googleId: string; firstName?: string; lastName?: string; avatar?: string | null; supabaseAccessToken?: string }) =>
       request<{ message: string; accessToken: string; refreshToken: string; user: User }>('/auth/google/callback', {
         method: 'POST', body: JSON.stringify(userData),
       }),
