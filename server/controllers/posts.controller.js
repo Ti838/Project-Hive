@@ -19,15 +19,20 @@ function normPost(p) {
     avatar_color: p.author.avatar_color || p.author.avatarColor || '#6366F1',
     avatarColor: p.author.avatarColor || p.author.avatar_color || '#6366F1',
     university: p.author.university || '',
+    role: p.author.role || 'student',
     online_status: p.author.online_status || p.author.onlineStatus || 'offline',
     onlineStatus: p.author.online_status || p.author.onlineStatus || 'offline',
     last_seen: p.author.last_seen || p.author.lastSeen || null,
     lastSeen: p.author.last_seen || p.author.lastSeen || null,
   } : null;
 
-  const images = Array.isArray(p.images) && p.images.length > 0
-    ? p.images
-    : (p.image_url ? [p.image_url] : (p.imageUrl ? [p.imageUrl] : []));
+  const mediaUrls = Array.isArray(p.media_urls) && p.media_urls.length > 0
+    ? p.media_urls
+    : (Array.isArray(p.images) && p.images.length > 0
+        ? p.images
+        : (p.image_url ? [p.image_url] : (p.imageUrl ? [p.imageUrl] : [])));
+
+  const pollData = p.poll_data || p.pollData || (p.link_metadata?.isPoll ? p.link_metadata : null);
 
   return {
     id: p.id,
@@ -41,13 +46,22 @@ function normPost(p) {
     createdAt: p.created_at || p.createdAt || new Date().toISOString(),
     updated_at: p.updated_at || p.updatedAt,
     updatedAt: p.updated_at || p.updatedAt,
-    image_url: p.image_url || p.imageUrl || (images[0] || null),
-    imageUrl: p.image_url || p.imageUrl || (images[0] || null),
-    images,
+    image_url: mediaUrls[0] || p.image_url || null,
+    imageUrl: mediaUrls[0] || p.image_url || null,
+    images: mediaUrls,
+    media_urls: mediaUrls,
+    mediaUrls: mediaUrls,
+    code_snippet: p.code_snippet || p.codeSnippet || null,
+    codeSnippet: p.code_snippet || p.codeSnippet || null,
+    poll_data: pollData,
+    pollData: pollData,
+    poll_options: pollData?.options || p.poll_options || p.pollOptions || null,
     link_metadata: p.link_metadata || p.linkMetadata || null,
     linkMetadata: p.link_metadata || p.linkMetadata || null,
     author: authorObj,
     reactions: p.reactions || {},
+    reaction_counts: p.reactions || {},
+    reactionCounts: p.reactions || {},
     reaction_count: reactionCount,
     reactionCount: reactionCount,
     comments_count: p.comments_count || p.commentsCount || p.comment_count || 0,
@@ -56,7 +70,6 @@ function normPost(p) {
     my_reaction: p.my_reaction || p.myReaction || p.user_reaction || null,
     myReaction: p.my_reaction || p.myReaction || p.user_reaction || null,
     user_reaction: p.my_reaction || p.myReaction || p.user_reaction || null,
-    poll_options: p.poll_options || p.pollOptions || null,
   };
 }
 
@@ -85,8 +98,8 @@ export async function getFeed(req, res, next) {
       const { data: friendPosts, error } = await supabaseAdmin
         .from('posts')
         .select(`
-          id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-          author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+          id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+          author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
         `)
         .in('author_id', authorIds)
         .order('created_at', { ascending: false })
@@ -101,8 +114,8 @@ export async function getFeed(req, res, next) {
       let q = supabaseAdmin
         .from('posts')
         .select(`
-          id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-          author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+          id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+          author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
         `);
 
       if (authorIds.length > 0) {
@@ -170,41 +183,98 @@ export async function getFeed(req, res, next) {
       });
     }
 
-    res.json({ posts: result, page: +page, limit: +limit });
+    res.json({ posts: result, page: +page, limit: +limit, total: result.length });
   } catch (err) { next(err); }
 }
 
 // POST /api/posts — create a post
 export async function createPost(req, res, next) {
   try {
-    const { content, postType = 'general', imageUrl = null, linkMetadata = null } = req.body;
+    const {
+      content,
+      postType,
+      post_type,
+      type,
+      imageUrl,
+      image_url,
+      mediaUrls,
+      media_urls,
+      images,
+      codeSnippet,
+      code_snippet,
+      pollData,
+      poll_data,
+      poll_options,
+      linkMetadata,
+      link_metadata,
+    } = req.body;
+
     if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
 
-    const validTypes = ['general', 'achievement', 'project_update', 'looking_for_team', 'poll'];
-    if (!validTypes.includes(postType)) return res.status(400).json({ error: 'Invalid post type' });
+    // Normalize post type
+    const rawType = postType || post_type || type || 'general';
+    const typeMapping = {
+      update: 'general',
+      general: 'general',
+      achievement: 'achievement',
+      project_update: 'project_update',
+      project: 'project_update',
+      looking_for_team: 'looking_for_team',
+      poll: 'poll',
+    };
+    const resolvedType = typeMapping[rawType] || 'general';
+
+    // Normalize media URLs
+    let resolvedMedia = [];
+    if (Array.isArray(media_urls) && media_urls.length > 0) resolvedMedia = media_urls;
+    else if (Array.isArray(mediaUrls) && mediaUrls.length > 0) resolvedMedia = mediaUrls;
+    else if (Array.isArray(images) && images.length > 0) resolvedMedia = images;
+    else if (imageUrl || image_url) resolvedMedia = [imageUrl || image_url];
+
+    // Normalize code snippet
+    const resolvedCode = code_snippet || codeSnippet || null;
+
+    // Normalize poll data
+    let resolvedPoll = poll_data || pollData || null;
+    if (!resolvedPoll && Array.isArray(poll_options) && poll_options.length > 0) {
+      resolvedPoll = {
+        question: content.trim(),
+        options: poll_options.map((opt, i) => ({
+          id: typeof opt === 'object' && opt.id ? opt.id : `opt_${i + 1}`,
+          text: typeof opt === 'object' ? opt.text : String(opt),
+          votes: [],
+        })),
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      };
+    }
 
     const insertData = {
       author_id: req.user.id,
       content: content.trim(),
-      post_type: postType
+      post_type: resolvedType,
+      image_url: resolvedMedia[0] || null,
+      media_urls: resolvedMedia,
+      code_snippet: resolvedCode,
+      poll_data: resolvedPoll,
+      link_metadata: linkMetadata || link_metadata || null,
     };
-    if (imageUrl) insertData.image_url = imageUrl;
-    if (linkMetadata) insertData.link_metadata = linkMetadata;
 
     const { data: post, error } = await supabaseAdmin
       .from('posts')
       .insert(insertData)
       .select(`
-        id, content, post_type, created_at, author_id, image_url, link_metadata,
-        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
       `)
       .single();
 
     if (error) throw error;
     const result = normPost({ ...post, reactions: {}, comments_count: 0, my_reaction: null });
 
-    // Broadcast to all connected users so feed pages show the banner
-    try { getIo()?.emit('post:new', { postId: result.id, authorId: req.user.id }); } catch(_) {}
+    // Broadcast to all connected users so feed pages update reactively
+    try {
+      getIo()?.emit('post:new', { post: result, postId: result.id, authorId: req.user.id });
+    } catch (_) {}
 
     res.status(201).json({ post: result });
   } catch (err) { next(err); }
@@ -219,6 +289,12 @@ export async function deletePost(req, res, next) {
       return res.status(403).json({ error: 'Not authorized' });
 
     await supabaseAdmin.from('posts').delete().eq('id', req.params.id);
+
+    // Broadcast post deletion to all clients
+    try {
+      getIo()?.emit('post:deleted', { postId: req.params.id });
+    } catch (_) {}
+
     res.json({ message: 'Post deleted' });
   } catch (err) { next(err); }
 }
@@ -227,7 +303,7 @@ export async function deletePost(req, res, next) {
 export async function reactToPost(req, res, next) {
   try {
     const { type } = req.body;
-    const validTypes = ['like', 'celebrate', 'insightful', 'support'];
+    const validTypes = ['like', 'love', 'celebrate', 'insightful', 'fire', 'support'];
     if (!validTypes.includes(type)) return res.status(400).json({ error: 'Invalid reaction type' });
 
     const postId = req.params.id;
@@ -235,85 +311,163 @@ export async function reactToPost(req, res, next) {
 
     // Check existing reaction
     const { data: existing } = await supabaseAdmin
-      .from('post_reactions').select('id, type').eq('post_id', postId).eq('user_id', userId).single();
+      .from('post_reactions').select('id, type').eq('post_id', postId).eq('user_id', userId).maybeSingle();
+
+    let action = 'added';
+    let currentType = type;
 
     if (existing) {
       if (existing.type === type) {
         // Same react → remove (toggle off)
         await supabaseAdmin.from('post_reactions').delete().eq('id', existing.id);
-        return res.json({ action: 'removed', type: null });
+        action = 'removed';
+        currentType = null;
       } else {
         // Different react → switch
         await supabaseAdmin.from('post_reactions').update({ type }).eq('id', existing.id);
-        return res.json({ action: 'switched', type });
+        action = 'switched';
+        currentType = type;
       }
+    } else {
+      // No existing → add
+      await supabaseAdmin.from('post_reactions').insert({ post_id: postId, user_id: userId, type });
+      action = 'added';
+      currentType = type;
     }
 
-    // No existing → add
-    await supabaseAdmin.from('post_reactions').insert({ post_id: postId, user_id: userId, type });
+    // Query aggregated reaction counts
+    const { data: allReactions } = await supabaseAdmin
+      .from('post_reactions')
+      .select('type')
+      .eq('post_id', postId);
 
-    // Notify post author (if different from reactor)
-    try {
-      const { data: post } = await supabaseAdmin.from('posts').select('author_id, content').eq('id', postId).single();
-      if (post && post.author_id !== userId) {
-        const { data: reactor } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
-        const reactorName = reactor ? `${reactor.first_name} ${reactor.last_name}`.trim() : 'Someone';
-        const reactionEmojis = { like: '❤️', celebrate: '🎉', insightful: '💡', support: '👏' };
-        const notifMsg = `${reactorName} reacted ${reactionEmojis[type] || ''} to your post`;
-        broadcastNotification(getIo(), post.author_id, {
-          type: 'friend',
-          title: 'New Reaction',
-          message: notifMsg,
-          metadata: { postId },
-        });
+    const reactionCounts = {
+      like: 0,
+      love: 0,
+      celebrate: 0,
+      insightful: 0,
+      fire: 0,
+      support: 0,
+      total: 0,
+    };
+    (allReactions || []).forEach((r) => {
+      if (reactionCounts[r.type] !== undefined) {
+        reactionCounts[r.type]++;
       }
-    } catch(_) {}
+      reactionCounts.total++;
+    });
 
-    res.json({ action: 'added', type });
+    // Broadcast to all connected clients via Socket.IO
+    try {
+      getIo()?.emit('post:reacted', {
+        postId,
+        type: currentType,
+        action,
+        userId,
+        reactionCounts,
+      });
+    } catch (_) {}
+
+    // Notify post author (if different from reactor and action is not 'removed')
+    if (action !== 'removed') {
+      try {
+        const { data: post } = await supabaseAdmin.from('posts').select('author_id, content').eq('id', postId).single();
+        if (post && post.author_id !== userId) {
+          const { data: reactor } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
+          const reactorName = reactor ? `${reactor.first_name} ${reactor.last_name}`.trim() : 'Someone';
+          const reactionEmojis = { like: '👍', love: '❤️', celebrate: '🎉', insightful: '💡', fire: '🔥', support: '🤝' };
+          const notifMsg = `${reactorName} reacted ${reactionEmojis[type] || ''} to your post`;
+          broadcastNotification(getIo(), post.author_id, {
+            type: 'friend',
+            title: 'New Reaction',
+            message: notifMsg,
+            metadata: { postId },
+          });
+        }
+      } catch (_) {}
+    }
+
+    res.json({ action, type: currentType, reaction: currentType, reactionCounts });
   } catch (err) { next(err); }
 }
 
-// GET /api/posts/:id/comments
+// GET /api/posts/:id/comments — hierarchical 2-tier tree
 export async function getComments(req, res, next) {
   try {
     const { data: comments, error } = await supabaseAdmin
       .from('post_comments')
       .select(`
-        id, content, created_at,
-        author:users!author_id(id, first_name, last_name, avatar, online_status)
+        id, content, created_at, updated_at, parent_comment_id,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status)
       `)
       .eq('post_id', req.params.id)
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    const result = (comments || []).map(c => ({
-      id: c.id,
-      content: c.content,
-      createdAt: c.created_at,
-      author: c.author ? {
-        id: c.author.id,
-        firstName: c.author.first_name,
-        lastName: c.author.last_name,
-        avatar: c.author.avatar,
-        onlineStatus: c.author.online_status,
-      } : null,
-    }));
-    res.json({ comments: result });
+
+    const commentMap = new Map();
+    const topLevelComments = [];
+
+    (comments || []).forEach(c => {
+      const formatted = {
+        id: c.id,
+        content: c.content,
+        createdAt: c.created_at,
+        created_at: c.created_at,
+        updatedAt: c.updated_at,
+        updated_at: c.updated_at,
+        parent_comment_id: c.parent_comment_id || null,
+        parentCommentId: c.parent_comment_id || null,
+        author: c.author ? {
+          id: c.author.id,
+          firstName: c.author.first_name,
+          lastName: c.author.last_name,
+          first_name: c.author.first_name,
+          last_name: c.author.last_name,
+          avatar: c.author.avatar,
+          avatarColor: c.author.avatar_color,
+          avatar_color: c.author.avatar_color,
+          university: c.author.university,
+          role: c.author.role,
+          onlineStatus: c.author.online_status,
+        } : null,
+        replies: [],
+      };
+      commentMap.set(c.id, formatted);
+    });
+
+    // Build 2-tier hierarchy
+    commentMap.forEach(comment => {
+      if (comment.parent_comment_id && commentMap.has(comment.parent_comment_id)) {
+        commentMap.get(comment.parent_comment_id).replies.push(comment);
+      } else {
+        topLevelComments.push(comment);
+      }
+    });
+
+    res.json({ comments: topLevelComments, total: (comments || []).length });
   } catch (err) { next(err); }
 }
 
-// POST /api/posts/:id/comments — add a comment
+// POST /api/posts/:id/comments — add a comment or nested reply
 export async function addComment(req, res, next) {
   try {
-    const { content } = req.body;
+    const { content, parentCommentId, parent_comment_id } = req.body;
     if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
+
+    const parentId = parentCommentId || parent_comment_id || null;
 
     const { data: comment, error } = await supabaseAdmin
       .from('post_comments')
-      .insert({ post_id: req.params.id, author_id: req.user.id, content: content.trim() })
+      .insert({
+        post_id: req.params.id,
+        author_id: req.user.id,
+        content: content.trim(),
+        parent_comment_id: parentId,
+      })
       .select(`
-        id, content, created_at,
-        author:users!author_id(id, first_name, last_name, avatar, online_status)
+        id, content, created_at, updated_at, parent_comment_id,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status)
       `)
       .single();
 
@@ -322,19 +476,36 @@ export async function addComment(req, res, next) {
       id: comment.id,
       content: comment.content,
       createdAt: comment.created_at,
+      created_at: comment.created_at,
+      updatedAt: comment.updated_at,
+      updated_at: comment.updated_at,
+      parent_comment_id: comment.parent_comment_id,
+      parentCommentId: comment.parent_comment_id,
       author: {
         id: comment.author.id,
         firstName: comment.author.first_name,
         lastName: comment.author.last_name,
+        first_name: comment.author.first_name,
+        last_name: comment.author.last_name,
         avatar: comment.author.avatar,
+        avatarColor: comment.author.avatar_color,
+        avatar_color: comment.author.avatar_color,
+        university: comment.author.university,
+        role: comment.author.role,
         onlineStatus: comment.author.online_status,
       },
+      replies: [],
     };
 
     // Broadcast comment to all connected clients (real-time feed update)
     try {
-      getIo()?.emit('post:comment', { postId: req.params.id, comment: result, authorId: req.user.id });
-    } catch(_) {}
+      getIo()?.emit('post:comment', {
+        postId: req.params.id,
+        comment: result,
+        parentCommentId: result.parent_comment_id,
+        authorId: req.user.id,
+      });
+    } catch (_) {}
 
     // Notify post author (if different from commenter)
     try {
@@ -357,7 +528,7 @@ export async function addComment(req, res, next) {
           metadata: { postId: req.params.id },
         });
       }
-    } catch(_) {}
+    } catch (_) {}
 
     res.status(201).json({ comment: result });
   } catch (err) { next(err); }
@@ -376,7 +547,7 @@ export async function deleteComment(req, res, next) {
 
     try {
       getIo()?.emit('post:comment-deleted', { postId: req.params.id, commentId: req.params.cid });
-    } catch(_) {}
+    } catch (_) {}
 
     res.json({ message: 'Comment deleted' });
   } catch (err) { next(err); }
@@ -386,13 +557,13 @@ export async function deleteComment(req, res, next) {
 export async function getPostById(req, res, next) {
   try {
     const postId = req.params.id;
-    const userId = req.user.id;
+    const userId = req.user?.id || null;
 
     const { data: post, error } = await supabaseAdmin
       .from('posts')
       .select(`
-        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
       `)
       .eq('id', postId)
       .maybeSingle();
@@ -403,7 +574,7 @@ export async function getPostById(req, res, next) {
     const [{ data: reactions }, { data: comments }, { data: mine }] = await Promise.all([
       supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).then(r => r, () => ({ data: [] })),
       supabaseAdmin.from('post_comments').select('id').eq('post_id', postId).then(r => r, () => ({ data: [] })),
-      supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).eq('user_id', userId).then(r => r, () => ({ data: [] })),
+      userId ? supabaseAdmin.from('post_reactions').select('type').eq('post_id', postId).eq('user_id', userId).then(r => r, () => ({ data: [] })) : Promise.resolve({ data: [] }),
     ]);
 
     const reactionsMap = {};
@@ -430,21 +601,17 @@ export async function scrapeMetadata(req, res, next) {
     const { url } = req.query;
     if (!url) return res.status(400).json({ error: 'URL is required' });
 
-    // Add protocol if missing
     let targetUrl = url.trim();
     if (!/^https?:\/\//i.test(targetUrl)) {
       targetUrl = 'https://' + targetUrl;
     }
 
-    // SSRF Protection: block internal/private network addresses
     try {
       const parsed = new URL(targetUrl);
-      // Only allow http and https protocols
       if (!['http:', 'https:'].includes(parsed.protocol)) {
         return res.status(400).json({ error: 'Only HTTP/HTTPS URLs are allowed' });
       }
       const hostname = parsed.hostname.toLowerCase();
-      // Block internal addresses
       const blockedPatterns = [
         /^localhost$/i,
         /^127\.\d+\.\d+\.\d+$/,
@@ -452,19 +619,18 @@ export async function scrapeMetadata(req, res, next) {
         /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/,
         /^192\.168\.\d+\.\d+$/,
         /^0\.0\.0\.0$/,
-        /^169\.254\.\d+\.\d+$/,        // link-local
-        /^\[?::1\]?$/,                   // IPv6 loopback
-        /^\[?fe80:/i,                    // IPv6 link-local
-        /^\[?fc00:/i,                    // IPv6 private
-        /^\[?fd/i,                       // IPv6 private
+        /^169\.254\.\d+\.\d+$/,
+        /^\[?::1\]?$/,
+        /^\[?fe80:/i,
+        /^\[?fc00:/i,
+        /^\[?fd/i,
         /\.local$/i,
         /\.internal$/i,
-        /\.onrender\.com$/i,             // Block requests back to our own backend
+        /\.onrender\.com$/i,
       ];
       if (blockedPatterns.some(p => p.test(hostname))) {
         return res.status(400).json({ error: 'Cannot scrape internal or private URLs' });
       }
-      // Block numeric IPs that start with 0 (octal bypass)
       if (/^0\d/.test(hostname)) {
         return res.status(400).json({ error: 'Invalid URL format' });
       }
@@ -485,7 +651,6 @@ export async function scrapeMetadata(req, res, next) {
 
     const html = await response.text();
 
-    // Helper to extract meta content
     const getMetaTagContent = (htmlStr, propertyOrName) => {
       const regex = new RegExp(`<meta[^>]*(?:property|name)=["']${propertyOrName}["'][^>]*content=["']([^"']*)["']`, 'i');
       const match = htmlStr.match(regex);
@@ -496,20 +661,15 @@ export async function scrapeMetadata(req, res, next) {
       return altMatch ? altMatch[1] : null;
     };
 
-    // Title parsing
     let title = getMetaTagContent(html, 'og:title') || getMetaTagContent(html, 'twitter:title');
     if (!title) {
       const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
       title = titleMatch ? titleMatch[1] : '';
     }
 
-    // Description parsing
     let description = getMetaTagContent(html, 'og:description') || getMetaTagContent(html, 'description') || getMetaTagContent(html, 'twitter:description') || '';
-
-    // Image parsing
     let image = getMetaTagContent(html, 'og:image') || getMetaTagContent(html, 'twitter:image') || '';
 
-    // Resolve relative image path if needed
     if (image && !/^https?:\/\//i.test(image)) {
       try {
         const base = new URL(targetUrl);
@@ -517,11 +677,10 @@ export async function scrapeMetadata(req, res, next) {
       } catch (e) {}
     }
 
-    // Domain name extraction
     let domain = '';
     try {
       domain = new URL(targetUrl).hostname;
-    } catch(e) {}
+    } catch (e) {}
 
     res.json({
       title: title?.trim() || domain,
@@ -535,7 +694,7 @@ export async function scrapeMetadata(req, res, next) {
   }
 }
 
-// GET /api/posts/user/:userId — get public posts by a specific user (for profile activity)
+// GET /api/posts/user/:userId — get public posts by a specific user
 export async function getUserPosts(req, res, next) {
   try {
     const { userId } = req.params;
@@ -544,8 +703,8 @@ export async function getUserPosts(req, res, next) {
     const { data: posts, error } = await supabaseAdmin
       .from('posts')
       .select(`
-        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university)
+        id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status)
       `)
       .eq('author_id', userId)
       .order('created_at', { ascending: false })
@@ -584,20 +743,25 @@ export async function getUserPosts(req, res, next) {
 // PATCH /api/posts/:id — edit own post
 export async function editPost(req, res, next) {
   try {
-    const { content } = req.body;
+    const { content, codeSnippet, code_snippet } = req.body;
     if (!content?.trim()) return res.status(400).json({ error: 'Content is required' });
 
     const { data: post } = await supabaseAdmin.from('posts').select('author_id').eq('id', req.params.id).single();
     if (!post) return res.status(404).json({ error: 'Post not found' });
     if (post.author_id !== req.user.id) return res.status(403).json({ error: 'Not authorized' });
 
+    const updatePayload = { content: content.trim() };
+    if (code_snippet !== undefined || codeSnippet !== undefined) {
+      updatePayload.code_snippet = code_snippet || codeSnippet || null;
+    }
+
     const { data: updated, error } = await supabaseAdmin
       .from('posts')
-      .update({ content: content.trim() })
+      .update(updatePayload)
       .eq('id', req.params.id)
       .select(`
-        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
       `)
       .single();
 
@@ -618,9 +782,12 @@ export async function editComment(req, res, next) {
 
     const { data: updated, error } = await supabaseAdmin
       .from('post_comments')
-      .update({ content: content.trim() })
+      .update({ content: content.trim(), updated_at: new Date().toISOString() })
       .eq('id', req.params.cid)
-      .select(`id, content, created_at, author:users!author_id(id, first_name, last_name, avatar, online_status)`)
+      .select(`
+        id, content, created_at, updated_at, parent_comment_id,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status)
+      `)
       .single();
 
     if (error) throw error;
@@ -629,11 +796,22 @@ export async function editComment(req, res, next) {
         id: updated.id,
         content: updated.content,
         createdAt: updated.created_at,
+        created_at: updated.created_at,
+        updatedAt: updated.updated_at,
+        updated_at: updated.updated_at,
+        parent_comment_id: updated.parent_comment_id,
+        parentCommentId: updated.parent_comment_id,
         author: updated.author ? {
           id: updated.author.id,
           firstName: updated.author.first_name,
           lastName: updated.author.last_name,
+          first_name: updated.author.first_name,
+          last_name: updated.author.last_name,
           avatar: updated.author.avatar,
+          avatarColor: updated.author.avatar_color,
+          avatar_color: updated.author.avatar_color,
+          university: updated.author.university,
+          role: updated.author.role,
           onlineStatus: updated.author.online_status,
         } : null,
       }
@@ -671,8 +849,8 @@ export async function getSavedPosts(req, res, next) {
       .from('saved_posts')
       .select(`
         post:post_id(
-          id, content, post_type, created_at, updated_at, image_url, link_metadata,
-          author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+          id, content, post_type, created_at, updated_at, image_url, media_urls, code_snippet, poll_data, link_metadata,
+          author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
         )
       `, { count: 'exact' })
       .eq('user_id', userId)
@@ -710,59 +888,80 @@ export async function getSavedPosts(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// POST /api/posts/:id/vote — vote in a poll
+// POST /api/posts/:id/poll/vote (and /api/posts/:id/vote) — vote in a poll
 export async function votePoll(req, res, next) {
   try {
     const postId = req.params.id;
     const userId = req.user.id;
-    const { optionText } = req.body;
+    const { optionId, optionText } = req.body;
 
-    if (!optionText) return res.status(400).json({ error: 'Option text is required' });
+    if (!optionId && !optionText) {
+      return res.status(400).json({ error: 'Option ID or Option Text is required' });
+    }
 
     const { data: post, error: fetchErr } = await supabaseAdmin
       .from('posts')
-      .select('id, link_metadata, author_id, content, post_type, created_at, image_url')
+      .select('id, poll_data, link_metadata, author_id, content, post_type, created_at, image_url, media_urls, code_snippet')
       .eq('id', postId)
       .single();
 
     if (fetchErr || !post) return res.status(404).json({ error: 'Post not found' });
-    if (post.post_type !== 'poll') return res.status(400).json({ error: 'Post is not a poll' });
 
-    const metadata = post.link_metadata || {};
-    if (!metadata.isPoll || !Array.isArray(metadata.options)) {
-      return res.status(400).json({ error: 'Invalid poll metadata' });
+    let poll = post.poll_data;
+    let isLegacyMetadata = false;
+
+    if (!poll && post.link_metadata?.isPoll) {
+      poll = post.link_metadata;
+      isLegacyMetadata = true;
     }
 
-    metadata.options.forEach(opt => {
+    if (!poll || !Array.isArray(poll.options)) {
+      return res.status(400).json({ error: 'Post does not contain an active poll' });
+    }
+
+    // Check expiration if present
+    if (poll.expiresAt && new Date(poll.expiresAt).getTime() < Date.now()) {
+      return res.status(400).json({ error: 'This poll has ended' });
+    }
+
+    // Atomically toggle or switch vote
+    poll.options.forEach(opt => {
       if (!Array.isArray(opt.votes)) opt.votes = [];
       const userIdx = opt.votes.indexOf(userId);
-      if (opt.text === optionText) {
+      const isTarget = (optionId && opt.id === optionId) || (optionText && opt.text === optionText) || opt.text === optionId;
+
+      if (isTarget) {
         if (userIdx === -1) {
           opt.votes.push(userId);
         } else {
-          opt.votes.splice(userIdx, 1);
+          opt.votes.splice(userIdx, 1); // Toggle off if already voted
         }
       } else {
         if (userIdx !== -1) {
-          opt.votes.splice(userIdx, 1);
+          opt.votes.splice(userIdx, 1); // Remove previous vote from other options
         }
       }
     });
 
+    const updatePayload = isLegacyMetadata ? { link_metadata: poll } : { poll_data: poll };
+
     const { data: updated, error: updateErr } = await supabaseAdmin
       .from('posts')
-      .update({ link_metadata: metadata })
+      .update(updatePayload)
       .eq('id', postId)
       .select(`
-        id, content, post_type, created_at, updated_at, author_id, image_url, link_metadata,
-        author:users!author_id(id, first_name, last_name, avatar, university, online_status, last_seen)
+        id, content, post_type, created_at, updated_at, author_id, image_url, media_urls, code_snippet, poll_data, link_metadata,
+        author:users!author_id(id, first_name, last_name, avatar, avatar_color, university, role, online_status, last_seen)
       `)
       .single();
 
     if (updateErr) throw updateErr;
 
-    res.json({ post: normPost({ ...updated, reactions: {}, comments_count: 0, my_reaction: null }) });
+    // Broadcast poll update to all connected clients
+    try {
+      getIo()?.emit('post:poll-voted', { postId, pollData: poll });
+    } catch (_) {}
+
+    res.json({ post: normPost({ ...updated, reactions: {}, comments_count: 0, my_reaction: null }), pollData: poll });
   } catch (err) { next(err); }
 }
-
-

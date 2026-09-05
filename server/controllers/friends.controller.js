@@ -656,3 +656,62 @@ export async function getRecommendedFriends(req, res, next) {
     res.json({ recommendations: recommendations.slice(0, 15) });
   } catch (err) { next(err); }
 }
+
+// ─── COMPUTE MUTUAL FRIENDS ──────────────────────────────────────────────────
+export async function getMutualFriends(userId, targetId, limit = 5) {
+  if (!userId || !targetId || userId === targetId) {
+    return { mutualCount: 0, mutualFriends: [] };
+  }
+  try {
+    const [userFriendsRes, targetFriendsRes] = await Promise.all([
+      supabaseAdmin.from('friends').select('friend_id').eq('user_id', userId),
+      supabaseAdmin.from('friends').select('friend_id').eq('user_id', targetId),
+    ]);
+
+    const userFriendIds = new Set((userFriendsRes.data || []).map(r => r.friend_id));
+    const targetFriendIds = (targetFriendsRes.data || []).map(r => r.friend_id);
+    const mutualIds = targetFriendIds.filter(id => userFriendIds.has(id));
+
+    const mutualCount = mutualIds.length;
+    if (mutualCount === 0) {
+      return { mutualCount: 0, mutualFriends: [] };
+    }
+
+    const sampleIds = mutualIds.slice(0, limit);
+    const { data: mutualUsers } = await supabaseAdmin
+      .from('users')
+      .select('id, first_name, last_name, avatar, avatar_color, university, major')
+      .in('id', sampleIds);
+
+    return {
+      mutualCount,
+      mutualFriends: (mutualUsers || []).map(u => ({
+        id: u.id,
+        firstName: u.first_name,
+        lastName: u.last_name,
+        first_name: u.first_name,
+        last_name: u.last_name,
+        name: `${u.first_name || ''} ${u.last_name || ''}`.trim(),
+        avatar: u.avatar,
+        avatarColor: u.avatar_color,
+        avatar_color: u.avatar_color,
+        university: u.university,
+        major: u.major,
+      })),
+    };
+  } catch (err) {
+    console.error('[getMutualFriends] Error:', err);
+    return { mutualCount: 0, mutualFriends: [] };
+  }
+}
+
+// ─── GET MUTUAL FRIENDS ENDPOINT ─────────────────────────────────────────────
+export async function getMutualFriendsEndpoint(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const targetId = req.params.userId;
+    const result = await getMutualFriends(userId, targetId, 10);
+    res.json(result);
+  } catch (err) { next(err); }
+}
+

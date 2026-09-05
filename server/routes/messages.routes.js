@@ -6,6 +6,8 @@ const router = express.Router();
 
 // Conversations & DMs
 router.get('/conversations',        authMiddleware, mc.getConversations);
+router.post('/conversations/:roomId/pin', authMiddleware, mc.togglePinConversation);
+router.post('/conversations/pin',   authMiddleware, mc.togglePinConversation);
 router.post('/read',                authMiddleware, mc.markAsRead);
 router.post('/dm',                  authMiddleware, mc.sendDirectMessage);  // friend-check + request
 

@@ -23,7 +23,7 @@ export interface User {
   student_id?: string;
   year_of_study?: number;
   yearOfStudy?: number;
-  skills?: string[];
+  skills?: Array<{ id: string; name: string; endorsements?: number } | string>;
   interests?: string[];
   github?: string;
   github_url?: string;
@@ -49,6 +49,52 @@ export interface User {
   completion_percentage?: number;
   created_at: string;
   createdAt?: string;
+  settings?: UserSettings;
+  friendshipStatus?: RelationshipState;
+  isLocked?: boolean;
+  friendCount?: number;
+  followerCount?: number;
+  followingCount?: number;
+  projectCount?: number;
+  postCount?: number;
+  teamsCount?: number;
+  communitiesCount?: number;
+  mutualCount?: number;
+  mutualFriends?: Array<{
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    first_name?: string;
+    last_name?: string;
+    name?: string;
+    avatar?: string;
+    avatarColor?: string;
+    avatar_color?: string;
+    university?: string;
+    major?: string;
+  }>;
+}
+
+export type RelationshipState =
+  | 'SELF'
+  | 'FRIEND'
+  | 'REQUEST_SENT'
+  | 'REQUEST_RECEIVED'
+  | 'NOT_FRIEND'
+  | 'BLOCKED'
+  | 'BLOCKED_BY_OTHER'
+  | 'FOLLOWING'
+  | 'FOLLOWER'
+  | 'none';
+
+export interface UserSettings {
+  emailNotifications?: boolean;
+  chatSounds?: boolean;
+  theme?: 'dark' | 'light' | 'system';
+  twoFactorPrompt?: boolean;
+  directMessageAlerts?: boolean;
+  mentionPings?: boolean;
+  [key: string]: any;
 }
 
 export interface Team {
@@ -63,17 +109,29 @@ export interface Team {
   avatar?: string;
   avatar_color?: string;
   is_private?: boolean;
+  privacy?: 'public' | 'private' | string;
   created_at: string;
   member_count?: number;
+  open_roles?: number | any[];
   is_member?: boolean;
+  is_leader?: boolean;
   has_pending_request?: boolean;
+  avatar_url?: string | null;
+  banner_url?: string | null;
+  type?: 'team' | 'community';
+  rules?: string | null;
+  isMember?: boolean;
+  isLeader?: boolean;
+  hasPendingRequest?: boolean;
+  team_members?: any[];
+  members?: any[];
 }
 
 export interface TeamMember {
   id: string;
   team_id: string;
   user_id: string;
-  role: 'leader' | 'member';
+  role: 'leader' | 'member' | 'moderator';
   joined_at: string;
   user?: User;
 }
@@ -83,17 +141,35 @@ export interface Project {
   title: string;
   description?: string;
   team_id?: string;
-  creator_id: string;
+  creator_id?: string;
+  owner_id?: string;
+  owner?: User;
+  creator?: User;
+  collaborators?: User[];
+  category?: string;
+  tags?: string[];
+  thumbnail?: string;
   tech_stack?: string[];
+  techStack?: string[];
   demo_url?: string;
+  demoURL?: string;
   repo_url?: string;
   github_url?: string;
+  githubURL?: string;
   image_url?: string;
   is_featured?: boolean;
+  likes?: number;
   likes_count?: number;
+  upvotes?: number;
+  upvote_count?: number;
   is_liked?: boolean;
+  isLiked?: boolean;
+  is_upvoted?: boolean;
+  isUpvoted?: boolean;
+  views?: number;
+  status?: string;
+  looking_for_members?: boolean;
   created_at: string;
-  creator?: User;
 }
 
 export interface Message {
@@ -102,6 +178,11 @@ export interface Message {
   sender_id: string;
   content: string;
   type: 'text' | 'voice' | 'image' | 'system';
+  status?: 'sent' | 'delivered' | 'seen';
+  media_url?: string | null;
+  voice_url?: string | null;
+  voice_duration?: number | null;
+  is_pinned?: boolean;
   read_by?: string[];
   reply_to?: string;
   reply_to_content?: string;
@@ -109,6 +190,20 @@ export interface Message {
   created_at: string;
   sender?: User;
   reactions?: Array<{ emoji: string; user_id: string }>;
+}
+
+export interface Conversation {
+  id?: string;
+  room_id: string;
+  roomId?: string;
+  user: User;
+  friend?: User;
+  lastMessage?: Message | null;
+  last_message?: Message | null;
+  unreadCount: number;
+  unread_count?: number;
+  isPinned?: boolean;
+  is_pinned?: boolean;
 }
 
 export interface Notification {
@@ -122,27 +217,38 @@ export interface Notification {
   created_at: string;
 }
 
+export type ReactionType = 'like' | 'love' | 'celebrate' | 'insightful' | 'fire' | 'support';
+
 export interface Post {
   id: string;
   author_id: string;
   content: string;
-  type: 'update' | 'achievement' | 'poll' | 'project';
+  type: 'update' | 'achievement' | 'poll' | 'project' | 'general' | 'project_update' | 'looking_for_team';
+  post_type?: string;
+  image_url?: string | null;
   images?: string[];
+  media_urls?: string[];
+  code_snippet?: { code: string; language: string; title?: string } | null;
+  poll_data?: { question: string; options: Array<{ id: string; text: string; votes: string[] }>; expiresAt?: string } | null;
   poll_options?: PollOption[];
   mentions?: string[];
   created_at: string;
+  updated_at?: string;
   author?: User;
-  reactions?: PostReaction[];
+  reactions?: PostReaction[] | Record<string, number>;
+  reaction_counts?: Record<string, number>;
   comments?: PostComment[];
   reaction_count?: number;
   comment_count?: number;
-  user_reaction?: string;
+  comments_count?: number;
+  user_reaction?: ReactionType | null;
+  my_reaction?: ReactionType | null;
 }
 
 export interface PollOption {
   id: string;
   text: string;
-  votes: number;
+  votes: number | string[];
   voted?: boolean;
 }
 
@@ -150,7 +256,7 @@ export interface PostReaction {
   id: string;
   post_id: string;
   user_id: string;
-  type: 'like' | 'celebrate' | 'support';
+  type: ReactionType;
   user?: User;
 }
 
@@ -160,7 +266,10 @@ export interface PostComment {
   author_id: string;
   content: string;
   created_at: string;
+  updated_at?: string;
+  parent_comment_id?: string | null;
   author?: User;
+  replies?: PostComment[];
 }
 
 export interface FriendRequest {
@@ -439,6 +548,92 @@ export interface GitHubUserProfile {
     avatarUrl: string;
     description: string | null;
   }>;
+}
+
+export interface ContentReport {
+  id: string;
+  reporter_id: string | null;
+  reporter?: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    avatar?: string;
+  };
+  target_type: 'post' | 'comment' | 'user' | 'team';
+  target_id: string;
+  target?: any;
+  reason: string;
+  details?: string;
+  status: 'pending' | 'resolved' | 'dismissed';
+  resolved_by?: string | null;
+  resolver?: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  resolution_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserStrike {
+  id: string;
+  user_id: string;
+  issued_by: string | null;
+  issuer?: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+  };
+  reason: string;
+  severity: 'warning' | 'temporary_suspension' | 'permanent_ban';
+  created_at: string;
+}
+
+export interface AdminAuditLog {
+  id: string;
+  admin_id: string | null;
+  admin?: {
+    id: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  };
+  action: string;
+  target_type?: string;
+  target_id?: string;
+  details?: any;
+  ip_address?: string;
+  created_at: string;
+}
+
+export interface SystemFlags {
+  maintenanceMode: boolean;
+  registrationEnabled: boolean;
+  emailVerification: boolean;
+  allowPublicProjects: boolean;
+  rateLimitStrict: boolean;
+  aiReviewEnabled?: boolean;
+}
+
+export interface AdminStats {
+  users: { total: number; students: number; banned: number; activeToday: number };
+  posts: { total: number; today: number };
+  teams: { total: number };
+  projects: { total: number };
+  reports: { pending: number; total: number };
+  activeSockets?: number;
+  cpuUsage?: number;
+  memoryUsage?: number;
+}
+
+export interface AdminHealth {
+  status: string;
+  timestamp: string;
+  database: { status: string; latencyMs: number };
+  sockets: { activeConnections: number };
+  server: { uptime: number; memoryUsage: NodeJS.MemoryUsage };
 }
 
 

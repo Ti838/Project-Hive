@@ -1,6 +1,5 @@
 'use client';
-// ─── Hive AI Message Component ──────────────────────────────────────────────
-// High-density markdown message with code fences, copy buttons, and TTS audio
+// ─── Hive AI Message Component (Obsidian Code Blocks & Refined Typography) ───────
 
 import { useState } from 'react';
 import { Copy, Check, Volume2, VolumeX, Sparkles, User as UserIcon } from 'lucide-react';
@@ -65,34 +64,34 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
   return (
     <div
       className={cn(
-        'group flex gap-3 p-4 rounded-2xl transition-colors',
+        'group flex gap-3.5 transition-all',
         isAssistant
-          ? 'bg-card border border-border/70 shadow-xs'
-          : 'bg-muted/40 border border-border/40 ml-4 sm:ml-12',
+          ? 'surface-glass p-5 rounded-3xl border border-white/10 shadow-sm leading-relaxed tracking-tight'
+          : 'bg-primary/10 border border-primary/20 p-4 rounded-2xl ml-auto max-w-[85%] sm:max-w-[78%]',
         className
       )}
     >
       {/* Avatar Icon */}
       <div
         className={cn(
-          'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-inner select-none',
+          'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-inner select-none mt-0.5',
           isAssistant
-            ? 'bg-amber-500/10 text-amber-500 border border-amber-500/25'
-            : 'bg-primary/10 text-primary border border-primary/20'
+            ? 'bg-amber-500/10 text-amber-500 border border-amber-500/25 glow-primary'
+            : 'bg-primary text-primary-foreground shadow-xs'
         )}
       >
-        {isAssistant ? <Sparkles className="w-4 h-4" /> : <UserIcon className="w-4 h-4" />}
+        {isAssistant ? <Sparkles className="w-4 h-4 text-amber-400" /> : <UserIcon className="w-4 h-4" />}
       </div>
 
       {/* Message Body */}
-      <div className="flex-1 min-w-0 space-y-2">
+      <div className="flex-1 min-w-0 space-y-2.5">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-xs text-foreground">
+            <span className="font-bold text-xs text-foreground tracking-tight">
               {isAssistant ? 'Hive AI' : 'You'}
             </span>
             {message.model && isAssistant && (
-              <span className="text-[10px] font-mono text-muted-foreground px-1.5 py-0.2 rounded bg-muted/60">
+              <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
                 {message.model}
               </span>
             )}
@@ -105,7 +104,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                 type="button"
                 onClick={toggleSpeech}
                 title={isSpeaking ? 'Mute speech' : 'Read aloud'}
-                className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground tap-press transition-colors cursor-pointer"
               >
                 {isSpeaking ? <VolumeX className="w-3.5 h-3.5 text-amber-500" /> : <Volume2 className="w-3.5 h-3.5" />}
               </button>
@@ -115,38 +114,56 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
 
         {/* Attachment Thumbnail if present */}
         {message.imageUrl && (
-          <div className="rounded-xl overflow-hidden border border-border/80 max-w-sm max-h-56 bg-neutral-950 my-1">
+          <div className="rounded-2xl overflow-hidden border border-white/15 max-w-sm max-h-56 bg-zinc-950 my-1 shadow-lg">
             <img src={message.imageUrl} alt="Context Attachment" className="w-full h-full object-contain" />
           </div>
         )}
 
         {/* Formatted Content */}
-        <div className="space-y-2.5 text-xs sm:text-sm leading-relaxed text-foreground/90">
+        <div className="space-y-3 text-xs sm:text-sm leading-relaxed text-foreground/95 tracking-tight">
           {parts.map((part, idx) => {
             if (part.type === 'code') {
+              const lineCount = part.content.split('\n').length;
+              const approxTokens = Math.round(part.content.length / 4);
+
               return (
-                <div key={idx} className="rounded-xl overflow-hidden border border-border/80 bg-neutral-950 my-2.5 shadow-xs">
-                  <div className="flex items-center justify-between px-3 py-1.5 bg-neutral-900 border-b border-neutral-800 text-[11px] font-mono text-neutral-400">
-                    <span className="uppercase font-semibold tracking-wider text-[10px]">{part.lang}</span>
+                <div
+                  key={idx}
+                  className="rounded-2xl overflow-hidden border border-zinc-800/80 bg-zinc-950 my-3.5 shadow-2xl"
+                >
+                  {/* Obsidian Code Header Bar */}
+                  <div className="flex items-center justify-between px-3.5 py-2 bg-zinc-900/90 border-b border-zinc-800 text-[11px] font-mono text-zinc-400 select-none">
+                    <div className="flex items-center gap-2">
+                      <span className="uppercase font-bold tracking-wider text-[10px] text-primary">
+                        {part.lang || 'code'}
+                      </span>
+                      <span className="text-zinc-600">·</span>
+                      <span className="text-[10px] text-zinc-500 font-sans">
+                        {lineCount} {lineCount === 1 ? 'line' : 'lines'} (~{approxTokens} tokens)
+                      </span>
+                    </div>
+
                     <button
                       type="button"
                       onClick={() => copySnippet(part.content, part.index ?? idx)}
-                      className="flex items-center gap-1 hover:text-white transition-colors p-1"
+                      className="flex items-center gap-1.5 hover:text-white transition-colors px-2 py-0.5 rounded-md hover:bg-zinc-800 text-zinc-400 tap-press cursor-pointer"
                     >
                       {copiedCodeIndex === part.index ? (
                         <>
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-[10px] text-emerald-400">Copied</span>
+                          <span className="text-[10px] text-emerald-400 font-medium">Copied</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span className="text-[10px]">Copy</span>
+                          <span className="text-[10px] font-medium">Copy</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <pre className="p-3 text-xs font-mono text-neutral-200 overflow-x-auto whitespace-pre leading-normal">
+
+                  {/* Code Preformatted Block */}
+                  <pre className="p-4 text-xs font-mono text-zinc-200 overflow-x-auto whitespace-pre leading-relaxed scrollbar-thin">
                     <code>{part.content}</code>
                   </pre>
                 </div>
@@ -154,7 +171,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
             }
 
             return (
-              <div key={idx} className="whitespace-pre-wrap break-words">
+              <div key={idx} className="whitespace-pre-wrap break-words space-y-1">
                 {part.content
                   .split('\n')
                   .map((line, lIdx) => {
@@ -162,12 +179,12 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                       return <h4 key={lIdx} className="font-bold text-sm text-foreground mt-3 mb-1">{line.replace('### ', '')}</h4>;
                     }
                     if (line.startsWith('## ')) {
-                      return <h3 key={lIdx} className="font-bold text-base text-foreground mt-3 mb-1">{line.replace('## ', '')}</h3>;
+                      return <h3 key={lIdx} className="font-bold text-base text-foreground mt-3.5 mb-1.5">{line.replace('## ', '')}</h3>;
                     }
                     if (line.startsWith('- ') || line.startsWith('* ')) {
                       return (
-                        <div key={lIdx} className="flex items-start gap-1.5 ml-2 my-0.5">
-                          <span className="text-primary font-bold text-xs shrink-0">•</span>
+                        <div key={lIdx} className="flex items-start gap-2 ml-2 my-0.5">
+                          <span className="text-primary font-bold text-xs shrink-0 mt-0.5">•</span>
                           <span>{line.replace(/^[-*]\s+/, '')}</span>
                         </div>
                       );
@@ -182,4 +199,3 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
     </div>
   );
 }
-

@@ -13,6 +13,7 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (user: User, accessToken: string, refreshToken: string) => void;
+  setSessionTokens: (accessToken: string, refreshToken: string) => void;
   logout: () => void;
   updateUser: (partial: Partial<User>) => void;
   setLoading: (loading: boolean) => void;
@@ -29,6 +30,11 @@ export const useAuthStore = create<AuthState>()(
         setTokens(accessToken, refreshToken);
         setStoredUser(user);
         set({ user, isAuthenticated: true, isLoading: false });
+      },
+
+      setSessionTokens: (accessToken, refreshToken) => {
+        setTokens(accessToken, refreshToken);
+        set({ isAuthenticated: true });
       },
 
       logout: () => {
@@ -57,26 +63,62 @@ export const useAuthStore = create<AuthState>()(
 
 // ─── Socket Store ─────────────────────────────────────────────────────────────
 
+export interface UserPresence {
+  status: string;
+  onlineStatus: string;
+}
+
 interface SocketState {
   isConnected: boolean;
   activeRoom: string | null;
   onlineUsers: string[];
+  userStatuses: Record<string, UserPresence>;
   setConnected: (connected: boolean) => void;
   setActiveRoom: (roomId: string | null) => void;
   addOnlineUser: (userId: string) => void;
   removeOnlineUser: (userId: string) => void;
+  updateUserPresence: (userId: string, status: string, onlineStatus?: string) => void;
 }
 
 export const useSocketStore = create<SocketState>()((set) => ({
   isConnected: false,
   activeRoom: null,
   onlineUsers: [],
+  userStatuses: {},
   setConnected: (isConnected) => set({ isConnected }),
   setActiveRoom: (activeRoom) => set({ activeRoom }),
   addOnlineUser: (userId) =>
-    set((s) => ({ onlineUsers: s.onlineUsers.includes(userId) ? s.onlineUsers : [...s.onlineUsers, userId] })),
+    set((s) => ({
+      onlineUsers: s.onlineUsers.includes(userId) ? s.onlineUsers : [...s.onlineUsers, userId],
+      userStatuses: {
+        ...s.userStatuses,
+        [userId]: { status: s.userStatuses[userId]?.status || 'available', onlineStatus: 'online' },
+      },
+    })),
   removeOnlineUser: (userId) =>
-    set((s) => ({ onlineUsers: s.onlineUsers.filter((id) => id !== userId) })),
+    set((s) => ({
+      onlineUsers: s.onlineUsers.filter((id) => id !== userId),
+      userStatuses: {
+        ...s.userStatuses,
+        [userId]: { status: s.userStatuses[userId]?.status || 'offline', onlineStatus: 'offline' },
+      },
+    })),
+  updateUserPresence: (userId, status, onlineStatus) =>
+    set((s) => {
+      const currentOnline = onlineStatus ?? (status === 'offline' ? 'offline' : 'online');
+      const isOnline = currentOnline === 'online';
+      const updatedOnlineUsers = isOnline
+        ? (s.onlineUsers.includes(userId) ? s.onlineUsers : [...s.onlineUsers, userId])
+        : s.onlineUsers.filter((id) => id !== userId);
+
+      return {
+        onlineUsers: updatedOnlineUsers,
+        userStatuses: {
+          ...s.userStatuses,
+          [userId]: { status, onlineStatus: currentOnline },
+        },
+      };
+    }),
 }));
 
 // ─── UI Store ─────────────────────────────────────────────────────────────────
@@ -95,6 +137,7 @@ interface UIState {
   toggleMobileMenu: () => void;
   setUnreadNotifications: (n: number) => void;
   decrementUnread: () => void;
+  incrementUnread: () => void;
   setHiveAiEnabled: (v: boolean) => void;
   setCopilotOpen: (v: boolean) => void;
   toggleCopilot: () => void;
@@ -116,6 +159,7 @@ export const useUIStore = create<UIState>()(
       toggleMobileMenu: () => set((s) => ({ mobileMenuOpen: !s.mobileMenuOpen })),
       setUnreadNotifications: (unreadNotifications) => set({ unreadNotifications }),
       decrementUnread: () => set((s) => ({ unreadNotifications: Math.max(0, s.unreadNotifications - 1) })),
+      incrementUnread: () => set((s) => ({ unreadNotifications: s.unreadNotifications + 1 })),
       setHiveAiEnabled: (hiveAiEnabled) => set({ hiveAiEnabled }),
       setCopilotOpen: (copilotOpen) => set({ copilotOpen }),
       toggleCopilot: () => set((s) => ({ copilotOpen: !s.copilotOpen })),

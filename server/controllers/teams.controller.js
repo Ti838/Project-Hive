@@ -26,7 +26,22 @@ function cleanDescription(desc) {
 export async function createTeam(req, res, next) {
   try {
     const userId = req.user.id;
-    const { name, description, maxMembers, category, tags, isOpen } = req.body;
+    const {
+      name,
+      description,
+      maxMembers,
+      category,
+      tags,
+      isOpen,
+      avatarUrl,
+      avatar_url,
+      bannerUrl,
+      banner_url,
+      type,
+      rules,
+    } = req.body;
+
+    const determinedType = type || (category?.startsWith('community:') ? 'community' : 'team');
 
     const { data: team, error } = await supabaseAdmin
       .from('teams')
@@ -38,6 +53,10 @@ export async function createTeam(req, res, next) {
         tags: tags || [],
         leader_id: userId,
         is_open: isOpen !== undefined ? isOpen : true,
+        avatar_url: avatarUrl || avatar_url || null,
+        banner_url: bannerUrl || banner_url || null,
+        type: determinedType,
+        rules: rules || null,
       })
       .select()
       .single();
@@ -62,7 +81,10 @@ export async function createTeam(req, res, next) {
 // ─── GET TEAMS ────────────────────────────────────────────────────────────────
 export async function getTeams(req, res, next) {
   try {
-    const { skip = 0, limit = 20, search, category, type } = req.query;
+    const { skip = 0, limit = 20, page, search, category, type = 'all', isOpen } = req.query;
+    const currentUserId = req.user?.id;
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20));
+    const offset = page ? (Math.max(1, parseInt(page)) - 1) * limitNum : Math.max(0, parseInt(skip) || 0);
 
     let q = supabaseAdmin
       .from('teams')
@@ -72,33 +94,97 @@ export async function getTeams(req, res, next) {
         team_members(user_id, role, users(id, first_name, last_name, avatar, avatar_color))
       `, { count: 'exact' });
 
-    // For public lists, show only open groups (or let users discover closed ones if needed, but keeping existing is_open=true logic)
-    q = q.eq('is_open', true);
-
-    if (type === 'community') {
-      q = q.like('category', 'community:%');
-    } else if (type === 'team') {
-      q = q.not('category', 'like', 'community:%');
+    // Filter by isOpen if explicitly specified; otherwise default to open teams
+    if (isOpen !== undefined && isOpen !== 'all' && isOpen !== '') {
+      const openBool = isOpen === 'true' || isOpen === true;
+      q = q.eq('is_open', openBool);
+    } else if (isOpen === undefined) {
+      q = q.eq('is_open', true);
     }
 
-    if (search) { const s = sanitizeSearch(search); if (s) q = q.ilike('name', `%${s}%`); }
-    if (category) q = q.eq('category', category);
+    // Filter by type: 'team' | 'community' | 'all'
+    if (type === 'community') {
+      q = q.or('type.eq.community,category.ilike.community:%');
+    } else if (type === 'team') {
+      q = q.neq('type', 'community').not('category', 'like', 'community:%');
+    }
 
-    q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1).order('created_at', { ascending: false });
+    if (search) {
+      const s = sanitizeSearch(search);
+      if (s) {
+        q = q.or(`name.ilike.%${s}%,description.ilike.%${s}%`);
+      }
+    }
+
+    if (category) {
+      q = q.eq('category', category);
+    }
+
+    q = q.range(offset, offset + limitNum - 1).order('created_at', { ascending: false });
 
     const { data: teams, error, count } = await q;
     if (error) throw error;
 
-    const normalized = (teams || []).map(t => ({
-      ...t,
-      description: cleanDescription(t.description),
-      max_members: t.max_size,
-      member_count: t.team_members?.length || 0,
-    }));
+    // Hydrate join_requests status if user is authenticated
+    let pendingTeamIds = new Set();
+    if (currentUserId && teams && teams.length > 0) {
+      const teamIds = teams.map(t => t.id);
+      const { data: pendingReqs } = await supabaseAdmin
+        .from('join_requests')
+        .select('team_id')
+        .eq('user_id', currentUserId)
+        .eq('status', 'pending')
+        .in('team_id', teamIds);
+
+      if (pendingReqs) {
+        pendingTeamIds = new Set(pendingReqs.map(r => r.team_id));
+      }
+    }
+
+    const normalized = (teams || []).map(t => {
+      const memberCount = (t.team_members || []).length;
+      const maxSize = t.max_size || t.max_members || 5;
+      const openRoles = Math.max(0, maxSize - memberCount);
+
+      const isLeader = Boolean(
+        currentUserId && (
+          t.leader_id === currentUserId ||
+          t.team_members?.some(m => m.user_id === currentUserId && m.role === 'leader')
+        )
+      );
+      const isMember = Boolean(
+        currentUserId && (
+          isLeader ||
+          t.team_members?.some(m => m.user_id === currentUserId)
+        )
+      );
+      const hasPendingRequest = Boolean(currentUserId && pendingTeamIds.has(t.id));
+
+      return {
+        ...t,
+        description: cleanDescription(t.description),
+        max_members: maxSize,
+        member_count: memberCount,
+        open_roles: openRoles,
+        isMember,
+        is_member: isMember,
+        isLeader,
+        is_leader: isLeader,
+        hasPendingRequest,
+        has_pending_request: hasPendingRequest,
+      };
+    });
 
     res.json({
       teams: normalized,
-      pagination: { total: count || 0, skip: parseInt(skip), limit: parseInt(limit), hasMore: parseInt(skip) + parseInt(limit) < (count || 0) },
+      pagination: {
+        total: count || 0,
+        skip: offset,
+        limit: limitNum,
+        page: page ? parseInt(page) : Math.floor(offset / limitNum) + 1,
+        pages: Math.ceil((count || 0) / limitNum),
+        hasMore: offset + limitNum < (count || 0),
+      },
     });
   } catch (err) { next(err); }
 }
@@ -107,6 +193,8 @@ export async function getTeams(req, res, next) {
 export async function getTeamDetail(req, res, next) {
   try {
     const { id } = req.params;
+    const currentUserId = req.user?.id;
+
     const { data: team, error } = await supabaseAdmin
       .from('teams')
       .select(`
@@ -119,7 +207,47 @@ export async function getTeamDetail(req, res, next) {
 
     if (error || !team) return res.status(404).json({ error: 'Team not found' });
     team.description = cleanDescription(team.description);
-    res.json(team);
+
+    let hasPendingRequest = false;
+    if (currentUserId) {
+      const { data: jr } = await supabaseAdmin
+        .from('join_requests')
+        .select('id')
+        .eq('team_id', id)
+        .eq('user_id', currentUserId)
+        .eq('status', 'pending')
+        .maybeSingle();
+      hasPendingRequest = Boolean(jr);
+    }
+
+    const memberCount = (team.team_members || []).length;
+    const maxSize = team.max_size || team.max_members || 5;
+    const openRoles = Math.max(0, maxSize - memberCount);
+
+    const isLeader = Boolean(
+      currentUserId && (
+        team.leader_id === currentUserId ||
+        team.team_members?.some(m => m.user_id === currentUserId && m.role === 'leader')
+      )
+    );
+    const isMember = Boolean(
+      currentUserId && (
+        isLeader ||
+        team.team_members?.some(m => m.user_id === currentUserId)
+      )
+    );
+
+    res.json({
+      ...team,
+      member_count: memberCount,
+      open_roles: openRoles,
+      isMember,
+      is_member: isMember,
+      isLeader,
+      is_leader: isLeader,
+      hasPendingRequest,
+      has_pending_request: hasPendingRequest,
+    });
   } catch (err) { next(err); }
 }
 
@@ -133,14 +261,32 @@ export async function updateTeam(req, res, next) {
     const { data: mem } = await supabaseAdmin.from('team_members').select('role').eq('team_id', id).eq('user_id', userId).single();
     if (!mem || mem.role !== 'leader') return res.status(403).json({ error: 'Only team leader can update' });
 
-    const { name, description, maxMembers, category, tags, isOpen } = req.body;
+    const {
+      name,
+      description,
+      maxMembers,
+      category,
+      tags,
+      isOpen,
+      avatarUrl,
+      avatar_url,
+      bannerUrl,
+      banner_url,
+      type,
+      rules,
+    } = req.body;
+
     const updates = {};
-    if (name !== undefined)       updates.name = name;
-    if (description !== undefined) updates.description = description;
+    if (name !== undefined)        updates.name = name;
+    if (description !== undefined) updates.description = cleanDescription(description);
     if (maxMembers !== undefined)  updates.max_size = maxMembers;
     if (category !== undefined)    updates.category = category;
     if (tags !== undefined)        updates.tags = tags;
     if (isOpen !== undefined)      updates.is_open = isOpen;
+    if (avatarUrl !== undefined || avatar_url !== undefined) updates.avatar_url = avatarUrl || avatar_url;
+    if (bannerUrl !== undefined || banner_url !== undefined) updates.banner_url = bannerUrl || banner_url;
+    if (type !== undefined)        updates.type = type;
+    if (rules !== undefined)       updates.rules = rules;
 
     const { data: team, error } = await supabaseAdmin.from('teams').update(updates).eq('id', id).select().single();
     if (error) throw error;
@@ -284,7 +430,7 @@ export async function getMyTeams(req, res, next) {
       .select(`
         role, joined_at,
         team:teams(
-          id, name, description, category, tags, is_open, max_size, created_at,
+          *,
           leader:leader_id(id, first_name, last_name, avatar, avatar_color),
           team_members(user_id, role, users(id, first_name, last_name, avatar, avatar_color))
         )
@@ -293,7 +439,29 @@ export async function getMyTeams(req, res, next) {
       .order('joined_at', { ascending: false });
 
     if (error) throw error;
-    const teams = (memberships || []).map(m => ({ ...m.team, myRole: m.role, joinedAt: m.joined_at }));
+    const teams = (memberships || [])
+      .filter(m => m.team)
+      .map(m => {
+        const t = m.team;
+        const memberCount = (t.team_members || []).length;
+        const maxSize = t.max_size || t.max_members || 5;
+        const isLeader = m.role === 'leader' || t.leader_id === userId;
+        return {
+          ...t,
+          description: cleanDescription(t.description),
+          myRole: m.role,
+          joinedAt: m.joined_at,
+          max_members: maxSize,
+          member_count: memberCount,
+          open_roles: Math.max(0, maxSize - memberCount),
+          isMember: true,
+          is_member: true,
+          isLeader,
+          is_leader: isLeader,
+          hasPendingRequest: false,
+          has_pending_request: false,
+        };
+      });
     res.json({ teams, total: teams.length });
   } catch (err) { next(err); }
 }

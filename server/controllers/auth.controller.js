@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import crypto from 'crypto';
 import { supabase, supabaseAdmin } from '../config/supabase.js';
-import { generateTokenPair, verifyRefreshToken } from '../utils/jwt.utils.js';
+import { generateTokenPair, verifyRefreshToken, setAuthCookies, clearAuthCookies } from '../utils/jwt.utils.js';
 import { sendVerificationEmail, sendWelcomeEmail } from '../services/email.service.js';
 import { getFlags } from './admin.controller.js';
 import { getClientIp, getClientGeo } from '../utils/ipResolver.js';
@@ -11,40 +11,6 @@ function sanitizeUser(user) {
   const { password_hash, refresh_tokens, email_verification_token,
     email_verification_expires, password_reset_token, password_reset_expires, ...safe } = user;
   return safe;
-}
-
-function setAuthCookies(res, accessToken, refreshToken) {
-  const isProd = process.env.NODE_ENV === 'production';
-  const options = {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    path: '/',
-  };
-  if (accessToken) {
-    res.cookie('accessToken', accessToken, {
-      ...options,
-      maxAge: 4 * 60 * 60 * 1000 // 4 hours
-    });
-  }
-  if (refreshToken) {
-    res.cookie('refreshToken', refreshToken, {
-      ...options,
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    });
-  }
-}
-
-function clearAuthCookies(res) {
-  const isProd = process.env.NODE_ENV === 'production';
-  const options = {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'none' : 'lax',
-    path: '/',
-  };
-  res.clearCookie('accessToken', options);
-  res.clearCookie('refreshToken', options);
 }
 
 // ─── REGISTER ────────────────────────────────────────────────────────────────
@@ -377,21 +343,29 @@ export async function login(req, res, next) {
 // ─── REFRESH TOKEN ────────────────────────────────────────────────────────────
 export async function refresh(req, res, next) {
   try {
-    const { refreshToken } = req.body;
+    const refreshToken = req.body?.refreshToken || req.cookies?.refreshToken || req.cookies?.refresh_token;
     if (!refreshToken) {
-      return res.status(401).json({ error: 'Missing refresh token.' });
+      return res.status(401).json({ error: 'Missing refresh token.', code: 'TOKEN_MISSING' });
     }
 
-    const decoded = verifyRefreshToken(refreshToken);
+    let decoded;
+    try {
+      decoded = verifyRefreshToken(refreshToken);
+    } catch (verErr) {
+      if (verErr.code === 'TOKEN_EXPIRED' || verErr.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: 'Refresh token expired. Please sign in again.', code: 'TOKEN_EXPIRED' });
+      }
+      return res.status(401).json({ error: 'Invalid refresh token.', code: 'INVALID_TOKEN' });
+    }
 
-    const { data: user } = await supabaseAdmin
+    const { data: user, error: userErr } = await supabaseAdmin
       .from('users')
       .select('id, email, refresh_tokens')
       .eq('id', decoded.id)
       .single();
 
-    if (!user || !(user.refresh_tokens || []).includes(refreshToken)) {
-      return res.status(401).json({ error: 'Invalid refresh token.' });
+    if (userErr || !user || !(user.refresh_tokens || []).includes(refreshToken)) {
+      return res.status(401).json({ error: 'Invalid or revoked refresh token.', code: 'INVALID_TOKEN' });
     }
 
     const tokens = generateTokenPair(user.id, user.email);
@@ -411,8 +385,8 @@ export async function refresh(req, res, next) {
 
     res.json({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken });
   } catch (error) {
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Refresh token expired. Please sign in again.' });
+    if (error.code === 'TOKEN_EXPIRED' || error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Refresh token expired. Please sign in again.', code: 'TOKEN_EXPIRED' });
     }
     next(error);
   }

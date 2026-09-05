@@ -11,7 +11,8 @@ router.get('/:id',       optionalAuthMiddleware, projectsController.getProjectDe
 router.put('/:id',       authMiddleware,         projectsController.updateProject);
 router.delete('/:id',    authMiddleware,         projectsController.deleteProject);
 
-router.post('/:id/like', authMiddleware,         projectsController.likeProject);
-router.post('/:id/save', authMiddleware,         projectsController.saveProject);
+router.post('/:id/like',   authMiddleware,         projectsController.likeProject);
+router.post('/:id/upvote', authMiddleware,         projectsController.upvoteProject);
+router.post('/:id/save',   authMiddleware,         projectsController.saveProject);
 
 export default router;

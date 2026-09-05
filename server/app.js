@@ -25,75 +25,143 @@ import friendsRoutes from './routes/friends.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import { adminDevRouter } from './routes/admin.routes.js';
 import { adminLogin } from './controllers/admin.auth.controller.js';
-import { getFlags, loadFlagsFromDB } from './controllers/admin.controller.js';
+import { getFlags, loadFlagsFromDB, createReport } from './controllers/admin.controller.js';
+import { authMiddleware } from './middleware/auth.js';
 import postsRoutes from './routes/posts.routes.js';
 import storiesRoutes from './routes/stories.routes.js';
 import callsRoutes from './routes/calls.routes.js';
 import githubRoutes from './routes/github.routes.js';
+import { keySigner } from './services/crypto/keySigner.service.js';
 
 const app = express();
 
-// Trust proxy — required on Render/Vercel/Heroku/any reverse proxy
-// Allows express-rate-limit to read real client IP from X-Forwarded-For
-app.set('trust proxy', 1);
+// ─── 1. REVERSE PROXY CONFIGURATION ──────────────────────────────────────────
+// Trust all reverse proxy hops (Render + Cloudflare edge) so req.secure,
+// client IP resolution (X-Forwarded-For), and Secure cookies function accurately.
+app.set('trust proxy', true);
 
-// Security middleware
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.tailwindcss.com", "https://cdnjs.cloudflare.com", "https://cdn.socket.io", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://esm.sh", "https://meet.jit.si"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "blob:", "https:"],
-      connectSrc: ["'self'", "https://projecthive-backend.onrender.com", "wss://projecthive-backend.onrender.com", "https://generativelanguage.googleapis.com", "https://api.groq.com", "https://api.brevo.com", "https://iekfvgjxkmgduxdvkuxf.supabase.co", "turn:staticauth.openrelay.metered.ca:80", "turn:staticauth.openrelay.metered.ca:443", "turns:staticauth.openrelay.metered.ca:443"],
-      frameSrc: ["'self'", "https://meet.jit.si"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      formAction: ["'self'"],
-    },
-  },
-  crossOriginEmbedderPolicy: false,
-  hsts: {
-    maxAge: 31536000,     // 1 year
-    includeSubDomains: true,
-    preload: true,
-  },
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
-}));
+// ─── 2. PRODUCTION CORS CONFIGURATION ────────────────────────────────────────
+const explicitOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5000',
+  'http://127.0.0.1:5000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL_PROD,
+].filter(Boolean);
 
-
-
-// CORS
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, curl, Postman)
+    // Allow non-browser requests (Postman, cURL, server-to-server, curl health checks)
     if (!origin) return callback(null, true);
 
-    const allowed = [
-      // Vercel — all subdomains (covers projecthive-bd.vercel.app, project-hive.vercel.app, etc.)
-      /\.vercel\.app$/,
-      // Explicit production URL
-      process.env.FRONTEND_URL_PROD,
-      // Local development — any port
-      /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
-    ].filter(Boolean);
+    const isExplicitlyAllowed = explicitOrigins.includes(origin);
+    const isVercelSubdomain = /\.vercel\.app$/.test(origin);
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
 
-    const isAllowed = allowed.some(rule =>
-      rule instanceof RegExp ? rule.test(origin) : rule === origin
-    );
-
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.warn('[CORS] Blocked origin:', origin);
-      callback(new Error('Not allowed by CORS'));
+    if (isExplicitlyAllowed || isVercelSubdomain || isLocalhost) {
+      return callback(null, true);
     }
+
+    console.warn(`[CORS Blocked] Origin: ${origin}`);
+    return callback(null, false);
   },
   credentials: true,
-  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'cf-turnstile-response',
+    'x-turnstile-token',
+  ],
+  exposedHeaders: ['Set-Cookie'],
+  optionsSuccessStatus: 204,
+  maxAge: 86400, // Cache preflight responses for 24 hours
 };
+
+// Mount CORS and ensure preflight OPTIONS intercept before rate limiting
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// ─── 3. CONTENT SECURITY POLICY (HELMET) ─────────────────────────────────────
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          'https://challenges.cloudflare.com', // Cloudflare Turnstile
+          'https://cdn.tailwindcss.com',
+          'https://cdnjs.cloudflare.com',
+          'https://cdn.socket.io',
+          'https://cdn.jsdelivr.net',
+          'https://unpkg.com',
+          'https://esm.sh',
+          'https://meet.jit.si',
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'https://fonts.googleapis.com',
+          'https://cdnjs.cloudflare.com',
+          'https://cdn.jsdelivr.net',
+        ],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+        mediaSrc: ["'self'", 'blob:', 'data:'],
+        connectSrc: [
+          "'self'",
+          'https://*.supabase.co',
+          'wss://*.supabase.co',
+          'https://*.livekit.cloud',
+          'wss://*.livekit.cloud',
+          'https://challenges.cloudflare.com',
+          'wss:',
+          'ws:',
+          // Render backend hosts
+          'https://projecthive-backend.onrender.com',
+          'wss://projecthive-backend.onrender.com',
+          // AI Engines
+          'https://generativelanguage.googleapis.com',
+          'https://api.groq.com',
+          'https://openrouter.ai',
+          // Transactional Mail & Services
+          'https://api.brevo.com',
+          'https://api.resend.com',
+          // STUN / TURN relays
+          'turn:staticauth.openrelay.metered.ca:80',
+          'turn:staticauth.openrelay.metered.ca:443',
+          'turns:staticauth.openrelay.metered.ca:443',
+        ],
+        frameSrc: [
+          "'self'",
+          'https://challenges.cloudflare.com', // Cloudflare Turnstile iframe
+          'https://meet.jit.si',
+        ],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
 
 // Logging
 app.use(morgan('combined'));
@@ -101,7 +169,7 @@ app.use(morgan('combined'));
 // Cookie parsing
 app.use(cookieParser());
 
-// Body parsing (15MB default — to match frontend image upload limits)
+// Body parsing (15MB default — to match frontend media upload limits)
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ limit: '15mb', extended: true }));
 
@@ -238,7 +306,7 @@ if (process.env.NODE_ENV !== 'production') {
 app.use('/api', (req, res, next) => {
   const FLAGS = getFlags();
   // Allow system requests through
-  if (req.path === '/health' || req.path === '/public-stats') {
+  if (req.path === '/health' || req.path === '/public-stats' || req.path === '/security/enclave-status') {
     return next();
   }
   if (FLAGS.maintenanceMode) {
@@ -248,6 +316,16 @@ app.use('/api', (req, res, next) => {
     });
   }
   next();
+});
+
+// Confidential Computing Attestation & Enclave Diagnostics Endpoint
+app.get('/api/security/enclave-status', (req, res) => {
+  try {
+    const status = keySigner.getAttestationStatus();
+    res.json(status);
+  } catch (err) {
+    res.status(500).json({ ok: false, error: err.message });
+  }
 });
 
 app.use('/api/users', usersRoutes);
@@ -261,6 +339,7 @@ app.use('/api/friends', friendsRoutes);
 app.use('/api/stories', storiesRoutes); // stories
 app.use('/api/calls', callsRoutes); // native LiveKit calling
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
+app.post('/api/reports', authMiddleware, createReport); // public/student content reporting
 
 // TURN credentials endpoint
 app.get('/api/turn-credentials', async (req, res) => {
@@ -313,7 +392,6 @@ app.get('/api/turn-credentials', async (req, res) => {
     res.json({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
   }
 });
-
 
 // Health check for Render deployment
 app.get('/', (req, res) => {

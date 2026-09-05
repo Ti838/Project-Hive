@@ -1,19 +1,22 @@
 'use client';
-// ─── Messages Page (WhatsApp / Messenger Grade) ───────────────────────────────
+// ─── Messages Page (Telegram / Messenger / WhatsApp Studio Grade) ──────────────
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Send, Phone, Video, Search, Mic, MicOff, VideoOff, X, Reply, ChevronLeft,
-  WifiOff, Image as ImageIcon, Paperclip, Presentation, Maximize2, Minimize2,
-  PhoneOff, PhoneCall, Check, CheckCheck, Play, Pause, Trash2, Smile
+  Send, Phone, Video, Search, Mic, X, Reply, ChevronLeft,
+  Image as ImageIcon, Paperclip, Check, CheckCheck, Play, Pause, Trash2,
+  Pin, PinOff, MessageSquare, Users, Sparkles, MessageCircle, Star
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore, useSocketStore } from '@/lib/store';
 import { useCallStore } from '@/lib/callStore';
-import { useSocket, type WhiteboardDrawPayload } from '@/hooks/useSocket';
-import { displayName, timeAgo, getInitials, getAvatarColor, cn, sanitizeAndDecodeText } from '@/lib/utils';
-import type { Message, User } from '@/types';
+import { useSocket } from '@/hooks/useSocket';
+import { displayName, timeAgo, cn, sanitizeAndDecodeText } from '@/lib/utils';
+import { UserAvatar } from '@/components/ui/UserAvatar';
+import { UserProfileHoverCard } from '@/components/ui/UserProfileHoverCard';
+import type { Message, User, Conversation } from '@/types';
 
 // Messenger Floating Reactions
 const REACTION_EMOJIS = ['❤️', '🔥', '🚀', '👍', '👏', '😂'];
@@ -66,28 +69,7 @@ function renderReplySnippet(rawContent: string | null | undefined): { isMedia: b
   return { isMedia: false, label: truncated };
 }
 
-// ─── Avatar ────────────────────────────────────────────────────────────────────
-function Avatar({ user, online, size = 'md' }: {
-  user?: { first_name: string; last_name: string; avatar?: string; id: string } | null;
-  online?: boolean; size?: 'sm' | 'md' | 'lg';
-}) {
-  const sz = { sm: 'w-8 h-8 text-xs', md: 'w-10 h-10 text-sm', lg: 'w-12 h-12 text-base' }[size];
-  const name = displayName(user ?? undefined);
-  return (
-    <div className="relative shrink-0">
-      {user?.avatar
-        ? <img src={user.avatar} alt={name} className={cn(sz, 'rounded-full object-cover')} />
-        : <div className={cn(sz, 'rounded-full flex items-center justify-center text-white font-semibold')}
-            style={{ backgroundColor: getAvatarColor(user?.id ?? '') }}>{getInitials(name)}</div>
-      }
-      {online !== undefined && (
-        <span className={cn('absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-background', online ? 'bg-green-500' : 'bg-gray-400')} />
-      )}
-    </div>
-  );
-}
-
-// ─── Voice Message Player (WhatsApp-Style Waveform) ───────────────────────────
+// ─── Voice Message Player (Waveform Audio Visualizer) ─────────────────────────
 function VoiceMessagePlayer({ audioUrl, isMine }: { audioUrl: string; isMine: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -178,7 +160,7 @@ function VoiceMessagePlayer({ audioUrl, isMine }: { audioUrl: string; isMine: bo
   );
 }
 
-// ─── Message Bubble (WhatsApp Ticks + Messenger Reactions) ────────────────────
+// ─── Message Bubble (WhatsApp/Telegram Ticks + Reactions) ────────────────────
 function MessageBubble({
   msg,
   isMine,
@@ -204,8 +186,8 @@ function MessageBubble({
   const [showReactionPicker, setShowReactionPicker] = useState(false);
 
   // Parse media or voice
-  let mediaImgUrl: string | null = null;
-  let voiceAudioUrl: string | null = null;
+  let mediaImgUrl: string | null = msg.media_url || null;
+  let voiceAudioUrl: string | null = msg.voice_url || null;
   let textContent = msg.content;
 
   if (msg.content?.trim().startsWith('{') && msg.content?.trim().endsWith('}')) {
@@ -228,8 +210,8 @@ function MessageBubble({
   }
 
   // Delivery status evaluation
-  const messageSeen = isSeen || (Boolean(peerId && msg.read_by?.includes(peerId)));
-  const messageDelivered = messageSeen || peerIsOnline || Boolean(msg.id);
+  const messageSeen = msg.status === 'seen' || isSeen || (Boolean(peerId && msg.read_by?.includes(peerId)));
+  const messageDelivered = msg.status === 'delivered' || messageSeen || peerIsOnline;
 
   // Group reactions
   const reactionsMap: Record<string, { count: number; reactedByMe: boolean }> = {};
@@ -250,10 +232,14 @@ function MessageBubble({
       onMouseEnter={() => setShowReactionPicker(true)}
       onMouseLeave={() => setShowReactionPicker(false)}
     >
-      {!isMine && <Avatar user={msg.sender} size="sm" />}
+      {!isMine && (
+        <UserProfileHoverCard user={msg.sender}>
+          <UserAvatar user={msg.sender} size="sm" interactive />
+        </UserProfileHoverCard>
+      )}
 
       <div className={cn('flex flex-col max-w-[75%] sm:max-w-[70%]', isMine && 'items-end')}>
-        {/* Floating Messenger Emoji Reaction Bar (Revealed on Hover) */}
+        {/* Floating Messenger Emoji Reaction Bar */}
         <AnimatePresence>
           {showReactionPicker && (
             <motion.div
@@ -274,58 +260,60 @@ function MessageBubble({
                     onReact(msg.id, emoji);
                     setShowReactionPicker(false);
                   }}
-                  className="hover:scale-130 transition-transform p-1 text-sm active:scale-95"
+                  className="hover:scale-125 active:scale-95 transition-transform p-0.5 text-base cursor-pointer"
                 >
                   {emoji}
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={() => {
+                  onReply();
+                  setShowReactionPicker(false);
+                }}
+                className="hover:scale-110 active:scale-95 transition-transform p-1 text-muted-foreground hover:text-foreground text-xs ml-1 border-l border-border pl-1.5"
+                title="Reply"
+              >
+                <Reply className="w-3.5 h-3.5" />
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Reply preview */}
-        {msg.reply_to_content && (
-          <div className={cn(
-            'text-xs px-2.5 py-1.5 rounded-t-xl bg-muted/80 border border-border/80 mb-0.5 max-w-xs flex items-center gap-2',
-            isMine && 'text-right flex-row-reverse'
-          )}>
-            <span className="text-primary font-bold text-xs shrink-0">↩</span>
-            {replySnippet.isMedia && replySnippet.mediaUrl && (
-              <img
-                src={replySnippet.mediaUrl}
-                alt="reply thumbnail"
-                className="w-7 h-7 rounded-md object-cover shrink-0 border border-border/60"
-              />
-            )}
-            <span className="truncate text-foreground/80 font-medium">{replySnippet.label}</span>
-          </div>
-        )}
-
-        {/* Bubble Core */}
-        <div className={cn(
-          'px-3.5 py-2.5 rounded-2xl text-sm relative break-words shadow-2xs',
-          isMine
-            ? 'bg-primary text-primary-foreground rounded-br-sm'
-            : 'bg-card border border-border/70 rounded-bl-sm'
-        )}>
-          {msg.content?.startsWith('📞 Join my') ? (
-            <div className="flex flex-col gap-2 p-1 min-w-[200px]">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-500">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                <span>Active Call in Session</span>
-              </div>
-              <p className="text-xs text-foreground/90 font-medium">
-                {msg.content.includes('video') ? '📹 Video Call with Whiteboard' : '📞 Voice Call in Session'}
-              </p>
-              <button
-                onClick={onJoinCall || onReply}
-                className="mt-1 flex items-center justify-center gap-2 py-2 px-3 bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-semibold text-xs rounded-xl tap-press transition-colors"
-              >
-                <PhoneCall className="w-3.5 h-3.5" />
-                <span>Join Call Room</span>
-              </button>
+        {/* Bubble */}
+        <div
+          className={cn(
+            'rounded-2xl text-sm transition-all shadow-xs',
+            voiceAudioUrl ? 'p-1.5 sm:p-2' : 'px-3.5 py-2.5',
+            isMine
+              ? 'bg-primary text-primary-foreground rounded-br-xs'
+              : 'bg-muted/90 dark:bg-muted/70 text-foreground rounded-bl-xs border border-border/50'
+          )}
+        >
+          {/* Reply context quote if present */}
+          {replySnippet.label && (
+            <div
+              className={cn(
+                'flex items-center gap-2 mb-2 p-1.5 rounded-lg border-l-2 text-xs',
+                isMine
+                  ? 'bg-primary-foreground/15 border-primary-foreground text-primary-foreground/90'
+                  : 'bg-card/70 border-primary text-foreground/80'
+              )}
+            >
+              <Reply className="w-3 h-3 shrink-0 opacity-80" />
+              {replySnippet.isMedia && replySnippet.mediaUrl && (
+                <img
+                  src={replySnippet.mediaUrl}
+                  alt="preview"
+                  className="w-5 h-5 rounded object-cover shrink-0"
+                />
+              )}
+              <span className="truncate">{replySnippet.label}</span>
             </div>
-          ) : voiceAudioUrl ? (
+          )}
+
+          {/* Voice note vs Media Image vs Text */}
+          {voiceAudioUrl ? (
             <VoiceMessagePlayer audioUrl={voiceAudioUrl} isMine={isMine} />
           ) : mediaImgUrl ? (
             <div className="space-y-1.5">
@@ -340,6 +328,19 @@ function MessageBubble({
                 </p>
               )}
             </div>
+          ) : textContent?.startsWith('📞 Join my') ? (
+            <div className="space-y-2 p-1">
+              <p className="font-semibold text-sm flex items-center gap-2">
+                <Phone className="w-4 h-4" /> Live Call Invite
+              </p>
+              <button
+                type="button"
+                onClick={onJoinCall}
+                className="w-full py-1.5 px-3 bg-emerald-600 text-white font-medium rounded-xl text-xs hover:bg-emerald-500 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                Join Call Now
+              </button>
+            </div>
           ) : (
             <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
               {sanitizeAndDecodeText(textContent)}
@@ -347,7 +348,7 @@ function MessageBubble({
           )}
         </div>
 
-        {/* Reactions Counter Badges (Optimistic + Live Sync) */}
+        {/* Reactions Counter Badges */}
         {reactionList.length > 0 && (
           <div className={cn('flex flex-wrap gap-1 mt-1 px-1', isMine && 'justify-end')}>
             {reactionList.map(({ emoji, count, reactedByMe }) => (
@@ -369,7 +370,7 @@ function MessageBubble({
           </div>
         )}
 
-        {/* Timestamp & WhatsApp Delivery Status Ticks */}
+        {/* Timestamp & Telegram Delivery Status Ticks */}
         <div className="flex items-center gap-1.5 mt-0.5 px-1">
           <span className="text-[10px] text-muted-foreground">{timeAgo(msg.created_at)}</span>
 
@@ -379,39 +380,47 @@ function MessageBubble({
               title={messageSeen ? 'Read' : messageDelivered ? 'Delivered' : 'Sent'}
             >
               {messageSeen ? (
-                <span className="text-sky-500 font-black flex items-center">
+                <span className="text-sky-500 font-black flex items-center" title="Seen">
                   <CheckCheck className="w-3.5 h-3.5 stroke-[2.5]" />
                 </span>
               ) : messageDelivered ? (
-                <span className="text-muted-foreground/80 flex items-center">
+                <span className="text-muted-foreground/80 flex items-center" title="Delivered">
                   <CheckCheck className="w-3.5 h-3.5 stroke-[2]" />
                 </span>
               ) : (
-                <span className="text-muted-foreground/70 flex items-center">
+                <span className="text-muted-foreground/70 flex items-center" title="Sent">
                   <Check className="w-3.5 h-3.5 stroke-[2]" />
                 </span>
               )}
             </span>
           )}
-
-          <button
-            onClick={onReply}
-            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground p-0.5"
-            title="Reply"
-          >
-            <Reply className="w-3 h-3" />
-          </button>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Messages Main Page ───────────────────────────────────────────────────────
-export default function MessagesPage() {
+// ─── Messages Core Content ───────────────────────────────────────────────────
+function MessagesContent() {
+  const searchParams = useSearchParams();
+  const deepLinkUserId = searchParams.get('user') || searchParams.get('userId');
+  const deepLinkRoomId = searchParams.get('roomId') || searchParams.get('room');
+
   const { user } = useAuthStore();
   const isConnected = useSocketStore((s) => s.isConnected);
-  const [conversations, setConversations] = useState<Array<{ user: User; last_message: Message; unread_count: number }>>([]);
+  const onlineUsers = useSocketStore((s) => s.onlineUsers);
+  const userStatuses = useSocketStore((s) => s.userStatuses);
+
+  const getUserPresence = useCallback((u?: User | null) => {
+    if (!u) return { isOnline: false, status: 'offline' as const };
+    const tracked = userStatuses[u.id];
+    const isOnline = onlineUsers.includes(u.id) || tracked?.onlineStatus === 'online' || u.online_status === 'online';
+    const rawStatus = tracked?.status || (isOnline ? 'online' : 'offline');
+    const status = (rawStatus === 'busy' ? 'busy' : rawStatus === 'away' ? 'away' : isOnline ? 'online' : 'offline') as 'online' | 'busy' | 'away' | 'offline';
+    return { isOnline, status };
+  }, [onlineUsers, userStatuses]);
+
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [content, setContent] = useState('');
@@ -419,6 +428,7 @@ export default function MessagesPage() {
   const [peerTyping, setPeerTyping] = useState(false);
   const [replyTo, setReplyTo] = useState<Message | null>(null);
   const [search, setSearch] = useState('');
+  const [filterTab, setFilterTab] = useState<'all' | 'direct' | 'squads' | 'unread'>('all');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -439,7 +449,7 @@ export default function MessagesPage() {
 
   const { startCall: triggerLiveKitCall } = useCallStore();
 
-  // Socket setup with reaction and read sync
+  // Socket setup with dual-dispatch & delivery pipeline
   const socket = useSocket({
     onMessage: (msg) => {
       if (msg.roomId === roomId) {
@@ -447,6 +457,7 @@ export default function MessagesPage() {
           id: msg.id,
           content: msg.content,
           type: msg.type as Message['type'],
+          status: 'seen',
           sender: msg.sender,
           sender_id: msg.sender?.id || '',
           room_id: msg.roomId,
@@ -455,11 +466,46 @@ export default function MessagesPage() {
           reactions: [],
         }]);
 
-        // Acknowledge read receipt if we are currently looking at this conversation
+        // Acknowledge read receipt if we are looking at this room
         if (selectedUser) {
+          socket.ackDelivered({ messageId: msg.id, roomId: msg.roomId, senderId: msg.sender?.id });
           socket.readMessage({ roomId: msg.roomId, friendId: selectedUser.id, messageIds: [msg.id] });
           api.messages.markAsRead(selectedUser.id).catch(() => {});
         }
+      }
+    },
+    onConversationNewMessage: ({ roomId: incomingRoomId, message: incomingMsg }) => {
+      // Reorder conversations sidebar & bump unread count
+      setConversations((prev) => {
+        const idx = prev.findIndex((c) => c.room_id === incomingRoomId || c.roomId === incomingRoomId || (c.user && [user?.id, c.user.id].sort().join('_') === incomingRoomId));
+        const isCurrentActive = roomId === incomingRoomId;
+
+        if (idx !== -1) {
+          const existing = prev[idx];
+          const updated: Conversation = {
+            ...existing,
+            last_message: incomingMsg,
+            lastMessage: incomingMsg,
+            unreadCount: isCurrentActive ? 0 : (existing.unreadCount || existing.unread_count || 0) + 1,
+            unread_count: isCurrentActive ? 0 : (existing.unreadCount || existing.unread_count || 0) + 1,
+          };
+          const rest = prev.filter((_, i) => i !== idx);
+          // If pinned, keep on top among pinned; otherwise place after pinned
+          return [updated, ...rest];
+        }
+        return prev;
+      });
+
+      // Acknowledge delivery to sender
+      if (incomingMsg?.id && incomingMsg?.sender_id !== user?.id) {
+        socket.ackDelivered({ messageId: incomingMsg.id, roomId: incomingRoomId, senderId: incomingMsg.sender_id });
+      }
+    },
+    onMessageDelivered: ({ messageId, roomId: deliveredRoomId }) => {
+      if (deliveredRoomId === roomId) {
+        setMessages((prev) =>
+          prev.map((m) => (m.id === messageId && m.status !== 'seen' ? { ...m, status: 'delivered' } : m))
+        );
       }
     },
     onReaction: (data) => {
@@ -493,9 +539,8 @@ export default function MessagesPage() {
           prev.map((m) => {
             if (m.sender_id === user?.id) {
               const currentReadBy = m.read_by || [];
-              if (!currentReadBy.includes(selectedUser.id)) {
-                return { ...m, read_by: [...currentReadBy, selectedUser.id] };
-              }
+              const updatedReadBy = currentReadBy.includes(selectedUser.id) ? currentReadBy : [...currentReadBy, selectedUser.id];
+              return { ...m, read_by: updatedReadBy, status: 'seen' };
             }
             return m;
           })
@@ -525,25 +570,45 @@ export default function MessagesPage() {
     }
   };
 
+  // Initial fetch of conversation list
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
 
-    api.messages.getDMs().then((res) => {
+    api.messages.getConversations().then((res) => {
       if (res.ok && res.conversations) {
-        const norm = res.conversations.map((c: any) => ({
+        const norm: Conversation[] = res.conversations.map((c: any) => ({
+          ...c,
+          room_id: c.room_id || c.roomId || (c.user && user?.id ? [user.id, c.user.id].sort().join('_') : ''),
           user: c.user || c.friend,
           last_message: c.last_message || c.lastMessage,
           unread_count: c.unread_count ?? c.unreadCount ?? 0,
+          unreadCount: c.unread_count ?? c.unreadCount ?? 0,
+          is_pinned: Boolean(c.is_pinned ?? c.isPinned),
+          isPinned: Boolean(c.is_pinned ?? c.isPinned),
         })).filter((c: any) => c.user);
         setConversations(norm);
+
+        // Auto-select deep-link user if present
+        if (deepLinkUserId) {
+          const match = norm.find((c) => c.user?.id === deepLinkUserId);
+          if (match) {
+            setSelectedUser(match.user);
+          } else {
+            api.users.getById(deepLinkUserId).then((uRes) => {
+              if (uRes.ok && uRes.id) {
+                setSelectedUser(uRes);
+              }
+            });
+          }
+        }
       }
       setLoading(false);
     }).catch(() => setLoading(false));
 
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [deepLinkUserId, user?.id]);
 
   // Load messages & acknowledge read when user selected
   useEffect(() => {
@@ -561,13 +626,38 @@ export default function MessagesPage() {
     api.messages.markAsRead(selectedUser.id).catch(() => {});
     socket.readMessage({ roomId, friendId: selectedUser.id });
 
+    // Reset unread count locally in sidebar
+    setConversations((prev) =>
+      prev.map((c) => (c.user?.id === selectedUser.id ? { ...c, unreadCount: 0, unread_count: 0 } : c))
+    );
+
     return () => { socket.leaveRoom(); };
   }, [selectedUser, roomId]);
 
-  // Scroll to bottom without bouncing page
+  // Scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [messages]);
+
+  const handleTogglePin = async (e: React.MouseEvent, conv: Conversation) => {
+    e.stopPropagation();
+    const targetRoomId = conv.room_id || conv.roomId || (conv.user && user?.id ? [user.id, conv.user.id].sort().join('_') : '');
+    if (!targetRoomId) return;
+
+    const nextPinnedState = !(conv.isPinned || conv.is_pinned);
+    setConversations((prev) =>
+      prev.map((c) => (c.room_id === targetRoomId || c.user?.id === conv.user?.id ? { ...c, isPinned: nextPinnedState, is_pinned: nextPinnedState } : c))
+    );
+
+    try {
+      await api.messages.togglePin(targetRoomId);
+    } catch {
+      // Revert if error
+      setConversations((prev) =>
+        prev.map((c) => (c.room_id === targetRoomId || c.user?.id === conv.user?.id ? { ...c, isPinned: !nextPinnedState, is_pinned: !nextPinnedState } : c))
+      );
+    }
+  };
 
   const handleSelectImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -585,7 +675,6 @@ export default function MessagesPage() {
     e.target.value = '';
   };
 
-  // Clipboard Paste Support (Ctrl+V screenshot/image)
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
@@ -612,7 +701,7 @@ export default function MessagesPage() {
     }
   };
 
-  // ─── Voice Recording Handlers ────────────────────────────────────────────────
+  // Voice Recording Handlers
   const startVoiceRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -655,38 +744,23 @@ export default function MessagesPage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64Audio = reader.result as string;
-        socket.sendMessage(roomId, base64Audio, { type: 'voice' });
+        socket.sendMessage(
+          roomId,
+          JSON.stringify({ type: 'voice', url: base64Audio, duration: recordingSeconds }),
+          { type: 'voice', voice_duration: recordingSeconds }
+        );
       };
       reader.readAsDataURL(audioBlob);
-      mediaRecorderRef.current?.stream.getTracks().forEach((t) => t.stop());
+      cancelVoiceRecording();
     };
 
+    mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
     mediaRecorderRef.current.stop();
-    if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
-    setIsRecording(false);
-    setRecordingSeconds(0);
   };
 
-  // ─── Reaction Handler ────────────────────────────────────────────────────────
-  const handleReact = async (messageId: string, emoji: string) => {
+  const handleReact = (messageId: string, emoji: string) => {
     if (!roomId) return;
-    // 1. Optimistic update
-    setMessages((prev) =>
-      prev.map((m) => {
-        if (m.id !== messageId) return m;
-        const current = m.reactions || [];
-        const exists = current.some((r) => r.user_id === user?.id && r.emoji === emoji);
-        if (exists) {
-          return { ...m, reactions: current.filter((r) => !(r.user_id === user?.id && r.emoji === emoji)) };
-        }
-        return { ...m, reactions: [...current, { emoji, user_id: user?.id || '' }] };
-      })
-    );
-
-    // 2. Real-time socket sync
     socket.reactMessage({ messageId, roomId, emoji });
-
-    // 3. REST persistence fallback
     api.messages.react(messageId, emoji).catch(() => {});
   };
 
@@ -732,20 +806,41 @@ export default function MessagesPage() {
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
 
-  const filtered = conversations.filter((c) =>
-    displayName(c.user).toLowerCase().includes(search.toLowerCase())
-  );
+  // Segment conversations
+  const pinnedConversations = conversations.filter((c) => c.isPinned || c.is_pinned);
+  const unpinnedConversations = conversations.filter((c) => !(c.isPinned || c.is_pinned));
+
+  const applyFilter = (list: Conversation[]) => {
+    return list.filter((c) => {
+      const matchSearch = displayName(c.user).toLowerCase().includes(search.toLowerCase());
+      if (!matchSearch) return false;
+      if (filterTab === 'unread') return (c.unreadCount || c.unread_count || 0) > 0;
+      return true;
+    });
+  };
+
+  const filteredPinned = applyFilter(pinnedConversations);
+  const filteredUnpinned = applyFilter(unpinnedConversations);
 
   const showList = !selectedUser || !isMobile;
   const showChat = !!selectedUser;
 
   return (
-    <div className="flex h-[calc(100dvh-3.5rem-5rem)] md:h-[calc(100dvh-3.5rem)] overflow-hidden">
-      {/* Conversation List */}
+    <div className="h-[calc(100vh-4rem)] overflow-hidden flex flex-col md:flex-row min-h-0 w-full select-none bg-background">
+      {/* Conversation List Sidebar */}
       {showList && (
-        <div className={cn('flex flex-col border-r border-border bg-card', isMobile ? 'w-full' : 'w-80 shrink-0')}>
-          <div className="p-4 border-b border-border">
-            <h1 className="font-bold text-lg mb-3">Messages</h1>
+        <div className={cn('flex flex-col border-r border-border/70 bg-card/40 backdrop-blur-xl shrink-0 h-full min-h-0', isMobile ? 'w-full' : 'w-80 lg:w-96')}>
+          {/* Header & Search */}
+          <div className="p-4 border-b border-border/70 space-y-3 shrink-0">
+            <div className="flex items-center justify-between">
+              <h1 className="font-bold text-lg flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" /> Messages
+              </h1>
+              <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                {conversations.reduce((acc, c) => acc + (c.unreadCount || c.unread_count || 0), 0)} unread
+              </span>
+            </div>
+
             <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
@@ -753,53 +848,159 @@ export default function MessagesPage() {
                 placeholder="Search conversations…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-11 pl-10 pr-4 text-base sm:text-sm bg-muted rounded-xl border border-transparent focus:border-primary focus:outline-none transition-colors"
+                className="w-full h-10 pl-10 pr-4 text-sm bg-muted/70 rounded-xl border border-transparent focus:border-primary focus:outline-none transition-colors"
               />
             </div>
+
+            {/* Segmented Filter Tabs */}
+            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl">
+              {(['all', 'direct', 'squads', 'unread'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => setFilterTab(tab)}
+                  className={cn(
+                    'flex-1 py-1 text-xs font-semibold rounded-lg capitalize transition-all',
+                    filterTab === tab
+                      ? 'bg-card text-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex-1 overflow-y-auto">
+
+          {/* Conversation Stream */}
+          <div className="flex-1 overflow-y-auto min-h-0 divide-y divide-border/40">
             {loading ? (
-              Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex gap-3 p-4 border-b border-border">
-                  <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="flex gap-3 p-4">
+                  <div className="w-11 h-11 rounded-full bg-muted animate-pulse shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3.5 bg-muted rounded animate-pulse w-3/4" />
                     <div className="h-3 bg-muted rounded animate-pulse w-1/2" />
                   </div>
                 </div>
               ))
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-16 text-muted-foreground">
-                <p className="text-sm">No conversations yet.</p>
-                <p className="text-xs mt-1">Add friends and start chatting!</p>
+            ) : conversations.length === 0 ? (
+              <div className="text-center py-20 text-muted-foreground px-4">
+                <MessageCircle className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p className="font-semibold text-sm">No conversations yet</p>
+                <p className="text-xs mt-1">Connect with friends and start collaborating!</p>
               </div>
             ) : (
-              filtered.map(({ user: peer, last_message, unread_count }) => (
-                <button
-                  key={peer.id}
-                  onClick={() => setSelectedUser(peer)}
-                  className={cn(
-                    'w-full flex items-center gap-3 p-4 border-b border-border hover:bg-accent/50 transition-colors text-left',
-                    selectedUser?.id === peer.id && 'bg-primary/5 border-l-2 border-l-primary'
-                  )}
-                >
-                  <Avatar user={peer} online={peer.online_status === 'online'} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium truncate">{displayName(peer)}</p>
-                      {last_message && <span className="text-[10px] text-muted-foreground shrink-0">{timeAgo(last_message.created_at)}</span>}
+              <>
+                {/* Pinned Shelf */}
+                {filteredPinned.length > 0 && (
+                  <div className="bg-primary/5 pb-1">
+                    <div className="px-4 py-2 text-[11px] font-bold text-primary flex items-center gap-1.5 uppercase tracking-wider">
+                      <Star className="w-3 h-3 fill-current" /> Pinned Chats
                     </div>
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-muted-foreground truncate">{last_message?.content?.startsWith('data:audio') ? '🎤 Voice note' : (last_message?.content ?? 'No messages yet')}</p>
-                      {unread_count > 0 && (
-                        <span className="min-w-5 h-5 flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold rounded-full px-1 ml-1">
-                          {unread_count}
-                        </span>
-                      )}
-                    </div>
+                    {filteredPinned.map((conv) => {
+                      const peer = conv.user;
+                      const unread = conv.unreadCount || conv.unread_count || 0;
+                      return (
+                        <div
+                          key={peer.id}
+                          onClick={() => setSelectedUser(peer)}
+                          className={cn(
+                            'group w-full flex items-center gap-3 p-3.5 hover:bg-accent/60 transition-colors text-left cursor-pointer relative',
+                            selectedUser?.id === peer.id && 'bg-primary/10 border-l-3 border-l-primary'
+                          )}
+                        >
+                          <UserProfileHoverCard user={peer}>
+                            <UserAvatar user={peer} size="md" showStatus status={getUserPresence(peer).status} />
+                          </UserProfileHoverCard>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm font-semibold truncate flex items-center gap-1">
+                                {displayName(peer)}
+                              </p>
+                              {conv.last_message && (
+                                <span className="text-[10px] text-muted-foreground shrink-0">
+                                  {timeAgo(conv.last_message.created_at)}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center justify-between mt-0.5">
+                              <p className="text-xs text-muted-foreground truncate">
+                                {conv.last_message?.content?.startsWith('data:audio') ? '🎤 Voice note' : (conv.last_message?.content ?? 'No messages yet')}
+                              </p>
+                              <div className="flex items-center gap-1.5 ml-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleTogglePin(e, conv)}
+                                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded-md text-muted-foreground hover:text-amber-500 transition-all"
+                                  title="Unpin conversation"
+                                >
+                                  <PinOff className="w-3.5 h-3.5" />
+                                </button>
+                                {unread > 0 && (
+                                  <span className="min-w-5 h-5 flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold rounded-full px-1.5">
+                                    {unread}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                </button>
-              ))
+                )}
+
+                {/* Regular Conversations */}
+                {filteredUnpinned.map((conv) => {
+                  const peer = conv.user;
+                  const unread = conv.unreadCount || conv.unread_count || 0;
+                  return (
+                    <div
+                      key={peer.id}
+                      onClick={() => setSelectedUser(peer)}
+                      className={cn(
+                        'group w-full flex items-center gap-3 p-3.5 hover:bg-accent/50 transition-colors text-left cursor-pointer relative',
+                        selectedUser?.id === peer.id && 'bg-primary/5 border-l-3 border-l-primary'
+                      )}
+                    >
+                      <UserProfileHoverCard user={peer}>
+                        <UserAvatar user={peer} size="md" showStatus status={getUserPresence(peer).status} />
+                      </UserProfileHoverCard>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold truncate">{displayName(peer)}</p>
+                          {conv.last_message && (
+                            <span className="text-[10px] text-muted-foreground shrink-0">
+                              {timeAgo(conv.last_message.created_at)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between mt-0.5">
+                          <p className="text-xs text-muted-foreground truncate">
+                            {conv.last_message?.content?.startsWith('data:audio') ? '🎤 Voice note' : (conv.last_message?.content ?? 'No messages yet')}
+                          </p>
+                          <div className="flex items-center gap-1.5 ml-2">
+                            <button
+                              type="button"
+                              onClick={(e) => handleTogglePin(e, conv)}
+                              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded-md text-muted-foreground hover:text-amber-500 transition-all"
+                              title="Pin conversation"
+                            >
+                              <Pin className="w-3.5 h-3.5" />
+                            </button>
+                            {unread > 0 && (
+                              <span className="min-w-5 h-5 flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold rounded-full px-1.5">
+                                {unread}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
             )}
           </div>
         </div>
@@ -807,19 +1008,27 @@ export default function MessagesPage() {
 
       {/* Chat Panel */}
       {showChat && (
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 h-full min-h-0 bg-card/20">
           {/* Chat Header */}
-          <div className="flex items-center gap-3 p-4 border-b border-border bg-card">
+          <div className="flex items-center gap-3 p-4 border-b border-border/70 bg-card shrink-0">
             {isMobile && (
               <button onClick={() => setSelectedUser(null)} className="p-2 -ml-1 rounded-lg hover:bg-accent text-foreground">
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
-            <Avatar user={selectedUser} online={selectedUser?.online_status === 'online'} />
+            <UserProfileHoverCard user={selectedUser}>
+              <UserAvatar user={selectedUser} size="md" showStatus status={getUserPresence(selectedUser).status} />
+            </UserProfileHoverCard>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">{displayName(selectedUser ?? undefined)}</p>
               <p className="text-xs text-muted-foreground">
-                {peerTyping ? <span className="text-primary animate-pulse">typing…</span> : (selectedUser?.online_status === 'online' ? 'Online' : `Last seen ${timeAgo(selectedUser?.last_seen ?? '')}`)}
+                {peerTyping ? (
+                  <span className="text-primary animate-pulse font-medium">typing…</span>
+                ) : getUserPresence(selectedUser).isOnline ? (
+                  <span className="capitalize text-emerald-500 font-medium">{getUserPresence(selectedUser).status}</span>
+                ) : (
+                  `Last seen ${timeAgo(selectedUser?.last_seen ?? '')}`
+                )}
               </p>
             </div>
             <div className="flex gap-1 shrink-0">
@@ -848,17 +1057,17 @@ export default function MessagesPage() {
             </div>
           )}
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {/* Messages Stream */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
             {messages.map((msg) => (
               <MessageBubble
                 key={msg.id}
                 msg={msg}
                 isMine={msg.sender_id === user?.id}
                 currentUserId={user?.id}
-                peerIsOnline={selectedUser?.online_status === 'online'}
+                peerIsOnline={getUserPresence(selectedUser).isOnline}
                 peerId={selectedUser?.id}
-                isSeen={Boolean(readReceipts[msg.id])}
+                isSeen={readReceipts[msg.id]}
                 onReply={() => setReplyTo(msg)}
                 onJoinCall={() => handleInitiateCall(msg.content.includes('video') ? 'video' : 'voice')}
                 onReact={handleReact}
@@ -866,7 +1075,7 @@ export default function MessagesPage() {
             ))}
             {peerTyping && (
               <div className="flex gap-2 items-center">
-                <Avatar user={selectedUser} size="sm" />
+                <UserAvatar user={selectedUser} size="sm" />
                 <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-3 py-2">
                   <div className="flex gap-1">
                     {[0, 1, 2].map((i) => (
@@ -953,17 +1162,16 @@ export default function MessagesPage() {
             )}
           </AnimatePresence>
 
-          {/* Input Area Docked with Safe Area */}
-          <div className="flex items-center gap-2 p-3 sm:p-4 border-t border-border bg-card sticky bottom-0 z-10 pb-[max(0.75rem,env(safe-area-inset-bottom,12px))]">
+          {/* Floating Composer */}
+          <div className="p-3 sm:p-4 shrink-0 bg-transparent pb-[max(0.75rem,env(safe-area-inset-bottom,12px))]">
             {isRecording ? (
-              // Live Voice Recorder Dock
-              <div className="flex-1 flex items-center justify-between bg-destructive/10 border border-destructive/20 rounded-xl px-4 h-12">
-                <div className="flex items-center gap-2 text-destructive">
-                  <span className="w-3 h-3 rounded-full bg-destructive animate-ping" />
+              <div className="surface-floating border border-rose-500/40 rounded-2xl sm:rounded-3xl px-4 h-14 flex items-center justify-between shadow-2xl backdrop-blur-2xl">
+                <div className="flex items-center gap-2 text-rose-500">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
                   <span className="text-xs font-bold font-mono">
                     {formatRecordingTime(recordingSeconds)}
                   </span>
-                  <span className="text-xs font-medium text-destructive/80 hidden sm:inline">
+                  <span className="text-xs font-medium text-rose-400/80 hidden sm:inline">
                     Recording Audio Note…
                   </span>
                 </div>
@@ -972,7 +1180,7 @@ export default function MessagesPage() {
                   <button
                     type="button"
                     onClick={cancelVoiceRecording}
-                    className="p-1.5 hover:bg-destructive/20 rounded-lg text-destructive text-xs font-semibold flex items-center gap-1 transition-colors"
+                    className="p-2 hover:bg-rose-500/20 rounded-xl text-rose-400 text-xs font-semibold flex items-center gap-1 tap-press transition-colors cursor-pointer"
                     title="Cancel recording"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -981,7 +1189,7 @@ export default function MessagesPage() {
                   <button
                     type="button"
                     onClick={finishVoiceRecording}
-                    className="p-2 bg-destructive text-white rounded-xl shadow-xs hover:bg-destructive/90 transition-colors"
+                    className="p-2.5 bg-rose-600 text-white rounded-xl shadow-lg shadow-rose-600/30 hover:bg-rose-500 tap-press transition-colors cursor-pointer"
                     title="Send Voice Note"
                   >
                     <Send className="w-4 h-4" />
@@ -989,15 +1197,14 @@ export default function MessagesPage() {
                 </div>
               </div>
             ) : (
-              // Normal Composer
-              <>
+              <div className="surface-floating border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 backdrop-blur-2xl focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
                 <button
                   type="button"
                   onClick={() => chatFileInputRef.current?.click()}
-                  className="w-11 h-11 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted tap-press transition-colors shrink-0"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-colors shrink-0 cursor-pointer"
                   title="Attach photo or file (or paste with Ctrl+V)"
                 >
-                  <Paperclip className="w-5 h-5" />
+                  <Paperclip className="w-4 h-4" />
                 </button>
                 <input
                   ref={chatFileInputRef}
@@ -1016,43 +1223,52 @@ export default function MessagesPage() {
                   placeholder={imageAttachment ? "Add a caption to attachment…" : "Type a message or paste screenshot (Ctrl+V)…"}
                   autoCapitalize="sentences"
                   autoComplete="off"
-                  className="flex-1 h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border border-transparent focus:border-primary focus:outline-none transition-colors"
+                  className="flex-1 h-10 text-sm bg-transparent px-2 text-foreground placeholder:text-muted-foreground/70 focus:outline-none transition-colors"
                 />
 
                 <button
                   type="button"
                   onClick={startVoiceRecording}
-                  className="w-11 h-11 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted tap-press transition-colors shrink-0"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-colors shrink-0 cursor-pointer"
                   title="Record voice note"
                 >
-                  <Mic className="w-5 h-5" />
+                  <Mic className="w-4 h-4" />
                 </button>
 
                 <button
                   onClick={sendMessage}
                   disabled={(!content.trim() && !imageAttachment) || sending}
-                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-all shadow-sm active:scale-95"
+                  className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 transition-all glow-primary tap-press shadow-lg shadow-primary/30 shrink-0 cursor-pointer"
+                  aria-label="Send message"
                 >
-                  <Send className="w-5 h-5" />
+                  <Send className="w-4 h-4" />
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>
       )}
 
-      {/* Empty state when no convo selected (desktop) */}
+      {/* Empty state when no conversation is selected on desktop */}
       {!selectedUser && !isMobile && (
         <div className="flex-1 flex items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mx-auto mb-4">
-              <Send className="w-8 h-8 opacity-40" />
+          <div className="text-center p-6 max-w-sm">
+            <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4 shadow-inner">
+              <Send className="w-7 h-7" />
             </div>
-            <p className="font-medium">Select a conversation</p>
-            <p className="text-sm">Choose a friend to start messaging</p>
+            <h2 className="font-bold text-base text-foreground mb-1">Select a conversation</h2>
+            <p className="text-xs leading-relaxed">Choose a friend from the left sidebar or start a new direct collaboration session.</p>
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="h-full flex items-center justify-center text-sm text-muted-foreground">Loading workspace…</div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }

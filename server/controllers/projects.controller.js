@@ -48,17 +48,20 @@ export async function getProjects(req, res, next) {
       .eq('status', 'active');
 
     if (search) { const s = sanitizeSearch(search); if (s) q = q.or(`title.ilike.%${s}%,description.ilike.%${s}%`); }
-    if (category) q = q.eq('category', category);
+    if (category && category !== 'all' && category !== 'All') q = q.eq('category', category);
 
-    if (sortBy === 'popular') q = q.order('likes', { ascending: false });
-    else q = q.order('created_at', { ascending: false });
+    if (sortBy === 'popular' || sortBy === 'trending') {
+      q = q.order('likes', { ascending: false }).order('created_at', { ascending: false });
+    } else {
+      q = q.order('created_at', { ascending: false });
+    }
 
     q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1);
 
     const { data: projects, error, count } = await q;
     if (error) throw error;
 
-    // Attach isLiked field if user is logged in
+    // Attach isLiked / isUpvoted field if user is logged in
     let likedProjectIds = new Set();
     if (req.user && req.user.id && projects && projects.length) {
       const pids = projects.map(p => p.id);
@@ -72,10 +75,20 @@ export async function getProjects(req, res, next) {
       }
     }
 
-    const projectsWithLike = (projects || []).map(p => ({
-      ...p,
-      isLiked: likedProjectIds.has(p.id)
-    }));
+    const projectsWithLike = (projects || []).map(p => {
+      const isLiked = likedProjectIds.has(p.id);
+      const upvotes = p.likes || 0;
+      return {
+        ...p,
+        likes_count: upvotes,
+        upvote_count: upvotes,
+        upvotes,
+        isLiked,
+        is_liked: isLiked,
+        isUpvoted: isLiked,
+        is_upvoted: isLiked,
+      };
+    });
 
     res.json({
       projects: projectsWithLike,
@@ -156,20 +169,26 @@ export async function likeProject(req, res, next) {
     const { id } = req.params;
     const userId = req.user.id;
 
-    const { data: existing } = await supabaseAdmin.from('project_likes').select('id').eq('project_id', id).eq('user_id', userId).single();
+    const { data: existing } = await supabaseAdmin.from('project_likes').select('id').eq('project_id', id).eq('user_id', userId).maybeSingle();
 
     if (existing) {
       await supabaseAdmin.from('project_likes').delete().eq('id', existing.id);
       const { data: p } = await supabaseAdmin.from('projects').select('likes').eq('id', id).single();
-      await supabaseAdmin.from('projects').update({ likes: Math.max(0, (p?.likes || 0) - 1) }).eq('id', id);
-      return res.json({ message: 'Project unliked', isLiked: false });
+      const newCount = Math.max(0, (p?.likes || 0) - 1);
+      await supabaseAdmin.from('projects').update({ likes: newCount }).eq('id', id);
+      return res.json({ message: 'Project unliked', liked: false, isLiked: false, isUpvoted: false, upvotes: newCount, upvote_count: newCount, likes: newCount });
     }
 
     await supabaseAdmin.from('project_likes').insert({ project_id: id, user_id: userId });
     const { data: p } = await supabaseAdmin.from('projects').select('likes').eq('id', id).single();
-    await supabaseAdmin.from('projects').update({ likes: (p?.likes || 0) + 1 }).eq('id', id);
-    res.json({ message: 'Project liked', isLiked: true });
+    const newCount = (p?.likes || 0) + 1;
+    await supabaseAdmin.from('projects').update({ likes: newCount }).eq('id', id);
+    res.json({ message: 'Project liked', liked: true, isLiked: true, isUpvoted: true, upvotes: newCount, upvote_count: newCount, likes: newCount });
   } catch (err) { next(err); }
+}
+
+export async function upvoteProject(req, res, next) {
+  return likeProject(req, res, next);
 }
 
 export async function saveProject(req, res, next) {

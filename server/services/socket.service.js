@@ -14,6 +14,9 @@ export async function registerUserSocket(socket) {
   const sockets = activeUsers.get(socket.userId);
   sockets.add(socket);
 
+  // Join personal user room for targeted notifications & direct dual-dispatch
+  socket.join('user_' + socket.userId);
+
   const now = new Date().toISOString();
   userActivity.set(socket.userId, { lastActivity: now });
 
@@ -21,7 +24,10 @@ export async function registerUserSocket(socket) {
     try {
       await supabaseAdmin.from('users').update({ online_status: 'online', last_seen: now }).eq('id', socket.userId);
     } catch (_) { /* non-fatal */ }
-    if (_io) _io.emit('status:update', { userId: socket.userId, status: 'online', lastSeen: now });
+    if (_io) {
+      _io.emit('status:update', { userId: socket.userId, status: 'online', lastSeen: now });
+      _io.emit('user:status_changed', { userId: socket.userId, status: 'available', onlineStatus: 'online' });
+    }
   }
 
   // Track activity on any socket event (heartbeat)
@@ -43,7 +49,10 @@ export async function unregisterUserSocket(socket) {
       try {
         await supabaseAdmin.from('users').update({ online_status: 'offline', last_seen: now }).eq('id', userId);
       } catch (_) { /* non-fatal */ }
-      if (_io) _io.emit('status:update', { userId, status: 'offline', lastSeen: now });
+      if (_io) {
+        _io.emit('status:update', { userId, status: 'offline', lastSeen: now });
+        _io.emit('user:status_changed', { userId, status: 'offline', onlineStatus: 'offline' });
+      }
     }
   }
 }
@@ -88,21 +97,24 @@ export async function handleLeaveRoom(socket) {
 export async function handleSendMessage(socket, io, data) {
   try {
     const roomId = data.roomId || data.teamId;
-    const { content, type, reply_to, reply_to_content, reply_to_sender } = data;
+    const { content, type, reply_to, reply_to_content, reply_to_sender, media_url, voice_url, voice_duration } = data;
     if (!content || !roomId) return socket.emit('error', { message: 'Missing content or roomId' });
 
-    // Only include optional columns when they have actual values
-    // Avoids "column does not exist" if DB schema hasn't been patched yet
+    // Insert payload
     const insertData = {
       room_id: roomId,
       sender_id: socket.userId,
       content,
       type: type || 'text',
       read_by: [socket.userId],
+      status: 'sent',
     };
     if (reply_to)         insertData.reply_to         = reply_to;
     if (reply_to_content) insertData.reply_to_content = reply_to_content;
     if (reply_to_sender)  insertData.reply_to_sender  = reply_to_sender;
+    if (media_url)        insertData.media_url        = media_url;
+    if (voice_url)        insertData.voice_url        = voice_url;
+    if (voice_duration)   insertData.voice_duration   = voice_duration;
 
     // Save to Supabase
     const { data: message, error } = await supabaseAdmin
@@ -123,15 +135,68 @@ export async function handleSendMessage(socket, io, data) {
       sender: message.sender,
       roomId: message.room_id,
       createdAt: message.created_at,
+      status: message.status || 'sent',
+      media_url: message.media_url || null,
+      voice_url: message.voice_url || null,
+      voice_duration: message.voice_duration || null,
       reply_to: message.reply_to || null,
       reply_to_content: message.reply_to_content || null,
       reply_to_sender: message.reply_to_sender || null,
     };
 
+    // 1. Broadcast to active room members
     io.to(roomId).emit('message:received', payload);
+
+    // 2. Dual-dispatch to recipient's personal user channel (never miss unread messages)
+    if (roomId && roomId.includes('_')) {
+      const recipientId = roomId.split('_').find(p => p !== socket.userId);
+      if (recipientId) {
+        io.to('user_' + recipientId).emit('conversation:new_message', {
+          roomId,
+          message: payload,
+        });
+      }
+    }
   } catch (err) {
     console.error('[ProjectHive] Send message error:', err);
     socket.emit('error', { message: 'Failed to send message' });
+  }
+}
+
+export async function handleMessageDelivered(socket, io, data) {
+  try {
+    const { messageId, roomId, senderId } = data || {};
+    if (!messageId) return;
+
+    // Update status to 'delivered' in DB if currently 'sent'
+    try {
+      await supabaseAdmin
+        .from('messages')
+        .update({ status: 'delivered' })
+        .eq('id', messageId)
+        .eq('status', 'sent');
+    } catch (_) {}
+
+    const targetSender = senderId || (roomId && roomId.includes('_') ? roomId.split('_').find(p => p !== socket.userId) : null);
+    if (targetSender) {
+      io.to('user_' + targetSender).emit('message:delivered', {
+        messageId,
+        roomId: roomId || socket.roomId,
+        deliveredTo: socket.userId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    if (roomId) {
+      io.to(roomId).emit('message:delivered', {
+        messageId,
+        roomId,
+        deliveredTo: socket.userId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  } catch (err) {
+    console.warn('[Socket] Delivery ack error:', err.message);
   }
 }
 
@@ -316,11 +381,39 @@ export function handleCallDecline(socket, data) {
   targetSockets.forEach(s => s.emit('call:declined', { roomId }));
 }
 
-export function handleCallHangup(socket, data) {
-  const { roomId, targetId } = data;
-  if (!roomId || !targetId) return;
-  const targetSockets = getUserSockets(targetId);
-  targetSockets.forEach(s => s.emit('call:hungup', { roomId }));
+export async function handleCallHangup(socket, data) {
+  const { roomId, targetId } = data || {};
+  if (roomId) {
+    try {
+      const { data: call } = await supabaseAdmin
+        .from('call_sessions')
+        .select('id, started_at')
+        .eq('room_name', roomId)
+        .neq('status', 'ended')
+        .maybeSingle();
+
+      if (call) {
+        const started = new Date(call.started_at || Date.now()).getTime();
+        const durationSeconds = Math.max(0, Math.round((Date.now() - started) / 1000));
+        await supabaseAdmin
+          .from('call_sessions')
+          .update({
+            status: 'ended',
+            ended_at: new Date().toISOString(),
+            duration_seconds: durationSeconds,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', call.id);
+      }
+    } catch (err) {
+      console.warn('[Call] Error updating call session on hangup:', err.message);
+    }
+  }
+
+  if (targetId) {
+    const targetSockets = getUserSockets(targetId);
+    targetSockets.forEach(s => s.emit('call:hungup', { roomId }));
+  }
 }
 
 

@@ -27,8 +27,9 @@ router.patch('/posts/:id',        authMiddleware, editPost);
 router.delete('/posts/:id',       authMiddleware, deletePost);
 
 // Reactions & Polls
-router.post('/posts/:id/react',   authMiddleware, reactToPost);
-router.post('/posts/:id/vote',    authMiddleware, votePoll);
+router.post('/posts/:id/react',     authMiddleware, reactToPost);
+router.post('/posts/:id/poll/vote', authMiddleware, votePoll);
+router.post('/posts/:id/vote',      authMiddleware, votePoll);
 
 // Save / Unsave
 router.post('/posts/:id/save',    authMiddleware, savePost);

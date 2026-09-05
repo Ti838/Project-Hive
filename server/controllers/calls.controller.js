@@ -108,22 +108,24 @@ export async function getCallToken(req, res) {
 
     // ── Record Call in Database (Fail-Safe) ──────────────────────────────────
     try {
-      await supabaseAdmin
-        .from('calls')
+      const { error: upsertErr } = await supabaseAdmin
+        .from('call_sessions')
         .upsert({
           room_name: roomName,
-          caller_id: userId,
+          initiator_id: userId,
+          recipient_id: targetUserId,
           call_type: callType,
-          scope,
           team_id: teamId,
-          project_id: projectId,
-          target_user_id: targetUserId,
-          status: 'active',
+          status: 'initiated',
           started_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         }, { onConflict: 'room_name' });
+
+      if (upsertErr) {
+        console.warn('[Calls] Non-fatal error upserting call metadata:', upsertErr.message);
+      }
     } catch (dbErr) {
-      console.warn('[Calls] Non-fatal error upserting call metadata:', dbErr.message);
+      console.warn('[Calls] Non-fatal exception upserting call metadata:', dbErr.message);
     }
 
     // ── Generate LiveKit Access Token ────────────────────────────────────────
@@ -177,18 +179,22 @@ export async function endCall(req, res) {
     }
 
     try {
-      const { data: call } = await supabaseAdmin
-        .from('calls')
+      const { data: call, error: findErr } = await supabaseAdmin
+        .from('call_sessions')
         .select('id, started_at')
         .eq('room_name', roomName)
         .maybeSingle();
+
+      if (findErr) {
+        console.warn('[Calls] Error locating call in DB:', findErr.message);
+      }
 
       if (call) {
         const started = new Date(call.started_at || Date.now()).getTime();
         const durationSeconds = Math.max(0, Math.round((Date.now() - started) / 1000));
 
-        await supabaseAdmin
-          .from('calls')
+        const { error: updateErr } = await supabaseAdmin
+          .from('call_sessions')
           .update({
             status: 'ended',
             ended_at: new Date().toISOString(),
@@ -196,6 +202,10 @@ export async function endCall(req, res) {
             updated_at: new Date().toISOString(),
           })
           .eq('id', call.id);
+
+        if (updateErr) {
+          console.warn('[Calls] Error updating call end status:', updateErr.message);
+        }
       }
     } catch (dbErr) {
       console.warn('[Calls] Non-fatal error ending call in DB:', dbErr.message);
@@ -220,16 +230,15 @@ export async function getCallHistory(req, res) {
     }
 
     const { data: calls, error } = await supabaseAdmin
-      .from('calls')
+      .from('call_sessions')
       .select(`
-        id, room_name, call_type, scope, status,
+        id, room_name, call_type, status,
         started_at, ended_at, duration_seconds, created_at,
-        caller:caller_id (id, first_name, last_name, avatar),
-        target:target_user_id (id, first_name, last_name, avatar),
-        team:team_id (id, name),
-        project:project_id (id, title)
+        initiator:initiator_id (id, first_name, last_name, avatar),
+        recipient:recipient_id (id, first_name, last_name, avatar),
+        team:team_id (id, name)
       `)
-      .or(`caller_id.eq.${userId},target_user_id.eq.${userId}`)
+      .or(`initiator_id.eq.${userId},recipient_id.eq.${userId}`)
       .order('created_at', { ascending: false })
       .limit(30);
 

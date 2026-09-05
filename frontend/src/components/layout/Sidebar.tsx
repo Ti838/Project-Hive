@@ -15,6 +15,7 @@ import { api } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { HiveAIIcon } from '@/components/ai/HiveAIIcon';
+import { UserAvatar } from '@/components/ui/UserAvatar';
 
 interface NavItem {
   href: string;
@@ -80,8 +81,8 @@ export function Sidebar() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [toggleSidebar]);
 
-  // Mouse drag resize handler for Desktop
-  const startResizing = useCallback((e: React.MouseEvent) => {
+  // Pointer-based jitter-free drag resize handler for Desktop
+  const startResizing = useCallback((e: React.PointerEvent) => {
     e.preventDefault();
     setIsResizing(true);
   }, []);
@@ -91,9 +92,10 @@ export function Sidebar() {
   }, []);
 
   const resize = useCallback(
-    (e: MouseEvent) => {
+    (e: PointerEvent) => {
       if (isResizing) {
-        const newWidth = Math.min(380, Math.max(200, e.clientX));
+        // Clamp smoothly between 200px and 380px
+        const newWidth = Math.min(380, Math.max(200, Math.round(e.clientX)));
         setSidebarWidth(newWidth);
       }
     },
@@ -102,21 +104,27 @@ export function Sidebar() {
 
   useEffect(() => {
     if (isResizing) {
-      window.addEventListener('mousemove', resize);
-      window.addEventListener('mouseup', stopResizing);
+      window.addEventListener('pointermove', resize);
+      window.addEventListener('pointerup', stopResizing);
+      window.addEventListener('pointercancel', stopResizing);
       document.body.style.cursor = 'col-resize';
       document.body.style.userSelect = 'none';
+      document.body.style.setProperty('-webkit-user-select', 'none');
     } else {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
+      window.removeEventListener('pointermove', resize);
+      window.removeEventListener('pointerup', stopResizing);
+      window.removeEventListener('pointercancel', stopResizing);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      document.body.style.removeProperty('-webkit-user-select');
     }
     return () => {
-      window.removeEventListener('mousemove', resize);
-      window.removeEventListener('mouseup', stopResizing);
+      window.removeEventListener('pointermove', resize);
+      window.removeEventListener('pointerup', stopResizing);
+      window.removeEventListener('pointercancel', stopResizing);
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
+      document.body.style.removeProperty('-webkit-user-select');
     };
   }, [isResizing, resize, stopResizing]);
 
@@ -133,14 +141,14 @@ export function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 md:hidden"
+              className="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 md:hidden"
             />
             <motion.aside
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card border-r border-border flex flex-col z-50 md:hidden shadow-2xl pb-[max(1rem,env(safe-area-inset-bottom,16px))] pt-[env(safe-area-inset-top,0px)]"
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              className="fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-card/95 backdrop-blur-2xl border-r border-border/80 flex flex-col z-50 md:hidden shadow-2xl pb-[max(1.25rem,env(safe-area-inset-bottom,16px))] pt-[env(safe-area-inset-top,0px)]"
             >
               {/* Mobile Header */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-border">
@@ -202,16 +210,7 @@ export function Sidebar() {
               <div className="border-t border-border p-3">
                 <div className="flex items-center justify-between p-2 rounded-xl bg-muted/50">
                   <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 min-w-0">
-                    {user?.avatar ? (
-                      <img src={user.avatar} alt={name} className="w-9 h-9 rounded-full object-cover shrink-0" />
-                    ) : (
-                      <div
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
-                        style={{ backgroundColor: avatarColor }}
-                      >
-                        {getInitials(name)}
-                      </div>
-                    )}
+                    <UserAvatar user={user} size="sm" showStatus status="online" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold truncate leading-tight">{name}</p>
                       <p className="text-xs text-muted-foreground truncate">{user?.university || user?.email}</p>
@@ -242,15 +241,16 @@ export function Sidebar() {
         transition={{ duration: isResizing ? 0 : 0.15, ease: 'easeInOut' }}
         style={{ width: sidebarCollapsed ? 68 : sidebarWidth }}
         className={cn(
-          'hidden md:flex flex-col h-full bg-card border-r border-border shrink-0 select-none relative z-30 group/sidebar',
+          'hidden md:flex flex-col h-full bg-card/95 dark:bg-card/80 backdrop-blur-xl border-r border-border/70 shrink-0 select-none relative z-30 group/sidebar',
           isResizing && 'transition-none pointer-events-auto'
         )}
       >
         {/* Resize Handle (Desktop Only) */}
         {!sidebarCollapsed && (
           <div
-            onMouseDown={startResizing}
+            onPointerDown={startResizing}
             onDoubleClick={() => setSidebarWidth(260)}
+            style={{ touchAction: 'none' }}
             title="Drag to resize sidebar • Double-click to reset"
             className={cn(
               'absolute top-0 right-0 w-1.5 h-full cursor-col-resize z-40 transition-colors group-hover/sidebar:bg-primary/20',
@@ -266,7 +266,7 @@ export function Sidebar() {
 
         {/* Header */}
         <div className={cn(
-          'h-16 flex items-center border-b border-border shrink-0 px-3.5',
+          'h-16 flex items-center border-b border-border/60 shrink-0 px-3.5',
           sidebarCollapsed ? 'justify-center' : 'justify-between'
         )}>
           {sidebarCollapsed ? (
@@ -306,11 +306,11 @@ export function Sidebar() {
 
         {/* Admin Navigation Banner (if user is admin) */}
         {user?.role === 'admin' && (
-          <div className="p-2 border-b border-border/60">
+          <div className="p-2 border-b border-border/60 relative group">
             <Link
               href="/admin/dashboard"
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 transition-all',
+                'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 transition-all tap-press',
                 sidebarCollapsed && 'justify-center px-0'
               )}
               title="Admin Console"
@@ -318,11 +318,19 @@ export function Sidebar() {
               <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
               {!sidebarCollapsed && <span className="truncate">ADMIN CONSOLE</span>}
             </Link>
+            {sidebarCollapsed && (
+              <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-amber-500 text-xs font-bold rounded-xl shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
+                Admin Console
+              </div>
+            )}
           </div>
         )}
 
         {/* Navigation Items */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 space-y-0.5 px-2">
+        <nav className={cn(
+          'flex-1 py-3 space-y-1 px-2',
+          sidebarCollapsed ? 'overflow-visible' : 'overflow-y-auto overflow-x-hidden'
+        )}>
           {navItems.map(({ href, label, icon: Icon, isAi, isAdmin }) => {
             const active = pathname === href || pathname.startsWith(href + '/');
             return (
@@ -330,13 +338,21 @@ export function Sidebar() {
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group relative',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors duration-150 group relative tap-press z-10',
                   isAdmin && 'text-amber-500 bg-amber-500/10 border border-amber-500/20 font-semibold mb-1',
                   active
-                    ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
-                    : !isAdmin && 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    ? 'text-primary-foreground font-semibold'
+                    : !isAdmin && 'text-muted-foreground hover:text-foreground hover:bg-accent/60'
                 )}
               >
+                {active && !isAdmin && (
+                  <motion.div
+                    layoutId="sidebarActivePill"
+                    className="absolute inset-0 bg-primary rounded-xl -z-10 shadow-xs glow-primary"
+                    transition={{ type: 'spring', stiffness: 350, damping: 28 }}
+                  />
+                )}
+
                 {isAi ? (
                   <HiveAIIcon size={18} className={active ? 'text-primary-foreground' : 'text-amber-500'} />
                 ) : Icon ? (
@@ -357,9 +373,9 @@ export function Sidebar() {
                   )}
                 </AnimatePresence>
 
-                {/* Tooltip on collapsed mode */}
+                {/* Refined Linear-style Tooltip in Collapsed Mode */}
                 {sidebarCollapsed && (
-                  <div className="absolute left-full ml-2 px-2.5 py-1 bg-popover text-popover-foreground text-xs font-semibold rounded-lg shadow-md border border-border opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity z-50">
+                  <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-foreground text-xs font-semibold rounded-xl shadow-2xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
                     {label}
                   </div>
                 )}
@@ -369,21 +385,11 @@ export function Sidebar() {
         </nav>
 
         {/* User Footer */}
-        <div className="border-t border-border p-3 shrink-0">
+        <div className="border-t border-border/60 p-3 shrink-0 relative group">
           <div className={cn('flex items-center gap-3', sidebarCollapsed && 'justify-center')}>
             {/* Avatar */}
-            <Link href="/profile" className="relative shrink-0">
-              {user?.avatar ? (
-                <img src={user.avatar} alt={name} className="w-9 h-9 rounded-full object-cover" />
-              ) : (
-                <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                  style={{ backgroundColor: avatarColor }}
-                >
-                  {getInitials(name)}
-                </div>
-              )}
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-card" />
+            <Link href="/profile" className="relative shrink-0 tap-press">
+              <UserAvatar user={user} size="sm" showStatus status="online" />
             </Link>
 
             <AnimatePresence initial={false}>
@@ -407,7 +413,7 @@ export function Sidebar() {
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={handleLogout}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer tap-press"
                   title="Logout"
                 >
                   <LogOut className="w-4 h-4" />
@@ -415,6 +421,13 @@ export function Sidebar() {
               )}
             </AnimatePresence>
           </div>
+
+          {sidebarCollapsed && (
+            <div className="absolute left-full ml-3 px-3 py-2 surface-floating text-foreground text-xs font-medium rounded-xl shadow-2xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
+              <p className="font-semibold text-foreground">{name}</p>
+              <p className="text-[10px] text-muted-foreground">{user?.email || user?.university}</p>
+            </div>
+          )}
         </div>
 
         {/* Collapsed expand toggle row at bottom */}

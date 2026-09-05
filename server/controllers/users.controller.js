@@ -1,7 +1,7 @@
 import bcryptjs from 'bcryptjs';
 import { supabaseAdmin } from '../config/supabase.js';
 import { getIo } from '../services/socket.service.js';
-import { computeRelationshipState } from './friends.controller.js';
+import { computeRelationshipState, getMutualFriends } from './friends.controller.js';
 
 // Sanitize search input to prevent Supabase PostgREST filter injection
 function sanitizeSearch(input) {
@@ -73,6 +73,10 @@ function camelizeUser(user) {
   result.createdAt = user.createdAt || user.created_at || new Date().toISOString();
   result.updated_at = user.updated_at || user.updatedAt || new Date().toISOString();
   result.updatedAt = user.updatedAt || user.updated_at || new Date().toISOString();
+  const defaultSettings = { emailNotifications: true, chatSounds: true, theme: 'dark', twoFactorPrompt: false };
+  result.settings = (user.settings && typeof user.settings === 'object')
+    ? { ...defaultSettings, ...user.settings }
+    : defaultSettings;
   return result;
 }
 
@@ -166,30 +170,223 @@ export async function getCurrentUser(req, res, next) {
   } catch (err) { next(err); }
 }
 
-// ─── LIST USERS (GET /api/users?limit=N&search=q) ────────────────────────────
+// ─── LIST / DISCOVER USERS (GET /api/users & GET /api/users/people) ───────────
 export async function listUsers(req, res, next) {
   try {
-    const { limit = 20, skip = 0, search } = req.query;
+    const {
+      limit = 20,
+      skip = 0,
+      page,
+      search,
+      q: queryQ,
+      query: queryTerm,
+      university,
+      major,
+      skill,
+      status,
+      yearOfStudy,
+      year_of_study,
+    } = req.query;
+
+    const requesterId = req.user?.id || null;
+    const pageNum = Math.max(1, parseInt(page) || Math.floor(parseInt(skip) / parseInt(limit)) + 1 || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit) || 20));
+    const offset = (pageNum - 1) * limitNum;
+
     let q = supabaseAdmin
       .from('users')
-      .select('id, first_name, last_name, avatar, avatar_color, university, major, online_status, last_seen, role', { count: 'exact' })
+      .select(`
+        id, first_name, last_name, email, avatar, banner_image, avatar_color, bio,
+        university, major, year_of_study, status, hours_per_week, github, linkedin,
+        portfolio, role, is_verified, is_public, completion_percentage, online_status,
+        last_seen, created_at,
+        skills(id, name, level, endorsements)
+      `, { count: 'exact' })
       .eq('is_verified', true)
       .eq('is_banned', false);
 
-    if (req.user?.id) {
-      q = q.neq('id', req.user.id);
+    if (requesterId) {
+      q = q.neq('id', requesterId);
     }
 
-    const s = sanitizeSearch(search);
-    if (s) q = q.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,university.ilike.%${s}%`);
+    const searchTerm = search || queryQ || queryTerm;
+    const s = sanitizeSearch(searchTerm);
+    if (s) {
+      q = q.or(`first_name.ilike.%${s}%,last_name.ilike.%${s}%,university.ilike.%${s}%,major.ilike.%${s}%,bio.ilike.%${s}%`);
+    }
+
+    if (university && university !== 'all') {
+      const u = sanitizeSearch(university);
+      if (u) q = q.ilike('university', `%${u}%`);
+    }
+
+    if (major && major !== 'all') {
+      const m = sanitizeSearch(major);
+      if (m) q = q.ilike('major', `%${m}%`);
+    }
+
+    if (status && status !== 'all') {
+      q = q.eq('status', status);
+    }
+
+    const y = yearOfStudy || year_of_study;
+    if (y && !isNaN(parseInt(y))) {
+      q = q.eq('year_of_study', parseInt(y));
+    }
+
+    // Technical skill filter
+    if (skill && skill !== 'all') {
+      const sk = sanitizeSearch(skill);
+      if (sk) {
+        const { data: matchedSkillUsers } = await supabaseAdmin
+          .from('skills')
+          .select('user_id')
+          .ilike('name', `%${sk}%`);
+
+        const userIdsWithSkill = (matchedSkillUsers || []).map(m => m.user_id);
+        if (userIdsWithSkill.length === 0) {
+          return res.json({
+            users: [],
+            total: 0,
+            page: pageNum,
+            limit: limitNum,
+            pages: 0,
+            pagination: { total: 0, skip: offset, limit: limitNum, page: pageNum, hasMore: false },
+          });
+        }
+        q = q.in('id', userIdsWithSkill);
+      }
+    }
 
     const { data: users, error, count } = await q
-      .order('online_status', { ascending: false }) // online users first
+      .order('online_status', { ascending: false }) // online students first
       .order('last_seen', { ascending: false })
-      .range(+skip, +skip + +limit - 1);
+      .range(offset, offset + limitNum - 1);
 
     if (error) throw error;
-    res.json({ users: (users || []).map(toClient), total: count || 0 });
+
+    // Hydrate social graph status & mutual friends for each returned student
+    const hydratedUsers = await Promise.all((users || []).map(async (u) => {
+      const clientUser = toClient(u);
+      let friendshipStatus = 'none';
+      let mutualCount = 0;
+      let mutualFriends = [];
+
+      if (requesterId && requesterId !== u.id) {
+        const [rel, mutual] = await Promise.all([
+          computeRelationshipState(requesterId, u.id).catch(() => 'NOT_FRIEND'),
+          getMutualFriends(requesterId, u.id, 3).catch(() => ({ mutualCount: 0, mutualFriends: [] })),
+        ]);
+        friendshipStatus = rel;
+        mutualCount = mutual?.mutualCount || 0;
+        mutualFriends = mutual?.mutualFriends || [];
+      }
+
+      return {
+        ...clientUser,
+        friendshipStatus,
+        mutualCount,
+        mutualFriends,
+        skills: u.skills || [],
+      };
+    }));
+
+    const totalCount = count || 0;
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    res.json({
+      users: hydratedUsers,
+      total: totalCount,
+      page: pageNum,
+      limit: limitNum,
+      pages: totalPages,
+      pagination: {
+        total: totalCount,
+        skip: offset,
+        limit: limitNum,
+        page: pageNum,
+        hasMore: offset + limitNum < totalCount,
+      },
+    });
+  } catch (err) { next(err); }
+}
+
+// ─── GET RECOMMENDED USERS (GET /api/users/recommended) ───────────────────────
+export async function getRecommendedUsers(req, res, next) {
+  try {
+    const requesterId = req.user.id;
+
+    // 1. Fetch current user profile
+    const { data: me, error: meErr } = await supabaseAdmin
+      .from('users')
+      .select('id, university, major, skills(name)')
+      .eq('id', requesterId)
+      .single();
+
+    if (meErr || !me) return res.status(404).json({ error: 'User not found' });
+
+    const mySkills = (me.skills || []).map(s => (s.name || '').toLowerCase()).filter(Boolean);
+
+    // 2. Query active verified students
+    let q = supabaseAdmin
+      .from('users')
+      .select(`
+        id, first_name, last_name, email, avatar, banner_image, avatar_color, bio,
+        university, major, year_of_study, status, hours_per_week, github, linkedin,
+        portfolio, role, is_verified, is_public, completion_percentage, online_status,
+        last_seen, created_at,
+        skills(id, name, level, endorsements)
+      `)
+      .eq('is_verified', true)
+      .eq('is_banned', false)
+      .neq('id', requesterId)
+      .limit(40);
+
+    // Prioritize same campus or major if user has them
+    if (me.university) {
+      q = q.or(`university.eq.${me.university},major.eq.${me.major || ''}`);
+    }
+
+    const { data: candidates } = await q
+      .order('online_status', { ascending: false })
+      .order('last_seen', { ascending: false });
+
+    // 3. Filter candidates: only recommend students who are NOT_FRIEND (not already friends, no pending requests)
+    const recommended = [];
+
+    for (const c of candidates || []) {
+      if (recommended.length >= 6) break;
+
+      const rel = await computeRelationshipState(requesterId, c.id).catch(() => 'NOT_FRIEND');
+      if (rel === 'NOT_FRIEND') {
+        const mutual = await getMutualFriends(requesterId, c.id, 3).catch(() => ({ mutualCount: 0, mutualFriends: [] }));
+
+        let reason = 'Active Student';
+        const candidateSkills = (c.skills || []).map(s => (s.name || '').toLowerCase());
+        const sharedSkill = mySkills.find(sk => candidateSkills.includes(sk));
+
+        if (me.university && c.university && me.university.toLowerCase() === c.university.toLowerCase()) {
+          reason = `Same Campus: ${c.university}`;
+        } else if (me.major && c.major && me.major.toLowerCase() === c.major.toLowerCase()) {
+          reason = `Also studies ${c.major}`;
+        } else if (sharedSkill) {
+          reason = `Shared Skill: ${sharedSkill}`;
+        } else if (mutual.mutualCount > 0) {
+          reason = `${mutual.mutualCount} mutual connection${mutual.mutualCount === 1 ? '' : 's'}`;
+        }
+
+        recommended.push({
+          ...toClient(c),
+          friendshipStatus: rel,
+          mutualCount: mutual.mutualCount,
+          mutualFriends: mutual.mutualFriends,
+          skills: c.skills || [],
+          reason,
+        });
+      }
+    }
+
+    res.json({ users: recommended });
   } catch (err) { next(err); }
 }
 
@@ -232,6 +429,11 @@ export async function getUserProfile(req, res, next) {
     const teamsCount = joinedTeams.filter(t => !t.category?.startsWith('community:')).length;
     const communitiesCount = joinedTeams.filter(t => t.category?.startsWith('community:')).length;
 
+    let mutualInfo = { mutualCount: 0, mutualFriends: [] };
+    if (requesterId && requesterId !== id) {
+      mutualInfo = await getMutualFriends(requesterId, id, 6);
+    }
+
     const isFriend = friendshipStatus === 'FRIEND';
     const showDetails = user.is_public || friendshipStatus === 'SELF' || isFriend;
 
@@ -247,6 +449,8 @@ export async function getUserProfile(req, res, next) {
         isPublic: user.is_public,
         isLocked: true,
         friendshipStatus,
+        mutualCount: mutualInfo.mutualCount,
+        mutualFriends: mutualInfo.mutualFriends,
         friendCount: friendCount || 0,
         followerCount: followerCount || 0,
         followingCount: followingCount || 0,
@@ -260,6 +464,8 @@ export async function getUserProfile(req, res, next) {
     const clientUser = toClient(user);
     clientUser.friendshipStatus = friendshipStatus;
     clientUser.isLocked = false;
+    clientUser.mutualCount = mutualInfo.mutualCount;
+    clientUser.mutualFriends = mutualInfo.mutualFriends;
     clientUser.friendCount = friendCount || 0;
     clientUser.followerCount = followerCount || 0;
     clientUser.followingCount = followingCount || 0;
@@ -330,6 +536,7 @@ export async function updateProfile(req, res, next) {
     const portfolio = body.portfolio !== undefined ? body.portfolio : body.portfolio_url;
     const isPublic = body.isPublic !== undefined ? body.isPublic : body.is_public;
     const skills = body.skills;
+    const settings = body.settings;
 
     // Handle base64 image uploads to Supabase Storage
     if (avatar && typeof avatar === 'string' && avatar.startsWith('data:image/')) {
@@ -379,6 +586,12 @@ export async function updateProfile(req, res, next) {
       .eq('id', userId)
       .single();
 
+    if (settings !== undefined && typeof settings === 'object' && settings !== null) {
+      const defaultSettings = { emailNotifications: true, chatSounds: true, theme: 'dark', twoFactorPrompt: false };
+      const currentSettings = (existing?.settings && typeof existing.settings === 'object') ? existing.settings : defaultSettings;
+      updates.settings = { ...currentSettings, ...settings };
+    }
+
     const merged = { ...existing, ...updates };
     const finalSkills = skills !== undefined ? skills : (existing?.skills || []);
     const fields = [
@@ -401,6 +614,20 @@ export async function updateProfile(req, res, next) {
       .single();
 
     if (error) throw error;
+
+    // Real-time broadcast if status / presence was updated
+    if (status !== undefined || body.onlineStatus !== undefined || body.online_status !== undefined) {
+      const io = getIo();
+      if (io) {
+        io.emit('user:status_changed', {
+          userId,
+          status: user.status || 'available',
+          onlineStatus: user.online_status || 'online',
+          timestamp: new Date().toISOString()
+        });
+      }
+    }
+
     res.json({ message: 'Profile updated successfully', user: toClient(user) });
   } catch (err) {
     console.error('[ProjectHive] Update profile error:', err);
@@ -408,43 +635,48 @@ export async function updateProfile(req, res, next) {
   }
 }
 
-// ─── SEARCH USERS ────────────────────────────────────────────────────────────
-export async function searchUsers(req, res, next) {
+// ─── UPDATE USER SETTINGS (PUT/PATCH /api/users/me/settings) ─────────────────
+export async function updateSettings(req, res, next) {
   try {
-    const { query, q: queryQ, skip = 0, limit = 20, university, yearOfStudy } = req.query;
-    const searchTerm = query || queryQ;
+    const userId = req.user.id;
+    const body = req.body || {};
+    const newSettings = body.settings !== undefined ? body.settings : body;
 
-    let q = supabaseAdmin
+    const { data: existing, error: fetchError } = await supabaseAdmin
       .from('users')
-      .select('id, first_name, last_name, email, avatar, avatar_color, bio, university, major, year_of_study, status, hours_per_week, github, linkedin, portfolio, online_status, completion_percentage, skills(*)', { count: 'exact' })
-      .eq('is_public', true)
-      .eq('is_banned', false);
+      .select('settings')
+      .eq('id', userId)
+      .single();
 
-    if (searchTerm) {
-      const st = sanitizeSearch(searchTerm);
-      if (st) q = q.or(`first_name.ilike.%${st}%,last_name.ilike.%${st}%,email.ilike.%${st}%,university.ilike.%${st}%,major.ilike.%${st}%`);
-    }
-    if (university) q = q.ilike('university', `%${university}%`);
-    if (yearOfStudy) q = q.eq('year_of_study', parseInt(yearOfStudy));
+    if (fetchError) throw fetchError;
 
-    q = q.range(parseInt(skip), parseInt(skip) + parseInt(limit) - 1).order('created_at', { ascending: false });
+    const defaultSettings = { emailNotifications: true, chatSounds: true, theme: 'dark', twoFactorPrompt: false };
+    const currentSettings = (existing?.settings && typeof existing.settings === 'object') ? existing.settings : defaultSettings;
+    const mergedSettings = { ...currentSettings, ...newSettings };
 
-    const { data: users, error, count } = await q;
-    if (error) throw error;
+    const { data: user, error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({ settings: mergedSettings, updated_at: new Date().toISOString() })
+      .eq('id', userId)
+      .select('*, skills(*)')
+      .single();
+
+    if (updateError) throw updateError;
 
     res.json({
-      users: (users || []).map(toClient),
-      pagination: {
-        total: count || 0,
-        skip: parseInt(skip),
-        limit: parseInt(limit),
-        hasMore: parseInt(skip) + parseInt(limit) < (count || 0),
-      },
+      message: 'Settings updated successfully',
+      settings: mergedSettings,
+      user: toClient(user)
     });
   } catch (err) {
-    console.error('[ProjectHive] Search users error:', err);
+    console.error('[ProjectHive] Update settings error:', err);
     next(err);
   }
+}
+
+// ─── SEARCH USERS ────────────────────────────────────────────────────────────
+export async function searchUsers(req, res, next) {
+  return listUsers(req, res, next);
 }
 
 // ─── UPDATE SKILLS ────────────────────────────────────────────────────────────

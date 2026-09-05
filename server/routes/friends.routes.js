@@ -19,6 +19,7 @@ import {
   blockUser,
   unblockUser,
   getRelationshipStatus,
+  getMutualFriendsEndpoint,
 } from '../controllers/friends.controller.js';
 
 const router = express.Router();
@@ -26,10 +27,15 @@ const router = express.Router();
 router.use(authenticate);
 
 // Friend request management
-router.post('/request/:userId',         sendFriendRequest);
-router.delete('/request/:userId/cancel',cancelFriendRequest);
-router.post('/accept/:requestId',       acceptFriendRequest);
-router.post('/reject/:requestId',       rejectFriendRequest);
+router.post('/request/:userId',           sendFriendRequest);
+router.delete('/request/:userId/cancel',  cancelFriendRequest);
+router.post('/accept/:requestId',         acceptFriendRequest);
+router.put('/requests/:requestId/accept', acceptFriendRequest);
+router.post('/reject/:requestId',         rejectFriendRequest);
+router.put('/requests/:requestId/reject', rejectFriendRequest);
+
+// Mutual Friends engine
+router.get('/mutual/:userId',             getMutualFriendsEndpoint);
 
 // Friendship deletion
 router.delete('/:userId',               unfriendUser);

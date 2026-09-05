@@ -2,11 +2,12 @@ import { supabaseAdmin } from '../config/supabase.js';
 import { getIo } from '../services/socket.service.js';
 
 // ── Get all team conversations for the current user ──────────────────────────
+// ── Optimized: Get all team conversations with ZERO N+1 query overhead ────────
 export async function getTeamConversations(req, res, next) {
   try {
     const myId = req.user.id;
 
-    // Get teams user is a member of
+    // 1. Fetch user's team memberships
     const { data: memberships, error: memErr } = await supabaseAdmin
       .from('team_members')
       .select('team_id, role')
@@ -15,9 +16,9 @@ export async function getTeamConversations(req, res, next) {
     if (memErr) throw memErr;
     if (!memberships || memberships.length === 0) return res.json({ teams: [] });
 
-    const teamIds = memberships.map(m => m.team_id);
+    const teamIds = memberships.map((m) => m.team_id);
 
-    // Get team details
+    // 2. Fetch team details in a single query
     const { data: teams, error: teamErr } = await supabaseAdmin
       .from('teams')
       .select('id, name, description, category')
@@ -25,46 +26,67 @@ export async function getTeamConversations(req, res, next) {
 
     if (teamErr) throw teamErr;
 
-    // For each team, get last message and member count
-    const result = await Promise.all((teams || []).map(async team => {
-      const { data: lastMsg } = await supabaseAdmin
-        .from('messages')
-        .select('content, sender_id, created_at, sender:sender_id(first_name)')
-        .eq('room_id', team.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
+    // 3. Batch fetch all members for these teams (single query instead of N queries)
+    const { data: allMembers, error: membersErr } = await supabaseAdmin
+      .from('team_members')
+      .select('team_id')
+      .in('team_id', teamIds);
 
-      const { count: memberCount } = await supabaseAdmin
-        .from('team_members')
-        .select('id', { count: 'exact', head: true })
-        .eq('team_id', team.id);
+    if (membersErr) throw membersErr;
 
+    // Build member count lookup map
+    const memberCountMap = (allMembers || []).reduce((acc, row) => {
+      acc[row.team_id] = (acc[row.team_id] || 0) + 1;
+      return acc;
+    }, {});
+
+    // 4. Batch fetch latest messages for these teams using room_id lookup
+    const { data: recentMessages, error: msgErr } = await supabaseAdmin
+      .from('messages')
+      .select('room_id, content, created_at, sender:sender_id(first_name)')
+      .in('room_id', teamIds)
+      .order('created_at', { ascending: false });
+
+    if (msgErr) throw msgErr;
+
+    // Extract newest message per team
+    const lastMessageMap = {};
+    for (const msg of recentMessages || []) {
+      if (!lastMessageMap[msg.room_id]) {
+        lastMessageMap[msg.room_id] = {
+          content: msg.content,
+          senderName: msg.sender?.first_name || 'Someone',
+          createdAt: msg.created_at,
+        };
+      }
+    }
+
+    // 5. Assemble final response without serial await delays
+    const result = (teams || []).map((team) => {
+      const membership = memberships.find((m) => m.team_id === team.id);
       return {
         _id: team.id,
         type: 'team',
         name: team.name,
         description: team.description,
         category: team.category,
-        memberCount: memberCount || 0,
-        role: memberships.find(m => m.team_id === team.id)?.role || 'member',
-        lastMessage: lastMsg ? {
-          content: lastMsg.content,
-          senderName: lastMsg.sender?.first_name || 'Someone',
-          createdAt: lastMsg.created_at
-        } : null
+        memberCount: memberCountMap[team.id] || 0,
+        role: membership?.role || 'member',
+        lastMessage: lastMessageMap[team.id] || null,
       };
-    }));
-
-    // Sort by last message time
-    result.sort((a, b) => {
-      const tA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
-      const tB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
-      return tB - tA;
     });
 
-    res.json({ teams: result });
-  } catch (err) { next(err); }
+    // Sort by last active message
+    result.sort((a, b) => {
+      const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt).getTime() : 0;
+      const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt).getTime() : 0;
+      return timeB - timeA;
+    });
+
+    return res.json({ teams: result });
+  } catch (err) {
+    next(err);
+  }
 }
 
 export async function getTeamMessages(req, res, next) {
@@ -189,135 +211,247 @@ export async function getConversations(req, res, next) {
     if (msgRoomsError) throw msgRoomsError;
 
     const partnerIds = new Set();
-
     if (friendsData) {
-      friendsData.forEach(row => {
+      friendsData.forEach((row) => {
         if (row.friend_id) partnerIds.add(row.friend_id);
       });
     }
 
     if (msgRooms) {
-      msgRooms.forEach(m => {
+      msgRooms.forEach((m) => {
         if (m.room_id && m.room_id.includes('_')) {
           const parts = m.room_id.split('_');
-          const other = parts.find(p => p !== myId);
+          const other = parts.find((p) => p !== myId);
           if (other) partnerIds.add(other);
         }
       });
     }
 
-    const conversations = [];
-
-    if (partnerIds.size > 0) {
-      // Fetch details of all conversation partners
-      const { data: partners, error: partnersError } = await supabaseAdmin
-        .from('users')
-        .select('id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major')
-        .in('id', Array.from(partnerIds));
-
-      if (partnersError) throw partnersError;
-
-      for (const friend of (partners || [])) {
-        const roomId = [myId, friend.id].sort().join('_');
-
-        // Fetch last message
-        const { data: lastMsg } = await supabaseAdmin
-          .from('messages')
-          .select('*')
-          .eq('room_id', roomId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        // Fetch unread count
-        const { data: msgs } = await supabaseAdmin
-          .from('messages')
-          .select('id, sender_id, read_by')
-          .eq('room_id', roomId)
-          .neq('sender_id', myId);
-
-        const unreadCount = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId)).length;
-
-        const friendObj = {
-          _id: friend.id,
-          id: friend.id,
-          first_name: friend.first_name,
-          last_name: friend.last_name,
-          firstName: friend.first_name,
-          lastName: friend.last_name,
-          name: `${friend.first_name || ''} ${friend.last_name || ''}`.trim(),
-          avatar: friend.avatar,
-          avatar_color: friend.avatar_color,
-          avatarColor: friend.avatar_color,
-          online_status: friend.online_status,
-          onlineStatus: friend.online_status,
-          last_seen: friend.last_seen,
-          lastSeen: friend.last_seen,
-          university: friend.university,
-          major: friend.major
-        };
-
-        const lastMsgObj = lastMsg ? {
-          id: lastMsg.id,
-          content: lastMsg.content,
-          type: lastMsg.type,
-          sender: lastMsg.sender_id,
-          sender_id: lastMsg.sender_id,
-          created_at: lastMsg.created_at,
-          createdAt: lastMsg.created_at
-        } : null;
-
-        conversations.push({
-          _id: roomId,
-          id: roomId,
-          roomId,
-          friendId: friend.id,
-          friend: friendObj,
-          user: friendObj,
-          last_message: lastMsgObj,
-          lastMessage: lastMsgObj,
-          unread_count: unreadCount,
-          unreadCount
-        });
-      }
+    if (partnerIds.size === 0) {
+      return res.json({ conversations: [] });
     }
 
-    // Sort by last message time (recent first), then by name
+    const partnerIdList = Array.from(partnerIds);
+    const roomIds = partnerIdList.map((id) => [myId, id].sort().join('_'));
+
+    // 3. Parallel batch fetching (Zero N+1 query overhead)
+    const [partnersRes, pinsRes, recentMsgsRes] = await Promise.all([
+      supabaseAdmin
+        .from('users')
+        .select('id, first_name, last_name, avatar, avatar_color, online_status, last_seen, university, major')
+        .in('id', partnerIdList),
+      supabaseAdmin
+        .from('conversation_pins')
+        .select('room_id, pinned_at')
+        .eq('user_id', myId),
+      supabaseAdmin
+        .from('messages')
+        .select('id, room_id, content, type, sender_id, created_at, status, media_url, voice_url, read_by')
+        .in('room_id', roomIds)
+        .order('created_at', { ascending: false }),
+    ]);
+
+    if (partnersRes.error) throw partnersRes.error;
+
+    // Build pinned lookup map
+    const pinnedMap = new Map();
+    (pinsRes.data || []).forEach((p) => {
+      pinnedMap.set(p.room_id, p.pinned_at);
+    });
+
+    // Build latest message map & unread count map in single pass
+    const lastMessageMap = new Map();
+    const unreadCountMap = new Map();
+
+    (recentMsgsRes.data || []).forEach((m) => {
+      // First message seen for room_id is the newest because of ORDER BY created_at DESC
+      if (!lastMessageMap.has(m.room_id)) {
+        lastMessageMap.set(m.room_id, {
+          id: m.id,
+          content: m.content,
+          type: m.type,
+          sender: m.sender_id,
+          sender_id: m.sender_id,
+          created_at: m.created_at,
+          createdAt: m.created_at,
+          status: m.status || 'sent',
+        });
+      }
+
+      // Count unread messages from partner
+      if (m.sender_id !== myId) {
+        const isRead = m.read_by && Array.isArray(m.read_by) && m.read_by.includes(myId);
+        if (!isRead) {
+          unreadCountMap.set(m.room_id, (unreadCountMap.get(m.room_id) || 0) + 1);
+        }
+      }
+    });
+
+    const conversations = (partnersRes.data || []).map((friend) => {
+      const roomId = [myId, friend.id].sort().join('_');
+      const isPinned = pinnedMap.has(roomId);
+      const pinnedAt = pinnedMap.get(roomId) || null;
+      const lastMsgObj = lastMessageMap.get(roomId) || null;
+      const unreadCount = unreadCountMap.get(roomId) || 0;
+
+      const friendObj = {
+        _id: friend.id,
+        id: friend.id,
+        first_name: friend.first_name,
+        last_name: friend.last_name,
+        firstName: friend.first_name,
+        lastName: friend.last_name,
+        name: `${friend.first_name || ''} ${friend.last_name || ''}`.trim(),
+        avatar: friend.avatar,
+        avatar_color: friend.avatar_color,
+        avatarColor: friend.avatar_color,
+        online_status: friend.online_status,
+        onlineStatus: friend.online_status,
+        last_seen: friend.last_seen,
+        lastSeen: friend.last_seen,
+        university: friend.university,
+        major: friend.major,
+      };
+
+      return {
+        _id: roomId,
+        id: roomId,
+        roomId,
+        friendId: friend.id,
+        friend: friendObj,
+        user: friendObj,
+        last_message: lastMsgObj,
+        lastMessage: lastMsgObj,
+        unread_count: unreadCount,
+        unreadCount,
+        is_pinned: isPinned,
+        isPinned,
+        pinnedAt,
+      };
+    });
+
+    // 4. Sort: Pinned conversations first, then newest message, then alphabetized
     conversations.sort((a, b) => {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      if (a.isPinned && b.isPinned) {
+        const pinTimeA = a.pinnedAt ? new Date(a.pinnedAt).getTime() : 0;
+        const pinTimeB = b.pinnedAt ? new Date(b.pinnedAt).getTime() : 0;
+        if (pinTimeA !== pinTimeB) return pinTimeB - pinTimeA;
+      }
+
       const timeA = a.lastMessage ? new Date(a.lastMessage.createdAt || a.lastMessage.created_at).getTime() : 0;
       const timeB = b.lastMessage ? new Date(b.lastMessage.createdAt || b.lastMessage.created_at).getTime() : 0;
       if (timeA !== timeB) return timeB - timeA;
+
       const nameA = `${a.friend?.firstName || ''} ${a.friend?.lastName || ''}`.toLowerCase();
       const nameB = `${b.friend?.firstName || ''} ${b.friend?.lastName || ''}`.toLowerCase();
       return nameA.localeCompare(nameB);
     });
 
     res.json({ conversations });
-  } catch (err) { next(err); }
+  } catch (err) {
+    next(err);
+  }
 }
 
 export async function markAsRead(req, res, next) {
   try {
     const myId = req.user.id;
-    const { friendId } = req.body;
-    if (!friendId) return res.status(400).json({ error: 'Missing friendId' });
+    const { friendId, roomId: givenRoomId, messageIds } = req.body;
+    const roomId = givenRoomId || (friendId ? [myId, friendId].sort().join('_') : null);
+    if (!roomId) return res.status(400).json({ error: 'Missing roomId or friendId' });
 
-    const roomId = [myId, friendId].sort().join('_');
-
-    const { data: msgs } = await supabaseAdmin
+    let query = supabaseAdmin
       .from('messages')
       .select('id, read_by')
       .eq('room_id', roomId)
       .neq('sender_id', myId);
 
-    const toUpdate = (msgs || []).filter(m => !m.read_by || !m.read_by.includes(myId));
-    for (const msg of toUpdate) {
-      const newReadBy = [...(msg.read_by || []), myId];
-      await supabaseAdmin.from('messages').update({ read_by: newReadBy }).eq('id', msg.id);
+    if (messageIds && Array.isArray(messageIds) && messageIds.length > 0) {
+      query = query.in('id', messageIds);
     }
 
-    res.json({ ok: true });
-  } catch (err) { next(err); }
+    const { data: msgs, error } = await query;
+    if (error) throw error;
+
+    const toUpdate = (msgs || []).filter((m) => !m.read_by || !m.read_by.includes(myId));
+
+    if (toUpdate.length > 0) {
+      // Parallel batch updates
+      await Promise.all(
+        toUpdate.map((m) => {
+          const newReadBy = [...(m.read_by || []), myId];
+          return supabaseAdmin
+            .from('messages')
+            .update({ read_by: newReadBy, status: 'seen' })
+            .eq('id', m.id);
+        })
+      );
+    }
+
+    const io = getIo();
+    if (io) {
+      const readPayload = {
+        roomId,
+        readBy: myId,
+        messageIds: toUpdate.map((m) => m.id),
+        timestamp: new Date().toISOString(),
+      };
+      io.to(roomId).emit('message:read_receipt', readPayload);
+
+      // Also notify personal channel of DM partner
+      if (roomId.includes('_')) {
+        const otherId = roomId.split('_').find((p) => p !== myId);
+        if (otherId) {
+          io.to('user_' + otherId).emit('message:read_receipt', readPayload);
+        }
+      }
+    }
+
+    res.json({ ok: true, readCount: toUpdate.length });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ─── TOGGLE PIN CONVERSATION ──────────────────────────────────────────────────
+export async function togglePinConversation(req, res, next) {
+  try {
+    const myId = req.user.id;
+    const roomId = req.params.roomId || req.body.roomId;
+    if (!roomId) return res.status(400).json({ error: 'Missing roomId' });
+
+    // Check if already pinned
+    const { data: existing } = await supabaseAdmin
+      .from('conversation_pins')
+      .select('room_id')
+      .eq('user_id', myId)
+      .eq('room_id', roomId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabaseAdmin
+        .from('conversation_pins')
+        .delete()
+        .eq('user_id', myId)
+        .eq('room_id', roomId);
+
+      return res.json({ ok: true, pinned: false, roomId });
+    } else {
+      await supabaseAdmin
+        .from('conversation_pins')
+        .insert({
+          user_id: myId,
+          room_id: roomId,
+          pinned_at: new Date().toISOString(),
+        });
+
+      return res.json({ ok: true, pinned: true, roomId });
+    }
+  } catch (err) {
+    next(err);
+  }
 }
 
 // ── Send Direct Message (Facebook-style request if not friends) ───────────────

@@ -24,12 +24,52 @@ import {
   handleGroupCallInitiate,
   handleMessageReact,
   handleMessageRead,
+  handleMessageDelivered,
 } from './services/socket.service.js';
+
+// ─── PROCESS CRASH SHIELD ───────────────────────────────────────────────────
+// Guard against unhandled promise rejections (e.g. AI rate limits / socket dropouts)
+// to prevent Render Node.js instance from unexpected termination.
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[ProjectHive Guard] ⚠️ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[ProjectHive Guard] ❌ Uncaught Exception:', err);
+});
 
 const PORT = process.env.PORT || 5000;
 
+function validateEnvironment() {
+  const isProd = process.env.NODE_ENV === 'production';
+  const missing = [];
+
+  if (!process.env.SUPABASE_URL) missing.push('SUPABASE_URL');
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) missing.push('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (isProd) {
+    if (!process.env.JWT_SECRET && !(process.env.JWT_PRIVATE_KEY && process.env.JWT_PUBLIC_KEY)) {
+      missing.push('JWT_SECRET (or JWT_PRIVATE_KEY + JWT_PUBLIC_KEY)');
+    }
+  }
+
+  if (missing.length > 0) {
+    console.error('\n╔══════════════════════════════════════════════════════════════════════════════╗');
+    console.error('║  ❌ CRITICAL ENVIRONMENT CONFIGURATION ERROR                                 ║');
+    console.error('║  The ProjectHive backend cannot start due to missing environment variables:  ║');
+    missing.forEach(v => {
+      console.error(`║    • ${v.padEnd(70)}║`);
+    });
+    console.error('║                                                                              ║');
+    console.error('║  Action: Provide these keys in your hosting provider or .env.production file ║');
+    console.error('╚══════════════════════════════════════════════════════════════════════════════╝\n');
+    process.exit(1);
+  }
+}
+
 async function startServer() {
   try {
+    validateEnvironment();
     console.log('[ProjectHive] 🐝 Starting ProjectHive Backend...');
     console.log(`[ProjectHive] Environment: ${process.env.NODE_ENV || 'development'}`);
 
@@ -63,6 +103,7 @@ async function startServer() {
       'http://127.0.0.1:3000',
       'http://127.0.0.1:5000',
       'http://127.0.0.1:5500',
+      process.env.CLIENT_URL,
       process.env.FRONTEND_URL,
       process.env.FRONTEND_URL_PROD,
     ].filter(Boolean);
@@ -110,6 +151,8 @@ async function startServer() {
       socket.on('typing:stop', (data) => handleTyping(socket, io, { ...data, isTyping: false }));
       socket.on('message:react', (data) => handleMessageReact(socket, io, data));
       socket.on('message:read',  (data) => handleMessageRead(socket, io, data));
+      socket.on('message:ack_delivered', (data) => handleMessageDelivered(socket, io, data));
+      socket.on('message:delivered',     (data) => handleMessageDelivered(socket, io, data));
       
       // Video Call Events
       socket.on('call:initiate', (data) => handleCallInitiate(socket, data));

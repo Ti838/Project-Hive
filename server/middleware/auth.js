@@ -7,12 +7,12 @@ export async function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7);
-    } else if (req.cookies && req.cookies.accessToken) {
-      token = req.cookies.accessToken;
+    } else if (req.cookies) {
+      token = req.cookies.accessToken || req.cookies.access_token || null;
     }
     
     if (!token) {
-      return res.status(401).json({ error: 'Missing authorization token' });
+      return res.status(401).json({ error: 'Missing authorization token', code: 'TOKEN_MISSING' });
     }
 
     try {
@@ -35,14 +35,14 @@ export async function authMiddleware(req, res, next) {
 
       next();
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ error: 'Token expired' });
+      if (error.code === 'TOKEN_EXPIRED' || error.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: 'Token expired', code: 'TOKEN_EXPIRED' });
       }
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ error: 'Invalid token', code: 'INVALID_TOKEN' });
     }
   } catch (error) {
-    console.error('[v0] Auth middleware error:', error.message);
-    res.status(500).json({ error: 'Authentication error' });
+    console.error('[Auth Middleware] Authentication error:', error.message);
+    res.status(500).json({ error: 'Authentication error', code: 'AUTH_ERROR' });
   }
 }
 
@@ -52,8 +52,8 @@ export async function optionalAuthMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7);
-    } else if (req.cookies && req.cookies.accessToken) {
-      token = req.cookies.accessToken;
+    } else if (req.cookies) {
+      token = req.cookies.accessToken || req.cookies.access_token || null;
     }
     
     if (!token) {
@@ -84,8 +84,7 @@ export async function optionalAuthMiddleware(req, res, next) {
     
     next();
   } catch (error) {
-    console.error('[v0] Optional auth middleware error:', error.message);
+    console.error('[Auth Middleware] Optional auth error:', error.message);
     next();
   }
 }
-

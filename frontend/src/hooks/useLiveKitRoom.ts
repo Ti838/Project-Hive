@@ -31,6 +31,51 @@ export interface ParticipantTrackItem {
   connectionQuality: ConnectionQuality;
 }
 
+
+// ─── Module-level Singleton State for Media Room Persistence ─────────────────
+let roomSingleton: Room | null = null;
+let currentSessionToken: string | null = null;
+let currentRoomName: string | null = null;
+
+/**
+ * Stop all local hardware tracks (camera, microphone, screen share)
+ * to release device resources and extinguish browser recording indicators.
+ */
+export function stopAllLocalTracks(room: Room | null) {
+  if (!room) return;
+  try {
+    const lp = room.localParticipant;
+    if (lp) {
+      lp.trackPublications.forEach((publication) => {
+        try {
+          if (publication.track) {
+            publication.track.stop();
+          }
+        } catch (e) {
+          console.warn('[LiveKit] Warning stopping local track:', e);
+        }
+      });
+    }
+  } catch (err) {
+    console.warn('[LiveKit] Warning stopping local tracks:', err);
+  }
+}
+
+/**
+ * Safely disconnect from the LiveKit SFU room and terminate all media tracks.
+ */
+export async function safelyTeardownRoom(room: Room | null) {
+  if (!room) return;
+  try {
+    stopAllLocalTracks(room);
+    if (room.state !== 'disconnected') {
+      await room.disconnect(true);
+    }
+  } catch (err) {
+    console.warn('[LiveKit] Error during room teardown:', err);
+  }
+}
+
 export function useLiveKitRoom() {
   const {
     session,
@@ -49,7 +94,6 @@ export function useLiveKitRoom() {
     tickDuration,
   } = useCallStore();
 
-  const roomRef = useRef<Room | null>(null);
   const [participants, setParticipants] = useState<ParticipantTrackItem[]>([]);
   const [screenSharer, setScreenSharer] = useState<ParticipantTrackItem | null>(null);
 
@@ -76,7 +120,7 @@ export function useLiveKitRoom() {
       );
 
       list.push({
-        sid: lp.sid,
+        sid: lp.sid || 'local-participant',
         identity: lp.identity,
         name: lp.name || 'You',
         isLocal: true,
@@ -153,13 +197,45 @@ export function useLiveKitRoom() {
     return () => navigator.mediaDevices.removeEventListener('devicechange', refreshDevices);
   }, [setDevices]);
 
+  // ── Explicit Teardown on Call Termination ─────────────────────────────────
+  useEffect(() => {
+    if (status === 'ENDED' || status === 'IDLE' || status === 'FAILED' || status === 'REJECTED') {
+      if (roomSingleton) {
+        safelyTeardownRoom(roomSingleton);
+        roomSingleton = null;
+        currentSessionToken = null;
+        currentRoomName = null;
+        setParticipants([]);
+        setScreenSharer(null);
+      }
+    }
+  }, [status]);
+
   // ── Connect and Manage Room Lifecycle ──────────────────────────────────────
   useEffect(() => {
     // Only connect when session exists and state is ready to join
     if (!session?.token || !session?.livekitUrl) return;
     if (status !== 'CONNECTING' && status !== 'CONNECTED') return;
 
+    // If room singleton is already active for this exact session, reuse it seamlessly
+    if (
+      roomSingleton &&
+      currentSessionToken === session.token &&
+      (roomSingleton.state === 'connected' || roomSingleton.state === 'connecting')
+    ) {
+      updateParticipantList(roomSingleton);
+      return;
+    }
+
     let isSubscribed = true;
+
+    // Clean up any existing room before creating a new connection
+    if (roomSingleton) {
+      safelyTeardownRoom(roomSingleton);
+      roomSingleton = null;
+      currentSessionToken = null;
+      currentRoomName = null;
+    }
 
     const room = new Room({
       adaptiveStream: true,
@@ -174,12 +250,18 @@ export function useLiveKitRoom() {
       },
     });
 
-    roomRef.current = room;
+    roomSingleton = room;
+    currentSessionToken = session.token;
+    currentRoomName = session.roomName;
+
+    const handleSync = () => {
+      if (isSubscribed) updateParticipantList(room);
+    };
 
     // Room Event Handlers
     room.on(RoomEvent.Connected, async () => {
       if (!isSubscribed) return;
-      console.log('[LiveKit] Connected to room:', room.name);
+      console.log('[LiveKit] Connected to SFU room:', room.name);
       setStatus('CONNECTED');
 
       // Publish mic & camera tracks based on initial settings
@@ -197,17 +279,18 @@ export function useLiveKitRoom() {
       updateParticipantList(room);
     });
 
-    room.on(RoomEvent.ParticipantConnected, () => updateParticipantList(room));
-    room.on(RoomEvent.ParticipantDisconnected, () => updateParticipantList(room));
+    room.on(RoomEvent.ParticipantConnected, handleSync);
+    room.on(RoomEvent.ParticipantDisconnected, handleSync);
 
-    room.on(RoomEvent.TrackSubscribed, () => updateParticipantList(room));
-    room.on(RoomEvent.TrackUnsubscribed, () => updateParticipantList(room));
-    room.on(RoomEvent.TrackMuted, () => updateParticipantList(room));
-    room.on(RoomEvent.TrackUnmuted, () => updateParticipantList(room));
-    room.on(RoomEvent.LocalTrackPublished, () => updateParticipantList(room));
-    room.on(RoomEvent.LocalTrackUnpublished, () => updateParticipantList(room));
+    room.on(RoomEvent.TrackSubscribed, handleSync);
+    room.on(RoomEvent.TrackUnsubscribed, handleSync);
+    room.on(RoomEvent.TrackMuted, handleSync);
+    room.on(RoomEvent.TrackUnmuted, handleSync);
+    room.on(RoomEvent.LocalTrackPublished, handleSync);
+    room.on(RoomEvent.LocalTrackUnpublished, handleSync);
 
     room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
+      if (!isSubscribed) return;
       if (speakers.length > 0) {
         setActiveSpeaker(speakers[0].identity);
       } else {
@@ -217,6 +300,7 @@ export function useLiveKitRoom() {
     });
 
     room.on(RoomEvent.ConnectionQualityChanged, (quality, participant) => {
+      if (!isSubscribed) return;
       if (participant === room.localParticipant) {
         if (quality === ConnectionQuality.Excellent) setNetworkQuality('excellent');
         else if (quality === ConnectionQuality.Good) setNetworkQuality('good');
@@ -226,12 +310,14 @@ export function useLiveKitRoom() {
     });
 
     room.on(RoomEvent.Reconnecting, () => {
+      if (!isSubscribed) return;
       console.warn('[LiveKit] Room reconnecting...');
       setStatus('RECONNECTING');
       setNetworkQuality('reconnecting');
     });
 
     room.on(RoomEvent.Reconnected, () => {
+      if (!isSubscribed) return;
       console.log('[LiveKit] Room reconnected successfully');
       setStatus('CONNECTED');
       setNetworkQuality('good');
@@ -239,7 +325,9 @@ export function useLiveKitRoom() {
     });
 
     room.on(RoomEvent.Disconnected, (reason) => {
+      if (!isSubscribed) return;
       console.log('[LiveKit] Room disconnected:', reason);
+      stopAllLocalTracks(room);
       setStatus('ENDED');
     });
 
@@ -249,6 +337,7 @@ export function useLiveKitRoom() {
         autoSubscribe: true,
       })
       .catch((err) => {
+        if (!isSubscribed) return;
         console.error('[LiveKit] Failed to connect to SFU:', err);
         setError('Could not establish connection with media server');
         setStatus('FAILED');
@@ -256,14 +345,13 @@ export function useLiveKitRoom() {
 
     return () => {
       isSubscribed = false;
-      room.disconnect();
-      roomRef.current = null;
+      // Do not destroy the singleton on layout switch; teardown is managed by status effect & leaveRoom
     };
-  }, [session?.token, session?.livekitUrl, session?.callType]);
+  }, [session?.token, session?.livekitUrl, session?.roomName, session?.callType, status]);
 
   // ── Synchronize Mic Toggle ─────────────────────────────────────────────────
   useEffect(() => {
-    const room = roomRef.current;
+    const room = roomSingleton;
     if (!room || room.state !== 'connected') return;
 
     room.localParticipant.setMicrophoneEnabled(!isMuted).catch((err) => {
@@ -273,7 +361,7 @@ export function useLiveKitRoom() {
 
   // ── Synchronize Camera Toggle ──────────────────────────────────────────────
   useEffect(() => {
-    const room = roomRef.current;
+    const room = roomSingleton;
     if (!room || room.state !== 'connected') return;
 
     room.localParticipant.setCameraEnabled(!isVideoOff).catch((err) => {
@@ -283,7 +371,7 @@ export function useLiveKitRoom() {
 
   // ── Synchronize Screen Share Toggle ────────────────────────────────────────
   useEffect(() => {
-    const room = roomRef.current;
+    const room = roomSingleton;
     if (!room || room.state !== 'connected') return;
 
     room.localParticipant
@@ -295,7 +383,7 @@ export function useLiveKitRoom() {
 
   // ── Synchronize Device Switching ───────────────────────────────────────────
   useEffect(() => {
-    const room = roomRef.current;
+    const room = roomSingleton;
     if (!room) return;
 
     if (selectedAudioInput) {
@@ -304,7 +392,7 @@ export function useLiveKitRoom() {
   }, [selectedAudioInput]);
 
   useEffect(() => {
-    const room = roomRef.current;
+    const room = roomSingleton;
     if (!room) return;
 
     if (selectedAudioOutput) {
@@ -313,7 +401,7 @@ export function useLiveKitRoom() {
   }, [selectedAudioOutput]);
 
   useEffect(() => {
-    const room = roomRef.current;
+    const room = roomSingleton;
     if (!room) return;
 
     if (selectedVideoInput) {
@@ -334,9 +422,21 @@ export function useLiveKitRoom() {
     };
   }, [status, tickDuration]);
 
+  const leaveRoom = useCallback(async () => {
+    if (roomSingleton) {
+      await safelyTeardownRoom(roomSingleton);
+      roomSingleton = null;
+      currentSessionToken = null;
+      currentRoomName = null;
+      setParticipants([]);
+      setScreenSharer(null);
+    }
+  }, []);
+
   return {
-    room: roomRef.current,
+    room: roomSingleton,
     participants,
     screenSharer,
+    leaveRoom,
   };
 }

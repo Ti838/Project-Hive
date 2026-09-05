@@ -1,22 +1,29 @@
 'use client';
-// ─── Hive AI Contextual Intelligence Drawer ──────────────────────────────────
-// Activated via contextual triggers or Ctrl+J. Zero permanent floating visual pollution.
+// ─── Hive AI Contextual Intelligence Drawer (Global Copilot) ─────────────────
+// Activated via contextual triggers or Ctrl+J. Frosted slide-over drawer with quick shortcuts.
 
 import { useState, useRef, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowUpRight } from 'lucide-react';
+import { X, ArrowUpRight, Sparkles, MessageSquare, Wrench, Activity, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuthStore, useUIStore } from '@/lib/store';
-import { HiveAIIcon, HiveAIAvatar } from './HiveAIIcon';
-import { HiveAICapabilities } from './HiveAICapabilities';
+import { HiveAIAvatar } from './HiveAIIcon';
 import { HiveAIContextRail } from './HiveAIContextRail';
 import { HiveAIMessage } from './HiveAIMessage';
 import { HiveAIThinking } from './HiveAIThinking';
 import { HiveAIEmptyState, HiveAIError } from './HiveAIEmptyState';
 import { HiveAIComposer } from './HiveAIComposer';
+import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType, HiveAIMessageItem } from '@/types';
+
+const QUICK_SHORTCUTS: Array<{ label: string; cap: HiveAICapabilityType; icon: any }> = [
+  { label: 'Explain', cap: 'copilot_chat', icon: MessageSquare },
+  { label: 'Refactor', cap: 'code_assistant', icon: Wrench },
+  { label: 'Health Check', cap: 'project_health', icon: Activity },
+  { label: 'Architecture', cap: 'architecture_design', icon: Layers },
+];
 
 export function HiveAICopilotDrawer() {
   const pathname = usePathname();
@@ -103,14 +110,14 @@ export function HiveAICopilotDrawer() {
   return (
     <AnimatePresence>
       {copilotOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
+        <div className="fixed inset-0 z-50 flex justify-end select-none">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setCopilotOpen(false)}
-            className="absolute inset-0 bg-black/40 backdrop-blur-xs"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
 
           {/* Drawer Container */}
@@ -118,25 +125,30 @@ export function HiveAICopilotDrawer() {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-            className="relative w-full max-w-lg h-full bg-card border-l border-border flex flex-col shadow-2xl z-10"
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative w-full max-w-lg h-full surface-floating backdrop-blur-2xl border-l border-white/10 flex flex-col shadow-2xl z-10 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border bg-muted/20">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 bg-muted/20 shrink-0">
               <div className="flex items-center gap-2.5">
                 <HiveAIAvatar size="sm" />
                 <div>
-                  <h3 className="font-extrabold text-sm tracking-tight">Hive AI</h3>
-                  <p className="text-[10px] text-muted-foreground font-mono">Contextual Intelligence</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-extrabold text-sm tracking-tight text-foreground">Hive Copilot</h3>
+                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-primary/20 text-primary font-bold">
+                      v2.4
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground font-mono">Contextual Engineering Intelligence</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Link
                   href="/generator"
                   onClick={() => setCopilotOpen(false)}
                   title="Open Full AI Studio"
-                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground tap-press transition-colors"
                 >
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
@@ -144,19 +156,32 @@ export function HiveAICopilotDrawer() {
                 <button
                   type="button"
                   onClick={() => setCopilotOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground tap-press transition-colors cursor-pointer"
+                  aria-label="Close copilot drawer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            {/* Mode Switcher */}
-            <div className="border-b border-border/60 bg-muted/10 px-3">
-              <HiveAICapabilities
-                activeCapability={capability}
-                onSelectCapability={setCapability}
-              />
+            {/* Quick Capability Shortcuts Header Row */}
+            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/10 overflow-x-auto no-scrollbar bg-muted/10 shrink-0">
+              {QUICK_SHORTCUTS.map(({ label, cap, icon: Icon }) => (
+                <button
+                  key={cap}
+                  type="button"
+                  onClick={() => setCapability(cap)}
+                  className={cn(
+                    'flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all tap-press cursor-pointer',
+                    capability === cap
+                      ? 'bg-primary text-primary-foreground shadow-xs glow-primary'
+                      : 'surface-glass text-muted-foreground hover:text-foreground border border-white/10'
+                  )}
+                >
+                  <Icon className="w-3 h-3" />
+                  <span>{label}</span>
+                </button>
+              ))}
             </div>
 
             {/* Active Context */}
@@ -192,12 +217,14 @@ export function HiveAICopilotDrawer() {
               )}
             </div>
 
-            {/* Composer */}
-            <HiveAIComposer
-              onSend={handleSend}
-              isProcessing={loading}
-              activeCapability={capability}
-            />
+            {/* Floating Composer at Bottom */}
+            <div className="p-2 border-t border-white/10 bg-transparent shrink-0">
+              <HiveAIComposer
+                onSend={handleSend}
+                isProcessing={loading}
+                activeCapability={capability}
+              />
+            </div>
           </motion.div>
         </div>
       )}

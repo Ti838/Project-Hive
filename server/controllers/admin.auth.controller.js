@@ -4,6 +4,7 @@
 // Admin does NOT need a user account — fully independent auth system.
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import { keySigner } from '../services/crypto/keySigner.service.js';
 
 // ── Brute-force rate limiter for admin login ─────────────────────────────────
 const loginAttempts = new Map();
@@ -29,14 +30,6 @@ setInterval(() => {
     if (now - v.firstAttempt > LOCKOUT_MS) loginAttempts.delete(k);
   }
 }, 30 * 60 * 1000);
-
-function getJwtSecret() {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error('JWT_SECRET is not configured in environment variables.');
-  }
-  return secret;
-}
 
 export async function adminLogin(req, res) {
   try {
@@ -65,8 +58,7 @@ export async function adminLogin(req, res) {
     const emailInput = email.toLowerCase().trim();
     const emailMatch = emailInput.length === ADMIN_EMAIL.length &&
       crypto.timingSafeEqual(Buffer.from(emailInput), Buffer.from(ADMIN_EMAIL));
-    const passwordMatch = password.length === ADMIN_PASSWORD.length &&
-      crypto.timingSafeEqual(Buffer.from(password), Buffer.from(ADMIN_PASSWORD));
+    const passwordMatch = keySigner.verifyAdminSecret(password);
 
     if (!emailMatch || !passwordMatch) {
       console.warn('[Admin] ❌ Failed admin login attempt for:', email);
@@ -76,11 +68,9 @@ export async function adminLogin(req, res) {
     // Reset rate limit on success
     loginAttempts.delete(ip);
 
-    // Generate a short-lived admin JWT (4 hours — reduced from 8h for security)
-    const secret = getJwtSecret();
-    const token  = jwt.sign(
+    // Generate a short-lived admin JWT (4 hours) via KeySigner abstraction
+    const token = keySigner.signAccessToken(
       { id: 'admin', email: ADMIN_EMAIL, role: 'admin', type: 'admin_access' },
-      secret,
       { expiresIn: '4h' }
     );
 

@@ -13,19 +13,20 @@ import {
   isOpenRouterReady,
   isAIReady,
 } from '../config/gemini.js';
+import {
+  sanitizePromptPayload,
+  desanitizeOutputPayload,
+} from '../services/crypto/sanitizer.service.js';
 
-// Verified working Groq models
+// Verified working Groq models (Primary: llama-3.3-70b-versatile, Fast fallback: llama-3.1-8b-instant)
 const GROQ_MODELS = [
-  'openai/gpt-oss-120b',
-  'openai/gpt-oss-20b',
-  'qwen/qwen3.8-27b',
-  'qwen/qwen3.6-27b',
-  'groq/compound',
-  'groq/compound-mini',
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+  'mixtral-8x7b-32768',
+  'gemma2-9b-it',
 ];
 
 const GEMINI_MODELS = [
-  'gemini-2.5-flash',
   'gemini-2.0-flash',
   'gemini-1.5-flash',
   'gemini-1.5-pro',
@@ -34,28 +35,23 @@ const GEMINI_MODELS = [
 // Active verified free-tier models on OpenRouter
 const OPENROUTER_MODELS = [
   'openrouter/free',
+  'google/gemma-2-9b-it:free',
+  'meta-llama/llama-3.3-70b-instruct:free',
+  'meta-llama/llama-3.1-8b-instruct:free',
   'nvidia/nemotron-3.5-lightning:free',
-  'google/gemma-4-31b-it:free',
-  'google/gemma-4-26b-a4b-it:free',
-  'minimax/minimax-m3:free',
-  'minimax/minimax-m2.7:free',
-  'cohere/north-mini-code:free',
-  'z-ai/glm-5.2:free',
-  'liquid/lfm-2.5-2.6b:free',
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-  'nvidia/nemotron-3-super-120b-a12b:free',
 ];
 
 const OPENROUTER_VISION_MODELS = [
-  'google/gemma-4-31b-it:free',
-  'google/gemma-4-26b-a4b-it:free',
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'google/gemma-2-9b-it:free',
   'openrouter/free',
 ];
 
 const GEMINI_BASE     = 'https://generativelanguage.googleapis.com/v1beta/models';
 const GROQ_BASE       = 'https://api.groq.com/openai/v1/chat/completions';
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1/chat/completions';
+
+// 9-second strict timeout per tier to prevent slow socket stalls
+const TIER_TIMEOUT_MS = 9000;
 
 // Rate limiter (per-user sliding window)
 const rateLimitMap = new Map();
@@ -78,7 +74,32 @@ setInterval(() => {
   }
 }, 30 * 60 * 1000);
 
-// ── Call Gemini API with model fallback ─────────────────────────────────────
+/**
+ * Robust fetch wrapper with strict abort timeout to enforce circuit breaking
+ */
+async function fetchWithTimeout(url, options = {}, timeoutMs = TIER_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      const timeoutErr = new Error(`Request timed out after ${timeoutMs}ms`);
+      timeoutErr.name = 'TimeoutError';
+      timeoutErr.status = 504;
+      throw timeoutErr;
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// ── Tier 2: Google Gemini Flash (Vision & Text Fallback) ─────────────────────
 async function callGemini(prompt, imageBase64, mimeType) {
   const apiKey = getGeminiKey();
   if (!apiKey) throw new Error('GEMINI_NOT_CONFIGURED');
@@ -93,48 +114,53 @@ async function callGemini(prompt, imageBase64, mimeType) {
 
   for (const model of GEMINI_MODELS) {
     const url = `${GEMINI_BASE}/${model}:generateContent?key=${apiKey}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
 
     try {
-      const response = await fetch(url, {
+      const response = await fetchWithTimeout(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts }],
           generationConfig: { temperature: 0.8, topP: 0.9, maxOutputTokens: 3500 },
         }),
-        signal: controller.signal,
-      });
+      }, TIER_TIMEOUT_MS);
 
       if (response.status === 429) {
+        console.warn(`[AI] Gemini rate limit hit (429) on ${model} — cascading to next tier`);
         const e = new Error('GEMINI_RATE_LIMIT');
         e.status = 429;
         e.provider = 'gemini';
-        throw e;
-      }
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `Gemini error ${response.status}`);
+        throw e; // Break immediately to cascade
       }
 
-      const data = await response.json();
+      if (response.status === 503 || response.status === 502 || response.status === 504) {
+        console.warn(`[AI] Gemini service unavailable (${response.status}) on ${model} — skipping`);
+        continue;
+      }
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `Gemini error ${response.status}`);
+      }
+
+      const data = await response.json().catch(() => null);
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
       if (text) {
         return { text, provider: 'gemini', model };
       }
     } catch (e) {
       lastError = e;
-      console.warn(`[AI] Gemini model ${model} failed: ${e.message} — trying next`);
-    } finally {
-      clearTimeout(timeout);
+      if (e.status === 429) {
+        throw e; // Cascade immediately to next tier
+      }
+      console.warn(`[AI] Gemini model ${model} failed (${e.message}) — trying next`);
     }
   }
 
   throw lastError || new Error('All Gemini models failed');
 }
 
-// ── Call Groq API with multi-model fallback ─────────────────────────────────
+// ── Tier 1: Groq Cloud (llama-3.3-70b-versatile, llama-3.1-8b-instant) ──────
 async function callGroq(prompt) {
   const apiKey = getGroqKey();
   if (!apiKey) throw new Error('GROQ_NOT_CONFIGURED');
@@ -142,11 +168,8 @@ async function callGroq(prompt) {
   let lastError = null;
 
   for (const model of GROQ_MODELS) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
-
     try {
-      const response = await fetch(GROQ_BASE, {
+      const response = await fetchWithTimeout(GROQ_BASE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -159,37 +182,44 @@ async function callGroq(prompt) {
           top_p: 0.9,
           max_tokens: 3500,
         }),
-        signal: controller.signal,
-      });
+      }, TIER_TIMEOUT_MS);
 
       if (response.status === 429) {
+        console.warn(`[AI] Groq rate limit hit (429) on ${model} — cascading to Tier 2 (Gemini)`);
         const e = new Error('GROQ_RATE_LIMIT');
         e.status = 429;
         e.provider = 'groq';
-        throw e;
-      }
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `Groq error ${response.status}`);
+        throw e; // Break immediately to cascade
       }
 
-      const data = await response.json();
+      if (response.status === 503 || response.status === 502 || response.status === 504) {
+        console.warn(`[AI] Groq service unavailable (${response.status}) on ${model} — skipping`);
+        continue;
+      }
+
+      if (!response.ok) {
+        const errJson = await response.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `Groq error ${response.status}`);
+      }
+
+      const data = await response.json().catch(() => null);
       const text = data?.choices?.[0]?.message?.content?.trim() || '';
       if (text) {
         return { text, provider: 'groq', model };
       }
     } catch (e) {
       lastError = e;
-      console.warn(`[AI] Groq model ${model} failed: ${e.message} — trying next`);
-    } finally {
-      clearTimeout(timeout);
+      if (e.status === 429) {
+        throw e; // Cascade immediately
+      }
+      console.warn(`[AI] Groq model ${model} failed (${e.message}) — trying next`);
     }
   }
 
   throw lastError || new Error('All Groq models failed');
 }
 
-// ── Call OpenRouter API with multi-model fallback ───────────────────────────
+// ── Tier 3: OpenRouter Free Cascade (Zero-Rate-Limit Defense) ────────────────
 async function callOpenRouter(prompt, imageBase64, mimeType) {
   const apiKey = getOpenRouterKey();
   if (!apiKey) throw new Error('OPENROUTER_NOT_CONFIGURED');
@@ -197,7 +227,6 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
   const modelsToTry = imageBase64 ? OPENROUTER_VISION_MODELS : OPENROUTER_MODELS;
   let lastError = null;
 
-  // Build message content (multimodal or standard text)
   let messageContent;
   if (imageBase64) {
     messageContent = [
@@ -217,11 +246,8 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
   }
 
   for (const model of modelsToTry) {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 25000);
-
     try {
-      const response = await fetch(OPENROUTER_BASE, {
+      const response = await fetchWithTimeout(OPENROUTER_BASE, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -235,120 +261,134 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
           temperature: 0.7,
           max_tokens: 3500,
         }),
-        signal: controller.signal,
-      });
+      }, TIER_TIMEOUT_MS);
 
       if (response.status === 429) {
-        const e = new Error('OPENROUTER_RATE_LIMIT');
-        e.status = 429;
-        e.provider = 'openrouter';
-        throw e;
+        console.warn(`[AI] OpenRouter rate limit (429) on ${model} — skipping`);
+        continue;
+      }
+
+      if (response.status === 503 || response.status === 502 || response.status === 504) {
+        console.warn(`[AI] OpenRouter server error (${response.status}) on ${model} — skipping`);
+        continue;
       }
 
       if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        const errMsg = err?.error?.message || `OpenRouter error ${response.status}`;
-        // Treat "model output must contain either output text or tool calls" as a skip
+        const errJson = await response.json().catch(() => ({}));
+        const errMsg = errJson?.error?.message || `OpenRouter error ${response.status}`;
         if (errMsg.includes('model output must contain') || errMsg.includes('model output error')) {
-          console.warn(`[AI] OpenRouter model ${model} returned empty output — skipping to next model`);
           continue;
         }
         throw new Error(errMsg);
       }
 
-      const data = await response.json();
-      // Check for inline error in the response body (some OpenRouter models return 200 with error)
+      const data = await response.json().catch(() => null);
       if (data?.error) {
         const inlineErr = data.error?.message || JSON.stringify(data.error);
         if (inlineErr.includes('model output must contain') || inlineErr.includes('model output error')) {
-          console.warn(`[AI] OpenRouter model ${model} inline error (empty output) — skipping`);
           continue;
         }
         throw new Error(inlineErr);
       }
 
       const text = data?.choices?.[0]?.message?.content?.trim() || '';
-      const finishReason = data?.choices?.[0]?.finish_reason;
       if (text) {
         return { text, provider: 'openrouter', model };
       }
-      // Empty content — model produced nothing, skip to next
-      console.warn(`[AI] OpenRouter model ${model} returned empty content (finish_reason: ${finishReason}) — skipping`);
     } catch (e) {
       lastError = e;
-      console.warn(`[AI] OpenRouter model ${model} failed: ${e.message} — trying next`);
-    } finally {
-      clearTimeout(timeout);
+      console.warn(`[AI] OpenRouter model ${model} failed (${e.message}) — trying next`);
     }
   }
 
   throw lastError || new Error('All OpenRouter models failed');
 }
 
-// ── Smart AI Cascading Router (Groq -> Gemini -> OpenRouter) ────────────────
+// ── Multi-Tier AI Cascade Router (Groq -> Gemini -> OpenRouter) ─────────────
 export async function callAI(prompt, imageBase64, mimeType) {
+  // Phase 2 Confidential Computing: In-memory sanitization & reversible masking
+  const { sanitizedPrompt, redactionMap, redactionCount } = sanitizePromptPayload(prompt);
+
   const geminiAvailable = isGeminiReady();
   const groqAvailable = isGroqReady();
   const openRouterAvailable = isOpenRouterReady();
 
-  // 1. Multimodal Vision Priority: Gemini Flash -> OpenRouter Free
+  let rawResult = null;
+
+  // 1. Multimodal Vision Priority: Gemini Flash (Tier 1) -> OpenRouter Vision (Tier 2)
   if (imageBase64) {
     if (geminiAvailable) {
       try {
-        console.log('[AI] 👁️ Routing image to Gemini Flash (Vision)');
-        return await callGemini(prompt, imageBase64, mimeType);
+        console.log('[AI] 👁️ Routing image to Tier 1: Gemini Flash (Vision)');
+        rawResult = await callGemini(sanitizedPrompt, imageBase64, mimeType);
       } catch (geminiError) {
         console.warn(`[AI] ⚠️ Gemini Vision failed (${geminiError.message}) — cascading to OpenRouter Vision`);
       }
     }
 
-    if (openRouterAvailable) {
+    if (!rawResult && openRouterAvailable) {
       try {
-        console.log('[AI] 👁️ Routing image to OpenRouter Vision (Fallback)');
-        return await callOpenRouter(prompt, imageBase64, mimeType);
+        console.log('[AI] 👁️ Routing image to Tier 2: OpenRouter Vision (Fallback)');
+        rawResult = await callOpenRouter(sanitizedPrompt, imageBase64, mimeType);
       } catch (orError) {
         console.error(`[AI] ❌ OpenRouter Vision also failed: ${orError.message}`);
-        throw orError;
       }
     }
 
-    throw new Error('Image analysis failed or no vision provider configured.');
-  }
+    if (!rawResult) {
+      throw new Error('Image analysis temporarily unavailable across all vision providers. Please try again or submit a text query.');
+    }
+  } else {
+    // 2. Text / Code Cascade (Zero-Rate-Limit Defense):
+    // Tier 1: Groq Cloud (llama-3.3-70b-versatile, llama-3.1-8b-instant)
+    if (groqAvailable) {
+      try {
+        console.log('[AI] ⚡ Cascade Tier 1: Groq Cloud');
+        rawResult = await callGroq(sanitizedPrompt);
+        console.log(`[AI] ✅ Tier 1 (Groq - ${rawResult.model}) succeeded`);
+      } catch (groqError) {
+        console.warn(`[AI] ⚠️ Tier 1 (Groq) failed (${groqError.message}) — cascading to Tier 2 (Gemini)`);
+      }
+    }
 
-  // 2. Text / Code Cascade (Zero-Rate-Limit Defense):
-  // Tier 1: Groq Cloud (llama-3.3-70b-versatile, qwen)
-  if (groqAvailable) {
-    try {
-      return await callGroq(prompt);
-    } catch (groqError) {
-      console.warn(`[AI] ⚠️ Tier 1 (Groq) failed (${groqError.message}) — cascading to Tier 2 (Gemini)`);
+    // Tier 2: Google Gemini Flash
+    if (!rawResult && geminiAvailable) {
+      try {
+        console.log('[AI] ⚡ Cascade Tier 2: Google Gemini Flash');
+        rawResult = await callGemini(sanitizedPrompt);
+        console.log(`[AI] ✅ Tier 2 (Gemini - ${rawResult.model}) succeeded`);
+      } catch (geminiError) {
+        console.warn(`[AI] ⚠️ Tier 2 (Gemini) failed (${geminiError.message}) — cascading to Tier 3 (OpenRouter)`);
+      }
+    }
+
+    // Tier 3: OpenRouter Free Cascade
+    if (!rawResult && openRouterAvailable) {
+      try {
+        console.log('[AI] ⚡ Cascade Tier 3: OpenRouter Free Cascade');
+        rawResult = await callOpenRouter(sanitizedPrompt);
+        console.log(`[AI] ✅ Tier 3 (OpenRouter - ${rawResult.model}) succeeded`);
+      } catch (orError) {
+        console.error(`[AI] ❌ Tier 3 (OpenRouter) failed: ${orError.message}`);
+      }
+    }
+
+    if (!rawResult) {
+      throw new Error('All AI providers (Groq, Gemini, OpenRouter) are temporarily unavailable or rate-limited. Please retry in a moment.');
     }
   }
 
-  // Tier 2: Google Gemini Flash
-  if (geminiAvailable) {
-    try {
-      const result = await callGemini(prompt);
-      console.log('[AI] ✅ Tier 2 (Gemini) succeeded');
-      return result;
-    } catch (geminiError) {
-      console.warn(`[AI] ⚠️ Tier 2 (Gemini) failed (${geminiError.message}) — cascading to Tier 3 (OpenRouter)`);
-    }
-  }
+  // Restore any redacted placeholders in the generated output
+  const restoredText = desanitizeOutputPayload(rawResult.text, redactionMap);
 
-  // Tier 3: OpenRouter Free Router
-  if (openRouterAvailable) {
-    try {
-      const result = await callOpenRouter(prompt);
-      console.log('[AI] ✅ Tier 3 (OpenRouter) succeeded');
-      return result;
-    } catch (orError) {
-      console.error(`[AI] ❌ Tier 3 (OpenRouter) failed: ${orError.message}`);
-      throw orError;
-    }
-  }
-
-  throw new Error('AI_NOT_CONFIGURED');
+  return {
+    ...rawResult,
+    text: restoredText,
+    security: {
+      confidentialScrubbed: true,
+      redactionsCount: redactionCount,
+    },
+  };
 }
 
 
@@ -384,18 +424,23 @@ Output the raw JSON array only. Start with [ and end with ].`;
 
   const result = await callAI(prompt);
 
-  // Parse JSON
+  // Parse JSON with multi-layered extraction
   let content = result.text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-  let ideas;
+  let ideas = null;
   try {
     ideas = JSON.parse(content);
   } catch {
     const match = content.match(/\[[\s\S]*\]/);
-    if (!match) throw new Error('AI returned invalid format. Please try again.');
-    ideas = JSON.parse(match[0]);
+    if (match) {
+      try {
+        ideas = JSON.parse(match[0]);
+      } catch (_) {}
+    }
   }
 
-  if (!Array.isArray(ideas)) ideas = [ideas];
+  if (!ideas || !Array.isArray(ideas) || ideas.length === 0) {
+    throw new Error('AI returned an unstructured response. Please try generating again.');
+  }
 
   return {
     ideas: ideas.slice(0, 5).map((idea, i) => ({
@@ -439,9 +484,9 @@ export async function generateProjectIdeas(req, res, next) {
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('[AI] Error:', error.message);
+    console.error('[AI] Generate ideas error:', error.message);
     if (error.status === 429) return res.status(429).json({ error: 'AI rate limit reached. Please wait a moment.' });
-    next(error);
+    return res.status(error.status || 500).json({ error: error.message || 'Failed to generate project ideas.' });
   }
 }
 
@@ -473,8 +518,9 @@ export async function generateProjectIdeasPublic(req, res, next) {
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
+    console.error('[AI] Public ideas generation error:', error.message);
     if (error.status === 429) return res.status(429).json({ error: 'AI rate limit. Try again shortly.' });
-    next(error);
+    return res.status(error.status || 500).json({ error: error.message || 'Failed to generate project ideas.' });
   }
 }
 
@@ -523,14 +569,19 @@ Guidelines:
 - Keep explanations clear, structured with concise bullet points, and free of fluff.
 - If providing SQL, optimize for PostgreSQL/Supabase with CREATE TABLE, constraints, indexes, and RLS policies where applicable.`;
 
-    const prompt = systemPrompt + (message ? `\n\nUser Query:\n${message}` : '\n\nPlease analyze the attached diagram/screenshot and provide architectural/engineering insights.');
     const result = await callAI(prompt, imageBase64, mimeType);
+
+    if (result.security?.confidentialScrubbed) {
+      res.setHeader('x-confidential-scrubbed', 'true');
+      res.setHeader('x-confidential-redactions', String(result.security.redactionsCount || 0));
+    }
 
     return res.json({
       ok: true,
       reply: result.text,
       provider: result.provider,
       model: result.model,
+      security: result.security,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
@@ -704,12 +755,18 @@ Provide direct, clean, production-grade technical mentorship and guidance.`;
 
     const result = await callAI(fullPrompt, imageBase64, mimeType);
 
+    if (result.security?.confidentialScrubbed) {
+      res.setHeader('x-confidential-scrubbed', 'true');
+      res.setHeader('x-confidential-redactions', String(result.security.redactionsCount || 0));
+    }
+
     return res.json({
       ok: true,
       capability,
       output: result.text,
       provider: result.provider,
       model: result.model,
+      security: result.security,
       timestamp: new Date().toISOString(),
       metadata: {
         tokensEstimated: Math.round(result.text.length / 4),

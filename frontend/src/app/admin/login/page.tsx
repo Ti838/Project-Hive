@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
     const res = await api.auth.login(data.email, data.password, deviceMeta);
     if (res.ok && res.user && res.user.role === 'admin') {
       login(res.user, res.accessToken, res.refreshToken);
-      router.push('/admin/dashboard');
+      router.push('/admin');
       return;
     }
 
@@ -51,7 +51,7 @@ export default function AdminLoginPage() {
     const adminToken = (superRes as any)?.token || (superRes as any)?.accessToken;
     if (superRes.ok && adminToken && adminUser) {
       login(adminUser, adminToken, adminToken);
-      router.push('/admin/dashboard');
+      router.push('/admin');
       return;
     }
 
@@ -116,7 +116,7 @@ export default function AdminLoginPage() {
         {/* Center Screen Container */}
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-stretch">
-            
+
             {/* Left Column: Security Briefing & Authority Info */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}

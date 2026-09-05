@@ -69,8 +69,8 @@ export function IncomingCallModal({
   const isVoiceOnly = !!incomingInvite.isVoiceOnly;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in">
-      <div className="bg-card border border-border/80 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
+      <div className="surface-floating border border-white/15 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center space-y-5">
         {/* Pulsing Avatar */}
         <div className="relative my-2">
           <div className="w-24 h-24 rounded-full border-4 border-emerald-500/50 shadow-xl shadow-emerald-500/25 flex items-center justify-center animate-pulse">

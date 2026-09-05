@@ -26,12 +26,17 @@ brain/
 
 # ─── Environment Variables (NEVER commit secrets) ────────────────────
 .env
-.env.local
-.env.*.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+*.env
 server/.env
+server/.env.*
+frontend/.env
+frontend/.env.*
+!.env.example
+!server/.env.example
+!frontend/.env.example
+!server/.env.production.example
+!frontend/.env.production.example
 
 # ─── Vercel / Deployment ─────────────────────────────────────────────
 .vercel/

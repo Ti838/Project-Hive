@@ -1,31 +1,46 @@
 'use client';
 // ─── ProjectHive — Screen Share View ──────────────────────────────────────────
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Monitor, X } from 'lucide-react';
 import type { ParticipantTrackItem } from '@/hooks/useLiveKitRoom';
 import { useCallStore } from '@/lib/callStore';
 
 export function ScreenShareView({ sharer }: { sharer: ParticipantTrackItem }) {
-  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const videoElRef = useRef<HTMLVideoElement | null>(null);
   const { toggleScreenShare } = useCallStore();
 
+  // Durable callback ref for attaching LiveKit screen share track
+  const setVideoRef = useCallback(
+    (el: HTMLVideoElement | null) => {
+      if (videoElRef.current && videoElRef.current !== el) {
+        if (sharer.screenTrack?.track) {
+          sharer.screenTrack.track.detach(videoElRef.current);
+        }
+        videoElRef.current.srcObject = null;
+      }
+
+      videoElRef.current = el;
+
+      if (el && sharer.screenTrack?.track) {
+        sharer.screenTrack.track.attach(el);
+      }
+    },
+    [sharer.screenTrack]
+  );
+
   useEffect(() => {
-    const el = videoRef.current;
-    if (!el) return;
-
-    if (sharer.screenTrack) {
-      sharer.screenTrack.track?.attach(el);
-    }
-
     return () => {
-      if (el) sharer.screenTrack?.track?.detach(el);
+      const el = videoElRef.current;
+      if (el && sharer.screenTrack?.track) {
+        sharer.screenTrack.track.detach(el);
+      }
     };
   }, [sharer.screenTrack]);
 
   return (
     <div className="relative w-full h-full bg-black/95 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
-      <video ref={videoRef} autoPlay playsInline className="w-full h-full object-contain" />
+      <video ref={setVideoRef} autoPlay playsInline className="w-full h-full object-contain" />
 
       {/* Presenter Banner */}
       <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs text-white">

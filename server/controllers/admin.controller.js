@@ -14,6 +14,9 @@ const FLAGS = {
   maintenanceMode: false,
   registrationEnabled: true,
   emailVerification: false,
+  rateLimitStrict: false,
+  allowPublicProjects: true,
+  aiReviewEnabled: true,
 };
 
 // Load flags from DB on startup (non-blocking)
@@ -47,20 +50,40 @@ function broadcastAdminUpdate(action, details, extra = {}) {
   }
 }
 
-import { getClientIp } from '../utils/ipResolver.js';
+import { getRealClientIp, isPrivateIp } from '../utils/ipUtils.js';
 
 // ── Persistent Admin Audit Logger ─────────────────────────────────────────────
 export async function logAdminAction({ adminId, email, action, targetType = null, targetId = null, details = '', req = null, deviceModel = null }) {
   try {
-    const ip = req ? getClientIp(req) : null;
-    const model = deviceModel || (req?.body?.deviceMeta?.deviceModel) || (req?.headers['user-agent'] ? 'Browser Client' : null);
+    const ip = req ? getRealClientIp(req) : null;
+    const model = deviceModel || req?.headers['x-device-model'] || req?.body?.deviceMeta?.deviceModel || (req?.headers['user-agent'] ? 'Browser Client' : null);
+    const gpu = req?.headers['x-device-gpu'] || null;
+
+    let mergedDetails = {};
+    if (typeof details === 'object' && details !== null) {
+      mergedDetails = { ...details };
+    } else if (typeof details === 'string') {
+      try {
+        mergedDetails = JSON.parse(details);
+      } catch {
+        mergedDetails = { note: details };
+      }
+    }
+
+    if (gpu || model) {
+      mergedDetails.hardware = {
+        gpu: gpu || undefined,
+        model: model || undefined,
+      };
+    }
+
     await supabaseAdmin.from('admin_audit_logs').insert([{
       admin_id: adminId && adminId !== 'admin' ? adminId : null,
       admin_email: email || 'system@projecthive.com',
       action,
       target_type: targetType,
       target_id: targetId ? String(targetId) : null,
-      details: typeof details === 'object' ? JSON.stringify(details) : String(details),
+      details: mergedDetails,
       ip_address: ip,
       device_model: model,
       created_at: new Date().toISOString(),
@@ -375,7 +398,14 @@ export async function getSystemFlags(req, res) {
 
 // PATCH /api/admin/flags
 export async function updateFlags(req, res) {
-  const allowed = ['maintenanceMode', 'registrationEnabled', 'emailVerification'];
+  const allowed = [
+    'maintenanceMode',
+    'registrationEnabled',
+    'emailVerification',
+    'rateLimitStrict',
+    'allowPublicProjects',
+    'aiReviewEnabled'
+  ];
   const updates = [];
   for (const key of allowed) {
     if (req.body[key] !== undefined) {
@@ -676,6 +706,248 @@ export async function getAdminHealth(req, res, next) {
           ok: Boolean(process.env.BREVO_API_KEY),
         },
       ],
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── GET /api/admin/reports ───────────────────────────────────────────────────
+export async function getModerationQueue(req, res, next) {
+  try {
+    const { status = 'pending', skip = 0, limit = 50 } = req.query;
+    let q = supabaseAdmin
+      .from('content_reports')
+      .select(`
+        id, target_type, target_id, reason, details, status, resolution_notes, created_at,
+        reporter:reporter_id(id, first_name, last_name, email, avatar, avatar_color)
+      `, { count: 'exact' });
+
+    if (status !== 'all') {
+      q = q.eq('status', status);
+    }
+
+    const { data: reports, error, count } = await q
+      .range(+skip, +skip + +limit - 1)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (error.message?.includes('does not exist')) return res.json({ reports: [], total: 0 });
+      throw error;
+    }
+
+    // Hydrate targets (posts, users, teams) for rich preview in moderation matrix
+    const hydrated = await Promise.all((reports || []).map(async (rep) => {
+      let targetEntity = null;
+      try {
+        if (rep.target_type === 'post') {
+          const { data: post } = await supabaseAdmin.from('posts').select('id, content, author_id, author:author_id(id, first_name, last_name, email, avatar)').eq('id', rep.target_id).maybeSingle();
+          targetEntity = post;
+        } else if (rep.target_type === 'user') {
+          const { data: usr } = await supabaseAdmin.from('users').select('id, first_name, last_name, email, role, is_banned, avatar').eq('id', rep.target_id).maybeSingle();
+          targetEntity = usr;
+        } else if (rep.target_type === 'team') {
+          const { data: team } = await supabaseAdmin.from('teams').select('id, name, description, category').eq('id', rep.target_id).maybeSingle();
+          targetEntity = team;
+        }
+      } catch (_) {}
+
+      return {
+        ...rep,
+        target: targetEntity,
+      };
+    }));
+
+    res.json({ reports: hydrated, total: count || 0 });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── PATCH /api/admin/reports/:id/resolve ─────────────────────────────────────
+export async function resolveReport(req, res, next) {
+  try {
+    const { id } = req.params;
+    const { status = 'resolved', resolutionNotes = '', actionTaken = null, deleteTarget = false } = req.body;
+
+    const { data: rep } = await supabaseAdmin.from('content_reports').select('*').eq('id', id).single();
+    if (!rep) return res.status(404).json({ error: 'Report not found' });
+
+    // Optional target deletion
+    if (deleteTarget && rep.target_id) {
+      if (rep.target_type === 'post') {
+        await supabaseAdmin.from('posts').delete().eq('id', rep.target_id);
+      }
+    }
+
+    const { data: updated, error } = await supabaseAdmin
+      .from('content_reports')
+      .update({
+        status,
+        resolution_notes: resolutionNotes,
+        resolved_by: req.user.id,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    broadcastAdminUpdate('RESOLVE_REPORT', `Report ${id} -> ${status}`, { admin: req.user.email });
+    await logAdminAction({
+      adminId: req.user.id,
+      email: req.user.email,
+      action: 'RESOLVE_REPORT',
+      targetType: rep.target_type,
+      targetId: rep.target_id,
+      details: { reportId: id, status, resolutionNotes, actionTaken, deleteTarget },
+      req,
+    });
+
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'moderation' });
+
+    res.json({ message: `Report marked as ${status}`, report: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── GET /api/admin/users/:id/strikes ─────────────────────────────────────────
+export async function getUserStrikes(req, res, next) {
+  try {
+    const { id: userId } = req.params;
+    const { data: strikes, error } = await supabaseAdmin
+      .from('user_strikes')
+      .select('id, reason, severity, created_at, issuer:issued_by(id, first_name, last_name, email)')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (error.message?.includes('does not exist')) return res.json({ strikes: [], total: 0 });
+      throw error;
+    }
+
+    res.json({ strikes: strikes || [], total: strikes?.length || 0 });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /api/admin/users/:id/strikes ────────────────────────────────────────
+export async function issueStrike(req, res, next) {
+  try {
+    const { id: userId } = req.params;
+    const { reason, severity = 'warning', autoBan = true } = req.body;
+
+    if (!reason) return res.status(400).json({ error: 'Strike reason is required' });
+
+    const { data: strike, error } = await supabaseAdmin
+      .from('user_strikes')
+      .insert({
+        user_id: userId,
+        issued_by: req.user.id,
+        reason,
+        severity,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // Count total strikes
+    const { count } = await supabaseAdmin
+      .from('user_strikes')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    const totalStrikes = count || 1;
+    let banned = false;
+
+    if (autoBan && totalStrikes >= 3) {
+      await supabaseAdmin.from('users').update({ is_banned: true }).eq('id', userId);
+      banned = true;
+    }
+
+    broadcastAdminUpdate('ISSUE_STRIKE', `Strike issued to user ${userId} (Total: ${totalStrikes})`, { admin: req.user.email });
+    await logAdminAction({
+      adminId: req.user.id,
+      email: req.user.email,
+      action: 'ISSUE_STRIKE',
+      targetType: 'user',
+      targetId: userId,
+      details: { reason, severity, totalStrikes, autoBanned: banned },
+      req,
+    });
+
+    const io = getIo();
+    if (io) {
+      io.emit('admin:reload', { section: 'users' });
+      if (banned) io.emit('user:banned', { userId });
+    }
+
+    res.status(201).json({
+      message: banned ? 'Strike issued — Account automatically banned (3+ strikes)' : 'Strike issued successfully',
+      strike,
+      totalStrikes,
+      isBanned: banned,
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /api/reports (Public / Authenticated user reporting endpoint) ────────
+export async function createReport(req, res, next) {
+  try {
+    const reporterId = req.user?.id || null;
+    const { targetType, targetId, reason, details = '' } = req.body;
+
+    if (!targetType || !targetId || !reason) {
+      return res.status(400).json({ error: 'targetType, targetId, and reason are required' });
+    }
+
+    const { data: report, error } = await supabaseAdmin
+      .from('content_reports')
+      .insert({
+        reporter_id: reporterId,
+        target_type: targetType,
+        target_id: targetId,
+        reason,
+        details,
+        status: 'pending',
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    const io = getIo();
+    if (io) io.emit('admin:reload', { section: 'moderation' });
+
+    res.status(201).json({ message: 'Report submitted for administrative review', reportId: report.id });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── GET /api/admin/client-telemetry ───────────────────────────────────────────
+export async function getClientTelemetry(req, res, next) {
+  try {
+    const ip = getRealClientIp(req);
+    const isPrivate = isPrivateIp(ip);
+    const deviceModel = req.headers['x-device-model'] || null;
+    const gpu = req.headers['x-device-gpu'] || null;
+    const userAgent = req.headers['user-agent'] || '';
+
+    res.json({
+      ip,
+      isPrivate,
+      deviceModel,
+      gpu,
+      userAgent,
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     next(err);

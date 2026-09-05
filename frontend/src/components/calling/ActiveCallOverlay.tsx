@@ -1,5 +1,5 @@
 'use client';
-// ─── ProjectHive — Active Call Overlay (Google Meet / Discord Standard) ───────
+// ─── ProjectHive — Active Call Overlay (Studio-Grade LiveKit SFU) ─────────────
 
 import { useState } from 'react';
 import {
@@ -13,7 +13,6 @@ import {
   Minimize2,
   PhoneOff,
   Users,
-  Wifi,
   WifiOff,
 } from 'lucide-react';
 import { useCallStore } from '@/lib/callStore';
@@ -80,9 +79,9 @@ export function ActiveCallOverlay({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 md:p-6 select-none animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 select-none animate-in fade-in duration-200 overflow-hidden">
       {/* ─── Top Control Bar ──────────────────────────────────────────────── */}
-      <div className="w-full flex items-center justify-between pb-3 border-b border-white/10 shrink-0">
+      <div className="w-full flex items-center justify-between pb-3 border-b border-white/10 shrink-0 z-30">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-xs">
             <span
@@ -107,7 +106,7 @@ export function ActiveCallOverlay({
           <button
             onClick={() => isWhiteboardOpen && toggleWhiteboard()}
             className={cn(
-              'px-3.5 py-1.5 rounded-full font-medium transition-all tap-press',
+              'px-3.5 py-1.5 rounded-full font-medium transition-all tap-press cursor-pointer',
               !isWhiteboardOpen
                 ? 'bg-primary text-primary-foreground shadow-md font-semibold'
                 : 'text-white/70 hover:text-white'
@@ -118,7 +117,7 @@ export function ActiveCallOverlay({
           <button
             onClick={() => !isWhiteboardOpen && toggleWhiteboard()}
             className={cn(
-              'px-3.5 py-1.5 rounded-full font-medium transition-all tap-press flex items-center gap-1.5',
+              'px-3.5 py-1.5 rounded-full font-medium transition-all tap-press flex items-center gap-1.5 cursor-pointer',
               isWhiteboardOpen
                 ? 'bg-primary text-primary-foreground shadow-md font-semibold'
                 : 'text-white/70 hover:text-white'
@@ -133,8 +132,9 @@ export function ActiveCallOverlay({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode('minimized')}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors tap-press"
+            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors tap-press cursor-pointer"
             title="Minimize to Picture-in-Picture"
+            aria-label="Minimize to Picture-in-Picture"
           >
             <Minimize2 className="w-4 h-4" />
           </button>
@@ -143,17 +143,17 @@ export function ActiveCallOverlay({
 
       {/* ─── Network Warning Banner ───────────────────────────────────────── */}
       {networkQuality === 'reconnecting' && (
-        <div className="my-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 shadow-sm animate-pulse">
+        <div className="my-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 shadow-sm animate-pulse shrink-0">
           <WifiOff className="w-4 h-4" />
           <span className="font-medium">Unstable network connection. Reconnecting to LiveKit SFU…</span>
         </div>
       )}
 
-      {/* ─── Main Viewport ────────────────────────────────────────────────── */}
-      <div className="flex-1 w-full my-3 sm:my-4 relative flex items-center justify-center overflow-hidden rounded-2xl">
+      {/* ─── Main Viewport (with bottom padding for floating dock) ─────────── */}
+      <div className="flex-1 w-full my-2 sm:my-3 relative flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl pb-20 sm:pb-24">
         {isWhiteboardOpen ? (
           /* Whiteboard Mode */
-          <div className="relative w-full h-full flex flex-col rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative w-full h-full flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
             <InCallWhiteboard
               roomId={session?.roomName || 'default-room'}
               onEmitDraw={(data) => socketEmit?.('whiteboard:draw', data)}
@@ -205,83 +205,87 @@ export function ActiveCallOverlay({
         )}
       </div>
 
-      {/* ─── Bottom Floating Tactile Control Dock ─────────────────────────── */}
-      <div className="w-full flex items-center justify-center shrink-0">
-        <div className="bg-card/90 backdrop-blur-md border border-border/70 rounded-full px-4 sm:px-6 py-2.5 sm:py-3 flex items-center gap-2 sm:gap-4 shadow-2xl">
-          {/* Mic Toggle */}
-          <button
-            onClick={toggleMute}
-            className={cn(
-              'w-11 h-11 rounded-full flex items-center justify-center transition-all tap-press',
-              isMuted
-                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30'
-                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
-            )}
-            title={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
-          >
-            {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </button>
+      {/* ─── Floating Frosted-Glass Pill Control Dock ─────────────────────── */}
+      <div className="fixed bottom-5 sm:bottom-6 inset-x-0 mx-auto w-fit z-40 px-3 sm:px-5 py-2 sm:py-2.5 surface-floating rounded-full border border-white/10 shadow-2xl flex items-center gap-2 sm:gap-3.5 backdrop-blur-2xl pb-[max(0.5rem,env(safe-area-inset-bottom,8px))]">
+        {/* Mic Toggle */}
+        <button
+          onClick={toggleMute}
+          className={cn(
+            'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
+            isMuted
+              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30'
+              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+          )}
+          title={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
+          aria-label={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
+        >
+          {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+        </button>
 
-          {/* Camera Toggle */}
-          <button
-            onClick={toggleVideo}
-            className={cn(
-              'w-11 h-11 rounded-full flex items-center justify-center transition-all tap-press',
-              isVideoOff
-                ? 'bg-white/10 text-white/60 hover:bg-white/20'
-                : 'bg-primary/20 text-primary border border-primary/40 hover:bg-primary/30'
-            )}
-            title={isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'}
-          >
-            {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
-          </button>
+        {/* Camera Toggle */}
+        <button
+          onClick={toggleVideo}
+          className={cn(
+            'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
+            isVideoOff
+              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30'
+              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+          )}
+          title={isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'}
+          aria-label={isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'}
+        >
+          {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
+        </button>
 
-          {/* Screen Share Toggle */}
-          <button
-            onClick={toggleScreenShare}
-            className={cn(
-              'w-11 h-11 rounded-full flex items-center justify-center transition-all tap-press',
-              isScreenSharing
-                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
-                : 'bg-white/10 text-white hover:bg-white/20'
-            )}
-            title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
-          >
-            <Monitor className="w-5 h-5" />
-          </button>
+        {/* Screen Share Toggle */}
+        <button
+          onClick={toggleScreenShare}
+          className={cn(
+            'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
+            isScreenSharing
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/40 glow-primary border border-primary/50'
+              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+          )}
+          title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
+          aria-label={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
+        >
+          <Monitor className="w-5 h-5" />
+        </button>
 
-          {/* Whiteboard Toggle */}
-          <button
-            onClick={toggleWhiteboard}
-            className={cn(
-              'w-11 h-11 rounded-full flex items-center justify-center transition-all tap-press',
-              isWhiteboardOpen
-                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/30'
-                : 'bg-white/10 text-white hover:bg-white/20'
-            )}
-            title={isWhiteboardOpen ? 'Exit Whiteboard' : 'Open Whiteboard'}
-          >
-            <Presentation className="w-5 h-5" />
-          </button>
+        {/* Whiteboard Toggle */}
+        <button
+          onClick={toggleWhiteboard}
+          className={cn(
+            'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
+            isWhiteboardOpen
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/40 glow-primary border border-primary/50'
+              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+          )}
+          title={isWhiteboardOpen ? 'Exit Whiteboard' : 'Open In-Call Whiteboard'}
+          aria-label={isWhiteboardOpen ? 'Exit Whiteboard' : 'Open In-Call Whiteboard'}
+        >
+          <Presentation className="w-5 h-5" />
+        </button>
 
-          {/* Device Settings Modal Toggle */}
-          <button
-            onClick={() => setShowSettings(true)}
-            className="w-11 h-11 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center tap-press transition-colors"
-            title="Audio & Video Settings"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
+        {/* Device Settings Modal Toggle */}
+        <button
+          onClick={() => setShowSettings(true)}
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 flex items-center justify-center tap-press transition-colors cursor-pointer"
+          title="Audio & Video Settings"
+          aria-label="Audio & Video Settings"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
 
-          {/* Crimson End Call Button */}
-          <button
-            onClick={() => endCall(socketEmit)}
-            className="w-12 h-12 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center tap-press shadow-lg shadow-rose-600/30 transition-all ml-1 sm:ml-2"
-            title="End Call"
-          >
-            <PhoneOff className="w-5 h-5" />
-          </button>
-        </div>
+        {/* Dedicated Crimson End Call Button with shadow glow */}
+        <button
+          onClick={() => endCall(socketEmit)}
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-rose-600 hover:bg-rose-500 text-white flex items-center justify-center tap-press shadow-lg shadow-rose-900/30 transition-all border border-rose-400/40 ml-1 cursor-pointer"
+          title="End Call"
+          aria-label="End Call"
+        >
+          <PhoneOff className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Device Settings Modal */}

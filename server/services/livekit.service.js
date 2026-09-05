@@ -1,5 +1,8 @@
 // ─── ProjectHive — LiveKit Service ───────────────────────────────────────────
-import { AccessToken } from 'livekit-server-sdk';
+// Refactored for Phase 1 Confidential Computing: delegates token minting
+// to the KeySigner abstraction layer so LIVEKIT_API_SECRET is isolated from controllers.
+
+import { keySigner } from './crypto/keySigner.service.js';
 
 /**
  * Get current configured LiveKit server URL (e.g. ws://localhost:7880 or wss://livekit.domain.com)
@@ -15,6 +18,7 @@ export function getLiveKitServerUrl() {
 
 /**
  * Generate a cryptographically signed short-lived LiveKit Access Token
+ * Delegated to KeySigner cryptographic provider
  */
 export async function createLiveKitToken({
   identity,
@@ -25,29 +29,15 @@ export async function createLiveKitToken({
   canSubscribe = true,
   ttl = '2h',
 }) {
-  const apiKey = process.env.LIVEKIT_API_KEY || 'devkey';
-  const apiSecret = process.env.LIVEKIT_API_SECRET || 'secret';
-
-  if (!identity || !roomName) {
-    throw new Error('identity and roomName are required to create LiveKit token');
-  }
-
-  const at = new AccessToken(apiKey, apiSecret, {
-    identity: String(identity),
-    name: name || 'User',
-    ttl: ttl,
-    metadata: typeof metadata === 'string' ? metadata : JSON.stringify(metadata),
-  });
-
-  at.addGrant({
-    roomJoin: true,
-    room: roomName,
+  return await keySigner.signLiveKitGrant({
+    identity,
+    name,
+    roomName,
+    metadata,
     canPublish,
     canSubscribe,
-    canPublishData: true,
+    ttl,
   });
-
-  return await at.toJwt();
 }
 
 /**

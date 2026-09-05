@@ -1,4 +1,5 @@
 import express from 'express';
+import { adminAuthMiddleware } from '../middleware/adminAuth.js';
 import { authMiddleware } from '../middleware/auth.js';
 import {
   getStats, getUsers, banUser, changeRole, deleteUser,
@@ -7,64 +8,66 @@ import {
   getSystemFlags, updateFlags,
   getAdminPosts, deleteAdminPost,
   getTickets, resolveTicket, deleteTicket,
-  getAuditLogs, getAdminHealth,
+  getModerationQueue, resolveReport,
+  getUserStrikes, issueStrike,
+  getAuditLogs, getAdminHealth, getClientTelemetry,
 } from '../controllers/admin.controller.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
 const router = express.Router();
 
-// Admin guard middleware
-function requireAdmin(req, res, next) {
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({ error: 'Admin access required' });
-  }
-  next();
-}
+// Enforce Live Database-Backed Admin Authentication across all routes
+router.use(adminAuthMiddleware);
 
-router.use(authMiddleware, requireAdmin);
-
-// ── Stats ─────────────────────────────────────────────
+// ── System KPIs & Telemetry ────────────────────────────
 router.get('/stats',                    getStats);
+router.get('/health',                   getAdminHealth);
+router.get('/client-telemetry',         getClientTelemetry);
 
-// ── Users ─────────────────────────────────────────────
+// ── User Directory & Disciplinary Sanctions ────────────
 router.get('/users',                    getUsers);
 router.patch('/users/:id/ban',          banUser);
 router.patch('/users/:id/role',         changeRole);
 router.delete('/users/:id',             deleteUser);
+router.get('/users/:id/strikes',        getUserStrikes);
+router.post('/users/:id/strikes',       issueStrike);
 
-// ── Teams ─────────────────────────────────────────────
+// ── Content Moderation Matrix ──────────────────────────
+router.get('/reports',                  getModerationQueue);
+router.patch('/reports/:id/resolve',    resolveReport);
+router.get('/posts',                    getAdminPosts);
+router.delete('/posts/:id',             deleteAdminPost);
+
+// ── Squads & Hubs ──────────────────────────────────────
 router.get('/teams',                    getTeams);
 router.delete('/teams/:id',             deleteTeam);
 
-// ── Projects ──────────────────────────────────────────
+// ── Projects Showcase ──────────────────────────────────
 router.get('/projects',                 getProjects);
 router.delete('/projects/:id',          deleteProject);
 router.patch('/projects/:id/feature',   featureProject);
 
-// ── Posts ────────────────────────────────────────────────
-router.get('/posts',                    getAdminPosts);
-router.delete('/posts/:id',             deleteAdminPost);
-
-// ── Support Tickets ──────────────────────────────────────
+// ── Support Tickets ────────────────────────────────────
 router.get('/tickets',                  getTickets);
 router.patch('/tickets/:id/resolve',    resolveTicket);
 router.delete('/tickets/:id',           deleteTicket);
 
-// ── System Flags ──────────────────────────────────────
+// ── System Flags & Platform Controls ───────────────────
 router.get('/flags',                    getSystemFlags);
 router.patch('/flags',                  updateFlags);
 
-// ── Audit Logs & Real Health Telemetry ───────────────
+// ── Audit Ledger ───────────────────────────────────────
 router.get('/audit-logs',               getAuditLogs);
-router.get('/health',                   getAdminHealth);
 
 export default router;
 
-// DEV HELPER — POST /api/admin/promote-me (no admin guard, just auth)
+// DEV HELPER — POST /api/admin/promote-me (Strictly Development Only)
 const devRouter = express.Router();
 devRouter.use(authMiddleware);
 devRouter.post('/promote-me', async (req, res) => {
-  if (process.env.NODE_ENV === 'production') return res.status(403).json({ error: 'Not available in production' });
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ error: 'Administrative self-escalation is disabled in production' });
+  }
   const { data: user, error } = await supabaseAdmin
     .from('users')
     .update({ role: 'admin' })

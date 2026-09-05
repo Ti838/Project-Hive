@@ -1,7 +1,7 @@
 'use client';
 // ─── ProjectHive — Master Call Manager (Global Ambient Component) ─────────────
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useCallStore } from '@/lib/callStore';
 import { useLiveKitRoom } from '@/hooks/useLiveKitRoom';
 import { useSocket, type WhiteboardDrawPayload } from '@/hooks/useSocket';
@@ -22,7 +22,7 @@ export function CallManager() {
     resetCallState,
   } = useCallStore();
 
-  const { participants, screenSharer } = useLiveKitRoom();
+  const { participants, screenSharer, leaveRoom } = useLiveKitRoom();
 
   const [whiteboardDrawData, setWhiteboardDrawData] = useState<WhiteboardDrawPayload | null>(null);
   const [whiteboardClearedSignal, setWhiteboardClearedSignal] = useState(false);
@@ -44,6 +44,13 @@ export function CallManager() {
     },
   });
 
+  // Automatically ensure clean SFU teardown when call finishes
+  useEffect(() => {
+    if (status === 'ENDED' || status === 'REJECTED' || status === 'FAILED' || status === 'IDLE') {
+      leaveRoom();
+    }
+  }, [status, leaveRoom]);
+
   // Handle call lifecycle socket events
   useEffect(() => {
     const rawSocket = socket.socket;
@@ -59,11 +66,13 @@ export function CallManager() {
     const onCallDeclined = () => {
       console.log('[CallManager] Peer declined call');
       setStatus('REJECTED');
+      leaveRoom();
       setTimeout(() => resetCallState(), 2000);
     };
 
     const onCallHungup = () => {
       console.log('[CallManager] Peer hung up call');
+      leaveRoom();
       endCall();
     };
 
@@ -71,6 +80,7 @@ export function CallManager() {
       console.warn('[CallManager] Call signaling error:', err);
       setError(err.message || 'Call failed');
       setStatus('FAILED');
+      leaveRoom();
       setTimeout(() => resetCallState(), 3000);
     };
 
@@ -85,7 +95,7 @@ export function CallManager() {
       rawSocket.off('call:hungup', onCallHungup);
       rawSocket.off('call:error', onCallError);
     };
-  }, [socket.socket, status, setStatus, endCall, setError, resetCallState]);
+  }, [socket.socket, status, setStatus, endCall, leaveRoom, setError, resetCallState]);
 
   const socketEmit = (event: string, data: any) => {
     socket.socket?.emit(event, data);
@@ -93,6 +103,13 @@ export function CallManager() {
 
   return (
     <>
+      {/* Persistent Audio Engine — guarantees uninterrupted audio across Fullscreen & PiP */}
+      {participants
+        .filter((p) => !p.isLocal && p.audioTrack && !p.isAudioMuted)
+        .map((p) => (
+          <RemoteAudioRenderer key={`audio-${p.sid}`} track={p.audioTrack} />
+        ))}
+
       {/* Incoming Call Ringing Modal */}
       {status === 'RINGING' && <IncomingCallModal socketEmit={socketEmit} />}
 
@@ -119,3 +136,35 @@ export function CallManager() {
     </>
   );
 }
+
+// ── Persistent Remote Audio Output ──────────────────────────────────────────
+function RemoteAudioRenderer({ track }: { track?: any }) {
+  const audioElRef = useRef<HTMLAudioElement | null>(null);
+
+  const setAudioRef = useCallback(
+    (el: HTMLAudioElement | null) => {
+      if (audioElRef.current && audioElRef.current !== el) {
+        if (track?.track) {
+          track.track.detach(audioElRef.current);
+        }
+      }
+      audioElRef.current = el;
+      if (el && track?.track) {
+        track.track.attach(el);
+      }
+    },
+    [track]
+  );
+
+  useEffect(() => {
+    return () => {
+      const el = audioElRef.current;
+      if (el && track?.track) {
+        track.track.detach(el);
+      }
+    };
+  }, [track]);
+
+  return <audio ref={setAudioRef} autoPlay playsInline className="hidden" />;
+}
+
