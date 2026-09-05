@@ -68,6 +68,10 @@ ALTER TABLE users
   ADD COLUMN IF NOT EXISTS last_login_os TEXT,
   ADD COLUMN IF NOT EXISTS last_login_browser TEXT,
   ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS email_verification_token VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS email_verification_expires TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255),
+  ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS settings JSONB DEFAULT '{"emailNotifications": true, "chatSounds": true, "theme": "dark", "twoFactorPrompt": false}'::jsonb;
 
 -- Users role constraint check
