@@ -28,9 +28,26 @@ if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
   console.log('[Email] ✅ Gmail SMTP configured — primary inbox delivery active.');
 }
 
+// ─── 2. Brevo SMTP Relay Transporter ─────────────────────────────────────────
+let brevoSmtpTransporter = null;
+const brevoSmtpKey = process.env.BREVO_SMTP_KEY || process.env.BREVO_API_KEY;
+const brevoSmtpUser = process.env.BREVO_SMTP_LOGIN;
+if (brevoSmtpKey && brevoSmtpUser) {
+  brevoSmtpTransporter = nodemailer.createTransport({
+    host: process.env.BREVO_SMTP_HOST || 'smtp-relay.brevo.com',
+    port: parseInt(process.env.BREVO_SMTP_PORT || '587', 10),
+    secure: false,
+    auth: {
+      user: brevoSmtpUser,
+      pass: brevoSmtpKey,
+    },
+  });
+  console.log('[Email] ✅ Brevo SMTP Relay configured — transactional delivery active.');
+}
+
 // ─── Unified Send Helper ─────────────────────────────────────────────────────
 export async function sendEmail({ to, toName = '', subject, html }) {
-  // Strategy 1: Gmail SMTP (preferred)
+  // Strategy 1: Gmail SMTP (preferred if configured)
   if (gmailTransporter) {
     try {
       const info = await gmailTransporter.sendMail({
@@ -43,6 +60,23 @@ export async function sendEmail({ to, toName = '', subject, html }) {
       return { ok: true, messageId: info.messageId, provider: 'gmail' };
     } catch (err) {
       console.error('[Email] Gmail SMTP error:', err.message, '— falling back...');
+    }
+  }
+
+  // Strategy 2: Brevo SMTP Relay (Active via Render Environment)
+  if (brevoSmtpTransporter) {
+    try {
+      const fromAddr = process.env.BREVO_FROM_EMAIL || 'timonbiswas33@gmail.com';
+      const info = await brevoSmtpTransporter.sendMail({
+        from: `"${FROM_NAME}" <${fromAddr}>`,
+        to,
+        subject,
+        html,
+      });
+      console.log('[Email] ✉️  Brevo SMTP sent to:', to, '| messageId:', info.messageId);
+      return { ok: true, messageId: info.messageId, provider: 'brevo-smtp' };
+    } catch (err) {
+      console.error('[Email] Brevo SMTP error:', err.message, '— falling back...');
     }
   }
 
