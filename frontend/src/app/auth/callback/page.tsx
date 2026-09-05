@@ -55,17 +55,43 @@ function AuthCallbackContent() {
           const refreshToken = hashParams.get('refresh_token');
 
           if (accessToken) {
-            // Attempt to fetch current user profile with access token
-            localStorage.setItem('access_token', accessToken);
-            if (refreshToken) localStorage.setItem('refresh_token', refreshToken);
+            const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://iekfvgjxkmgduxdvkuxf.supabase.co';
+            const sbAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
-            const meRes = await api.users.me();
-            if (!active) return;
-            if (meRes.ok && meRes.id) {
-              login(meRes as import('@/types').User, accessToken, refreshToken || '');
-              setStatus('success');
-              setTimeout(() => router.replace('/dashboard'), 800);
-              return;
+            const userRes = await fetch(`${sbUrl}/auth/v1/user`, {
+              headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'apikey': sbAnonKey,
+              },
+            });
+
+            if (userRes.ok) {
+              const sbUser = await userRes.json();
+              const fullName = sbUser.user_metadata?.full_name || sbUser.user_metadata?.name || '';
+              const firstName = sbUser.user_metadata?.first_name || sbUser.user_metadata?.given_name || fullName.split(' ')[0] || 'User';
+              const lastName = sbUser.user_metadata?.last_name || sbUser.user_metadata?.family_name || fullName.split(' ').slice(1).join(' ') || '';
+              const avatar = sbUser.user_metadata?.avatar_url || sbUser.user_metadata?.picture || null;
+
+              const res = await api.auth.googleCallback({
+                email: sbUser.email,
+                googleId: sbUser.id,
+                firstName,
+                lastName,
+                avatar,
+                supabaseAccessToken: accessToken,
+              });
+
+              if (!active) return;
+              if (res.ok && res.accessToken && res.user) {
+                login(res.user, res.accessToken, res.refreshToken);
+                setStatus('success');
+                setTimeout(() => router.replace('/dashboard'), 600);
+                return;
+              } else {
+                setStatus('error');
+                setErrorMessage(res.error || 'Failed to authenticate user with ProjectHive server.');
+                return;
+              }
             }
           }
         }

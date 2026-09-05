@@ -526,10 +526,8 @@ export async function getMe(req, res, next) {
 // Returns the Supabase Google OAuth URL for the frontend to redirect to
 export async function googleInitiate(req, res, next) {
   try {
-    // Force production URL when NODE_ENV is production
-    const redirectTo = process.env.NODE_ENV === 'production'
-      ? 'https://projecthive-bd.vercel.app/pages/auth/callback.html'
-      : 'http://localhost:5000/pages/auth/callback.html';
+    const frontendBase = (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || 'https://projecthive-bd.vercel.app').replace(/\/+$/, '');
+    const redirectTo = `${frontendBase}/auth/callback`;
 
     console.log('[ProjectHive] 🔑 Google OAuth — NODE_ENV:', process.env.NODE_ENV);
     console.log('[ProjectHive] 🔑 Google OAuth — redirectTo:', redirectTo);
@@ -539,7 +537,6 @@ export async function googleInitiate(req, res, next) {
       return res.status(500).json({ error: 'Authentication service not configured.' });
     }
 
-    // Use PKCE flow instead of implicit flow for better security and reliability
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -548,10 +545,8 @@ export async function googleInitiate(req, res, next) {
         skipBrowserRedirect: true,
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent', // Force consent to get fresh tokens
+          prompt: 'consent',
         },
-        // Enable PKCE flow
-        flowType: 'pkce',
       },
     });
 
@@ -560,7 +555,7 @@ export async function googleInitiate(req, res, next) {
       return res.status(500).json({ error: 'Failed to generate Google OAuth URL. ' + (error?.message || '') });
     }
 
-    console.log('[ProjectHive] ✅ Google OAuth URL generated successfully (PKCE flow)');
+    console.log('[ProjectHive] ✅ Google OAuth URL generated successfully');
     console.log('[ProjectHive] 🔗 OAuth URL:', data.url);
     res.json({ url: data.url });
   } catch (error) {
