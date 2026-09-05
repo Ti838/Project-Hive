@@ -230,6 +230,9 @@ export const api = {
     verifyEmail: (token: string) =>
       request<{ message: string }>(`/auth/verify-email?token=${token}`),
 
+    googleInitiate: () =>
+      request<{ url: string }>('/auth/google'),
+
     googleCodeExchange: (code: string) =>
       request<{ message: string; accessToken: string; refreshToken: string; user: User }>('/auth/google/code', {
         method: 'POST', body: JSON.stringify({ code }),
