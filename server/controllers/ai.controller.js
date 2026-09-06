@@ -18,29 +18,25 @@ import {
   desanitizeOutputPayload,
 } from '../services/crypto/sanitizer.service.js';
 
-// Verified working Groq models (Primary: llama-3.3-70b-versatile, Fast fallback: llama-3.1-8b-instant)
-const GROQ_MODELS = [
-  'llama-3.3-70b-versatile',
-  'llama-3.1-8b-instant',
-];
+// Verified ultra-fast active Groq models mapped by user-selected tier
+const GROQ_MODELS_BY_TIER = {
+  Turbo: ['openai/gpt-oss-20b', 'groq/compound-mini', 'openai/gpt-oss-120b'],
+  Pro:   ['openai/gpt-oss-20b', 'openai/gpt-oss-120b', 'groq/compound'],
+  Ultra: ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'groq/compound'],
+};
+const DEFAULT_GROQ_MODELS = ['openai/gpt-oss-20b', 'openai/gpt-oss-120b'];
 
 const GEMINI_MODELS = [
   'gemini-2.0-flash',
   'gemini-1.5-flash',
-  'gemini-1.5-pro',
 ];
 
 // Active verified free-tier models on OpenRouter
 const OPENROUTER_MODELS = [
   'openrouter/free',
-  'google/gemma-2-9b-it:free',
-  'meta-llama/llama-3.3-70b-instruct:free',
-  'meta-llama/llama-3.1-8b-instruct:free',
-  'nvidia/nemotron-3.5-lightning:free',
 ];
 
 const OPENROUTER_VISION_MODELS = [
-  'google/gemma-2-9b-it:free',
   'openrouter/free',
 ];
 
@@ -48,8 +44,17 @@ const GEMINI_BASE     = 'https://generativelanguage.googleapis.com/v1beta/models
 const GROQ_BASE       = 'https://api.groq.com/openai/v1/chat/completions';
 const OPENROUTER_BASE = 'https://openrouter.ai/api/v1/chat/completions';
 
-// 9-second strict timeout per tier to prevent slow socket stalls
-const TIER_TIMEOUT_MS = 9000;
+// 12-second timeout per tier to allow deep generation while preventing socket stalls
+const TIER_TIMEOUT_MS = 12000;
+
+function cleanAIOutput(text) {
+  if (!text) return '';
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  if (cleaned.includes('### Final Answer')) {
+    cleaned = cleaned.split('### Final Answer').pop().trim();
+  }
+  return cleaned;
+}
 
 // Rate limiter (per-user sliding window)
 const rateLimitMap = new Map();
@@ -123,6 +128,13 @@ async function callGemini(prompt, imageBase64, mimeType) {
         }),
       }, TIER_TIMEOUT_MS);
 
+      if (response.status === 401 || response.status === 403) {
+        console.warn(`[AI] Gemini authentication failed (${response.status}) — bypassing Gemini`);
+        const e = new Error('GEMINI_AUTH_INVALID');
+        e.status = response.status;
+        throw e; // Break immediately to cascade
+      }
+
       if (response.status === 429) {
         console.warn(`[AI] Gemini rate limit hit (429) on ${model} — cascading to next tier`);
         const e = new Error('GEMINI_RATE_LIMIT');
@@ -144,11 +156,11 @@ async function callGemini(prompt, imageBase64, mimeType) {
       const data = await response.json().catch(() => null);
       const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
       if (text) {
-        return { text, provider: 'gemini', model };
+        return { text: cleanAIOutput(text), provider: 'gemini', model };
       }
     } catch (e) {
       lastError = e;
-      if (e.status === 429) {
+      if (e.status === 429 || e.status === 401 || e.status === 403) {
         throw e; // Cascade immediately to next tier
       }
       console.warn(`[AI] Gemini model ${model} failed (${e.message}) — trying next`);
@@ -158,14 +170,15 @@ async function callGemini(prompt, imageBase64, mimeType) {
   throw lastError || new Error('All Gemini models failed');
 }
 
-// ── Tier 1: Groq Cloud (llama-3.3-70b-versatile, llama-3.1-8b-instant) ──────
-async function callGroq(prompt) {
+// ── Tier 1: Groq Cloud (Ultra-Fast 120B / 20B / Compound) ────────────────────
+async function callGroq(prompt, tier = 'Pro') {
   const apiKey = getGroqKey();
   if (!apiKey) throw new Error('GROQ_NOT_CONFIGURED');
 
+  const modelsToTry = GROQ_MODELS_BY_TIER[tier] || DEFAULT_GROQ_MODELS;
   let lastError = null;
 
-  for (const model of GROQ_MODELS) {
+  for (const model of modelsToTry) {
     try {
       const response = await fetchWithTimeout(GROQ_BASE, {
         method: 'POST',
@@ -177,10 +190,14 @@ async function callGroq(prompt) {
           model,
           messages: [{ role: 'user', content: prompt }],
           temperature: 0.7,
-          top_p: 0.9,
-          max_tokens: 3500,
+          max_completion_tokens: 3500,
         }),
       }, TIER_TIMEOUT_MS);
+
+      if (response.status === 404) {
+        console.warn(`[AI] Groq model ${model} not found (404) — trying next model`);
+        continue;
+      }
 
       if (response.status === 429) {
         console.warn(`[AI] Groq rate limit hit (429) on ${model} — cascading to Tier 2 (Gemini)`);
@@ -203,7 +220,7 @@ async function callGroq(prompt) {
       const data = await response.json().catch(() => null);
       const text = data?.choices?.[0]?.message?.content?.trim() || '';
       if (text) {
-        return { text, provider: 'groq', model };
+        return { text: cleanAIOutput(text), provider: 'groq', model };
       }
     } catch (e) {
       lastError = e;
@@ -217,7 +234,7 @@ async function callGroq(prompt) {
   throw lastError || new Error('All Groq models failed');
 }
 
-// ── Tier 3: OpenRouter Free Cascade (Zero-Rate-Limit Defense) ────────────────
+// ── Tier 3: OpenRouter Free Cascade (Zero-Rate-Limit Defense & Vision) ───────
 async function callOpenRouter(prompt, imageBase64, mimeType) {
   const apiKey = getOpenRouterKey();
   if (!apiKey) throw new Error('OPENROUTER_NOT_CONFIGURED');
@@ -229,14 +246,14 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
   if (imageBase64) {
     messageContent = [
       {
+        type: 'text',
+        text: prompt,
+      },
+      {
         type: 'image_url',
         image_url: {
           url: `data:${mimeType || 'image/jpeg'};base64,${imageBase64}`,
         },
-      },
-      {
-        type: 'text',
-        text: prompt,
       },
     ];
   } else {
@@ -291,7 +308,7 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
 
       const text = data?.choices?.[0]?.message?.content?.trim() || '';
       if (text) {
-        return { text, provider: 'openrouter', model };
+        return { text: cleanAIOutput(text), provider: 'openrouter', model };
       }
     } catch (e) {
       lastError = e;
@@ -303,7 +320,7 @@ async function callOpenRouter(prompt, imageBase64, mimeType) {
 }
 
 // ── Multi-Tier AI Cascade Router (Groq -> Gemini -> OpenRouter) ─────────────
-export async function callAI(prompt, imageBase64, mimeType) {
+export async function callAI(prompt, imageBase64, mimeType, tier = 'Pro') {
   // Phase 2 Confidential Computing: In-memory sanitization & reversible masking
   const { sanitizedPrompt, redactionMap, redactionCount } = sanitizePromptPayload(prompt);
 
@@ -338,11 +355,11 @@ export async function callAI(prompt, imageBase64, mimeType) {
     }
   } else {
     // 2. Text / Code Cascade (Zero-Rate-Limit Defense):
-    // Tier 1: Groq Cloud (llama-3.3-70b-versatile, llama-3.1-8b-instant)
+    // Tier 1: Groq Cloud (Ultra-Fast 120B / 20B / Compound)
     if (groqAvailable) {
       try {
-        console.log('[AI] ⚡ Cascade Tier 1: Groq Cloud');
-        rawResult = await callGroq(sanitizedPrompt);
+        console.log(`[AI] ⚡ Cascade Tier 1: Groq Cloud (Tier: ${tier})`);
+        rawResult = await callGroq(sanitizedPrompt, tier);
         console.log(`[AI] ✅ Tier 1 (Groq - ${rawResult.model}) succeeded`);
       } catch (groqError) {
         console.warn(`[AI] ⚠️ Tier 1 (Groq) failed (${groqError.message}) — cascading to Tier 2 (Gemini)`);
@@ -534,7 +551,7 @@ export async function chatWithAI(req, res, next) {
       return res.status(429).json({ error: 'Rate limit: 60 AI requests per hour.' });
     }
 
-    const { message, imageBase64, mimeType, context } = req.body;
+    const { message, imageBase64, mimeType, context, tier = 'Pro' } = req.body;
     if (!message?.trim() && !imageBase64) {
       return res.status(400).json({ error: 'Message or image attachment is required.' });
     }
@@ -568,7 +585,7 @@ Guidelines:
 - If providing SQL, optimize for PostgreSQL/Supabase with CREATE TABLE, constraints, indexes, and RLS policies where applicable.`;
 
     const prompt = `${systemPrompt}\n\nStudent Query:\n${message || 'Analyze this image.'}`;
-    const result = await callAI(prompt, imageBase64, mimeType);
+    const result = await callAI(prompt, imageBase64, mimeType, tier);
 
     if (result.security?.confidentialScrubbed) {
       res.setHeader('x-confidential-scrubbed', 'true');
@@ -751,8 +768,9 @@ Provide direct, clean, production-grade technical mentorship and guidance.`;
 
     // Combine prompt
     const fullPrompt = `${systemInstruction}\n${contextBlock}\n\nTask / User Input:\n${userPrompt || JSON.stringify(parameters, null, 2)}`;
+    const tier = parameters.tier || 'Pro';
 
-    const result = await callAI(fullPrompt, imageBase64, mimeType);
+    const result = await callAI(fullPrompt, imageBase64, mimeType, tier);
 
     if (result.security?.confidentialScrubbed) {
       res.setHeader('x-confidential-scrubbed', 'true');
