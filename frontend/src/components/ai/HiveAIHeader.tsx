@@ -1,107 +1,124 @@
 'use client';
 // ─── Hive AI Header Component ────────────────────────────────────────────────
-// Minimal, premium intelligence status bar
+// Minimal, premium intelligence status bar with 1-click mode switcher
 
-import { Sparkles, Cpu, ShieldCheck, Zap, Activity, PanelLeft, PanelLeftClose } from 'lucide-react';
+import { useState } from 'react';
+import { Sparkles, ChevronDown, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType } from '@/types';
+import { CAPABILITY_ITEMS, HiveAICapabilitiesModal } from './HiveAICapabilities';
 
 interface HiveAIHeaderProps {
   activeCapability: HiveAICapabilityType;
+  onSelectCapability?: (cap: HiveAICapabilityType) => void;
   modelName?: string;
   providerName?: string;
   isProcessing?: boolean;
   onClearSession?: () => void;
-  sidebarOpen?: boolean;
-  onToggleSidebar?: () => void;
   className?: string;
 }
 
-const CAPABILITY_LABELS: Record<HiveAICapabilityType, { title: string; subtitle: string }> = {
-  project_generator: { title: 'Project Generator', subtitle: 'Architecture & MVP Blueprinting' },
-  idea_analyzer: { title: 'Idea Analyzer', subtitle: 'Novelty & Technical Feasibility Assessment' },
-  project_critic: { title: 'Project Critic', subtitle: 'Code, Security & Scalability Review' },
-  research_assistant: { title: 'Research Assistant', subtitle: 'Tech Deep-Dives & Trade-Off Matrices' },
-  documentation_ai: { title: 'Documentation AI', subtitle: 'README, API Spec & Setup Guides' },
-  code_assistant: { title: 'Code Assistant', subtitle: 'Debugging, Schema & Test Generation' },
-  architecture_design: { title: 'System Architecture', subtitle: 'Topology, ER Modeling & Caching' },
-  project_health: { title: 'Project Health', subtitle: 'Sprint Blockers & Delivery Trajectory' },
-  team_ai: { title: 'Team Matcher', subtitle: 'Skill Matrix & Missing Role Discovery' },
-  career_ai: { title: 'Career Advisor', subtitle: 'Portfolio Bullets & Technical Pitches' },
-  copilot_chat: { title: 'Engineering Copilot', subtitle: 'Multimodal Pair Programming' },
-};
-
 export function HiveAIHeader({
   activeCapability,
+  onSelectCapability,
   isProcessing = false,
   onClearSession,
-  sidebarOpen,
-  onToggleSidebar,
   className,
 }: HiveAIHeaderProps) {
-  const current = CAPABILITY_LABELS[activeCapability] || CAPABILITY_LABELS.copilot_chat;
+  const [modalOpen, setModalOpen] = useState(false);
+  const current = CAPABILITY_ITEMS.find((c) => c.id === activeCapability) || CAPABILITY_ITEMS[0];
+  const Icon = current.icon;
 
   return (
-    <header className={cn(
-      'px-4 sm:px-6 py-3.5 border-b border-border/80 bg-card/60 backdrop-blur-md flex items-center justify-between gap-4 select-none',
-      className
-    )}>
-      {/* Left: Hive AI Brand & Active Capability */}
-      <div className="flex items-center gap-3 min-w-0">
-        {onToggleSidebar && (
-          <button
-            type="button"
-            onClick={onToggleSidebar}
-            title={sidebarOpen ? "Hide studio sidebar" : "Show studio sidebar"}
-            className="hidden md:flex p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-border/60 transition-colors tap-press cursor-pointer shrink-0"
-            aria-label="Toggle studio sidebar"
-          >
-            {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4 text-primary" />}
-          </button>
-        )}
-
-        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
-          <img
-            src="/logo.png"
-            alt="Hive AI"
-            className={cn("w-full h-full object-contain", isProcessing && "animate-pulse")}
-          />
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <h2 className="font-extrabold text-sm tracking-tight text-foreground truncate">
-              {current.title}
-            </h2>
-            <span className="text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
-              Hive AI
-            </span>
+    <>
+      <header className={cn(
+        'px-4 sm:px-6 py-3 border-b border-border/80 bg-card/60 backdrop-blur-md flex items-center justify-between gap-4 select-none',
+        className
+      )}>
+        {/* Left: Hive AI Brand & Interactive Capability Pill */}
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="Hive AI"
+              className={cn("w-full h-full object-contain", isProcessing && "animate-pulse")}
+            />
           </div>
-          <p className="text-[11px] text-muted-foreground truncate hidden sm:block">
-            {current.subtitle}
-          </p>
-        </div>
-      </div>
 
-      {/* Right: Status & Actions */}
-      <div className="flex items-center gap-2.5 shrink-0">
-        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/60 text-[11px] font-mono text-muted-foreground">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-foreground font-semibold">Hive AI</span>
-          <span className="text-border">·</span>
-          <span className="text-emerald-500 font-medium">Online</span>
+          {/* Interactive Mode Trigger Button */}
+          {onSelectCapability ? (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-muted/60 hover:bg-muted border border-border/70 hover:border-primary/40 text-left transition-all tap-press group cursor-pointer"
+              title="Click to switch AI Studio Mode"
+            >
+              <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Icon className="w-3.5 h-3.5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-xs sm:text-sm text-foreground tracking-tight truncate">
+                    {current.label}
+                  </span>
+                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-y-0.5" />
+                </div>
+              </div>
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <h2 className="font-extrabold text-sm tracking-tight text-foreground truncate">
+                {current.label}
+              </h2>
+            </div>
+          )}
         </div>
 
-        {onClearSession && (
-          <button
-            type="button"
-            onClick={onClearSession}
-            className="px-2.5 py-1 rounded-lg border border-border/60 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent tap-press transition-colors"
-          >
-            Reset
-          </button>
-        )}
-      </div>
-    </header>
+        {/* Right: Hive AI Status & Actions */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-muted/60 border border-border/60 text-[11px] font-mono text-muted-foreground">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-foreground font-semibold">Hive AI</span>
+            <span className="text-border">·</span>
+            <span className="text-emerald-500 font-medium">Online</span>
+          </div>
+
+          {onSelectCapability && (
+            <button
+              type="button"
+              onClick={() => setModalOpen(true)}
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary/20 transition-all tap-press cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Modes (11)</span>
+            </button>
+          )}
+
+          {onClearSession && (
+            <button
+              type="button"
+              onClick={onClearSession}
+              title="Reset conversation"
+              className="p-1.5 sm:px-2.5 sm:py-1 rounded-xl border border-border/60 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent tap-press transition-colors flex items-center gap-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
+          )}
+        </div>
+      </header>
+
+      {/* Mode Picker Modal */}
+      {onSelectCapability && (
+        <HiveAICapabilitiesModal
+          isOpen={modalOpen}
+          onClose={() => setModalOpen(false)}
+          activeCapability={activeCapability}
+          onSelectCapability={onSelectCapability}
+        />
+      )}
+    </>
   );
 }
+
 
