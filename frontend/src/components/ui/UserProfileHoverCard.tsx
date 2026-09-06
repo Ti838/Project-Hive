@@ -112,7 +112,7 @@ export function UserProfileHoverCard({
             exit={{ opacity: 0, scale: 0.94, y: side === 'top' ? -4 : 6 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             className={cn(
-              'surface-floating absolute z-50 w-80 rounded-2xl border border-white/10 dark:border-white/5 p-4 shadow-2xl backdrop-blur-2xl text-left select-none pointer-events-auto',
+              'surface-floating absolute z-50 w-80 rounded-2xl border border-border/70 p-4 shadow-2xl backdrop-blur-2xl text-left select-none pointer-events-auto',
               side === 'top' ? 'bottom-full mb-2' : 'top-full mt-2',
               align === 'start' && 'left-0',
               align === 'center' && 'left-1/2 -translate-x-1/2',
@@ -123,7 +123,7 @@ export function UserProfileHoverCard({
           >
             {/* Header: Mini Banner & Overlapping Avatar */}
             <div className="relative mb-3">
-              <div className="h-16 w-full rounded-xl bg-gradient-to-r from-primary/30 via-indigo-600/20 to-purple-800/30 overflow-hidden relative border border-white/5">
+              <div className="h-16 w-full rounded-xl bg-gradient-to-r from-primary/30 via-indigo-600/20 to-purple-800/30 overflow-hidden relative border border-border/40">
                 {user.banner || user.banner_image ? (
                   <img
                     src={user.banner || user.banner_image}
@@ -138,44 +138,39 @@ export function UserProfileHoverCard({
               <div className="flex items-end justify-between -mt-6 px-1">
                 <UserAvatar
                   user={user}
-                  size="lg"
+                  size="md"
                   showStatus
-                  status={user.online_status === 'online' || user.onlineStatus === 'online' ? 'online' : 'offline'}
-                  className="ring-4 ring-card bg-card shadow-md"
+                  status={user?.online_status === 'online' || user?.onlineStatus === 'online' ? 'online' : 'offline'}
+                  className="ring-4 ring-card shadow-lg"
                 />
 
-                <Link
-                  href={`/profile/${user.id}`}
-                  onClick={() => setIsOpen(false)}
-                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary hover:underline pb-0.5"
-                >
-                  <span>View profile</span>
-                  <ExternalLink className="w-3 h-3" />
-                </Link>
+                {user.role === 'admin' && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 shadow-xs">
+                    <ShieldCheck className="w-3 h-3" /> ADMIN
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Student Identity */}
+            {/* Profile Core Meta */}
             <div className="space-y-1">
-              <div className="flex items-center gap-1.5">
-                <h4 className="font-extrabold text-sm text-foreground truncate max-w-[200px]">
+              <div className="flex items-baseline justify-between gap-2">
+                <h4 className="text-sm font-extrabold text-foreground truncate tracking-tight">
                   {name}
                 </h4>
-                <span title="Verified Campus Member">
-                  <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
-                </span>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <School className="w-3.5 h-3.5 shrink-0 text-primary/70" />
-                <span className="truncate">{university}</span>
-                {major && (
-                  <>
-                    <span>·</span>
-                    <span className="truncate">{major}</span>
-                  </>
+                {user.university && (
+                  <span className="text-[10px] font-semibold text-primary/90 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md truncate max-w-[120px]">
+                    {user.university}
+                  </span>
                 )}
               </div>
+
+              {user.major && (
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                  <GraduationCap className="w-3.5 h-3.5 text-muted-foreground/70 shrink-0" />
+                  <span className="truncate">{user.major}</span>
+                </div>
+              )}
 
               {user.bio && (
                 <p className="text-xs text-foreground/80 line-clamp-2 leading-relaxed pt-1.5 font-normal">
@@ -186,11 +181,11 @@ export function UserProfileHoverCard({
 
             {/* Skills Pills */}
             {skills.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/5 mt-3">
+              <div className="flex flex-wrap gap-1.5 pt-3 border-t border-border/50 mt-3">
                 {skills.map((skill: string) => (
                   <span
                     key={skill}
-                    className="px-2 py-0.5 rounded-md surface-glass border border-white/10 text-[10px] font-semibold text-foreground/90"
+                    className="px-2 py-0.5 rounded-md surface-glass border border-border/60 text-[10px] font-semibold text-foreground/90"
                   >
                     {skill}
                   </span>
@@ -200,7 +195,7 @@ export function UserProfileHoverCard({
 
             {/* Quick Actions Dock */}
             {!isSelf && (
-              <div className="flex items-center gap-2 pt-3 border-t border-white/10 mt-3">
+              <div className="flex items-center gap-2 pt-3 border-t border-border/50 mt-3">
                 <button
                   type="button"
                   onClick={handleSendMessage}
@@ -215,10 +210,10 @@ export function UserProfileHoverCard({
                   onClick={handleConnect}
                   disabled={connectionState !== 'idle'}
                   className={cn(
-                    'flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl surface-glass border border-white/10 text-xs font-semibold tap-press transition-all cursor-pointer',
+                    'flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl surface-glass border border-border/70 text-xs font-semibold tap-press transition-all cursor-pointer',
                     connectionState === 'connected'
                       ? 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30'
-                      : 'text-foreground hover:bg-white/10'
+                      : 'text-foreground hover:bg-muted'
                   )}
                 >
                   {connectionState === 'connected' ? (

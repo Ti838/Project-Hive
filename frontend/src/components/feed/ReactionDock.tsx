@@ -112,7 +112,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
             transition={{ type: 'spring', damping: 20, stiffness: 350 }}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            className="surface-floating absolute left-0 -top-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 shadow-2xl z-30 backdrop-blur-2xl bg-card/90 dark:bg-neutral-900/90"
+            className="surface-floating absolute left-0 -top-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/70 shadow-2xl z-30 backdrop-blur-2xl"
           >
             {REACTION_CONFIG.map(({ type, icon: Icon, label, color, hoverBg }) => (
               <motion.button
@@ -126,13 +126,13 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
                 className={cn(
                   'p-2 rounded-full tap-press transition-colors cursor-pointer group relative',
                   hoverBg,
-                  currentReaction === type && 'bg-white/20 shadow-xs'
+                  currentReaction === type && 'bg-primary/20 shadow-xs'
                 )}
                 title={label}
                 aria-label={label}
               >
                 <Icon className={cn('w-4 h-4 transition-transform', color)} />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-black/80 text-white whitespace-nowrap pointer-events-none">
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-card text-foreground border border-border/70 shadow-md whitespace-nowrap pointer-events-none">
                   {label}
                 </span>
               </motion.button>

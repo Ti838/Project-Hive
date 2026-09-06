@@ -6,11 +6,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bell, Search, Sun, Moon, Menu, ArrowLeft,
+  Bell, Search, Sun, Moon, Monitor, Menu, ArrowLeft,
   User, Settings, Bookmark, LogOut, ShieldCheck,
   X, CheckCheck, Sparkles, MessageSquare, Users, FolderKanban, Rss, LayoutDashboard,
 } from 'lucide-react';
 import { useAuthStore, useUIStore, useSocketStore } from '@/lib/store';
+import { useTheme } from '@/context/ThemeContext';
 import { useSocket } from '@/hooks/useSocket';
 import { api } from '@/lib/api';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
@@ -38,19 +39,21 @@ export function Topbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const { unreadNotifications, setUnreadNotifications, incrementUnread, toggleMobileMenu } = useUIStore();
   const isConnected = useSocketStore((s) => s.isConnected);
 
-  const [dark, setDark] = useState(false);
   const [isMac, setIsMac] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [cmdQuery, setCmdQuery] = useState('');
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
   const [recentNotifs, setRecentNotifs] = useState<Notification[]>([]);
 
   const profileRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const themeRef = useRef<HTMLDivElement>(null);
   const cmdInputRef = useRef<HTMLInputElement>(null);
 
   // Platform detection for keyboard badge
@@ -69,6 +72,7 @@ export function Topbar() {
         setCommandOpen(false);
         setProfileOpen(false);
         setNotifOpen(false);
+        setThemeMenuOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -83,6 +87,9 @@ export function Topbar() {
       }
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setNotifOpen(false);
+      }
+      if (themeRef.current && !themeRef.current.contains(e.target as Node)) {
+        setThemeMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -130,20 +137,10 @@ export function Topbar() {
     });
   }, [setUnreadNotifications]);
 
-  // Dark mode init
-  useEffect(() => {
-    const saved = localStorage.getItem('ph-theme');
-    if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-      document.documentElement.classList.add('dark');
-      setDark(true);
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('ph-theme', next ? 'dark' : 'light');
+  const cycleTheme = () => {
+    if (theme === 'light') setTheme('dark');
+    else if (theme === 'dark') setTheme('system');
+    else setTheme('light');
   };
 
   const handleLogout = async () => {
@@ -263,15 +260,78 @@ export function Topbar() {
             <Search className="w-4 h-4" />
           </button>
 
-          {/* Theme Toggle */}
-          <button
-            onClick={toggleTheme}
-            className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground tap-press transition-colors cursor-pointer"
-            title="Toggle theme"
-            aria-label="Toggle theme"
-          >
-            {dark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
-          </button>
+          {/* Theme Switcher Menu */}
+          <div className="relative" ref={themeRef}>
+            <button
+              onClick={() => setThemeMenuOpen((prev) => !prev)}
+              className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-xl text-muted-foreground hover:bg-accent hover:text-foreground tap-press transition-colors cursor-pointer"
+              title={`Theme: ${theme === 'system' ? 'Auto (System)' : theme === 'dark' ? 'Dark' : 'Light'}`}
+              aria-label="Toggle theme menu"
+            >
+              {theme === 'system' ? (
+                <Monitor className="w-4 h-4 text-primary" />
+              ) : theme === 'dark' ? (
+                <Moon className="w-4 h-4 text-primary" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-500" />
+              )}
+            </button>
+
+            {/* Quick Theme Selection Popover */}
+            <AnimatePresence>
+              {themeMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                  transition={{ duration: 0.12 }}
+                  className="absolute right-0 top-full mt-2 w-36 surface-floating rounded-2xl border border-border/70 shadow-xl p-1.5 z-50 overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => { setTheme('light'); setThemeMenuOpen(false); }}
+                    className={cn(
+                      'w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer tap-press',
+                      theme === 'light'
+                        ? 'bg-primary/15 text-primary font-semibold'
+                        : 'text-foreground hover:bg-accent'
+                    )}
+                  >
+                    <Sun className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Light</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setTheme('dark'); setThemeMenuOpen(false); }}
+                    className={cn(
+                      'w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer tap-press',
+                      theme === 'dark'
+                        ? 'bg-primary/15 text-primary font-semibold'
+                        : 'text-foreground hover:bg-accent'
+                    )}
+                  >
+                    <Moon className="w-3.5 h-3.5 text-primary" />
+                    <span>Dark</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setTheme('system'); setThemeMenuOpen(false); }}
+                    className={cn(
+                      'w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-medium transition-colors text-left cursor-pointer tap-press',
+                      theme === 'system'
+                        ? 'bg-primary/15 text-primary font-semibold'
+                        : 'text-foreground hover:bg-accent'
+                    )}
+                  >
+                    <Monitor className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span>Auto (System)</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Notifications Dropdown Container */}
           <div className="relative" ref={notifRef}>
@@ -296,7 +356,7 @@ export function Topbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute right-0 top-full mt-2 w-80 sm:w-88 surface-floating rounded-2xl border border-white/10 dark:border-white/10 shadow-2xl z-50 overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-80 sm:w-88 surface-floating rounded-2xl border border-border/70 shadow-2xl z-50 overflow-hidden"
                 >
                   <div className="flex items-center justify-between p-3.5 border-b border-border/60">
                     <div className="flex items-center gap-2">
@@ -382,7 +442,7 @@ export function Topbar() {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.96 }}
                   transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute right-0 top-full mt-2 w-60 surface-floating rounded-2xl border border-white/10 dark:border-white/10 shadow-2xl p-1.5 z-50 overflow-hidden"
+                  className="absolute right-0 top-full mt-2 w-60 surface-floating rounded-2xl border border-border/70 shadow-2xl p-1.5 z-50 overflow-hidden"
                 >
                   {/* User Card */}
                   <div className="p-3 border-b border-border/60 bg-muted/25 rounded-xl mb-1">
@@ -471,7 +531,7 @@ export function Topbar() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: -10 }}
               transition={{ duration: 0.16, ease: 'easeOut' }}
-              className="relative w-full max-w-xl surface-floating rounded-2xl border border-white/10 dark:border-white/10 shadow-2xl overflow-hidden z-10"
+              className="relative w-full max-w-xl surface-floating rounded-2xl border border-border/70 shadow-2xl overflow-hidden z-10"
             >
               {/* Search Bar Input */}
               <form onSubmit={handleCommandSearch} className="flex items-center border-b border-border/60 px-4 h-14">

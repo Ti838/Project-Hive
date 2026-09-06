@@ -88,16 +88,16 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
   const lines = fileContent ? fileContent.split('\n') : [];
 
   return (
-    <div className="bg-[#111216] border border-border/60 rounded-xl overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-12 min-h-[550px]">
+    <div className="bg-card border border-border/70 rounded-xl overflow-hidden shadow-sm grid grid-cols-1 md:grid-cols-12 min-h-[550px]">
       {/* File Tree Sidebar (4 cols) */}
-      <div className="md:col-span-4 border-r border-border/40 bg-card-bg/40 p-3 overflow-y-auto max-h-[600px]">
-        <div className="text-xs font-semibold text-text-muted uppercase tracking-wider px-2 py-1.5 mb-2">
+      <div className="md:col-span-4 border-r border-border/60 bg-muted/30 p-3 overflow-y-auto max-h-[600px]">
+        <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 py-1.5 mb-2">
           Files ({tree.filter(t => t.type === 'blob').length})
         </div>
 
         {loadingTree ? (
-          <div className="flex items-center justify-center py-12 text-text-muted text-xs gap-2">
-            <Loader2 className="w-4 h-4 animate-spin text-accent" />
+          <div className="flex items-center justify-center py-12 text-muted-foreground text-xs gap-2">
+            <Loader2 className="w-4 h-4 animate-spin text-primary" />
             <span>Loading tree...</span>
           </div>
         ) : (
@@ -110,16 +110,16 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
                 <button
                   key={item.path}
                   onClick={() => isBlob ? loadFile(item.path) : toggleFolder(item.path)}
-                  className={`w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors truncate ${
+                  className={`w-full text-left flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors truncate cursor-pointer ${
                     isSelected
-                      ? 'bg-accent/15 text-accent font-medium'
-                      : 'text-text-secondary hover:bg-secondary/40 hover:text-text-primary'
+                      ? 'bg-primary/15 text-primary font-semibold'
+                      : 'text-foreground/80 hover:bg-muted hover:text-foreground'
                   }`}
                 >
                   {isBlob ? (
-                    <FileCode className="w-3.5 h-3.5 shrink-0 text-text-muted" />
+                    <FileCode className="w-3.5 h-3.5 shrink-0 text-muted-foreground" />
                   ) : (
-                    <Folder className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                    <Folder className="w-3.5 h-3.5 shrink-0 text-amber-500" />
                   )}
                   <span className="truncate">{item.path}</span>
                 </button>
@@ -130,11 +130,11 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
       </div>
 
       {/* Code Editor View (8 cols) */}
-      <div className="md:col-span-8 flex flex-col bg-[#0b0c0e]">
+      <div className="md:col-span-8 flex flex-col bg-background/90">
         {/* Editor Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-card-bg/80 border-b border-border/40">
-          <div className="flex items-center gap-2 text-xs font-mono text-text-primary truncate">
-            <Code2 className="w-4 h-4 text-accent shrink-0" />
+        <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 bg-card border-b border-border/60">
+          <div className="flex items-center gap-2 text-xs font-mono text-foreground truncate">
+            <Code2 className="w-4 h-4 text-primary shrink-0" />
             <span className="truncate">{selectedPath || 'Select a file'}</span>
           </div>
 
@@ -142,7 +142,7 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
             <button
               onClick={() => onAskAi('Explain how this file works and its architecture role', fileContent, selectedPath)}
               disabled={!fileContent || loadingFile}
-              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-accent/10 hover:bg-accent/20 text-accent rounded border border-accent/20 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-primary/10 hover:bg-primary/20 text-primary rounded-lg border border-primary/20 transition-colors disabled:opacity-50 cursor-pointer"
             >
               <Sparkles className="w-3 h-3" />
               <span>Explain</span>
@@ -151,7 +151,7 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
             <button
               onClick={() => onAskAi('Identify potential bugs, race conditions, or security flaws in this code', fileContent, selectedPath)}
               disabled={!fileContent || loadingFile}
-              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded border border-rose-500/20 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-lg border border-rose-500/20 transition-colors disabled:opacity-50 cursor-pointer"
             >
               <Bug className="w-3 h-3" />
               <span>Find Bugs</span>
@@ -160,7 +160,7 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
             <button
               onClick={() => onAskAi('Generate production-grade unit tests for this file', fileContent, selectedPath)}
               disabled={!fileContent || loadingFile}
-              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-secondary/60 hover:bg-secondary text-text-secondary hover:text-text-primary rounded border border-border/40 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium bg-secondary/70 hover:bg-secondary text-foreground/90 rounded-lg border border-border/60 transition-colors disabled:opacity-50 cursor-pointer"
             >
               <FileCheck2 className="w-3 h-3" />
               <span>Tests</span>
@@ -169,35 +169,35 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
             <button
               onClick={handleCopy}
               disabled={!fileContent || loadingFile}
-              className="p-1 text-text-muted hover:text-text-primary rounded hover:bg-secondary/40 transition-colors"
+              className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors cursor-pointer"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
             </button>
           </div>
         </div>
 
         {/* Code Content */}
-        <div className="flex-1 overflow-x-auto p-4 font-mono text-xs text-text-secondary leading-relaxed max-h-[550px] overflow-y-auto">
+        <div className="flex-1 overflow-x-auto p-4 font-mono text-xs text-foreground/90 leading-relaxed max-h-[550px] overflow-y-auto">
           {loadingFile ? (
-            <div className="flex items-center justify-center py-20 text-text-muted text-xs gap-2">
-              <Loader2 className="w-4 h-4 animate-spin text-accent" />
+            <div className="flex items-center justify-center py-20 text-muted-foreground text-xs gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
               <span>Loading file contents...</span>
             </div>
           ) : lines.length > 0 ? (
             <div className="table w-full border-collapse">
               {lines.map((line, idx) => (
-                <div key={idx} className="table-row hover:bg-card-bg/40">
-                  <div className="table-cell text-right pr-4 pl-1 select-none text-text-muted/50 w-10 text-[11px]">
+                <div key={idx} className="table-row hover:bg-muted/40">
+                  <div className="table-cell text-right pr-4 pl-1 select-none text-muted-foreground/60 w-10 text-[11px]">
                     {idx + 1}
                   </div>
-                  <div className="table-cell whitespace-pre text-text-primary/90 font-mono">
+                  <div className="table-cell whitespace-pre text-foreground font-mono">
                     {line || ' '}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-text-muted text-center py-20">Select a file from the sidebar to inspect code.</div>
+            <div className="text-muted-foreground text-center py-20">Select a file from the sidebar to inspect code.</div>
           )}
         </div>
       </div>

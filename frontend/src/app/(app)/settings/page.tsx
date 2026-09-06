@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuthStore, useUIStore } from '@/lib/store';
+import { useTheme } from '@/context/ThemeContext';
 import { api } from '@/lib/api';
 import { HiveAIIcon } from '@/components/ai/HiveAIIcon';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,7 @@ type SettingsTab = 'profile' | 'privacy' | 'security' | 'sessions' | 'ai' | 'not
 export default function SettingsPage() {
   const { user, updateUser } = useAuthStore();
   const { hiveAiEnabled, setHiveAiEnabled } = useUIStore();
+  const { theme, resolvedTheme, setTheme } = useTheme();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
 
@@ -51,7 +53,6 @@ export default function SettingsPage() {
   const [chatSounds, setChatSounds] = useState(true);
   const [directMessageAlerts, setDirectMessageAlerts] = useState(true);
   const [mentionPings, setMentionPings] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Active Sessions State
@@ -114,11 +115,6 @@ export default function SettingsPage() {
       if (userSettings.directMessageAlerts !== undefined) setDirectMessageAlerts(Boolean(userSettings.directMessageAlerts));
       if (userSettings.mentionPings !== undefined) setMentionPings(Boolean(userSettings.mentionPings));
       if (userSettings.lookingForSquads !== undefined) setLookingForSquads(Boolean(userSettings.lookingForSquads));
-      if (userSettings.theme) {
-        const isDark = userSettings.theme === 'dark';
-        setDarkMode(isDark);
-        document.documentElement.classList.toggle('dark', isDark);
-      }
     }
   }, [user]);
 
@@ -129,10 +125,7 @@ export default function SettingsPage() {
     if (key === 'mentionPings') setMentionPings(value);
     if (key === 'lookingForSquads') setLookingForSquads(value);
     if (key === 'theme') {
-      const isDark = value === 'dark';
-      setDarkMode(isDark);
-      document.documentElement.classList.toggle('dark', isDark);
-      localStorage.setItem('ph-theme', value);
+      setTheme(value);
     }
 
     try {
@@ -752,23 +745,92 @@ export default function SettingsPage() {
 
       {/* Tab 7: Appearance & Theme */}
       {activeTab === 'appearance' && (
-        <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
-          <h2 className="font-semibold text-base flex items-center gap-2">
-            {darkMode ? <Moon className="w-4 h-4 text-amber-400" /> : <Sun className="w-4 h-4 text-amber-500" />} Theme & Display
-          </h2>
+        <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+          <div>
+            <h2 className="font-semibold text-base flex items-center gap-2">
+              {resolvedTheme === 'dark' ? <Moon className="w-4 h-4 text-primary" /> : <Sun className="w-4 h-4 text-amber-500" />} Theme & Display
+            </h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Customize how ProjectHive looks on your device. Choose light, dark, or sync automatically with your system settings.
+            </p>
+          </div>
 
-          <label className="flex items-center justify-between p-3.5 bg-muted/40 rounded-xl cursor-pointer hover:bg-muted/70 transition-colors">
-            <div>
-              <span className="font-medium text-sm block">Dark Mode</span>
-              <span className="text-xs text-muted-foreground">Enable dark background styling for comfortable developer viewing</span>
-            </div>
-            <input
-              type="checkbox"
-              checked={darkMode}
-              onChange={(e) => toggleTheme(e.target.checked)}
-              className="w-4 h-4 accent-primary rounded cursor-pointer"
-            />
-          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Light Mode Card */}
+            <button
+              type="button"
+              onClick={() => handleUpdateSetting('theme', 'light')}
+              className={cn(
+                'flex flex-col items-start p-4 rounded-2xl border text-left transition-all tap-press cursor-pointer relative overflow-hidden',
+                theme === 'light'
+                  ? 'bg-primary/5 border-primary ring-2 ring-primary/20 shadow-sm'
+                  : 'bg-muted/30 border-border/70 hover:bg-muted/60 hover:border-border'
+              )}
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 mb-3">
+                <Sun className="w-5 h-5" />
+              </div>
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-sm text-foreground">Light</span>
+                {theme === 'light' && (
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Crisp daytime interface with high-contrast typography
+              </span>
+            </button>
+
+            {/* Dark Mode Card */}
+            <button
+              type="button"
+              onClick={() => handleUpdateSetting('theme', 'dark')}
+              className={cn(
+                'flex flex-col items-start p-4 rounded-2xl border text-left transition-all tap-press cursor-pointer relative overflow-hidden',
+                theme === 'dark'
+                  ? 'bg-primary/5 border-primary ring-2 ring-primary/20 shadow-sm'
+                  : 'bg-muted/30 border-border/70 hover:bg-muted/60 hover:border-border'
+              )}
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center text-primary mb-3">
+                <Moon className="w-5 h-5" />
+              </div>
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-sm text-foreground">Dark</span>
+                {theme === 'dark' && (
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Obsidian zinc palette designed for comfortable focus
+              </span>
+            </button>
+
+            {/* Auto / System Card */}
+            <button
+              type="button"
+              onClick={() => handleUpdateSetting('theme', 'system')}
+              className={cn(
+                'flex flex-col items-start p-4 rounded-2xl border text-left transition-all tap-press cursor-pointer relative overflow-hidden',
+                theme === 'system'
+                  ? 'bg-primary/5 border-primary ring-2 ring-primary/20 shadow-sm'
+                  : 'bg-muted/30 border-border/70 hover:bg-muted/60 hover:border-border'
+              )}
+            >
+              <div className="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-muted-foreground mb-3">
+                <Monitor className="w-5 h-5" />
+              </div>
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-sm text-foreground">Auto (System)</span>
+                {theme === 'system' && (
+                  <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                )}
+              </div>
+              <span className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Syncs dynamically with your OS & device appearance ({resolvedTheme})
+              </span>
+            </button>
+          </div>
         </div>
       )}
 

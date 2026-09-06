@@ -24,7 +24,7 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
     return (
       <div className="space-y-3 animate-pulse">
         {[1, 2, 3, 4].map(n => (
-          <div key={n} className="bg-[#111216] border border-border/40 rounded-xl p-4 h-16" />
+          <div key={n} className="bg-card border border-border/50 rounded-xl p-4 h-16" />
         ))}
       </div>
     );
@@ -32,8 +32,8 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
 
   if (commits.length === 0) {
     return (
-      <div className="bg-[#111216] border border-border/60 rounded-xl p-12 text-center text-text-muted">
-        <GitCommit className="w-8 h-8 mx-auto mb-2 text-text-muted/40" />
+      <div className="bg-card border border-border/70 rounded-xl p-12 text-center text-muted-foreground">
+        <GitCommit className="w-8 h-8 mx-auto mb-2 text-muted-foreground/40" />
         <p className="text-sm">No commits found for this branch.</p>
       </div>
     );
@@ -44,7 +44,7 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
       {commits.map(c => (
         <div
           key={c.sha}
-          className="bg-[#111216] hover:bg-card-bg/60 border border-border/50 hover:border-border rounded-xl p-4 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+          className="bg-card hover:bg-muted/40 border border-border/60 hover:border-border rounded-xl p-4 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
         >
           <div className="flex items-start gap-3 min-w-0">
             {c.author.avatarUrl ? (
@@ -54,15 +54,15 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
                 className="w-8 h-8 rounded-full border border-border/60 shrink-0 mt-0.5"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-secondary/80 flex items-center justify-center text-text-muted shrink-0 mt-0.5">
+              <div className="w-8 h-8 rounded-full bg-secondary/80 flex items-center justify-center text-muted-foreground shrink-0 mt-0.5">
                 <UserIcon className="w-4 h-4" />
               </div>
             )}
 
             <div className="min-w-0">
-              <div className="text-sm font-semibold text-text-primary truncate">{c.message}</div>
-              <div className="flex items-center gap-2 text-xs text-text-muted mt-1">
-                <span className="font-medium text-text-secondary">{c.author.username || c.author.name}</span>
+              <div className="text-sm font-semibold text-foreground truncate">{c.message}</div>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                <span className="font-medium text-foreground/80">{c.author.username || c.author.name}</span>
                 <span>•</span>
                 <span>{timeAgo(c.author.date)}</span>
               </div>
@@ -73,7 +73,7 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
             {onAskAi && (
               <button
                 onClick={() => onAskAi(`Explain what changed in commit "${c.message}" (SHA: ${c.shortSha}) and its likely impact`)}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs text-accent bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-lg transition-colors"
+                className="flex items-center gap-1 px-2.5 py-1 text-xs text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-lg transition-colors cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Explain</span>
@@ -82,10 +82,10 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
 
             <button
               onClick={() => handleCopySha(c.sha)}
-              className="flex items-center gap-1 px-2 py-1 text-xs font-mono text-text-secondary bg-secondary/40 hover:bg-secondary rounded-lg border border-border/40 transition-colors"
+              className="flex items-center gap-1 px-2 py-1 text-xs font-mono text-foreground/80 bg-secondary/50 hover:bg-secondary rounded-lg border border-border/60 transition-colors cursor-pointer"
             >
               {copiedSha === c.sha ? (
-                <Check className="w-3 h-3 text-emerald-400" />
+                <Check className="w-3 h-3 text-emerald-500" />
               ) : (
                 <Copy className="w-3 h-3" />
               )}
@@ -96,7 +96,7 @@ export function CommitsView({ commits, loading, onAskAi }: Props) {
               href={c.htmlUrl}
               target="_blank"
               rel="noreferrer"
-              className="p-1.5 text-text-muted hover:text-text-primary rounded-lg hover:bg-secondary/40 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
             </a>

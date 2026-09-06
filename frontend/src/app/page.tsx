@@ -7,18 +7,26 @@ import { motion } from 'framer-motion';
 import {
   Users, Sparkles, MessageSquare, FolderKanban,
   ArrowRight, CheckCircle2, ChevronRight, Video, Code2,
-  Share2, ShieldCheck, Zap, Layers, Globe, Star, ArrowUpRight
+  Share2, ShieldCheck, Zap, Layers, Globe, Star, ArrowUpRight, Sun, Moon, Monitor
 } from 'lucide-react';
 import { useAuthStore } from '@/lib/store';
+import { useTheme } from '@/context/ThemeContext';
 import { displayName, getInitials, getAvatarColor } from '@/lib/utils';
 
 export default function LandingPage() {
   const { user, isAuthenticated } = useAuthStore();
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const cycleTheme = () => {
+    if (theme === 'light') setTheme('dark');
+    else if (theme === 'dark') setTheme('system');
+    else setTheme('light');
+  };
 
   const userName = mounted && user ? displayName(user) : '';
   const avatarColor = mounted && user?.avatar_color ? user.avatar_color : getAvatarColor(user?.id || 'guest');
@@ -48,8 +56,26 @@ export default function LandingPage() {
             <a href="#tech-stack" className="hover:text-foreground transition-colors">Tech Stack</a>
           </nav>
 
-          {/* Auth Actions */}
+          {/* Auth Actions & Theme Switcher */}
           <div className="flex items-center gap-3">
+            {/* Theme Switcher Button */}
+            {mounted && (
+              <button
+                onClick={cycleTheme}
+                className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer tap-press"
+                title={`Theme: ${theme === 'system' ? 'Auto (System)' : theme === 'dark' ? 'Dark' : 'Light'}`}
+                aria-label="Toggle theme"
+              >
+                {theme === 'system' ? (
+                  <Monitor className="w-4 h-4 text-primary" />
+                ) : theme === 'dark' ? (
+                  <Moon className="w-4 h-4 text-primary" />
+                ) : (
+                  <Sun className="w-4 h-4 text-amber-500" />
+                )}
+              </button>
+            )}
+
             {mounted && isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <Link
@@ -79,11 +105,11 @@ export default function LandingPage() {
                   href="/login"
                   className="text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors"
                 >
-                  Sign In
+                  Log In
                 </Link>
                 <Link
                   href="/register"
-                  className="text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-sm hover:shadow-primary/25 active:scale-95 flex items-center gap-1.5"
+                  className="flex items-center gap-2 px-4 sm:px-5 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs sm:text-sm hover:bg-primary/90 transition-all shadow-sm active:scale-95"
                 >
                   <span>Get Started</span>
                   <ChevronRight className="w-4 h-4" />

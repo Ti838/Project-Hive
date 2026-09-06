@@ -166,11 +166,11 @@ export default function ProjectDevelopmentPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      {/* Back Navigation & Breadcrumb */}
+      {/* Top Header Breadcrumb & Actions */}
       <div className="flex items-center justify-between gap-4">
         <Link
           href={`/projects`}
-          className="inline-flex items-center gap-2 text-xs font-medium text-text-muted hover:text-text-primary transition-colors"
+          className="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Projects</span>
@@ -179,7 +179,7 @@ export default function ProjectDevelopmentPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => loadRepoData()}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary bg-secondary/40 hover:bg-secondary rounded-lg border border-border/40 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-foreground/80 hover:text-foreground bg-secondary/50 hover:bg-secondary rounded-lg border border-border/60 transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Sync</span>
@@ -187,7 +187,7 @@ export default function ProjectDevelopmentPage() {
 
           <button
             onClick={() => setShowConnectModal(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-accent/15 hover:bg-accent/25 text-accent border border-accent/30 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg transition-colors cursor-pointer shadow-xs"
           >
             <GitBranch className="w-3.5 h-3.5" />
             <span>Connect Repo</span>
@@ -196,26 +196,26 @@ export default function ProjectDevelopmentPage() {
       </div>
 
       {/* Repo Hero Header */}
-      <div className="bg-[#111216] border border-border/70 rounded-2xl p-6 shadow-sm space-y-4">
+      <div className="bg-card border border-border/70 rounded-2xl p-6 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 rounded-xl bg-accent/10 border border-accent/20 flex items-center justify-center text-accent shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0">
               <Code2 className="w-6 h-6" />
             </div>
 
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl font-bold text-text-primary">{owner} / {repo}</h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary/80 text-text-secondary border border-border/60">
+                <h1 className="text-xl font-bold text-foreground">{owner} / {repo}</h1>
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-secondary text-foreground/80 border border-border/60">
                   {repoDetails?.defaultBranch || 'main'}
                 </span>
                 {repoDetails?.language && (
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-accent/10 text-accent border border-accent/20 font-medium">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-medium">
                     {repoDetails.language}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-text-muted mt-1 max-w-2xl">
+              <p className="text-xs text-muted-foreground mt-1 max-w-2xl">
                 {repoDetails?.description || project?.description || 'Connected developer collaboration repository.'}
               </p>
             </div>
@@ -223,15 +223,15 @@ export default function ProjectDevelopmentPage() {
 
           {/* Quick Metrics */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/30 border border-border/40 text-xs text-text-secondary">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/40 border border-border/60 text-xs text-foreground/80">
               <Star className="w-3.5 h-3.5 text-amber-400" />
-              <span className="font-semibold text-text-primary">{repoDetails?.starsCount || 0}</span>
+              <span className="font-semibold text-foreground">{repoDetails?.starsCount || 0}</span>
               <span>stars</span>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/30 border border-border/40 text-xs text-text-secondary">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary/40 border border-border/60 text-xs text-foreground/80">
               <GitFork className="w-3.5 h-3.5 text-blue-400" />
-              <span className="font-semibold text-text-primary">{repoDetails?.forksCount || 0}</span>
+              <span className="font-semibold text-foreground">{repoDetails?.forksCount || 0}</span>
               <span>forks</span>
             </div>
 
@@ -239,7 +239,7 @@ export default function ProjectDevelopmentPage() {
               href={`https://github.com/${owner}/${repo}`}
               target="_blank"
               rel="noreferrer"
-              className="p-2 text-text-muted hover:text-text-primary rounded-lg bg-secondary/30 hover:bg-secondary border border-border/40 transition-colors"
+              className="p-2 text-muted-foreground hover:text-foreground rounded-lg bg-secondary/40 hover:bg-secondary border border-border/60 transition-colors"
             >
               <ExternalLink className="w-4 h-4" />
             </a>
@@ -251,13 +251,13 @@ export default function ProjectDevelopmentPage() {
       </div>
 
       {/* Workspace Tabs Navigation */}
-      <div className="flex items-center gap-2 border-b border-border/50 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-border/60 pb-2 overflow-x-auto">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             activeTab === 'overview'
-              ? 'bg-accent text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-secondary/40'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60'
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -266,10 +266,10 @@ export default function ProjectDevelopmentPage() {
 
         <button
           onClick={() => setActiveTab('code')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             activeTab === 'code'
-              ? 'bg-accent text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-secondary/40'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60'
           }`}
         >
           <Code2 className="w-4 h-4" />
@@ -278,10 +278,10 @@ export default function ProjectDevelopmentPage() {
 
         <button
           onClick={() => setActiveTab('commits')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             activeTab === 'commits'
-              ? 'bg-accent text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-secondary/40'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60'
           }`}
         >
           <GitCommit className="w-4 h-4" />
@@ -290,10 +290,10 @@ export default function ProjectDevelopmentPage() {
 
         <button
           onClick={() => setActiveTab('issues')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             activeTab === 'issues'
-              ? 'bg-accent text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-secondary/40'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60'
           }`}
         >
           <AlertCircle className="w-4 h-4" />
@@ -302,10 +302,10 @@ export default function ProjectDevelopmentPage() {
 
         <button
           onClick={() => setActiveTab('pulls')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             activeTab === 'pulls'
-              ? 'bg-accent text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-secondary/40'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60'
           }`}
         >
           <GitPullRequest className="w-4 h-4" />
@@ -314,10 +314,10 @@ export default function ProjectDevelopmentPage() {
 
         <button
           onClick={() => setActiveTab('cicd')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all shrink-0 cursor-pointer ${
             activeTab === 'cicd'
-              ? 'bg-accent text-white shadow-sm'
-              : 'text-text-secondary hover:text-text-primary hover:bg-secondary/40'
+              ? 'bg-primary text-primary-foreground shadow-xs'
+              : 'text-foreground/80 hover:text-foreground hover:bg-secondary/60'
           }`}
         >
           <Terminal className="w-4 h-4" />
