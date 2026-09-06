@@ -303,7 +303,7 @@ export async function deletePost(req, res, next) {
 export async function reactToPost(req, res, next) {
   try {
     const { type } = req.body;
-    const validTypes = ['like', 'love', 'celebrate', 'insightful', 'fire', 'support'];
+    const validTypes = ['like', 'love', 'care', 'haha', 'wow', 'sad', 'angry', 'celebrate', 'insightful', 'fire', 'support'];
     if (!validTypes.includes(type)) return res.status(400).json({ error: 'Invalid reaction type' });
 
     const postId = req.params.id;
@@ -344,6 +344,11 @@ export async function reactToPost(req, res, next) {
     const reactionCounts = {
       like: 0,
       love: 0,
+      care: 0,
+      haha: 0,
+      wow: 0,
+      sad: 0,
+      angry: 0,
       celebrate: 0,
       insightful: 0,
       fire: 0,
@@ -375,7 +380,19 @@ export async function reactToPost(req, res, next) {
         if (post && post.author_id !== userId) {
           const { data: reactor } = await supabaseAdmin.from('users').select('first_name, last_name').eq('id', userId).single();
           const reactorName = reactor ? `${reactor.first_name} ${reactor.last_name}`.trim() : 'Someone';
-          const reactionEmojis = { like: '👍', love: '❤️', celebrate: '🎉', insightful: '💡', fire: '🔥', support: '🤝' };
+          const reactionEmojis = {
+            like: '👍',
+            love: '❤️',
+            care: '🥰',
+            haha: '😆',
+            wow: '😮',
+            sad: '😢',
+            angry: '😡',
+            celebrate: '🎉',
+            insightful: '💡',
+            fire: '🔥',
+            support: '🤝'
+          };
           const notifMsg = `${reactorName} reacted ${reactionEmojis[type] || ''} to your post`;
           broadcastNotification(getIo(), post.author_id, {
             type: 'friend',

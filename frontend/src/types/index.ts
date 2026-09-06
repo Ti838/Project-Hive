@@ -217,7 +217,7 @@ export interface Notification {
   created_at: string;
 }
 
-export type ReactionType = 'like' | 'love' | 'celebrate' | 'insightful' | 'fire' | 'support';
+export type ReactionType = 'like' | 'love' | 'care' | 'haha' | 'wow' | 'sad' | 'angry' | 'celebrate' | 'insightful' | 'fire' | 'support';
 
 export interface Post {
   id: string;

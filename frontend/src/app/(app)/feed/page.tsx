@@ -221,55 +221,61 @@ function PostCard({
           )}
         </div>
 
-        {/* Stats & Reactions Summary Row */}
-        {((post.reaction_count ?? 0) > 0 || (post.comment_count ?? 0) > 0 || (post.comments_count ?? 0) > 0) && (
-          <div className="flex items-center justify-between pt-1 text-xs text-muted-foreground border-t border-white/5">
+        {/* Facebook-Grade Reaction & Engagement Summary Row */}
+        {((post.reaction_count ?? 0) > 0 || (post.comment_count ?? post.comments_count ?? 0) > 0) && (
+          <div className="flex items-center justify-between pt-2 pb-0.5 text-xs text-muted-foreground border-t border-border/40 dark:border-white/5">
             <StackedReactionBadge
               reactionCounts={post.reaction_counts}
               total={post.reaction_count}
               onClick={() => setShowReactionModal(true)}
             />
 
-            {(post.comment_count ?? post.comments_count ?? 0) > 0 && (
-              <button
-                onClick={() => setExpandedComments(!expandedComments)}
-                className="hover:text-foreground font-medium transition-colors ml-auto cursor-pointer"
-              >
-                {(post.comment_count ?? post.comments_count ?? 0)} comment{(post.comment_count ?? post.comments_count ?? 0) === 1 ? '' : 's'}
-              </button>
-            )}
+            <div className="flex items-center gap-3 text-xs ml-auto">
+              {(post.comment_count ?? post.comments_count ?? 0) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setExpandedComments(!expandedComments)}
+                  className="hover:underline hover:text-foreground transition-colors cursor-pointer"
+                >
+                  {(post.comment_count ?? post.comments_count ?? 0)} comment{(post.comment_count ?? post.comments_count ?? 0) === 1 ? '' : 's'}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
-        {/* Actions Bar with Spring-Physics Reaction Dock */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/10 relative">
-          <ReactionDock
-            currentReaction={post.user_reaction}
-            onReact={(type) => onReact(post.id, type)}
-          />
-
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => setExpandedComments(!expandedComments)}
-              className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold tap-press transition-all cursor-pointer',
-                expandedComments
-                  ? 'bg-white/15 text-foreground'
-                  : 'text-muted-foreground hover:bg-white/10 hover:text-foreground'
-              )}
-            >
-              <MessageCircle className="w-4 h-4" />
-              <span>Comment</span>
-            </button>
-            <button
-              onClick={handleShare}
-              className="p-2 rounded-xl text-muted-foreground hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
-              title="Share post"
-              aria-label="Share post"
-            >
-              <Share2 className="w-4 h-4" />
-            </button>
+        {/* Facebook-Grade 3-Button Full Action Bar */}
+        <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-border/50 dark:border-white/10 relative select-none">
+          <div className="w-full flex items-center justify-center">
+            <ReactionDock
+              currentReaction={post.user_reaction}
+              onReact={(type) => onReact(post.id, type)}
+              className="w-full flex justify-center"
+            />
           </div>
+
+          <button
+            type="button"
+            onClick={() => setExpandedComments(!expandedComments)}
+            className={cn(
+              'flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold tap-press transition-all cursor-pointer group',
+              expandedComments
+                ? 'bg-primary/10 text-primary font-bold'
+                : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
+            )}
+          >
+            <MessageCircle className="w-4 h-4 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="truncate">Comment</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleShare}
+            className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold text-muted-foreground hover:bg-muted/70 hover:text-foreground tap-press transition-all cursor-pointer group"
+          >
+            <Share2 className="w-4 h-4 group-hover:scale-110 transition-transform shrink-0" />
+            <span className="truncate">Share</span>
+          </button>
         </div>
 
         {/* ─── 2-Tier Threaded Discussion Tree ────────────────────────────── */}

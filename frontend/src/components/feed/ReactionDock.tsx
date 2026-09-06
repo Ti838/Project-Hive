@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, useRef } from 'react';
+// ─── Facebook & LinkedIn-Grade Jitter-Free Reaction Dock ──────────────────────
+
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  ThumbsUp, Heart, Trophy, Lightbulb, Flame, HandHeart
-} from 'lucide-react';
+import { ThumbsUp } from 'lucide-react';
 import type { ReactionType } from '@/types';
 import { cn } from '@/lib/utils';
 
 export interface ReactionConfigItem {
   type: ReactionType;
   label: string;
-  icon: typeof ThumbsUp;
   emoji: string;
   color: string;
-  hoverBg: string;
+  activeTextColor: string;
   activeBg: string;
 }
 
@@ -22,58 +21,96 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'like',
     label: 'Like',
-    icon: ThumbsUp,
     emoji: '👍',
-    color: 'text-blue-500 fill-blue-500/20',
-    hoverBg: 'hover:bg-blue-500/15',
-    activeBg: 'bg-blue-500/15 text-blue-500 border-blue-500/30',
+    color: '#1877F2',
+    activeTextColor: 'text-[#1877F2]',
+    activeBg: 'bg-[#1877F2]/10 text-[#1877F2] border-[#1877F2]/30',
   },
   {
     type: 'love',
     label: 'Love',
-    icon: Heart,
     emoji: '❤️',
-    color: 'text-rose-500 fill-rose-500/20',
-    hoverBg: 'hover:bg-rose-500/15',
-    activeBg: 'bg-rose-500/15 text-rose-500 border-rose-500/30',
+    color: '#E41E3F',
+    activeTextColor: 'text-[#E41E3F]',
+    activeBg: 'bg-[#E41E3F]/10 text-[#E41E3F] border-[#E41E3F]/30',
   },
+  {
+    type: 'care',
+    label: 'Care',
+    emoji: '🥰',
+    color: '#F7B125',
+    activeTextColor: 'text-[#F7B125]',
+    activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
+  },
+  {
+    type: 'haha',
+    label: 'Haha',
+    emoji: '😆',
+    color: '#F7B125',
+    activeTextColor: 'text-[#F7B125]',
+    activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
+  },
+  {
+    type: 'wow',
+    label: 'Wow',
+    emoji: '😮',
+    color: '#F7B125',
+    activeTextColor: 'text-[#F7B125]',
+    activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
+  },
+  {
+    type: 'sad',
+    label: 'Sad',
+    emoji: '😢',
+    color: '#F7B125',
+    activeTextColor: 'text-[#F7B125]',
+    activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
+  },
+  {
+    type: 'angry',
+    label: 'Angry',
+    emoji: '😡',
+    color: '#E9710F',
+    activeTextColor: 'text-[#E9710F]',
+    activeBg: 'bg-[#E9710F]/10 text-[#E9710F] border-[#E9710F]/30',
+  },
+  // Backward compatibility
   {
     type: 'celebrate',
     label: 'Celebrate',
-    icon: Trophy,
     emoji: '🎉',
-    color: 'text-amber-500 fill-amber-500/20',
-    hoverBg: 'hover:bg-amber-500/15',
-    activeBg: 'bg-amber-500/15 text-amber-500 border-amber-500/30',
+    color: '#F59E0B',
+    activeTextColor: 'text-amber-500',
+    activeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
   },
   {
     type: 'insightful',
     label: 'Insightful',
-    icon: Lightbulb,
     emoji: '💡',
-    color: 'text-emerald-500 fill-emerald-500/20',
-    hoverBg: 'hover:bg-emerald-500/15',
-    activeBg: 'bg-emerald-500/15 text-emerald-500 border-emerald-500/30',
+    color: '#10B981',
+    activeTextColor: 'text-emerald-500',
+    activeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
   },
   {
     type: 'fire',
     label: 'Fire',
-    icon: Flame,
     emoji: '🔥',
-    color: 'text-orange-500 fill-orange-500/20',
-    hoverBg: 'hover:bg-orange-500/15',
-    activeBg: 'bg-orange-500/15 text-orange-500 border-orange-500/30',
+    color: '#F97316',
+    activeTextColor: 'text-orange-500',
+    activeBg: 'bg-orange-500/10 text-orange-500 border-orange-500/30',
   },
   {
     type: 'support',
     label: 'Support',
-    icon: HandHeart,
     emoji: '🤝',
-    color: 'text-indigo-500 fill-indigo-500/20',
-    hoverBg: 'hover:bg-indigo-500/15',
-    activeBg: 'bg-indigo-500/15 text-indigo-500 border-indigo-500/30',
+    color: '#6366F1',
+    activeTextColor: 'text-indigo-500',
+    activeBg: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/30',
   },
 ];
+
+// Displayed primary reaction dock items (like Facebook 7-pack)
+const PRIMARY_DOCK_TYPES: ReactionType[] = ['like', 'love', 'care', 'haha', 'wow', 'sad', 'angry'];
 
 interface ReactionDockProps {
   currentReaction?: ReactionType | null;
@@ -84,6 +121,7 @@ interface ReactionDockProps {
 export function ReactionDock({ currentReaction, onReact, className }: ReactionDockProps) {
   const [showFlyout, setShowFlyout] = useState(false);
   const flyoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const openFlyout = () => {
     if (flyoutTimerRef.current) clearTimeout(flyoutTimerRef.current);
@@ -92,8 +130,26 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
 
   const closeFlyout = () => {
     if (flyoutTimerRef.current) clearTimeout(flyoutTimerRef.current);
-    flyoutTimerRef.current = setTimeout(() => setShowFlyout(false), 400);
+    flyoutTimerRef.current = setTimeout(() => setShowFlyout(false), 300);
   };
+
+  // Mobile long-press handlers
+  const handleTouchStart = () => {
+    touchTimerRef.current = setTimeout(() => {
+      openFlyout();
+    }, 350);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (flyoutTimerRef.current) clearTimeout(flyoutTimerRef.current);
+      if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    };
+  }, []);
 
   const activeItem = REACTION_CONFIG.find((r) => r.type === currentReaction);
 
@@ -103,81 +159,86 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
       onMouseEnter={openFlyout}
       onMouseLeave={closeFlyout}
     >
-      {/* ── Facebook-Grade Floating Reaction Dock ────────────────────────── */}
+      {/* ── Facebook Floating Reaction Dock (Seamless Hover Bridge) ──────── */}
       <AnimatePresence>
         {showFlyout && (
-          <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.85 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.9 }}
-            transition={{ type: 'spring', damping: 22, stiffness: 400 }}
-            onMouseEnter={openFlyout}
-            onMouseLeave={closeFlyout}
-            className={cn(
-              'absolute left-0 bottom-full mb-2 z-40',
-              'flex items-center gap-1.5 px-3 py-2 rounded-full',
-              'bg-card/95 dark:bg-zinc-900/95 backdrop-blur-2xl',
-              'border border-white/20 dark:border-white/10 shadow-2xl',
-              // Invisible hover bridge connecting dock to trigger button so mouse never leaves hitbox
-              'after:content-[""] after:absolute after:-bottom-3 after:inset-x-0 after:h-4'
-            )}
-          >
-            {REACTION_CONFIG.map(({ type, emoji, label, hoverBg }) => (
-              <motion.button
-                key={type}
-                type="button"
-                whileHover={{ scale: 1.45, y: -6 }}
-                whileTap={{ scale: 0.9 }}
-                transition={{ type: 'spring', stiffness: 500, damping: 20 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onReact(type);
-                  setShowFlyout(false);
-                }}
-                className={cn(
-                  'relative flex items-center justify-center w-8 h-8 rounded-full text-lg select-none tap-press transition-transform cursor-pointer group',
-                  hoverBg,
-                  currentReaction === type && 'ring-2 ring-primary ring-offset-1 ring-offset-card'
-                )}
-                title={label}
-                aria-label={label}
-              >
-                <span className="transform-gpu transition-transform pointer-events-none">
-                  {emoji}
-                </span>
-                {/* Tooltip on hover */}
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/80 text-white shadow-md whitespace-nowrap pointer-events-none">
-                  {label}
-                </span>
-              </motion.button>
-            ))}
-          </motion.div>
+          <div className="absolute left-0 bottom-full pb-2.5 z-50 pointer-events-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 12, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 8, scale: 0.85 }}
+              transition={{ type: 'spring', damping: 24, stiffness: 450 }}
+              className={cn(
+                'flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 rounded-full',
+                'bg-card/98 dark:bg-zinc-900/98 backdrop-blur-2xl',
+                'border border-border/80 dark:border-white/10 shadow-2xl'
+              )}
+            >
+              {PRIMARY_DOCK_TYPES.map((type) => {
+                const item = REACTION_CONFIG.find((r) => r.type === type);
+                if (!item) return null;
+                const isSelected = currentReaction === item.type;
+
+                return (
+                  <div key={item.type} className="relative group/emoji flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onReact(item.type);
+                        setShowFlyout(false);
+                      }}
+                      className={cn(
+                        'w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center select-none cursor-pointer tap-press transition-all',
+                        isSelected && 'bg-primary/15 ring-2 ring-primary ring-offset-1 ring-offset-card'
+                      )}
+                      title={item.label}
+                      aria-label={item.label}
+                    >
+                      <span className="text-xl sm:text-2xl transform-gpu transition-all duration-150 ease-out group-hover/emoji:scale-135 group-hover/emoji:-translate-y-2 pointer-events-none">
+                        {item.emoji}
+                      </span>
+                    </button>
+
+                    {/* Floating pill tooltip */}
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 group-hover/emoji:opacity-100 transition-all duration-150 z-20">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/90 text-white shadow-xl whitespace-nowrap block">
+                        {item.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      {/* ── Trigger / Default Like Button ────────────────────────────────── */}
+      {/* ── Trigger Button (Facebook Like / Reaction Button) ──────────────── */}
       <button
         type="button"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         onClick={(e) => {
           e.stopPropagation();
           onReact(currentReaction || 'like');
         }}
         className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold tap-press transition-all cursor-pointer border border-transparent select-none',
+          'flex items-center justify-center gap-2 flex-1 py-2 px-3 rounded-xl text-xs sm:text-sm font-semibold tap-press transition-all cursor-pointer select-none group',
           activeItem
-            ? activeItem.activeBg
-            : 'text-muted-foreground hover:bg-white/10 hover:text-foreground'
+            ? cn(activeItem.activeBg, 'hover:opacity-90')
+            : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground'
         )}
       >
         {activeItem ? (
           <>
-            <span className="text-sm scale-110">{activeItem.emoji}</span>
-            <span>{activeItem.label}</span>
+            <span className="text-base sm:text-lg animate-scale-in shrink-0">{activeItem.emoji}</span>
+            <span className={cn('font-bold truncate', activeItem.activeTextColor)}>{activeItem.label}</span>
           </>
         ) : (
           <>
-            <ThumbsUp className="w-4 h-4" />
-            <span>React</span>
+            <ThumbsUp className="w-4 h-4 group-hover:scale-110 transition-transform text-muted-foreground group-hover:text-foreground shrink-0" />
+            <span className="truncate">Like</span>
           </>
         )}
       </button>
@@ -215,7 +276,7 @@ export function StackedReactionBadge({
     <div
       onClick={onClick}
       className={cn(
-        'inline-flex items-center gap-1.5 cursor-pointer select-none text-xs text-muted-foreground hover:text-foreground transition-colors',
+        'inline-flex items-center gap-1.5 cursor-pointer select-none text-xs text-muted-foreground hover:text-foreground transition-colors group',
         className
       )}
     >
@@ -227,7 +288,7 @@ export function StackedReactionBadge({
           return (
             <span
               key={type}
-              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-card border border-white/20 text-[11px] shadow-xs"
+              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-card border border-white/20 text-[11px] shadow-xs group-hover:scale-110 transition-transform"
               title={`${cfg.label}: ${reactionCounts[type]}`}
             >
               {cfg.emoji}
@@ -236,7 +297,7 @@ export function StackedReactionBadge({
         })}
       </div>
 
-      <span className="font-semibold text-foreground/80 text-[11px] sm:text-xs">
+      <span className="font-semibold text-foreground/80 group-hover:text-primary transition-colors text-[11px] sm:text-xs">
         {totalCount > 0 ? totalCount : sorted.reduce((a, b) => a + b[1], 0)}
       </span>
     </div>
