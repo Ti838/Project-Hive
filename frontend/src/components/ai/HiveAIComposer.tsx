@@ -15,6 +15,7 @@ interface HiveAIComposerProps {
   onSend: (prompt: string, imageBase64?: string) => void;
   isProcessing?: boolean;
   activeCapability: HiveAICapabilityType;
+  onSelectCapability?: (cap: HiveAICapabilityType) => void;
   placeholder?: string;
   className?: string;
 }
@@ -23,6 +24,7 @@ export function HiveAIComposer({
   onSend,
   isProcessing = false,
   activeCapability,
+  onSelectCapability,
   placeholder,
   className,
 }: HiveAIComposerProps) {
@@ -113,9 +115,11 @@ export function HiveAIComposer({
   };
 
   const defaultPlaceholder = activeCapability === 'project_generator'
-    ? 'Describe your project idea, target audience, or requirements…'
+    ? 'Describe your project idea, domain or MVP goals…'
     : activeCapability === 'idea_analyzer'
-    ? 'Paste your project concept to analyze market fit & feasibility…'
+    ? 'Paste your project concept to analyze novelty, market fit & feasibility…'
+    : activeCapability === 'copilot_chat'
+    ? 'Ask Hive AI or paste code & screenshots (Ctrl+V)…'
     : activeCapability === 'project_critic'
     ? 'Paste your architecture or code to receive rigorous review…'
     : activeCapability === 'documentation_ai'
@@ -167,8 +171,53 @@ export function HiveAIComposer({
 
         {/* Bottom Tooling Bar & Actions */}
         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/5">
-          {/* Left: Attachments & Voice Dictation */}
+          {/* Left: Mode Switcher Pills, Attachments & Voice Dictation */}
           <div className="flex items-center gap-1.5 flex-wrap">
+            {/* 3 Direct AI Modes */}
+            {onSelectCapability && (
+              <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-xl border border-border/60">
+                <button
+                  type="button"
+                  onClick={() => onSelectCapability('project_generator')}
+                  className={cn(
+                    'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
+                    activeCapability === 'project_generator'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  title="Project Generator Mode"
+                >
+                  Generator
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectCapability('idea_analyzer')}
+                  className={cn(
+                    'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
+                    activeCapability === 'idea_analyzer'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  title="Idea Analyzer Mode"
+                >
+                  Analyzer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onSelectCapability('copilot_chat')}
+                  className={cn(
+                    'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
+                    activeCapability === 'copilot_chat'
+                      ? 'bg-primary text-primary-foreground shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  title="Engineering Copilot Mode"
+                >
+                  Copilot
+                </button>
+              </div>
+            )}
+
             <input
               ref={fileInputRef}
               type="file"
@@ -238,5 +287,3 @@ export function HiveAIComposer({
     </div>
   );
 }
-
-
