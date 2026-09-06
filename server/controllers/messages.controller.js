@@ -144,6 +144,31 @@ export async function saveMessage(req, res, next) {
       .single();
 
     if (error) throw error;
+
+    const io = getIo();
+    if (io) {
+      const payload = {
+        id: message.id,
+        content: message.content,
+        type: message.type || 'text',
+        sender: message.sender,
+        roomId: message.room_id,
+        createdAt: message.created_at,
+        status: message.status || 'sent',
+        reply_to: message.reply_to || null,
+        reply_to_content: message.reply_to_content || null,
+        reply_to_sender: message.reply_to_sender || null
+      };
+      io.to(roomId).emit('message:received', payload);
+      if (roomId && roomId.includes('_')) {
+        const otherId = roomId.split('_').find(p => p !== userId);
+        if (otherId) {
+          io.to('user_' + otherId).emit('message:received', payload);
+          io.to('user_' + otherId).emit('conversation:new_message', { roomId, message: payload });
+        }
+      }
+    }
+
     res.status(201).json(message);
   } catch (err) { next(err); }
 }
@@ -511,6 +536,31 @@ export async function sendDirectMessage(req, res, next) {
       .single();
 
     if (error) throw error;
+
+    // Real-time broadcast via Socket.IO
+    const io = getIo();
+    if (io) {
+      const payload = {
+        id: message.id,
+        content: message.content,
+        type: message.type || 'text',
+        sender: message.sender,
+        roomId: message.room_id,
+        createdAt: message.created_at,
+        status: message.status || 'sent',
+        reply_to: message.reply_to || null,
+        reply_to_content: message.reply_to_content || null,
+        reply_to_sender: message.reply_to_sender || null,
+      };
+
+      io.to(roomId).emit('message:received', payload);
+      io.to('user_' + receiverId).emit('message:received', payload);
+      io.to('user_' + receiverId).emit('conversation:new_message', {
+        roomId,
+        message: payload,
+      });
+    }
+
     res.status(201).json({ message, roomId, isRequest: !areFriends });
   } catch (err) { next(err); }
 }

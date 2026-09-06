@@ -401,6 +401,18 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ emoji }),
       }),
+    sendDirectMessage: (body: {
+      receiverId: string;
+      content: string;
+      roomId?: string;
+      reply_to?: string;
+      reply_to_content?: string;
+      reply_to_sender?: string;
+    }) =>
+      request<{ message: Message; roomId: string; isRequest?: boolean }>('/messages/direct', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      }),
     markAsRead: (friendIdOrRoomId: string) =>
       request<{ ok: boolean }>('/messages/read', {
         method: 'POST',

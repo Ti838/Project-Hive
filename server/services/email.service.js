@@ -159,7 +159,7 @@ function emailWrapper({ badge = 'PROJECTHIVE', title, subtitle, content }) {
       <td align="center">
         <!-- Main Card Container -->
         <table width="100%" border="0" cellpadding="0" cellspacing="0" style="max-width:540px;background-color:#131B2E;border:1px solid #1E293B;border-radius:24px;overflow:hidden;box-shadow:0 25px 50px -12px rgba(0,0,0,0.5);">
-          
+
           <!-- Top Gradient Accent Bar -->
           <tr>
             <td style="height:6px;background:linear-gradient(90deg, #F59E0B 0%, #6366F1 50%, #EC4899 100%);"></td>
@@ -180,7 +180,7 @@ function emailWrapper({ badge = 'PROJECTHIVE', title, subtitle, content }) {
                   </td>
                 </tr>
               </table>
-              
+
               <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:6px;">
                 ${badge}
               </div>

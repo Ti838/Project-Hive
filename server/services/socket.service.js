@@ -147,10 +147,11 @@ export async function handleSendMessage(socket, io, data) {
     // 1. Broadcast to active room members
     io.to(roomId).emit('message:received', payload);
 
-    // 2. Dual-dispatch to recipient's personal user channel (never miss unread messages)
+    // 2. Dual-dispatch to recipient's personal user channel (never miss messages live)
     if (roomId && roomId.includes('_')) {
       const recipientId = roomId.split('_').find(p => p !== socket.userId);
       if (recipientId) {
+        io.to('user_' + recipientId).emit('message:received', payload);
         io.to('user_' + recipientId).emit('conversation:new_message', {
           roomId,
           message: payload,

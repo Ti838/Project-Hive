@@ -453,18 +453,28 @@ function MessagesContent() {
   const socket = useSocket({
     onMessage: (msg) => {
       if (msg.roomId === roomId) {
-        setMessages((prev) => [...prev, {
-          id: msg.id,
-          content: msg.content,
-          type: msg.type as Message['type'],
-          status: 'seen',
-          sender: msg.sender,
-          sender_id: msg.sender?.id || '',
-          room_id: msg.roomId,
-          created_at: msg.createdAt || new Date().toISOString(),
-          reply_to_content: msg.reply_to_content,
-          reactions: [],
-        }]);
+        setMessages((prev) => {
+          // Replace matching optimistic temp message or avoid duplicate
+          const existingIdx = prev.findIndex(m => m.id === msg.id || (m.id.startsWith('temp_') && m.content === msg.content && m.sender_id === msg.sender?.id));
+          const newMsg = {
+            id: msg.id,
+            content: msg.content,
+            type: msg.type as Message['type'],
+            status: 'seen' as const,
+            sender: msg.sender,
+            sender_id: msg.sender?.id || '',
+            room_id: msg.roomId,
+            created_at: msg.createdAt || new Date().toISOString(),
+            reply_to_content: msg.reply_to_content,
+            reactions: [],
+          };
+          if (existingIdx !== -1) {
+            const updated = [...prev];
+            updated[existingIdx] = newMsg;
+            return updated;
+          }
+          return [...prev, newMsg];
+        });
 
         // Acknowledge read receipt if we are looking at this room
         if (selectedUser) {
@@ -765,7 +775,7 @@ function MessagesContent() {
   };
 
   const sendMessage = async () => {
-    if ((!content.trim() && !imageAttachment) || !roomId || sending) return;
+    if ((!content.trim() && !imageAttachment) || !roomId || sending || !user) return;
     setSending(true);
     const extra: Record<string, unknown> = {};
     if (replyTo) {
@@ -784,7 +794,55 @@ function MessagesContent() {
       });
     }
 
+    const tempId = `temp_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    const optimisticMsg: Message = {
+      id: tempId,
+      content: payload,
+      type: (imageAttachment ? 'image' : 'text') as Message['type'],
+      status: 'sent',
+      sender: user,
+      sender_id: user.id,
+      room_id: roomId,
+      created_at: new Date().toISOString(),
+      reply_to_content: extra.reply_to_content as string | undefined,
+      reactions: [],
+    };
+
+    // 1. Optimistically append locally for instant response
+    setMessages((prev) => [...prev, optimisticMsg]);
+
+    // 2. Update conversation list preview
+    setConversations((prev) => {
+      const idx = prev.findIndex(
+        (c) => c.room_id === roomId || c.roomId === roomId || (c.user && [user?.id, c.user.id].sort().join('_') === roomId)
+      );
+      if (idx !== -1) {
+        const existing = prev[idx];
+        const updated: Conversation = {
+          ...existing,
+          last_message: optimisticMsg,
+          lastMessage: optimisticMsg,
+        };
+        return [updated, ...prev.filter((_, i) => i !== idx)];
+      }
+      return prev;
+    });
+
+    // 3. Emit via socket
     socket.sendMessage(roomId, payload, extra);
+
+    // 4. Fallback HTTP send if not connected
+    if (!socket.socket?.connected && selectedUser) {
+      api.messages.sendDirectMessage({
+        receiverId: selectedUser.id,
+        content: payload,
+        roomId,
+        reply_to: extra.reply_to as string | undefined,
+        reply_to_content: extra.reply_to_content as string | undefined,
+        reply_to_sender: extra.reply_to_sender as string | undefined,
+      }).catch((e: any) => console.warn('[Chat] HTTP send fallback error:', e));
+    }
+
     setContent('');
     setImageAttachment(null);
     setReplyTo(null);
