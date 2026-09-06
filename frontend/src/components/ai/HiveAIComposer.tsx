@@ -115,6 +115,12 @@ export function HiveAIComposer({
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
   };
 
+  const cycleTier = () => {
+    const tiers: Array<'Turbo' | 'Pro' | 'Ultra'> = ['Turbo', 'Pro', 'Ultra'];
+    const nextIdx = (tiers.indexOf(activeTier) + 1) % tiers.length;
+    setActiveTier(tiers[nextIdx]);
+  };
+
   const defaultPlaceholder = activeCapability === 'project_generator'
     ? 'Describe your project idea, domain or MVP goals…'
     : activeCapability === 'idea_analyzer'
@@ -172,50 +178,20 @@ export function HiveAIComposer({
 
         {/* Bottom Tooling Bar & Actions */}
         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/5">
-          {/* Left: 3 Engine Tiers (Turbo, Pro, Ultra) + Attachments + Voice */}
+          {/* Left: 1-Click Engine Cycle Badge, Attachments & Voice */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* 3 Hive AI Engine Tiers */}
-            <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-xl border border-border/60">
-              <button
-                type="button"
-                onClick={() => setActiveTier('Turbo')}
-                className={cn(
-                  'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
-                  activeTier === 'Turbo'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-                title="Hive Turbo: Ultra-fast response"
-              >
-                Turbo
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTier('Pro')}
-                className={cn(
-                  'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
-                  activeTier === 'Pro'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-                title="Hive Pro: Deep reasoning & precision"
-              >
-                Pro
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTier('Ultra')}
-                className={cn(
-                  'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
-                  activeTier === 'Ultra'
-                    ? 'bg-primary text-primary-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                )}
-                title="Hive Ultra: Extended multimodal intelligence"
-              >
-                Ultra
-              </button>
-            </div>
+            {/* Single 1-Click Engine Toggle */}
+            <button
+              type="button"
+              onClick={cycleTier}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-muted/60 hover:bg-muted border border-border/60 hover:border-primary/40 text-foreground transition-all tap-press cursor-pointer shrink-0 group select-none shadow-xs"
+              title="Click to toggle engine: Turbo ➔ Pro ➔ Ultra"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-muted-foreground text-[11px] font-medium hidden sm:inline">Engine:</span>
+              <span className="font-extrabold text-primary">Hive {activeTier}</span>
+              <span className="text-[10px] text-muted-foreground group-hover:text-foreground">▾</span>
+            </button>
 
             <input
               ref={fileInputRef}
