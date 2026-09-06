@@ -6,8 +6,9 @@ import { HiveAIWorkspace } from '@/components/ai/HiveAIWorkspace';
 
 export default function GeneratorPage() {
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
-      <HiveAIWorkspace initialCapability="project_generator" />
+    <div className="h-full w-full flex flex-col min-h-0 overflow-hidden">
+      <HiveAIWorkspace initialCapability="project_generator" className="h-full rounded-none border-0 shadow-none" />
     </div>
   );
 }
+

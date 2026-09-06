@@ -156,8 +156,8 @@ export function HiveAICapabilitiesModal({
           {/* Modal Header */}
           <div className="p-4 sm:p-5 border-b border-border/70 flex items-center justify-between gap-3 bg-muted/20">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-primary" />
+              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1 overflow-hidden">
+                <img src="/logo.png" alt="Hive AI" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h3 className="font-extrabold text-sm sm:text-base text-foreground tracking-tight">

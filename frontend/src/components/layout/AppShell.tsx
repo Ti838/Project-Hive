@@ -37,8 +37,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Pages with internal scroll containers (e.g., chat) require overflow-hidden to eliminate nested double-scrollbars
-  const hasInternalScroll = pathname.startsWith('/messages');
+  // Pages with internal scroll containers (e.g., chat, AI studio) require overflow-hidden to eliminate nested double-scrollbars
+  const hasInternalScroll = pathname.startsWith('/messages') || pathname.startsWith('/generator');
 
   return (
     <div className="flex flex-col md:flex-row min-h-[100dvh] h-[100dvh] w-full overflow-hidden bg-background">

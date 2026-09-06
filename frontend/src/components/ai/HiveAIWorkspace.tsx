@@ -143,7 +143,7 @@ export function HiveAIWorkspace({
 
   return (
     <div className={cn(
-      'flex flex-col h-[calc(100vh-6.5rem)] min-h-[680px] rounded-3xl border border-border/80 surface-overlay overflow-hidden shadow-2xl backdrop-blur-2xl',
+      'flex flex-col h-full w-full min-h-0 surface-overlay overflow-hidden',
       className
     )}>
       {/* ── Top Header with Interactive Mode Trigger ─────────────────── */}

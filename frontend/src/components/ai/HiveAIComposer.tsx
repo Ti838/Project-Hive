@@ -135,7 +135,7 @@ export function HiveAIComposer({
 
   return (
     <>
-      <div className={cn('p-2.5 sm:p-4 bg-transparent', className)}>
+      <div className={cn('p-3 sm:p-4 bg-transparent shrink-0 max-w-3xl mx-auto w-full', className)}>
         {/* Floating Frosted Pill Container */}
         <div className="surface-floating rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl p-2.5 sm:p-3.5 space-y-2 transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 backdrop-blur-2xl">
           {/* Attached Image Preview Pill */}
