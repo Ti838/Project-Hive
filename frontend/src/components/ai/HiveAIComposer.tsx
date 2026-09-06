@@ -43,6 +43,13 @@ export function HiveAIComposer({
     }
   }, [input]);
 
+  // Clean up any active voice listening session on unmount
+  useEffect(() => {
+    return () => {
+      voiceEngine.stopListening();
+    };
+  }, []);
+
   // Clipboard Paste Support (Ctrl+V screenshot / diagram)
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const items = e.clipboardData?.items;
