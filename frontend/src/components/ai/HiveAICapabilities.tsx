@@ -127,7 +127,8 @@ export function HiveAICapabilities({
           const items = CAPABILITY_ITEMS.filter((i) => i.category === cat);
           return (
             <div key={cat} className="space-y-1">
-              <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+              <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary/50" />
                 {cat}
               </p>
               <div className="space-y-0.5">
@@ -140,14 +141,34 @@ export function HiveAICapabilities({
                       type="button"
                       onClick={() => onSelectCapability(item.id)}
                       className={cn(
-                        'w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-left font-medium transition-all tap-press',
+                        'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-left transition-all tap-press cursor-pointer group',
                         active
-                          ? 'bg-primary text-primary-foreground shadow-xs font-semibold'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                          ? 'bg-primary text-primary-foreground shadow-xs glow-primary font-semibold'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
                       )}
                     >
-                      <Icon className="w-3.5 h-3.5 shrink-0" />
-                      <span className="truncate">{item.label}</span>
+                      <div className={cn(
+                        'p-1.5 rounded-lg shrink-0 transition-colors',
+                        active
+                          ? 'bg-white/20 text-white'
+                          : 'bg-muted/80 text-muted-foreground group-hover:text-primary group-hover:bg-primary/10'
+                      )}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className={cn(
+                          'text-xs font-bold tracking-tight truncate',
+                          active ? 'text-primary-foreground' : 'text-foreground'
+                        )}>
+                          {item.label}
+                        </p>
+                        <p className={cn(
+                          'text-[10px] truncate leading-tight mt-0.5',
+                          active ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                        )}>
+                          {item.description}
+                        </p>
+                      </div>
                     </button>
                   );
                 })}

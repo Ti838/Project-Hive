@@ -2,7 +2,7 @@
 // ─── Hive AI Header Component ────────────────────────────────────────────────
 // Minimal, premium intelligence status bar
 
-import { Sparkles, Cpu, ShieldCheck, Zap, Activity } from 'lucide-react';
+import { Sparkles, Cpu, ShieldCheck, Zap, Activity, PanelLeft, PanelLeftClose } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType } from '@/types';
 
@@ -12,6 +12,8 @@ interface HiveAIHeaderProps {
   providerName?: string;
   isProcessing?: boolean;
   onClearSession?: () => void;
+  sidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
   className?: string;
 }
 
@@ -33,6 +35,8 @@ export function HiveAIHeader({
   activeCapability,
   isProcessing = false,
   onClearSession,
+  sidebarOpen,
+  onToggleSidebar,
   className,
 }: HiveAIHeaderProps) {
   const current = CAPABILITY_LABELS[activeCapability] || CAPABILITY_LABELS.copilot_chat;
@@ -44,6 +48,18 @@ export function HiveAIHeader({
     )}>
       {/* Left: Hive AI Brand & Active Capability */}
       <div className="flex items-center gap-3 min-w-0">
+        {onToggleSidebar && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            title={sidebarOpen ? "Hide studio sidebar" : "Show studio sidebar"}
+            className="hidden md:flex p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/80 border border-border/60 transition-colors tap-press cursor-pointer shrink-0"
+            aria-label="Toggle studio sidebar"
+          >
+            {sidebarOpen ? <PanelLeftClose className="w-4 h-4" /> : <PanelLeft className="w-4 h-4 text-primary" />}
+          </button>
+        )}
+
         <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
           <img
             src="/logo.png"
