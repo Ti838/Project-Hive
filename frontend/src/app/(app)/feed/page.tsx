@@ -7,7 +7,7 @@ import {
   MessageCircle, Share2, MoreHorizontal, ImagePlus, Send,
   ThumbsUp, Star, Trophy, Rss, RefreshCw, AlertCircle,
   Bookmark, Copy, Trash2, Check, X, Sparkles, Filter, Plus, Camera,
-  Code2, BarChart2, CheckCircle2, Users2, ChevronDown, ArrowUpRight, Globe
+  Code2, BarChart2, CheckCircle2, Users2, ChevronDown, ArrowUpRight, Globe, Pencil
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
@@ -28,6 +28,7 @@ function PostCard({
   post,
   currentUserId,
   onReact,
+  onEdit,
   onDelete,
   onVotePoll,
   onCommentCountChange,
@@ -35,6 +36,7 @@ function PostCard({
   post: Post;
   currentUserId: string;
   onReact: (id: string, type: ReactionType) => void;
+  onEdit?: (post: Post) => void;
   onDelete: (id: string) => void;
   onVotePoll: (postId: string, optionId: string) => void;
   onCommentCountChange: (postId: string, delta: number) => void;
@@ -376,6 +378,22 @@ function PostCard({
                   </div>
                 </button>
 
+                {/* Author Edit */}
+                {post.author_id === currentUserId && onEdit && (
+                  <button
+                    onClick={() => { onEdit(post); setShowSheet(false); }}
+                    className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-accent tap-press transition-colors text-left cursor-pointer"
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
+                      <Pencil className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">Edit Post</p>
+                      <p className="text-xs text-muted-foreground">Modify text or snippet</p>
+                    </div>
+                  </button>
+                )}
+
                 {/* Author Delete */}
                 {post.author_id === currentUserId && (
                   <button
@@ -401,6 +419,7 @@ function PostCard({
       <ReactionListModal
         isOpen={showReactionModal}
         onClose={() => setShowReactionModal(false)}
+        postId={post.id}
         reactionCounts={post.reaction_counts}
         totalCount={post.reaction_count}
       />
@@ -495,8 +514,9 @@ export default function FeedPage() {
   const [error, setError] = useState<string | null>(null);
   const loader = useRef<HTMLDivElement>(null);
 
-  // Modal Composer State
+  // Modal Composer & Edit State
   const [composerOpen, setComposerOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
 
   // ── Stories Reel State ──────────────────────────────────────────────────────
   const [storyGroups, setStoryGroups] = useState<Array<{
@@ -929,6 +949,7 @@ export default function FeedPage() {
             post={post}
             currentUserId={user?.id ?? ''}
             onReact={handleReact}
+            onEdit={(p) => setEditingPost(p)}
             onDelete={handleDelete}
             onVotePoll={handleVotePoll}
             onCommentCountChange={handleCommentCountChange}
@@ -943,11 +964,20 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* ─── Rich Modal Post Composer ────────────────────────────────────────── */}
+      {/* ─── Rich Modal Post Composer & Post Editor ───────────────────────────── */}
       <PostComposerModal
-        isOpen={composerOpen}
-        onClose={() => setComposerOpen(false)}
+        isOpen={composerOpen || Boolean(editingPost)}
+        editPost={editingPost}
+        onClose={() => {
+          setComposerOpen(false);
+          setEditingPost(null);
+        }}
         onCreated={(newPost) => setPosts((prev) => [newPost, ...prev])}
+        onUpdated={(updatedPost) =>
+          setPosts((prev) =>
+            prev.map((p) => (p.id === updatedPost.id ? { ...p, ...updatedPost } : p))
+          )
+        }
       />
 
       {/* ─── Full-Screen Campus Story Viewer ────────────────────────────────── */}

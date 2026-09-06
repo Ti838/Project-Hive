@@ -391,6 +391,45 @@ export async function reactToPost(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// GET /api/posts/:id/reactions — list of users who reacted with details
+export async function getPostReactions(req, res, next) {
+  try {
+    const { id: postId } = req.params;
+    const { data: reactions, error } = await supabaseAdmin
+      .from('post_reactions')
+      .select(`
+        id, type, created_at, user_id,
+        user:users!user_id(id, first_name, last_name, avatar, avatar_color, university, role, department, major)
+      `)
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const formatted = (reactions || []).map(r => ({
+      id: r.id,
+      type: r.type,
+      createdAt: r.created_at,
+      user: r.user ? {
+        id: r.user.id,
+        firstName: r.user.first_name,
+        lastName: r.user.last_name,
+        first_name: r.user.first_name,
+        last_name: r.user.last_name,
+        avatar: r.user.avatar,
+        avatarColor: r.user.avatar_color,
+        avatar_color: r.user.avatar_color,
+        university: r.user.university,
+        role: r.user.role,
+        department: r.user.department,
+        major: r.user.major,
+      } : null,
+    })).filter(r => r.user);
+
+    res.json({ reactions: formatted, total: formatted.length });
+  } catch (err) { next(err); }
+}
+
 // GET /api/posts/:id/comments — hierarchical 2-tier tree
 export async function getComments(req, res, next) {
   try {

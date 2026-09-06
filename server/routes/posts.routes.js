@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authMiddleware, optionalAuthMiddleware } from '../middleware/auth.js';
 import {
   getFeed, createPost, deletePost, editPost,
-  reactToPost, getComments, addComment, deleteComment, editComment,
+  reactToPost, getPostReactions, getComments, addComment, deleteComment, editComment,
   getPostById, scrapeMetadata, getUserPosts,
   savePost, getSavedPosts, votePoll,
 } from '../controllers/posts.controller.js';
@@ -27,7 +27,8 @@ router.patch('/posts/:id',        authMiddleware, editPost);
 router.delete('/posts/:id',       authMiddleware, deletePost);
 
 // Reactions & Polls
-router.post('/posts/:id/react',     authMiddleware, reactToPost);
+router.get('/posts/:id/reactions',   optionalAuthMiddleware, getPostReactions);
+router.post('/posts/:id/react',      authMiddleware, reactToPost);
 router.post('/posts/:id/poll/vote', authMiddleware, votePoll);
 router.post('/posts/:id/vote',      authMiddleware, votePoll);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, ImagePlus, Code2, BarChart2, Sparkles, Send,
@@ -15,7 +15,9 @@ import type { Post } from '@/types';
 interface PostComposerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreated: (post: Post) => void;
+  onCreated?: (post: Post) => void;
+  editPost?: Post | null;
+  onUpdated?: (post: Post) => void;
 }
 
 type TabType = 'update' | 'media' | 'code' | 'poll';
@@ -24,7 +26,13 @@ const CODE_LANGUAGES = [
   'typescript', 'javascript', 'python', 'cpp', 'c', 'go', 'rust', 'java', 'sql', 'bash', 'json', 'html', 'css'
 ];
 
-export function PostComposerModal({ isOpen, onClose, onCreated }: PostComposerModalProps) {
+export function PostComposerModal({
+  isOpen,
+  onClose,
+  onCreated,
+  editPost,
+  onUpdated,
+}: PostComposerModalProps) {
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState<TabType>('update');
   const [content, setContent] = useState('');
@@ -46,6 +54,44 @@ export function PostComposerModal({ isOpen, onClose, onCreated }: PostComposerMo
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Initialize or reset state when opening or when editPost changes
+  useEffect(() => {
+    if (isOpen) {
+      if (editPost) {
+        setContent(editPost.content || '');
+        setPostType(
+          editPost.type === 'achievement'
+            ? 'achievement'
+            : editPost.type === 'looking_for_team'
+            ? 'looking_for_team'
+            : 'general'
+        );
+        const media = editPost.media_urls || editPost.images || (editPost.image_url ? [editPost.image_url] : []);
+        setImages(media);
+        if (editPost.code_snippet?.code) {
+          setCodeSnippet(editPost.code_snippet.code);
+          setCodeLanguage(editPost.code_snippet.language || 'typescript');
+          setCodeTitle(editPost.code_snippet.title || '');
+          setActiveTab('code');
+        } else if (media.length > 0) {
+          setActiveTab('media');
+        } else {
+          setActiveTab('update');
+        }
+      } else {
+        setContent('');
+        setImages([]);
+        setCodeSnippet('');
+        setCodeTitle('');
+        setPollQuestion('');
+        setPollOptions(['Option 1', 'Option 2']);
+        setActiveTab('update');
+        setPostType('general');
+      }
+      setError(null);
+    }
+  }, [isOpen, editPost]);
 
   if (!isOpen) return null;
 
@@ -93,7 +139,7 @@ export function PostComposerModal({ isOpen, onClose, onCreated }: PostComposerMo
 
   const handleSubmit = async () => {
     const trimmed = content.trim();
-    if (!trimmed && activeTab === 'update') {
+    if (!trimmed && activeTab === 'update' && !images.length && !codeSnippet.trim() && !pollQuestion.trim()) {
       setError('Please write something to share.');
       return;
     }
@@ -102,50 +148,63 @@ export function PostComposerModal({ isOpen, onClose, onCreated }: PostComposerMo
     setError(null);
 
     try {
-      const payload: any = {
-        content: trimmed || (activeTab === 'code' ? 'Shared a code snippet' : activeTab === 'poll' ? (pollQuestion.trim() || 'Participate in this poll') : 'Shared attachments'),
-        postType: activeTab === 'poll' ? 'poll' : postType,
-        mediaUrls: images,
-      };
-
-      if (codeSnippet.trim()) {
-        payload.codeSnippet = {
-          code: codeSnippet.trim(),
-          language: codeLanguage,
-          title: codeTitle.trim() || undefined,
+      if (editPost) {
+        // Edit Mode
+        const editPayload: any = {
+          content: trimmed || editPost.content,
         };
-      }
-
-      if (activeTab === 'poll') {
-        payload.pollData = {
-          question: pollQuestion.trim() || trimmed,
-          options: pollOptions.map((text, idx) => ({
-            id: `opt_${idx + 1}`,
-            text: text.trim() || `Option ${idx + 1}`,
-            votes: [],
-          })),
-          expiresAt: new Date(Date.now() + pollDays * 24 * 60 * 60 * 1000).toISOString(),
-        };
-      }
-
-      const res = await api.posts.create(payload);
-      if (res.ok && res.post) {
-        onCreated(res.post);
-        onClose();
-        // Reset state
-        setContent('');
-        setImages([]);
-        setCodeSnippet('');
-        setCodeTitle('');
-        setPollQuestion('');
-        setPollOptions(['Option 1', 'Option 2']);
-        setActiveTab('update');
-        setPostType('general');
+        if (codeSnippet.trim()) {
+          editPayload.codeSnippet = {
+            code: codeSnippet.trim(),
+            language: codeLanguage,
+            title: codeTitle.trim() || undefined,
+          };
+        }
+        const res = await api.posts.edit(editPost.id, editPayload);
+        if (res.ok && res.post) {
+          onUpdated?.(res.post);
+          onClose();
+        } else {
+          setError(res.error || 'Failed to update post.');
+        }
       } else {
-        setError(res.error || 'Failed to create post. Please try again.');
+        // Create Mode
+        const payload: any = {
+          content: trimmed || (activeTab === 'code' ? 'Shared a code snippet' : activeTab === 'poll' ? (pollQuestion.trim() || 'Participate in this poll') : 'Shared attachments'),
+          postType: activeTab === 'poll' ? 'poll' : postType,
+          mediaUrls: images,
+        };
+
+        if (codeSnippet.trim()) {
+          payload.codeSnippet = {
+            code: codeSnippet.trim(),
+            language: codeLanguage,
+            title: codeTitle.trim() || undefined,
+          };
+        }
+
+        if (activeTab === 'poll') {
+          payload.pollData = {
+            question: pollQuestion.trim() || trimmed,
+            options: pollOptions.map((text, idx) => ({
+              id: `opt_${idx + 1}`,
+              text: text.trim() || `Option ${idx + 1}`,
+              votes: [],
+            })),
+            expiresAt: new Date(Date.now() + pollDays * 24 * 60 * 60 * 1000).toISOString(),
+          };
+        }
+
+        const res = await api.posts.create(payload);
+        if (res.ok && res.post) {
+          onCreated?.(res.post);
+          onClose();
+        } else {
+          setError(res.error || 'Failed to create post. Please try again.');
+        }
       }
     } catch (err: any) {
-      setError(err?.message || 'Network error while creating post.');
+      setError(err?.message || 'Network error while processing post.');
     } finally {
       setLoading(false);
     }
@@ -470,7 +529,7 @@ export function PostComposerModal({ isOpen, onClose, onCreated }: PostComposerMo
               ) : (
                 <Send className="w-4 h-4" />
               )}
-              <span>Publish</span>
+              <span>{editPost ? 'Save Changes' : 'Publish'}</span>
             </button>
           </div>
         </div>

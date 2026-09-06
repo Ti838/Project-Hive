@@ -462,6 +462,8 @@ export const api = {
         reaction: import('@/types').ReactionType | null;
         reactionCounts: Record<string, number>;
       }>(`/posts/${id}/react`, { method: 'POST', body: JSON.stringify({ type }) }),
+    getReactions: (id: string) =>
+      request<{ reactions: Array<{ id: string; type: import('@/types').ReactionType; createdAt: string; user: import('@/types').User }>; total: number }>(`/posts/${id}/reactions`),
     getComments: (id: string) =>
       request<{ comments: PostComment[]; total?: number }>(`/posts/${id}/comments`),
     comment: (id: string, content: string, parentCommentId?: string) =>
