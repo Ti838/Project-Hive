@@ -35,8 +35,8 @@ export function HiveAIHeader({
         'px-4 sm:px-6 py-3 border-b border-border/80 bg-card/60 backdrop-blur-md flex items-center justify-between gap-4 select-none',
         className
       )}>
-        {/* Left: Hive AI Brand & Interactive Capability Pill */}
-        <div className="flex items-center gap-3 min-w-0">
+        {/* Left: Hive AI Brand & 3 Primary Modes Switcher */}
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <div className="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
             <img
               src="/logo.png"
@@ -45,26 +45,71 @@ export function HiveAIHeader({
             />
           </div>
 
-          {/* Interactive Mode Trigger Button */}
+          {/* 3 Primary Modes + More Dropdown */}
           {onSelectCapability ? (
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-muted/60 hover:bg-muted border border-border/70 hover:border-primary/40 text-left transition-all tap-press group cursor-pointer"
-              title="Click to switch AI Studio Mode"
-            >
-              <div className="p-1 rounded-lg bg-primary/10 text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <Icon className="w-3.5 h-3.5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-extrabold text-xs sm:text-sm text-foreground tracking-tight truncate">
-                    {current.label}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground transition-transform group-hover:translate-y-0.5" />
-                </div>
-              </div>
-            </button>
+            <div className="flex items-center gap-1 sm:gap-1.5 bg-muted/50 p-1 rounded-2xl border border-border/60">
+              {/* Mode 1: Project Generator */}
+              <button
+                type="button"
+                onClick={() => onSelectCapability('project_generator')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all tap-press cursor-pointer',
+                  activeCapability === 'project_generator'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                <span>Generator</span>
+              </button>
+
+              {/* Mode 2: Idea Analyzer */}
+              <button
+                type="button"
+                onClick={() => onSelectCapability('idea_analyzer')}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all tap-press cursor-pointer',
+                  activeCapability === 'idea_analyzer'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                <span>Idea Analyzer</span>
+              </button>
+
+              {/* Mode 3: Engineering Copilot */}
+              <button
+                type="button"
+                onClick={() => onSelectCapability('copilot_chat')}
+                className={cn(
+                  'hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all tap-press cursor-pointer',
+                  activeCapability === 'copilot_chat'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+              >
+                <span>Copilot</span>
+              </button>
+
+              {/* More Modes Dropdown Trigger */}
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className={cn(
+                  'flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all tap-press cursor-pointer border border-transparent',
+                  !['project_generator', 'idea_analyzer', 'copilot_chat'].includes(activeCapability)
+                    ? 'bg-primary/15 text-primary border-primary/30'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                )}
+                title="View all 11 AI Modes"
+              >
+                <span>
+                  {!['project_generator', 'idea_analyzer', 'copilot_chat'].includes(activeCapability)
+                    ? current.shortLabel
+                    : 'More'}
+                </span>
+                <ChevronDown className="w-3 h-3 opacity-70" />
+              </button>
+            </div>
           ) : (
             <div className="flex items-center gap-2">
               <h2 className="font-extrabold text-sm tracking-tight text-foreground truncate">
