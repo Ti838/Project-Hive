@@ -60,7 +60,7 @@ export function HiveAIWorkspace({
     }
   }, [artifacts, selectedArtifactId]);
 
-  const handleSend = async (promptText: string, imageBase64?: string) => {
+  const handleSend = async (promptText: string, imageBase64?: string, tier: 'Turbo' | 'Pro' | 'Ultra' = 'Pro') => {
     if (!promptText && !imageBase64) return;
     setError(null);
     setLoading(true);
@@ -80,6 +80,7 @@ export function HiveAIWorkspace({
       const res = await api.ai.execute({
         capability,
         prompt: promptText,
+        parameters: { tier },
         context: {
           ...context,
           userId: user?.id,

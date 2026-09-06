@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType } from '@/types';
 
 interface HiveAIComposerProps {
-  onSend: (prompt: string, imageBase64?: string) => void;
+  onSend: (prompt: string, imageBase64?: string, tier?: 'Turbo' | 'Pro' | 'Ultra') => void;
   isProcessing?: boolean;
   activeCapability: HiveAICapabilityType;
   onSelectCapability?: (cap: HiveAICapabilityType) => void;
@@ -31,6 +31,7 @@ export function HiveAIComposer({
   const [input, setInput] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
+  const [activeTier, setActiveTier] = useState<'Turbo' | 'Pro' | 'Ultra'>('Pro');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -108,7 +109,7 @@ export function HiveAIComposer({
     if (isProcessing) return;
     if (!input.trim() && !imagePreview) return;
 
-    onSend(input.trim(), imagePreview || undefined);
+    onSend(input.trim(), imagePreview || undefined, activeTier);
     setInput('');
     setImagePreview(null);
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
@@ -125,7 +126,7 @@ export function HiveAIComposer({
     : activeCapability === 'documentation_ai'
     ? 'Describe project components to generate README & API docs…'
     : activeCapability === 'code_assistant'
-    ? 'Paste code or describe error to debug & write tests…'
+    ? 'Paste code or debug challenge…'
     : activeCapability === 'architecture_design'
     ? 'Describe system architecture, database schema, or cache requirements…'
     : 'Ask Hive AI or paste code & screenshots (Ctrl+V)…';
@@ -171,52 +172,50 @@ export function HiveAIComposer({
 
         {/* Bottom Tooling Bar & Actions */}
         <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/5">
-          {/* Left: Mode Switcher Pills, Attachments & Voice Dictation */}
+          {/* Left: 3 Engine Tiers (Turbo, Pro, Ultra) + Attachments + Voice */}
           <div className="flex items-center gap-1.5 flex-wrap">
-            {/* 3 Direct AI Modes */}
-            {onSelectCapability && (
-              <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-xl border border-border/60">
-                <button
-                  type="button"
-                  onClick={() => onSelectCapability('project_generator')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
-                    activeCapability === 'project_generator'
-                      ? 'bg-primary text-primary-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                  title="Project Generator Mode"
-                >
-                  Generator
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectCapability('idea_analyzer')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
-                    activeCapability === 'idea_analyzer'
-                      ? 'bg-primary text-primary-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                  title="Idea Analyzer Mode"
-                >
-                  Analyzer
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectCapability('copilot_chat')}
-                  className={cn(
-                    'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
-                    activeCapability === 'copilot_chat'
-                      ? 'bg-primary text-primary-foreground shadow-xs'
-                      : 'text-muted-foreground hover:text-foreground'
-                  )}
-                  title="Engineering Copilot Mode"
-                >
-                  Copilot
-                </button>
-              </div>
-            )}
+            {/* 3 Hive AI Engine Tiers */}
+            <div className="flex items-center gap-0.5 bg-muted/60 p-0.5 rounded-xl border border-border/60">
+              <button
+                type="button"
+                onClick={() => setActiveTier('Turbo')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
+                  activeTier === 'Turbo'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                title="Hive Turbo: Ultra-fast response"
+              >
+                Turbo
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTier('Pro')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
+                  activeTier === 'Pro'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                title="Hive Pro: Deep reasoning & precision"
+              >
+                Pro
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTier('Ultra')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all tap-press cursor-pointer',
+                  activeTier === 'Ultra'
+                    ? 'bg-primary text-primary-foreground shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+                title="Hive Ultra: Extended multimodal intelligence"
+              >
+                Ultra
+              </button>
+            </div>
 
             <input
               ref={fileInputRef}
