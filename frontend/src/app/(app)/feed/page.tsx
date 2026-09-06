@@ -77,7 +77,6 @@ function PostCard({
   return (
     <>
       <motion.article
-        layout
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         id={`post-${post.id}`}

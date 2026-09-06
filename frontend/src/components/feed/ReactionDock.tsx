@@ -85,13 +85,14 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
   const [showFlyout, setShowFlyout] = useState(false);
   const flyoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleMouseEnter = () => {
+  const openFlyout = () => {
     if (flyoutTimerRef.current) clearTimeout(flyoutTimerRef.current);
     setShowFlyout(true);
   };
 
-  const handleMouseLeave = () => {
-    flyoutTimerRef.current = setTimeout(() => setShowFlyout(false), 200);
+  const closeFlyout = () => {
+    if (flyoutTimerRef.current) clearTimeout(flyoutTimerRef.current);
+    flyoutTimerRef.current = setTimeout(() => setShowFlyout(false), 400);
   };
 
   const activeItem = REACTION_CONFIG.find((r) => r.type === currentReaction);
@@ -99,40 +100,53 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
   return (
     <div
       className={cn('relative inline-flex items-center', className)}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={openFlyout}
+      onMouseLeave={closeFlyout}
     >
-      {/* ── Spring-Physics Floating Reaction Dock ────────────────────────── */}
+      {/* ── Facebook-Grade Floating Reaction Dock ────────────────────────── */}
       <AnimatePresence>
         {showFlyout && (
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.9 }}
-            animate={{ opacity: 1, y: -48, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.9 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 350 }}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            className="surface-floating absolute left-0 -top-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border/70 shadow-2xl z-30 backdrop-blur-2xl"
+            initial={{ opacity: 0, y: 10, scale: 0.85 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.9 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 400 }}
+            onMouseEnter={openFlyout}
+            onMouseLeave={closeFlyout}
+            className={cn(
+              'absolute left-0 bottom-full mb-2 z-40',
+              'flex items-center gap-1.5 px-3 py-2 rounded-full',
+              'bg-card/95 dark:bg-zinc-900/95 backdrop-blur-2xl',
+              'border border-white/20 dark:border-white/10 shadow-2xl',
+              // Invisible hover bridge connecting dock to trigger button so mouse never leaves hitbox
+              'after:content-[""] after:absolute after:-bottom-3 after:inset-x-0 after:h-4'
+            )}
           >
-            {REACTION_CONFIG.map(({ type, icon: Icon, label, color, hoverBg }) => (
+            {REACTION_CONFIG.map(({ type, emoji, label, hoverBg }) => (
               <motion.button
                 key={type}
-                whileHover={{ scale: 1.35, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
+                type="button"
+                whileHover={{ scale: 1.45, y: -6 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 20 }}
+                onClick={(e) => {
+                  e.stopPropagation();
                   onReact(type);
                   setShowFlyout(false);
                 }}
                 className={cn(
-                  'p-2 rounded-full tap-press transition-colors cursor-pointer group relative',
+                  'relative flex items-center justify-center w-8 h-8 rounded-full text-lg select-none tap-press transition-transform cursor-pointer group',
                   hoverBg,
-                  currentReaction === type && 'bg-primary/20 shadow-xs'
+                  currentReaction === type && 'ring-2 ring-primary ring-offset-1 ring-offset-card'
                 )}
                 title={label}
                 aria-label={label}
               >
-                <Icon className={cn('w-4 h-4 transition-transform', color)} />
-                <span className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-card text-foreground border border-border/70 shadow-md whitespace-nowrap pointer-events-none">
+                <span className="transform-gpu transition-transform pointer-events-none">
+                  {emoji}
+                </span>
+                {/* Tooltip on hover */}
+                <span className="absolute -top-7 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/80 text-white shadow-md whitespace-nowrap pointer-events-none">
                   {label}
                 </span>
               </motion.button>
@@ -144,12 +158,12 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
       {/* ── Trigger / Default Like Button ────────────────────────────────── */}
       <button
         type="button"
-        onClick={() => {
-          // If already reacted, clicking toggles the current reaction; otherwise defaults to 'like'
+        onClick={(e) => {
+          e.stopPropagation();
           onReact(currentReaction || 'like');
         }}
         className={cn(
-          'flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold tap-press transition-all cursor-pointer border border-transparent',
+          'flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold tap-press transition-all cursor-pointer border border-transparent select-none',
           activeItem
             ? activeItem.activeBg
             : 'text-muted-foreground hover:bg-white/10 hover:text-foreground'
@@ -157,7 +171,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
       >
         {activeItem ? (
           <>
-            <activeItem.icon className={cn('w-4 h-4 scale-110', activeItem.color)} />
+            <span className="text-sm scale-110">{activeItem.emoji}</span>
             <span>{activeItem.label}</span>
           </>
         ) : (
