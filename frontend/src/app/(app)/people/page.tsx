@@ -24,7 +24,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useSocket } from '@/hooks/useSocket';
@@ -71,16 +71,27 @@ const POPULAR_SKILLS = [
 
 export default function PeoplePage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams?.get('search') || searchParams?.get('q') || '';
   const { user: currentUser } = useAuthStore();
   const { socket } = useSocket();
 
   // Search & Filter State
-  const [searchInput, setSearchInput] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchInput, setSearchInput] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [selectedMajor, setSelectedMajor] = useState('All Majors');
   const [selectedUniversity, setSelectedUniversity] = useState('All Campuses');
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
   const [availableOnly, setAvailableOnly] = useState(false);
+
+  // Sync if URL search param changes
+  useEffect(() => {
+    const q = searchParams?.get('search') || searchParams?.get('q');
+    if (q !== null && q !== undefined) {
+      setSearchInput(q);
+      setDebouncedSearch(q.trim());
+    }
+  }, [searchParams]);
 
   // Pagination & Data State
   const [page, setPage] = useState(1);

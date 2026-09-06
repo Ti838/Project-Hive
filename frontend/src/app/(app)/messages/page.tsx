@@ -870,7 +870,14 @@ function MessagesContent() {
 
   const applyFilter = (list: Conversation[]) => {
     return list.filter((c) => {
-      const matchSearch = displayName(c.user).toLowerCase().includes(search.toLowerCase());
+      const q = search.trim().toLowerCase();
+      const matchSearch =
+        !q ||
+        displayName(c.user).toLowerCase().includes(q) ||
+        Boolean(c.user?.university?.toLowerCase().includes(q)) ||
+        Boolean(c.user?.email?.toLowerCase().includes(q)) ||
+        Boolean(c.last_message?.content && typeof c.last_message.content === 'string' && c.last_message.content.toLowerCase().includes(q));
+
       if (!matchSearch) return false;
       if (filterTab === 'unread') return (c.unreadCount || c.unread_count || 0) > 0;
       return true;
@@ -906,8 +913,18 @@ function MessagesContent() {
                 placeholder="Search conversations…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full h-10 pl-10 pr-4 text-sm bg-muted/70 rounded-xl border border-transparent focus:border-primary focus:outline-none transition-colors"
+                className="w-full h-10 pl-10 pr-10 text-sm bg-muted/70 rounded-xl border border-transparent focus:border-primary focus:outline-none transition-colors"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => setSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground rounded-lg transition-colors cursor-pointer"
+                  title="Clear search"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </div>
 
             {/* Segmented Filter Tabs */}

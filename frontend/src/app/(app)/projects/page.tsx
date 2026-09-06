@@ -9,6 +9,7 @@ import {
   TrendingUp, Star, ChevronUp, Users, Bookmark, Share2, Filter
 } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { displayName, getAvatarColor, cn } from '@/lib/utils';
@@ -26,12 +27,22 @@ const CATEGORY_PILLS = [
 ];
 
 export default function ProjectsPage() {
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams?.get('search') || searchParams?.get('q') || '';
   const { user } = useAuthStore();
   const [projects, setProjects] = useState<Project[]>([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [upvotingIds, setUpvotingIds] = useState<Set<string>>(new Set());
+
+  // Sync if URL search query param changes
+  useEffect(() => {
+    const q = searchParams?.get('search') || searchParams?.get('q');
+    if (q !== null && q !== undefined) {
+      setSearch(q);
+    }
+  }, [searchParams]);
 
   // Submission modal state
   const [showSubmitModal, setShowSubmitModal] = useState(false);
@@ -226,8 +237,18 @@ export default function ProjectsPage() {
               placeholder="Search by title, tech stack (React, PyTorch...), or creator…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-11 pl-10 pr-4 text-sm bg-card border border-border/80 rounded-2xl focus:border-primary focus:outline-none transition-colors shadow-2xs"
+              className="w-full h-11 pl-10 pr-10 text-sm bg-card border border-border/80 rounded-2xl focus:border-primary focus:outline-none transition-colors shadow-2xs"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                title="Clear search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
 

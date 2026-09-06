@@ -26,7 +26,7 @@ import {
   Layers,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useCallStore } from '@/lib/callStore';
@@ -50,15 +50,26 @@ const CATEGORIES = [
 
 export default function TeamsHubPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialSearch = searchParams?.get('search') || searchParams?.get('q') || '';
   const { user: currentUser } = useAuthStore();
   const { startCall: triggerLiveKitCall } = useCallStore();
   const socket = useSocket();
 
   // Navigation & Filter States
   const [activeTab, setActiveTab] = useState<HubTab>('squads');
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  // Sync if URL search param changes
+  useEffect(() => {
+    const q = searchParams?.get('search') || searchParams?.get('q');
+    if (q !== null && q !== undefined) {
+      setSearch(q);
+      setDebouncedSearch(q.trim());
+    }
+  }, [searchParams]);
 
   // Teams Data States
   const [teams, setTeams] = useState<Team[]>([]);

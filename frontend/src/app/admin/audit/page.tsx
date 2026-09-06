@@ -26,12 +26,22 @@ export default function AdminAuditPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(15);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [actionFilter, setActionFilter] = useState('');
   const [loading, setLoading] = useState(true);
 
   // Selected Log for JSON Drawer
   const [selectedLog, setSelectedLog] = useState<AdminAuditLog | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchLogs = async () => {
     try {
@@ -40,7 +50,7 @@ export default function AdminAuditPage() {
         page,
         limit,
         action: actionFilter || undefined,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
       });
       if (res && res.logs) {
         setLogs(res.logs);
@@ -55,12 +65,12 @@ export default function AdminAuditPage() {
 
   useEffect(() => {
     fetchLogs();
-  }, [page, actionFilter]);
+  }, [page, actionFilter, debouncedSearch]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setDebouncedSearch(search.trim());
     setPage(1);
-    fetchLogs();
   };
 
   const handleCopyJson = () => {
@@ -108,8 +118,18 @@ export default function AdminAuditPage() {
               placeholder="Search by action, reason, IP..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <select

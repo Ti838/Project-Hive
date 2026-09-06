@@ -9,6 +9,7 @@ import {
   Bell, Search, Sun, Moon, Monitor, Menu, ArrowLeft,
   User, Settings, Bookmark, LogOut, ShieldCheck,
   X, CheckCheck, Sparkles, MessageSquare, Users, FolderKanban, Rss, LayoutDashboard,
+  Loader2, ArrowRight, Star, Building2, GraduationCap,
 } from 'lucide-react';
 import { useAuthStore, useUIStore, useSocketStore } from '@/lib/store';
 import { useTheme } from '@/context/ThemeContext';
@@ -16,7 +17,7 @@ import { useSocket } from '@/hooks/useSocket';
 import { api } from '@/lib/api';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/UserAvatar';
-import type { Notification } from '@/types';
+import type { Notification, User as UserType, Team as TeamType, Project as ProjectType } from '@/types';
 
 function getPageMeta(pathname: string): { title: string; isChild: boolean } {
   if (pathname === '/teams/create') return { title: 'Create Team', isChild: true };
@@ -46,6 +47,10 @@ export function Topbar() {
   const [isMac, setIsMac] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [cmdQuery, setCmdQuery] = useState('');
+  const [liveUsers, setLiveUsers] = useState<UserType[]>([]);
+  const [liveTeams, setLiveTeams] = useState<TeamType[]>([]);
+  const [liveProjects, setLiveProjects] = useState<ProjectType[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
@@ -55,6 +60,56 @@ export function Topbar() {
   const notifRef = useRef<HTMLDivElement>(null);
   const themeRef = useRef<HTMLDivElement>(null);
   const cmdInputRef = useRef<HTMLInputElement>(null);
+
+  // Live multi-entity search across Users, Teams, and Projects with 200ms debounce
+  useEffect(() => {
+    const q = cmdQuery.trim();
+    if (!q) {
+      setLiveUsers([]);
+      setLiveTeams([]);
+      setLiveProjects([]);
+      setSearchLoading(false);
+      return;
+    }
+
+    setSearchLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const [uRes, tRes, pRes] = await Promise.allSettled([
+          api.users.getPeople({ search: q, limit: 4 }),
+          api.teams.getAll({ search: q, limit: 4 }),
+          api.projects.list({ search: q }),
+        ]);
+
+        if (uRes.status === 'fulfilled' && uRes.value?.users) {
+          setLiveUsers(uRes.value.users.slice(0, 4));
+        } else {
+          setLiveUsers([]);
+        }
+
+        if (tRes.status === 'fulfilled') {
+          const list: TeamType[] = Array.isArray(tRes.value)
+            ? tRes.value
+            : (tRes.value as any)?.teams || [];
+          setLiveTeams(list.slice(0, 4));
+        } else {
+          setLiveTeams([]);
+        }
+
+        if (pRes.status === 'fulfilled' && pRes.value?.projects) {
+          setLiveProjects(pRes.value.projects.slice(0, 4));
+        } else {
+          setLiveProjects([]);
+        }
+      } catch (err) {
+        console.error('Command search failed:', err);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [cmdQuery]);
 
   // Platform detection for keyboard badge
   useEffect(() => {
@@ -559,44 +614,164 @@ export function Topbar() {
               </form>
 
               {/* Suggestions / Results */}
-              <div className="p-2 max-h-80 overflow-y-auto space-y-1">
+              <div className="p-2 max-h-96 overflow-y-auto space-y-2">
                 {cmdQuery.trim() ? (
                   <>
-                    <button
-                      type="button"
-                      onClick={() => handleCommandSelect(`/people?search=${encodeURIComponent(cmdQuery.trim())}`)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Users className="w-4 h-4 text-primary" />
-                        <span>Search students & people for &ldquo;{cmdQuery}&rdquo;</span>
+                    {/* Live Search Status Indicator */}
+                    {searchLoading && (
+                      <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground animate-pulse">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                        <span>Searching students, squads, and projects…</span>
                       </div>
-                      <span className="text-[10px] text-muted-foreground">Press ↵</span>
-                    </button>
+                    )}
 
-                    <button
-                      type="button"
-                      onClick={() => handleCommandSelect(`/teams?search=${encodeURIComponent(cmdQuery.trim())}`)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Users className="w-4 h-4 text-primary" />
-                        <span>Search teams for &ldquo;{cmdQuery}&rdquo;</span>
+                    {/* Quick Direct Search Actions */}
+                    <div className="space-y-1">
+                      <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
+                        Quick Jump
                       </div>
-                      <span className="text-[10px] text-muted-foreground">Jump</span>
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => handleCommandSelect(`/people?search=${encodeURIComponent(cmdQuery.trim())}`)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <Users className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className="truncate">Search students directory for &ldquo;{cmdQuery}&rdquo;</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground shrink-0 font-mono">↵ Enter</span>
+                      </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleCommandSelect(`/showcase?search=${encodeURIComponent(cmdQuery.trim())}`)}
-                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press"
-                    >
-                      <div className="flex items-center gap-3">
-                        <FolderKanban className="w-4 h-4 text-primary" />
-                        <span>Search showcase projects for &ldquo;{cmdQuery}&rdquo;</span>
+                      <button
+                        type="button"
+                        onClick={() => handleCommandSelect(`/teams?search=${encodeURIComponent(cmdQuery.trim())}`)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className="truncate">Search squads & hubs for &ldquo;{cmdQuery}&rdquo;</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground shrink-0">Jump</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleCommandSelect(`/showcase?search=${encodeURIComponent(cmdQuery.trim())}`)}
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <FolderKanban className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className="truncate">Search showcase for &ldquo;{cmdQuery}&rdquo;</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground shrink-0">Jump</span>
+                      </button>
+                    </div>
+
+                    {/* Live Matching Students & Peers */}
+                    {liveUsers.length > 0 && (
+                      <div className="space-y-1 pt-1 border-t border-border/40">
+                        <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
+                          <GraduationCap className="w-3 h-3 text-primary" /> Students & Peers ({liveUsers.length})
+                        </div>
+                        {liveUsers.map((u) => {
+                          const uName = displayName(u);
+                          return (
+                            <button
+                              key={u.id}
+                              type="button"
+                              onClick={() => handleCommandSelect(`/profile/${u.id}`)}
+                              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-accent/70 transition-colors text-left tap-press cursor-pointer group"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <UserAvatar user={u} size="xs" />
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 font-semibold text-foreground group-hover:text-primary transition-colors">
+                                    <span className="truncate">{uName}</span>
+                                    {u.is_verified && (
+                                      <span className="text-primary text-[10px]">✓</span>
+                                    )}
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground truncate">
+                                    {u.university || u.major || u.email}
+                                  </p>
+                                </div>
+                              </div>
+                              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                            </button>
+                          );
+                        })}
                       </div>
-                      <span className="text-[10px] text-muted-foreground">Jump</span>
-                    </button>
+                    )}
+
+                    {/* Live Matching Teams / Squads */}
+                    {liveTeams.length > 0 && (
+                      <div className="space-y-1 pt-1 border-t border-border/40">
+                        <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
+                          <Users className="w-3 h-3 text-primary" /> Squads & Hubs ({liveTeams.length})
+                        </div>
+                        {liveTeams.map((t) => (
+                          <button
+                            key={t.id}
+                            type="button"
+                            onClick={() => handleCommandSelect(`/teams`)}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-accent/70 transition-colors text-left tap-press cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                                {t.name?.charAt(0)?.toUpperCase() || 'T'}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                                  {t.name}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground truncate">
+                                  {t.category || (t.type === 'community' ? 'Community Hub' : 'Project Squad')} • {t.member_count ?? t.members?.length ?? 1} members
+                                </p>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Live Matching Showcase Projects */}
+                    {liveProjects.length > 0 && (
+                      <div className="space-y-1 pt-1 border-t border-border/40">
+                        <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
+                          <FolderKanban className="w-3 h-3 text-primary" /> Showcase Projects ({liveProjects.length})
+                        </div>
+                        {liveProjects.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => handleCommandSelect(`/showcase`)}
+                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-accent/70 transition-colors text-left tap-press cursor-pointer group"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0">
+                                <Star className="w-3.5 h-3.5 fill-amber-500/30" />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                                  {p.title}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground truncate">
+                                  {p.category || 'Innovation'} • {p.upvotes ?? p.upvote_count ?? p.likes ?? 0} upvotes
+                                </p>
+                              </div>
+                            </div>
+                            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {!searchLoading && liveUsers.length === 0 && liveTeams.length === 0 && liveProjects.length === 0 && (
+                      <div className="py-4 text-center text-xs text-muted-foreground">
+                        No direct live records found. Click a quick jump option above or press Enter to search.
+                      </div>
+                    )}
                   </>
                 ) : (
                   <>
@@ -607,7 +782,8 @@ export function Topbar() {
                       { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
                       { href: '/feed', label: 'Feed & Campus Updates', icon: Rss },
                       { href: '/messages', label: 'Real-time Chat & Direct Messages', icon: MessageSquare },
-                      { href: '/teams', label: 'Teams & Project Squads', icon: Users },
+                      { href: '/people', label: 'Students & Peer Discovery', icon: Users },
+                      { href: '/teams', label: 'Teams & Project Squads', icon: Building2 },
                       { href: '/showcase', label: 'Project Showcase', icon: FolderKanban },
                       { href: '/generator', label: 'Hive AI Studio', icon: Sparkles },
                     ].map(({ href, label, icon: Icon }) => (
@@ -615,7 +791,7 @@ export function Topbar() {
                         key={href}
                         type="button"
                         onClick={() => handleCommandSelect(href)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-accent/80 transition-colors text-left tap-press"
+                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-accent/80 transition-colors text-left tap-press cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
                           <Icon className="w-4 h-4 text-muted-foreground" />

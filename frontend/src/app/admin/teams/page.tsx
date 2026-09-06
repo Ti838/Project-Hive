@@ -13,7 +13,8 @@ import {
   Award,
   ExternalLink,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  X,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Team } from '@/types';
@@ -23,13 +24,22 @@ export default function AdminTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const fetchTeams = async () => {
     try {
       setLoading(true);
-      const res = await api.admin.getTeams({ search: search || undefined });
+      const res = await api.admin.getTeams({ search: debouncedSearch || undefined });
       if (res && res.teams) {
         setTeams(res.teams);
         setTotal(res.total || res.teams.length);
@@ -43,11 +53,11 @@ export default function AdminTeamsPage() {
 
   useEffect(() => {
     fetchTeams();
-  }, []);
+  }, [debouncedSearch]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchTeams();
+    setDebouncedSearch(search.trim());
   };
 
   const handleDeleteTeam = async (t: Team) => {
@@ -87,13 +97,23 @@ export default function AdminTeamsPage() {
               placeholder="Search squads by name, tag, or topic..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-500 transition-colors"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                title="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <button
             type="submit"
-            className="h-9 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors shrink-0"
+            className="h-9 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors shrink-0 cursor-pointer"
           >
             Search
           </button>
