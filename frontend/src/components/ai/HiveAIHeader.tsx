@@ -83,16 +83,7 @@ export function HiveAIHeader({
             <span className="text-emerald-500 font-medium">Online</span>
           </div>
 
-          {onSelectCapability && (
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-semibold hover:bg-primary/20 transition-all tap-press cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Modes (11)</span>
-            </button>
-          )}
+
 
           {onClearSession && (
             <button

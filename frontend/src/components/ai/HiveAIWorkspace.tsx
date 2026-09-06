@@ -253,7 +253,6 @@ export function HiveAIWorkspace({
               onSend={handleSend}
               isProcessing={loading}
               activeCapability={capability}
-              onSelectCapability={handleSelectCapability}
             />
           </div>
 
