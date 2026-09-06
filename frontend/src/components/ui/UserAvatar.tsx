@@ -3,27 +3,16 @@
 
 import { useState } from 'react';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
+import type { User } from '@/types';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl';
 export type UserPresenceStatus = 'online' | 'busy' | 'away' | 'offline';
 
-export interface UserAvatarUser {
-  id?: string;
-  first_name?: string;
-  last_name?: string;
-  firstName?: string;
-  lastName?: string;
+export type UserAvatarUser = Partial<User> & {
   name?: string;
-  username?: string;
-  email?: string;
-  avatar?: string | null;
-  avatar_color?: string;
-  avatarColor?: string;
-  online_status?: string;
-  onlineStatus?: string;
   status?: string;
   [key: string]: any;
-}
+};
 
 export interface UserAvatarProps {
   user?: UserAvatarUser | null;
@@ -96,6 +85,7 @@ export function UserAvatar({
       )}
     >
       {avatarUrl && !imgError ? (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={avatarUrl}
           alt={name}

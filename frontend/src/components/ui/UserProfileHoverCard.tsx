@@ -125,6 +125,7 @@ export function UserProfileHoverCard({
             <div className="relative mb-3">
               <div className="h-16 w-full rounded-xl bg-gradient-to-r from-primary/30 via-indigo-600/20 to-purple-800/30 overflow-hidden relative border border-border/40">
                 {user.banner || user.banner_image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={user.banner || user.banner_image}
                     alt=""
@@ -182,14 +183,19 @@ export function UserProfileHoverCard({
             {/* Skills Pills */}
             {skills.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-3 border-t border-border/50 mt-3">
-                {skills.map((skill: string) => (
-                  <span
-                    key={skill}
-                    className="px-2 py-0.5 rounded-md surface-glass border border-border/60 text-[10px] font-semibold text-foreground/90"
-                  >
-                    {skill}
-                  </span>
-                ))}
+                {skills.map((skill, idx) => {
+                  const label = typeof skill === 'string' ? skill : (skill as any)?.name || '';
+                  if (!label) return null;
+                  const key = typeof skill === 'object' && (skill as any)?.id ? (skill as any).id : `${label}-${idx}`;
+                  return (
+                    <span
+                      key={key}
+                      className="px-2 py-0.5 rounded-md surface-glass border border-border/60 text-[10px] font-semibold text-foreground/90"
+                    >
+                      {label}
+                    </span>
+                  );
+                })}
               </div>
             )}
 
