@@ -7,7 +7,7 @@ import {
   MessageCircle, Share2, MoreHorizontal, ImagePlus, Send,
   ThumbsUp, Star, Trophy, Rss, RefreshCw, AlertCircle,
   Bookmark, Copy, Trash2, Check, X, Sparkles, Filter, Plus, Camera,
-  Code2, BarChart2, CheckCircle2, Users2, ChevronDown, ArrowUpRight
+  Code2, BarChart2, CheckCircle2, Users2, ChevronDown, ArrowUpRight, Globe
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
@@ -19,6 +19,8 @@ import { MediaMosaic } from '@/components/feed/MediaMosaic';
 import { ReactionDock, StackedReactionBadge } from '@/components/feed/ReactionDock';
 import { ThreadedComments } from '@/components/feed/ThreadedComments';
 import { PostComposerModal } from '@/components/feed/PostComposerModal';
+import { RichPostContent } from '@/components/feed/RichPostContent';
+import { ReactionListModal } from '@/components/feed/ReactionListModal';
 import type { Post, ReactionType } from '@/types';
 
 // ─── Post Card Component ───────────────────────────────────────────────────────
@@ -39,6 +41,7 @@ function PostCard({
 }) {
   const [expandedComments, setExpandedComments] = useState(false);
   const [showSheet, setShowSheet] = useState(false);
+  const [showReactionModal, setShowReactionModal] = useState(false);
   const [copied, setCopied] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -89,8 +92,14 @@ function PostCard({
                 {displayName(post.author ?? undefined)}
               </p>
             </UserProfileHoverCard>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {post.author?.university ?? 'Student'} · {timeAgo(post.created_at)}
+            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+              <span>{post.author?.university ?? 'Student'}</span>
+              <span>·</span>
+              <span>{timeAgo(post.created_at)}</span>
+              <span>·</span>
+              <span className="inline-flex items-center gap-0.5 text-muted-foreground/70" title="Public post">
+                <Globe className="w-3 h-3" />
+              </span>
             </p>
           </div>
           <button
@@ -116,10 +125,8 @@ function PostCard({
             </div>
           )}
 
-          {/* Text Content */}
-          <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap text-foreground/95 tracking-tight">
-            {sanitizeAndDecodeText(post.content)}
-          </p>
+          {/* Rich Formatted Text Content */}
+          <RichPostContent content={post.content} />
 
           {/* 1 to 5+ Smart Media Mosaic */}
           {mediaList.length > 0 && (
@@ -219,6 +226,7 @@ function PostCard({
             <StackedReactionBadge
               reactionCounts={post.reaction_counts}
               total={post.reaction_count}
+              onClick={() => setShowReactionModal(true)}
             />
 
             {(post.comment_count ?? post.comments_count ?? 0) > 0 && (
@@ -388,6 +396,14 @@ function PostCard({
           </>
         )}
       </AnimatePresence>
+
+      {/* ─── Reaction Details Modal (Who Reacted) ─────────────────────────── */}
+      <ReactionListModal
+        isOpen={showReactionModal}
+        onClose={() => setShowReactionModal(false)}
+        reactionCounts={post.reaction_counts}
+        totalCount={post.reaction_count}
+      />
     </>
   );
 }
