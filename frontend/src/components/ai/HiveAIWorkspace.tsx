@@ -44,8 +44,6 @@ export function HiveAIWorkspace({
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeModel, setActiveModel] = useState('v2.4 Neural Core');
-  const [activeProvider, setActiveProvider] = useState('Hive Intelligence');
   const [activeTab, setActiveTab] = useState<'chat' | 'artifacts'>('chat');
   const [splitPaneEnabled, setSplitPaneEnabled] = useState(true);
 
@@ -90,16 +88,11 @@ export function HiveAIWorkspace({
       });
 
       if (res.ok && res.output) {
-        if (res.model) setActiveModel(res.model);
-        if (res.provider) setActiveProvider(res.provider);
-
         const assistantMessage: HiveAIMessageItem = {
           id: `ai-${Date.now()}`,
           role: 'assistant',
           content: res.output,
           capability,
-          provider: res.provider,
-          model: res.model,
           timestamp: res.timestamp || new Date().toISOString(),
         };
 
@@ -151,8 +144,6 @@ export function HiveAIWorkspace({
       {/* ── Top Header ────────────────────────────────────────── */}
       <HiveAIHeader
         activeCapability={capability}
-        modelName={activeModel}
-        providerName={activeProvider}
         isProcessing={loading}
         onClearSession={messages.length > 0 ? handleClear : undefined}
       />
@@ -264,8 +255,6 @@ export function HiveAIWorkspace({
             onSend={handleSend}
             isProcessing={loading}
             activeCapability={capability}
-            selectedProvider={activeProvider}
-            onSelectProvider={(p) => setActiveProvider(p)}
           />
         </div>
 

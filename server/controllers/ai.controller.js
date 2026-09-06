@@ -451,8 +451,8 @@ Output the raw JSON array only. Start with [ and end with ].`;
       innovationScore: Number(idea.innovationScore || idea.noveltyScore || 7),
       estimatedWeeks:  Number(idea.estimatedWeeks || timelineWeeks || 8),
     })),
-    provider: 'Hive Intelligence',
-    model: 'Hive Turbo (v2.4)',
+    provider: 'Hive AI',
+    model: 'Hive AI',
   };
 }
 
@@ -511,8 +511,8 @@ export async function generateProjectIdeasPublic(req, res, next) {
     return res.json({
       ok: true,
       ideas: result.ideas,
-      model: result.model,
-      provider: result.provider,
+      model: 'Hive AI',
+      provider: 'Hive AI',
       generatedAt: new Date().toISOString(),
     });
   } catch (error) {
@@ -550,7 +550,7 @@ export async function chatWithAI(req, res, next) {
       routeContext += `\nReferenced Squad ID: ${context.teamId}.`;
     }
 
-    const systemPrompt = `You are HiveMind — Principal Full-Stack & CSE Project Mentor for ProjectHive.
+    const systemPrompt = `You are Hive AI — the Engineering Intelligence Assistant for ProjectHive.
 You are an elite software architect, systems designer, and senior engineering mentor.
 You specialize in:
 - Production-grade debugging with exact syntax corrections (Next.js App Router, React 19, TypeScript, Tailwind, Express, PostgreSQL, Supabase, LiveKit SFU, Socket.IO).
@@ -575,17 +575,11 @@ Guidelines:
       res.setHeader('x-confidential-redactions', String(result.security.redactionsCount || 0));
     }
 
-    const brandedModel = imageBase64
-      ? 'Hive Pro (v2.4 Vision)'
-      : result.model?.includes('llama') || result.provider === 'groq'
-      ? 'Hive Turbo (v2.4)'
-      : 'Hive Ultra (v2.4)';
-
     return res.json({
       ok: true,
       reply: result.text,
-      provider: 'Hive Intelligence',
-      model: brandedModel,
+      provider: 'Hive AI',
+      model: 'Hive AI',
       security: result.security,
       timestamp: new Date().toISOString(),
     });
@@ -765,18 +759,12 @@ Provide direct, clean, production-grade technical mentorship and guidance.`;
       res.setHeader('x-confidential-redactions', String(result.security.redactionsCount || 0));
     }
 
-    const brandedModel = imageBase64
-      ? 'Hive Pro (v2.4 Vision)'
-      : result.model?.includes('llama') || result.provider === 'groq'
-      ? 'Hive Turbo (v2.4)'
-      : 'Hive Ultra (v2.4)';
-
     return res.json({
       ok: true,
       capability,
       output: result.text,
-      provider: 'Hive Intelligence',
-      model: brandedModel,
+      provider: 'Hive AI',
+      model: 'Hive AI',
       security: result.security,
       timestamp: new Date().toISOString(),
       metadata: {

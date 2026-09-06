@@ -31,8 +31,6 @@ const CAPABILITY_LABELS: Record<HiveAICapabilityType, { title: string; subtitle:
 
 export function HiveAIHeader({
   activeCapability,
-  modelName = 'v2.4 Neural Core',
-  providerName = 'Hive Intelligence',
   isProcessing = false,
   onClearSession,
   className,
@@ -49,7 +47,7 @@ export function HiveAIHeader({
         <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
           <img
             src="/logo.png"
-            alt="ProjectHive AI"
+            alt="Hive AI"
             className={cn("w-full h-full object-contain", isProcessing && "animate-pulse")}
           />
         </div>
@@ -68,13 +66,13 @@ export function HiveAIHeader({
         </div>
       </div>
 
-      {/* Right: Engine Telemetry & Actions */}
+      {/* Right: Status & Actions */}
       <div className="flex items-center gap-2.5 shrink-0">
-        <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/60 text-[11px] font-mono text-muted-foreground">
+        <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/60 border border-border/60 text-[11px] font-mono text-muted-foreground">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{providerName}</span>
+          <span className="text-foreground font-semibold">Hive AI</span>
           <span className="text-border">·</span>
-          <span className="text-foreground font-semibold">{modelName}</span>
+          <span className="text-emerald-500 font-medium">Online</span>
         </div>
 
         {onClearSession && (

@@ -134,12 +134,10 @@ export function HiveAICopilotDrawer() {
                 <HiveAIAvatar size="sm" />
                 <div>
                   <div className="flex items-center gap-2">
-                    <h3 className="font-extrabold text-sm tracking-tight text-foreground">Hive Copilot</h3>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-primary/20 text-primary font-bold">
-                      v2.4
-                    </span>
+                    <h3 className="font-extrabold text-sm tracking-tight text-foreground">Hive AI</h3>
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   </div>
-                  <p className="text-[10px] text-muted-foreground font-mono">Contextual Engineering Intelligence</p>
+                  <p className="text-[10px] text-muted-foreground">Engineering Intelligence Assistant</p>
                 </div>
               </div>
 

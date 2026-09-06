@@ -94,11 +94,6 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
             <span className="font-bold text-xs text-foreground tracking-tight">
               {isAssistant ? 'Hive AI' : 'You'}
             </span>
-            {message.model && isAssistant && (
-              <span className="text-[10px] font-mono text-muted-foreground px-2 py-0.5 rounded-full bg-white/5 border border-white/10">
-                {message.model}
-              </span>
-            )}
           </div>
 
           {/* Action Tools */}
