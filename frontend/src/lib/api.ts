@@ -140,9 +140,12 @@ async function request<T = unknown>(
     } catch (_) {}
   }
 
-  // 35-second client-side circuit-breaker timeout
+  // AI blueprints/analysis need longer generation window (90s) vs standard endpoints (35s)
+  const isAiEndpoint = endpoint.startsWith('/ai') || endpoint.includes('ai-review');
+  const timeoutDuration = isAiEndpoint ? 90000 : 35000;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 35000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutDuration);
 
   try {
     let res = await fetch(`${BASE_URL}${endpoint}`, {

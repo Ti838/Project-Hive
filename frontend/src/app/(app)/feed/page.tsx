@@ -843,8 +843,8 @@ export default function FeedPage() {
       {/* ─── Studio Post Composer Trigger ───────────────────────────────────── */}
       <PostComposerTrigger onOpen={() => setComposerOpen(true)} />
 
-      {/* ─── Sticky Glassmorphic Filter Bar ─────────────────────────────────── */}
-      <div className="sticky top-14 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6 py-2.5 bg-background/85 dark:bg-card/85 backdrop-blur-md border-b border-border/40 flex items-center gap-2 overflow-x-auto no-scrollbar transition-colors">
+      {/* ─── Feed Filter Bar ─────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
         {[
           { id: 'all', label: 'All Posts' },
           { id: 'achievements', label: '🏆 Achievements' },
@@ -856,10 +856,10 @@ export default function FeedPage() {
             key={item.id}
             onClick={() => setFilter(item.id as any)}
             className={cn(
-              'tap-press px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer',
+              'tap-press px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer',
               filter === item.id
-                ? 'bg-primary text-primary-foreground shadow-xs'
-                : 'bg-muted/80 text-muted-foreground hover:bg-accent hover:text-foreground'
+                ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]'
+                : 'bg-card/80 dark:bg-muted/60 border border-border/60 dark:border-white/10 text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {item.label}

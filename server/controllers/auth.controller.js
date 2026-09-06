@@ -526,7 +526,11 @@ export async function getMe(req, res, next) {
 // Returns the Supabase Google OAuth URL for the frontend to redirect to
 export async function googleInitiate(req, res, next) {
   try {
-    const frontendBase = (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || 'https://projecthive-bd.vercel.app').replace(/\/+$/, '');
+    let origin = req.headers.origin;
+    if (!origin && req.headers.referer) {
+      try { origin = new URL(req.headers.referer).origin; } catch (_) {}
+    }
+    const frontendBase = (origin || process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || 'https://projecthive-bd.vercel.app').replace(/\/+$/, '');
     const redirectTo = `${frontendBase}/auth/callback`;
 
     console.log('[ProjectHive] 🔑 Google OAuth — NODE_ENV:', process.env.NODE_ENV);
@@ -568,7 +572,26 @@ export async function googleInitiate(req, res, next) {
 // Called by the frontend /auth/callback page with user data from Supabase session
 export async function googleCallback(req, res, next) {
   try {
-    const { email, googleId, firstName, lastName, avatar, supabaseAccessToken } = req.body;
+    let { email, googleId, firstName, lastName, avatar, supabaseAccessToken } = req.body;
+
+    // Fallback: If email or googleId was not provided directly, verify token via Supabase Admin
+    if ((!email || !googleId) && supabaseAccessToken) {
+      try {
+        const { data: authData, error: authErr } = await supabaseAdmin.auth.getUser(supabaseAccessToken);
+        if (authData?.user) {
+          const u = authData.user;
+          email = email || u.email;
+          googleId = googleId || u.id;
+          const meta = u.user_metadata || {};
+          const full = meta.full_name || meta.name || '';
+          firstName = firstName || meta.first_name || meta.given_name || full.split(' ')[0] || 'User';
+          lastName = lastName || meta.last_name || meta.family_name || full.split(' ').slice(1).join(' ') || '';
+          avatar = avatar || meta.avatar_url || meta.picture || null;
+        }
+      } catch (adminErr) {
+        console.warn('[ProjectHive] Could not verify token with supabaseAdmin:', adminErr.message);
+      }
+    }
 
     if (!email || !googleId) {
       console.error('[ProjectHive] Google callback: missing required fields. Keys:', Object.keys(req.body));

@@ -55,43 +55,55 @@ function AuthCallbackContent() {
           const refreshToken = hashParams.get('refresh_token');
 
           if (accessToken) {
-            const sbUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://iekfvgjxkmgduxdvkuxf.supabase.co';
-            const sbAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+            // Helper to extract JWT payload without requiring client-side Supabase keys
+            let email = '';
+            let googleId = '';
+            let firstName = 'User';
+            let lastName = '';
+            let avatar: string | null = null;
 
-            const userRes = await fetch(`${sbUrl}/auth/v1/user`, {
-              headers: {
-                'Authorization': `Bearer ${accessToken}`,
-                'apikey': sbAnonKey,
-              },
+            try {
+              const base64Url = accessToken.split('.')[1];
+              if (base64Url) {
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(
+                  atob(base64)
+                    .split('')
+                    .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                    .join('')
+                );
+                const payload = JSON.parse(jsonPayload);
+                email = payload.email || '';
+                googleId = payload.sub || '';
+                const meta = payload.user_metadata || {};
+                const fullName = meta.full_name || meta.name || '';
+                firstName = meta.first_name || meta.given_name || fullName.split(' ')[0] || 'User';
+                lastName = meta.last_name || meta.family_name || fullName.split(' ').slice(1).join(' ') || '';
+                avatar = meta.avatar_url || meta.picture || null;
+              }
+            } catch (jwtErr) {
+              console.warn('[OAuth] Could not parse JWT client-side:', jwtErr);
+            }
+
+            const res = await api.auth.googleCallback({
+              email,
+              googleId,
+              firstName,
+              lastName,
+              avatar,
+              supabaseAccessToken: accessToken,
             });
 
-            if (userRes.ok) {
-              const sbUser = await userRes.json();
-              const fullName = sbUser.user_metadata?.full_name || sbUser.user_metadata?.name || '';
-              const firstName = sbUser.user_metadata?.first_name || sbUser.user_metadata?.given_name || fullName.split(' ')[0] || 'User';
-              const lastName = sbUser.user_metadata?.last_name || sbUser.user_metadata?.family_name || fullName.split(' ').slice(1).join(' ') || '';
-              const avatar = sbUser.user_metadata?.avatar_url || sbUser.user_metadata?.picture || null;
-
-              const res = await api.auth.googleCallback({
-                email: sbUser.email,
-                googleId: sbUser.id,
-                firstName,
-                lastName,
-                avatar,
-                supabaseAccessToken: accessToken,
-              });
-
-              if (!active) return;
-              if (res.ok && res.accessToken && res.user) {
-                login(res.user, res.accessToken, res.refreshToken);
-                setStatus('success');
-                setTimeout(() => router.replace('/dashboard'), 600);
-                return;
-              } else {
-                setStatus('error');
-                setErrorMessage(res.error || 'Failed to authenticate user with ProjectHive server.');
-                return;
-              }
+            if (!active) return;
+            if (res.ok && res.accessToken && res.user) {
+              login(res.user, res.accessToken, res.refreshToken);
+              setStatus('success');
+              setTimeout(() => router.replace('/dashboard'), 600);
+              return;
+            } else {
+              setStatus('error');
+              setErrorMessage(res.error || 'Failed to authenticate user with ProjectHive server.');
+              return;
             }
           }
         }
