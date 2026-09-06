@@ -70,7 +70,7 @@ function validateEnvironment() {
 async function startServer() {
   try {
     validateEnvironment();
-    console.log('[ProjectHive] 🐝 Starting ProjectHive Backend...');
+    console.log('[ProjectHive] Starting ProjectHive Backend...');
     console.log(`[ProjectHive] Environment: ${process.env.NODE_ENV || 'development'}`);
 
     // Connect to Supabase

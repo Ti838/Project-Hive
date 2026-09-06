@@ -31,7 +31,7 @@ function VerifyEmailContent() {
         setLoading(false);
         if (res.ok) {
           setSuccess(true);
-          setMessage(res.message || 'Email verified successfully! Welcome to ProjectHive 🐝');
+          setMessage(res.message || 'Email verified successfully! Welcome to ProjectHive');
           setTimeout(() => {
             router.push('/login');
           }, 3000);

@@ -1,7 +1,7 @@
 @echo off
 echo.
 echo  ================================================
-echo   🐝  ProjectHive - Starting All Services...
+echo   ProjectHive - Starting All Services...
 echo  ================================================
 echo.
 

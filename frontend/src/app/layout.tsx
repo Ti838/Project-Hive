@@ -22,7 +22,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'ProjectHive 🐝 — Student Collaboration Platform',
+  title: 'ProjectHive — Student Collaboration Platform',
   description: 'Discover teammates, collaborate on projects, and showcase your work in real-time.',
   manifest: '/manifest.json',
   applicationName: 'ProjectHive',

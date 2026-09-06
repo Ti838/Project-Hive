@@ -270,7 +270,7 @@ export async function sendVerificationEmail(email, firstName, token) {
   return sendEmail({
     to: email,
     toName: firstName,
-    subject: '🐝 Verify your ProjectHive email address',
+    subject: 'Verify your ProjectHive email address',
     html: emailWrapper({
       badge: 'ACCOUNT VERIFICATION',
       title: 'Confirm Your Email Address',

@@ -179,7 +179,7 @@ export async function verifyEmail(req, res, next) {
 
     console.log('[ProjectHive] ✅ Email verified:', user.email);
 
-    res.json({ message: 'Email verified successfully! Welcome to ProjectHive 🐝' });
+    res.json({ message: 'Email verified successfully! Welcome to ProjectHive' });
   } catch (error) {
     console.error('[ProjectHive] Email verify error:', error);
     next(error);
