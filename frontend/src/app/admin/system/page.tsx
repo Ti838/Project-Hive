@@ -273,7 +273,7 @@ export default function AdminSystemPage() {
             <div className="space-y-1">
               <span className="text-xs font-bold text-white">AI GitHub PR & Code Reviewer</span>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Enables automated DeepSeek & Gemini feedback on pull requests and code snippets.
+                Enables automated ProjectHive AI feedback on pull requests and code snippets.
               </p>
             </div>
             <button

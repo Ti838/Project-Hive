@@ -104,7 +104,7 @@ export default function LoginPage() {
                 {[
                   { icon: Users, text: 'Real-time squad matching & team channels' },
                   { icon: Video, text: 'Instant HD WebRTC video calls & whiteboard' },
-                  { icon: Sparkles, text: 'Groq & Gemini AI Copilot brainstorming' },
+                  { icon: Sparkles, text: 'ProjectHive AI Copilot & Brainstorming' },
                   { icon: ShieldCheck, text: 'Verified student authentication & security' },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 text-xs font-medium text-foreground/90">

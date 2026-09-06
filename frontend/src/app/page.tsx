@@ -152,7 +152,7 @@ export default function LandingPage() {
           transition={{ delay: 0.2 }}
           className="text-base sm:text-xl text-muted-foreground max-w-3xl leading-relaxed mt-6"
         >
-          The complete platform for student developers, designers, and innovators. Form hackathon teams with skill matching, brainstorm with Groq & Gemini AI, talk live with WebRTC audio/video calls, and showcase your builds.
+          The complete platform for student developers, designers, and innovators. Form hackathon teams with skill matching, brainstorm with ProjectHive AI Copilot, talk live with WebRTC audio/video calls, and showcase your builds.
         </motion.p>
 
         {/* Hero CTAs */}
@@ -185,7 +185,7 @@ export default function LandingPage() {
         >
           {[
             { label: 'Real-Time Calls', desc: 'WebRTC & LiveKit Voice/Video', icon: Video, color: 'text-violet-500' },
-            { label: 'Smart AI Studio', desc: 'Groq & Gemini Architecture', icon: Sparkles, color: 'text-amber-500' },
+            { label: 'Hive AI Studio', desc: 'Neural Engineering Intelligence', icon: Sparkles, color: 'text-amber-500' },
             { label: 'Skill Matcher', desc: 'University & Role Filters', icon: Users, color: 'text-blue-500' },
             { label: 'Live Showcase', desc: 'Peer Reviews & Reactions', icon: FolderKanban, color: 'text-emerald-500' },
           ].map((item) => (
@@ -229,8 +229,8 @@ export default function LandingPage() {
               },
               {
                 icon: Sparkles,
-                title: 'AI Copilot & Idea Generator',
-                desc: 'Harness Google Gemini & Groq LLMs to generate project roadmaps, tech stack recommendations, database schemas, and milestone plans in seconds.',
+                title: 'ProjectHive AI Copilot & Studio',
+                desc: 'Harness ProjectHive AI to generate project roadmaps, tech stack recommendations, database schemas, and milestone plans in seconds.',
                 badge: 'AI Powered',
                 color: 'text-amber-500 bg-amber-500/10',
               },
@@ -329,8 +329,8 @@ export default function LandingPage() {
               'PostgreSQL & Supabase',
               'Socket.IO Realtime',
               'LiveKit WebRTC Calls',
-              'Google Gemini 2.0 AI',
-              'Groq Llama 3 AI',
+              'ProjectHive AI Studio (v2.4)',
+              'Hive Neural Copilot',
               'Zustand State Engine',
             ].map((tech) => (
               <span key={tech} className="px-3.5 py-1.5 rounded-xl bg-card border border-border text-xs font-semibold text-foreground/80 shadow-2xs">

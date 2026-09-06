@@ -131,7 +131,7 @@ export default function RegisterPage() {
                   },
                   {
                     title: 'AI Project Studio',
-                    desc: 'Brainstorm ideas, architecture, and task timelines with Gemini & Groq.',
+                    desc: 'Brainstorm ideas, architecture, and task timelines with ProjectHive AI.',
                     icon: Sparkles,
                   },
                 ].map((f, i) => (

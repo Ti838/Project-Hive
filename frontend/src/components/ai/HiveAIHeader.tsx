@@ -31,8 +31,8 @@ const CAPABILITY_LABELS: Record<HiveAICapabilityType, { title: string; subtitle:
 
 export function HiveAIHeader({
   activeCapability,
-  modelName = 'Llama-3.3-70B',
-  providerName = 'Groq Cloud',
+  modelName = 'v2.4 Neural Core',
+  providerName = 'Hive Intelligence',
   isProcessing = false,
   onClearSession,
   className,
@@ -46,8 +46,12 @@ export function HiveAIHeader({
     )}>
       {/* Left: Hive AI Brand & Active Capability */}
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-500 flex items-center justify-center shrink-0 shadow-inner">
-          <Sparkles className={cn("w-4 h-4", isProcessing && "animate-spin")} />
+        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="ProjectHive AI"
+            className={cn("w-full h-full object-contain", isProcessing && "animate-pulse")}
+          />
         </div>
         <div className="min-w-0">
           <div className="flex items-center gap-2">

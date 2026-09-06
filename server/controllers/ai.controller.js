@@ -372,7 +372,7 @@ export async function callAI(prompt, imageBase64, mimeType) {
     }
 
     if (!rawResult) {
-      throw new Error('All AI providers (Groq, Gemini, OpenRouter) are temporarily unavailable or rate-limited. Please retry in a moment.');
+      throw new Error('ProjectHive AI is temporarily experiencing heavy load. Please retry in a moment.');
     }
   }
 
@@ -451,8 +451,8 @@ Output the raw JSON array only. Start with [ and end with ].`;
       innovationScore: Number(idea.innovationScore || idea.noveltyScore || 7),
       estimatedWeeks:  Number(idea.estimatedWeeks || timelineWeeks || 8),
     })),
-    provider: result.provider,
-    model: result.model,
+    provider: 'Hive Intelligence',
+    model: 'Hive Turbo (v2.4)',
   };
 }
 
@@ -460,7 +460,7 @@ Output the raw JSON array only. Start with [ and end with ].`;
 export async function generateProjectIdeas(req, res, next) {
   try {
     if (!isAIReady()) {
-      return res.status(503).json({ error: 'AI service not configured. Add GEMINI_API_KEY or GROQ_API_KEY.' });
+      return res.status(503).json({ error: 'Hive AI service is currently unavailable.' });
     }
 
     const userId = req.user?.id || req.user?.userId || 'anon';
@@ -526,7 +526,7 @@ export async function generateProjectIdeasPublic(req, res, next) {
 export async function chatWithAI(req, res, next) {
   try {
     if (!isAIReady()) {
-      return res.status(503).json({ error: 'AI service not configured. Please configure GROQ_API_KEY, GEMINI_API_KEY, or OPENROUTER_API_KEY.' });
+      return res.status(503).json({ error: 'Hive AI service is currently unavailable.' });
     }
 
     const userId = req.user?.id || req.user?.userId || 'anon';
@@ -567,6 +567,7 @@ Guidelines:
 - Keep explanations clear, structured with concise bullet points, and free of fluff.
 - If providing SQL, optimize for PostgreSQL/Supabase with CREATE TABLE, constraints, indexes, and RLS policies where applicable.`;
 
+    const prompt = `${systemPrompt}\n\nStudent Query:\n${message || 'Analyze this image.'}`;
     const result = await callAI(prompt, imageBase64, mimeType);
 
     if (result.security?.confidentialScrubbed) {
@@ -574,11 +575,17 @@ Guidelines:
       res.setHeader('x-confidential-redactions', String(result.security.redactionsCount || 0));
     }
 
+    const brandedModel = imageBase64
+      ? 'Hive Pro (v2.4 Vision)'
+      : result.model?.includes('llama') || result.provider === 'groq'
+      ? 'Hive Turbo (v2.4)'
+      : 'Hive Ultra (v2.4)';
+
     return res.json({
       ok: true,
       reply: result.text,
-      provider: result.provider,
-      model: result.model,
+      provider: 'Hive Intelligence',
+      model: brandedModel,
       security: result.security,
       timestamp: new Date().toISOString(),
     });
@@ -596,7 +603,7 @@ Guidelines:
 export async function executeHiveAICapability(req, res, next) {
   try {
     if (!isAIReady()) {
-      return res.status(503).json({ error: 'Hive AI service is currently unavailable. Ensure GROQ_API_KEY or GEMINI_API_KEY is configured.' });
+      return res.status(503).json({ error: 'Hive AI service is currently unavailable.' });
     }
 
     const userId = req.user?.id || req.user?.userId || 'anon';
@@ -758,12 +765,18 @@ Provide direct, clean, production-grade technical mentorship and guidance.`;
       res.setHeader('x-confidential-redactions', String(result.security.redactionsCount || 0));
     }
 
+    const brandedModel = imageBase64
+      ? 'Hive Pro (v2.4 Vision)'
+      : result.model?.includes('llama') || result.provider === 'groq'
+      ? 'Hive Turbo (v2.4)'
+      : 'Hive Ultra (v2.4)';
+
     return res.json({
       ok: true,
       capability,
       output: result.text,
-      provider: result.provider,
-      model: result.model,
+      provider: 'Hive Intelligence',
+      model: brandedModel,
       security: result.security,
       timestamp: new Date().toISOString(),
       metadata: {
@@ -778,7 +791,7 @@ Provide direct, clean, production-grade technical mentorship and guidance.`;
     }
     return res.status(500).json({
       error: error.message?.includes('AI_NOT_CONFIGURED')
-        ? 'Hive AI service is initializing or no API key is configured on the server. Please check GROQ_API_KEY in Render dashboard.'
+        ? 'Hive AI service is initializing. Please try again shortly.'
         : (error.message || 'Hive AI request failed. Please try again.')
     });
   }

@@ -74,13 +74,17 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
       {/* Avatar Icon */}
       <div
         className={cn(
-          'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-inner select-none mt-0.5',
+          'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-inner select-none mt-0.5 overflow-hidden',
           isAssistant
-            ? 'bg-amber-500/10 text-amber-500 border border-amber-500/25 glow-primary'
+            ? 'bg-amber-500/10 border border-amber-500/25 p-1'
             : 'bg-primary text-primary-foreground shadow-xs'
         )}
       >
-        {isAssistant ? <Sparkles className="w-4 h-4 text-amber-400" /> : <UserIcon className="w-4 h-4" />}
+        {isAssistant ? (
+          <img src="/logo.png" alt="Hive AI" className="w-full h-full object-contain" />
+        ) : (
+          <UserIcon className="w-4 h-4" />
+        )}
       </div>
 
       {/* Message Body */}

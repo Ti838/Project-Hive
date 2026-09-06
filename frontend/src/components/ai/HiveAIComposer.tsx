@@ -27,13 +27,13 @@ export function HiveAIComposer({
   activeCapability,
   placeholder,
   className,
-  selectedProvider = 'Groq Cloud',
+  selectedProvider = 'Hive Intelligence',
   onSelectProvider,
 }: HiveAIComposerProps) {
   const [input, setInput] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [activeTier, setActiveTier] = useState<'Groq' | 'Gemini' | 'OpenRouter'>('Groq');
+  const [activeTier, setActiveTier] = useState<'Hive Turbo' | 'Hive Pro' | 'Hive Ultra'>('Hive Turbo');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -118,7 +118,7 @@ export function HiveAIComposer({
   };
 
   const cycleTier = () => {
-    const tiers: Array<'Groq' | 'Gemini' | 'OpenRouter'> = ['Groq', 'Gemini', 'OpenRouter'];
+    const tiers: Array<'Hive Turbo' | 'Hive Pro' | 'Hive Ultra'> = ['Hive Turbo', 'Hive Pro', 'Hive Ultra'];
     const nextIdx = (tiers.indexOf(activeTier) + 1) % tiers.length;
     const next = tiers[nextIdx];
     setActiveTier(next);
@@ -225,15 +225,15 @@ export function HiveAIComposer({
               </button>
             )}
 
-            {/* Frosted Model / Provider Chip */}
+            {/* Frosted Model / Engine Chip */}
             <button
               type="button"
               onClick={cycleTier}
               className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-mono font-medium surface-glass border border-white/10 text-muted-foreground hover:text-foreground hover:border-primary/40 tap-press transition-all cursor-pointer"
-              title="Click to toggle AI inference tier"
+              title="Click to toggle Hive AI engine"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Tier:</span>
+              <span>Engine:</span>
               <span className="text-foreground font-semibold">{activeTier}</span>
             </button>
           </div>

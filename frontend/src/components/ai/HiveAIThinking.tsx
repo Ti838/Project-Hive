@@ -12,14 +12,14 @@ interface HiveAIThinkingProps {
 }
 
 export function HiveAIThinking({
-  label = 'Synthesizing with Groq & Gemini AI…',
+  label = 'Synthesizing with ProjectHive AI…',
   sublabel = 'Analyzing engineering context & generating structured artifact',
   className,
 }: HiveAIThinkingProps) {
   return (
     <div className={cn('p-4 rounded-2xl border border-border/80 bg-card/80 backdrop-blur-xs flex items-center gap-3.5 shadow-xs', className)}>
-      <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-500 flex items-center justify-center shrink-0">
-        <Sparkles className="w-4 h-4 animate-spin" />
+      <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 p-1.5 overflow-hidden">
+        <img src="/logo.png" alt="ProjectHive AI" className="w-full h-full object-contain animate-pulse" />
       </div>
       <div className="min-w-0 space-y-0.5">
         <p className="font-semibold text-xs text-foreground flex items-center gap-2">

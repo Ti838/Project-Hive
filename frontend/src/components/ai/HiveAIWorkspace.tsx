@@ -44,8 +44,8 @@ export function HiveAIWorkspace({
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeModel, setActiveModel] = useState('Llama-3.3-70B');
-  const [activeProvider, setActiveProvider] = useState('Groq Cloud');
+  const [activeModel, setActiveModel] = useState('v2.4 Neural Core');
+  const [activeProvider, setActiveProvider] = useState('Hive Intelligence');
   const [activeTab, setActiveTab] = useState<'chat' | 'artifacts'>('chat');
   const [splitPaneEnabled, setSplitPaneEnabled] = useState(true);
 

@@ -109,8 +109,8 @@ export function HiveAIEmptyState({
 
   return (
     <div className={cn('py-8 sm:py-12 px-4 max-w-2xl mx-auto text-center space-y-6 select-none', className)}>
-      <div className="w-14 h-14 rounded-3xl bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mx-auto shadow-inner">
-        <Sparkles className="w-7 h-7" />
+      <div className="w-14 h-14 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto shadow-inner p-2.5 overflow-hidden">
+        <img src="/logo.png" alt="ProjectHive AI" className="w-full h-full object-contain" />
       </div>
 
       <div className="space-y-2">
