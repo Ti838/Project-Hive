@@ -168,10 +168,18 @@ function emailWrapper({ badge = 'PROJECTHIVE', title, subtitle, content }) {
           <!-- Header Section -->
           <tr>
             <td style="padding:36px 40px 24px;text-align:center;background:radial-gradient(ellipse at top, rgba(245,158,11,0.08) 0%, rgba(19,27,46,0) 70%);">
-              <!-- Logo Mark -->
-              <div style="display:inline-block;width:56px;height:56px;background:linear-gradient(135deg, rgba(245,158,11,0.2) 0%, rgba(99,102,241,0.15) 100%);border:1px solid rgba(245,158,11,0.3);border-radius:18px;line-height:56px;text-align:center;margin-bottom:16px;">
-                <span style="font-size:28px;vertical-align:middle;">🐝</span>
-              </div>
+              <!-- App Logo Image -->
+              <table border="0" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 16px auto;">
+                <tr>
+                  <td align="center" style="width:60px;height:60px;background:linear-gradient(135deg, rgba(245,158,11,0.15) 0%, rgba(99,102,241,0.15) 100%);border:1.5px solid rgba(245,158,11,0.35);border-radius:20px;padding:6px;box-shadow:0 8px 20px -4px rgba(245,158,11,0.25);">
+                    <img src="https://projecthive-bd.vercel.app/logo.png"
+                         alt="ProjectHive Logo"
+                         width="48"
+                         height="48"
+                         style="display:block;width:48px;height:48px;object-fit:contain;border-radius:12px;border:0;" />
+                  </td>
+                </tr>
+              </table>
               
               <div style="font-size:11px;font-weight:700;letter-spacing:1.5px;color:#F59E0B;text-transform:uppercase;margin-bottom:6px;">
                 ${badge}
