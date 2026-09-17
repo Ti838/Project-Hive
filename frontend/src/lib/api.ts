@@ -1,11 +1,11 @@
-import type {
+﻿import type {
   User, Team, TeamMember, Project, Message, Conversation, Notification, Post, PostComment, FriendRequest, Stats,
   GitHubRepo, GitHubCommit, GitHubBranch, GitHubIssue, GitHubPullRequest, GitHubWorkflowRun, GitHubRelease,
   ProjectHealthMetrics, GitHubUserProfile,
   ContentReport, UserStrike, AdminAuditLog, SystemFlags, AdminStats, AdminHealth
 } from '@/types';
 
-const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const DEFAULT_API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://projecthive-backend.onrender.com/api';
 
 export function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
@@ -20,7 +20,7 @@ export function getBaseUrl(): string {
   return DEFAULT_API_URL.replace(/\/+$/, '');
 }
 
-// ─── Token helpers ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Token helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -49,7 +49,7 @@ export function setStoredUser(user: User): void {
   localStorage.setItem('user_data', JSON.stringify(user));
 }
 
-// ─── Token refresh with Mutex / Lock ──────────────────────────────────────────
+// â”€â”€â”€ Token refresh with Mutex / Lock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 let activeRefreshPromise: Promise<string> | null = null;
 
 async function refreshAccessToken(): Promise<string> {
@@ -113,7 +113,7 @@ async function refreshAccessToken(): Promise<string> {
 
 import { getCachedDeviceTelemetry } from '@/lib/deviceTelemetry';
 
-// ─── Core fetch wrapper ────────────────────────────────────────────────────────
+// â”€â”€â”€ Core fetch wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 type ApiResult<T> = T & { ok: boolean; status: number; error?: string };
 
@@ -204,7 +204,7 @@ async function request<T = unknown>(
   }
 }
 
-// ─── API ───────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const api = {
 
@@ -764,3 +764,4 @@ export const api = {
       request<{ message: string; role: string }>('/admin/promote-me', { method: 'POST' }),
   },
 };
+
