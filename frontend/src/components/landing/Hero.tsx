@@ -162,8 +162,8 @@ export function Hero() {
         ref={bgVisualRef} 
         className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center"
       >
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] bg-primary/20 blur-[120px] rounded-full opacity-60 mix-blend-screen" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/10 blur-[100px] rounded-full opacity-50 mix-blend-screen" />
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[500px] bg-primary/20 blur-3xl rounded-full opacity-60 " />
+        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/10 blur-3xl rounded-full opacity-50 " />
       </div>
 
       {/* 2. Particles / Depth Layer */}
@@ -255,4 +255,5 @@ export function Hero() {
     </section>
   );
 }
+
 

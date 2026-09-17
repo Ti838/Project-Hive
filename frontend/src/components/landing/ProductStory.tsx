@@ -166,7 +166,7 @@ export function ProductStory() {
         className="relative w-full max-w-[1200px] mx-auto perspective-[1200px] mb-24 h-[500px] md:h-[650px]"
       >
         {/* Glow behind the interface */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/20 blur-[120px] rounded-full opacity-60 pointer-events-none" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 bg-primary/20 blur-3xl rounded-full opacity-60 pointer-events-none" />
 
         {/* Main Interface Mockup */}
         <div 
@@ -282,3 +282,4 @@ export function ProductStory() {
     </section>
   );
 }
+

@@ -122,7 +122,7 @@ export function Showcase() {
       
       {/* Dynamic Background Glows */}
       <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
-        <div className="w-[800px] h-[600px] bg-primary/20 blur-[150px] rounded-full mix-blend-screen" />
+        <div className="w-[800px] h-[600px] bg-primary/20 blur-3xl rounded-full " />
       </div>
 
       {/* Captions Overlay */}
@@ -360,4 +360,5 @@ export function Showcase() {
     </section>
   );
 }
+
 
