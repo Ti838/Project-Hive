@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Users, Video, Sparkles, FolderKanban } from 'lucide-react';
+import { Users, Video, Sparkles, FolderKanban, Mic, PhoneOffIcon } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -261,5 +261,6 @@ export function FeaturesSequence() {
     </section>
   );
 }
+
 
 
