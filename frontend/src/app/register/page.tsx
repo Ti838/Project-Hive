@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Modern Register Page ───────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Modern Register Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -73,7 +73,7 @@ export default function RegisterPage() {
       return;
     }
 
-    setSuccessMsg('Account created successfully! Redirecting to login…');
+    setSuccessMsg('Account created successfully! Redirecting to loginâ€¦');
     setTimeout(() => {
       router.push('/login');
     }, 1800);
@@ -81,8 +81,8 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col selection:bg-primary/20">
-      {/* ─── Top Navigation Bar with Back to Home ───────────────────── */}
-      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+      {/* â”€â”€â”€ Top Navigation Bar with Back to Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <header className="w-full px-4 sm:px-8 py-3 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
@@ -99,13 +99,13 @@ export default function RegisterPage() {
         </Link>
       </header>
 
-      {/* ─── Main Content Split Layout ──────────────────────────────── */}
-      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-8 lg:p-12">
-        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-8 lg:p-10 shadow-xl backdrop-blur-xl">
+      {/* â”€â”€â”€ Main Content Split Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-4">
+        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-6 lg:p-6 shadow-xl backdrop-blur-xl">
 
           {/* Left Feature Branding (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[560px]">
-            <div className="space-y-6">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[560px]">
+            <div className="space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center p-3 shadow-inner">
                 <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
               </div>
@@ -117,7 +117,7 @@ export default function RegisterPage() {
                 </p>
               </div>
 
-              <div className="space-y-4 pt-2">
+              <div className="space-y-3 pt-2">
                 {[
                   {
                     title: 'Form Hackathon Squads',
@@ -148,7 +148,7 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
+            <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
               <span>Free for all university students</span>
               <span className="font-semibold text-primary">Open Community</span>
             </div>
@@ -157,7 +157,7 @@ export default function RegisterPage() {
           {/* Right Form */}
           <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-2 max-w-lg mx-auto w-full">
             {/* Quick Switch Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-6 border border-border/60 text-center text-xs font-semibold">
+            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-4 border border-border/60 text-center text-xs font-semibold">
               <Link
                 href="/login"
                 className="py-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
@@ -201,7 +201,7 @@ export default function RegisterPage() {
                   />
                 </svg>
               )}
-              <span>{isGoogleLoading ? 'Connecting to Google…' : 'Sign up with Google'}</span>
+              <span>{isGoogleLoading ? 'Connecting to Googleâ€¦' : 'Sign up with Google'}</span>
             </button>
 
             {/* Visual Divider */}
@@ -406,7 +406,7 @@ export default function RegisterPage() {
                 className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 active:scale-[0.98] transition-all shadow-md mt-2"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                {isSubmitting ? 'Creating account…' : 'Create Account'}
+                {isSubmitting ? 'Creating accountâ€¦' : 'Create Account'}
               </button>
             </form>
 
@@ -424,3 +424,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

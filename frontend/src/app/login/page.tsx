@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Modern Sign In Page ──────────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Modern Sign In Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -64,8 +64,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col selection:bg-primary/20">
-      {/* ─── Top Navigation Bar with Back to Home ───────────────────── */}
-      <header className="w-full px-4 sm:px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+      {/* â”€â”€â”€ Top Navigation Bar with Back to Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <header className="w-full px-4 sm:px-8 py-3 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
@@ -82,13 +82,13 @@ export default function LoginPage() {
         </Link>
       </header>
 
-      {/* ─── Main Content Split Layout ──────────────────────────────── */}
-      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-8 lg:p-12">
-        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-8 lg:p-10 shadow-xl backdrop-blur-xl">
+      {/* â”€â”€â”€ Main Content Split Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-xl">
 
           {/* Left Feature Branding (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[500px]">
-            <div className="space-y-6">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[400px]">
+            <div className="space-y-3">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center p-3 shadow-inner">
                 <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
               </div>
@@ -117,7 +117,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div className="pt-6 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
+            <div className="pt-4 border-t border-border/60 text-xs text-muted-foreground flex items-center justify-between">
               <span>Trusted by student builders</span>
               <span className="font-semibold text-primary">Live Platform</span>
             </div>
@@ -126,7 +126,7 @@ export default function LoginPage() {
           {/* Right Form */}
           <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-4 max-w-md mx-auto w-full">
             {/* Quick Switch Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-6 border border-border/60 text-center text-xs font-semibold">
+            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-4 border border-border/60 text-center text-xs font-semibold">
               <span className="py-2 rounded-lg bg-background text-foreground shadow-xs">Sign In</span>
               <Link
                 href="/register"
@@ -136,7 +136,7 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <div className="space-y-2 mb-6">
+            <div className="space-y-2 mb-4">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sign in to your account</h2>
               <p className="text-xs sm:text-sm text-muted-foreground">Enter your university credentials to continue</p>
             </div>
@@ -170,7 +170,7 @@ export default function LoginPage() {
                   />
                 </svg>
               )}
-              <span>{isGoogleLoading ? 'Connecting to Google…' : 'Continue with Google'}</span>
+              <span>{isGoogleLoading ? 'Connecting to Googleâ€¦' : 'Continue with Google'}</span>
             </button>
 
             {/* Visual Divider */}
@@ -185,7 +185,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               {/* Email */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
@@ -254,11 +254,11 @@ export default function LoginPage() {
                 className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 active:scale-[0.98] transition-all shadow-md mt-2"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                {isSubmitting ? 'Signing in…' : 'Sign In'}
+                {isSubmitting ? 'Signing inâ€¦' : 'Sign In'}
               </button>
             </form>
 
-            <div className="mt-6 pt-6 border-t border-border/60 text-center">
+            <div className="mt-6 pt-4 border-t border-border/60 text-center">
               <p className="text-xs text-muted-foreground">
                 Don&apos;t have an account?{' '}
                 <Link href="/register" className="text-primary font-semibold hover:underline">
@@ -272,4 +272,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
