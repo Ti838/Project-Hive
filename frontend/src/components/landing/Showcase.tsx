@@ -129,16 +129,16 @@ export function Showcase() {
       <div className="absolute top-24 left-0 w-full z-30 pointer-events-none px-6 flex justify-center text-center">
         <div className="relative w-full max-w-2xl h-20">
           <div ref={caption1Ref} className="absolute inset-0 flex flex-col items-center justify-center">
-            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">The Unified Workspace</h3>
-            <p className="text-lg text-foreground/80 font-medium">Everything your squad needs in one window.</p>
+            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">Discord-Grade Workspaces</h3>
+            <p className="text-lg text-foreground/80 font-medium">Text, voice, and AI tools for your university team.</p>
           </div>
           <div ref={caption2Ref} className="absolute inset-0 flex flex-col items-center justify-center">
-            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">Frictionless Communication</h3>
-            <p className="text-lg text-foreground/80 font-medium">Native WebRTC means you never leave the code to talk.</p>
+            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">LiveKit Enterprise Calling</h3>
+            <p className="text-lg text-foreground/80 font-medium">Low-latency group video calls directly in your squad.</p>
           </div>
           <div ref={caption3Ref} className="absolute inset-0 flex flex-col items-center justify-center">
             <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">Hive AI Copilot</h3>
-            <p className="text-lg text-foreground/80 font-medium">Instant architecture generation, directly in your editor.</p>
+            <p className="text-lg text-foreground/80 font-medium">Multimodal intelligence for your team incubation.</p>
           </div>
         </div>
       </div>
@@ -221,13 +221,13 @@ export function Showcase() {
               {/* Toolbar */}
               <div className="h-12 border-b border-foreground/5 flex items-center justify-between px-4 shrink-0 bg-muted overflow-x-auto">
                 <div className="flex items-center gap-4 text-sm whitespace-nowrap">
-                  <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">page.tsx</span>
-                  <span className="text-primary border-b-2 border-primary pb-3 mt-3 cursor-pointer">layout.tsx</span>
-                  <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">api.ts</span>
+                  <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">#general</span>
+                  <span className="text-primary border-b-2 border-primary pb-3 mt-3 cursor-pointer">#frontend</span>
+                  <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">#backend</span>
                 </div>
                 <div className="flex items-center gap-3 ml-4">
                   <button className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors border border-emerald-500/20 shrink-0">
-                    <Terminal className="w-3.5 h-3.5" /> Deploy
+                    <Users className="w-3.5 h-3.5" /> 4 Members
                   </button>
                 </div>
               </div>
@@ -236,33 +236,52 @@ export function Showcase() {
               <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
                 
                 {/* Code Editor */}
-                <div ref={codeEditorRef} className="flex-1 p-4 md:p-6 font-mono text-xs md:text-sm leading-relaxed overflow-hidden text-foreground/80 relative">
-                  <div className="text-foreground/30 mb-2">// Main Application Layout - Synced with Team</div>
-                  <div><span className="text-blue-400">import</span> {'{'} Inter {'}'} <span className="text-blue-400">from</span> <span className="text-emerald-400">'next/font/google'</span>;</div>
-                  <div><span className="text-blue-400">import</span> <span className="text-emerald-400">'./globals.css'</span>;</div>
-                  <div><span className="text-blue-400">import</span> {'{'} ThemeProvider {'}'} <span className="text-blue-400">from</span> <span className="text-emerald-400">'@/context/ThemeContext'</span>;</div>
-                  <br/>
-                  <div><span className="text-blue-400">const</span> <span className="text-amber-200">inter</span> = <span className="text-amber-200">Inter</span>({'{'} subsets: [<span className="text-emerald-400">'latin'</span>] {'}'});</div>
-                  <br/>
-                  <div><span className="text-blue-400">export default function</span> <span className="text-amber-200">RootLayout</span>({'{'}</div>
-                  <div className="pl-4">children,</div>
-                  <div>{'}'}: {'{'}</div>
-                  <div className="pl-4">children: React.ReactNode</div>
-                  <div>{'}'}) {'{'}</div>
-                  <div className="pl-4"><span className="text-blue-400">return</span> (</div>
-                  <div className="pl-8 text-slate-300">
-                    &lt;<span className="text-blue-400">html</span> lang=<span className="text-emerald-400">"en"</span>&gt;<br/>
-                    &nbsp;&nbsp;&lt;<span className="text-blue-400">body</span> className={`{inter.className}`}&gt;<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;<span className="text-amber-200">ThemeProvider</span>&gt;<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{'{'}children{'}'}<br/>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&lt;/<span className="text-amber-200">ThemeProvider</span>&gt;<br/>
-                    &nbsp;&nbsp;&lt;/<span className="text-blue-400">body</span>&gt;<br/>
-                    &lt;/<span className="text-blue-400">html</span>&gt;
-                  </div>
-                  <div className="pl-4">);</div>
-                  <div>{'}'}</div>
+<div ref={codeEditorRef} className="flex-1 p-4 md:p-6 font-sans text-xs md:text-sm leading-relaxed overflow-hidden relative flex flex-col justify-end">
+  
+  <div className="flex gap-3 mb-4">
+    <div className="w-8 h-8 rounded-full bg-emerald-500/20 shrink-0 border border-emerald-500/50" />
+    <div className="flex-1">
+      <div className="flex items-baseline gap-2">
+        <span className="font-semibold text-emerald-400">Sarah</span>
+        <span className="text-[10px] text-foreground/40">10:41 AM</span>
+      </div>
+      <p className="text-foreground/80 mt-1">Hey guys! I just pushed the new teammate discovery UI. Can someone review?</p>
+    </div>
+  </div>
 
-                  {/* AI Copilot Overlay */}
+  <div className="flex gap-3 mb-4">
+    <div className="w-8 h-8 rounded-full bg-blue-500/20 shrink-0 border border-blue-500/50" />
+    <div className="flex-1">
+      <div className="flex items-baseline gap-2">
+        <span className="font-semibold text-blue-400">Alex</span>
+        <span className="text-[10px] text-foreground/40">10:42 AM</span>
+      </div>
+      <p className="text-foreground/80 mt-1">Looks awesome! Im joining the LiveKit room now to screenshare the WebRTC integration.</p>
+    </div>
+  </div>
+
+  <div className="flex gap-3 mb-4">
+    <div className="w-8 h-8 rounded-full bg-amber-500/20 shrink-0 flex items-center justify-center border border-amber-500/50">
+      <Sparkles className="w-4 h-4 text-amber-400" />
+    </div>
+    <div className="flex-1">
+      <div className="flex items-baseline gap-2">
+        <span className="font-semibold text-amber-400">HiveMind AI</span>
+        <span className="text-[10px] text-foreground/40">10:42 AM</span>
+      </div>
+      <p className="text-foreground/80 mt-1">I noticed you are working on WebRTC. Would you like me to generate a Socket.IO signaling server template?</p>
+      <div className="mt-2 p-2 rounded bg-background border border-foreground/10 text-xs text-foreground/60 w-fit flex items-center gap-2 cursor-pointer hover:bg-foreground/5">
+        <Terminal className="w-3.5 h-3.5" /> generate-signaling.ts
+      </div>
+    </div>
+  </div>
+
+  {/* Chat Input box mock */}
+  <div className="mt-2 h-10 rounded-lg bg-background border border-foreground/10 flex items-center px-3 text-foreground/40 gap-2">
+    <Plus className="w-4 h-4" /> Message #frontend...
+  </div>
+
+  {/* AI Copilot Overlay */}
                   <div ref={aiOverlayRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-48 md:left-12 md:translate-x-0 md:translate-y-0 w-[90%] md:w-[400px] max-w-[400px] rounded-lg bg-[#1a1a24] border border-primary/40 shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] flex flex-col overflow-hidden z-20">
                     <div className="px-3 py-2 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-xs font-semibold text-primary">
                       <Sparkles className="w-3.5 h-3.5" /> Hive AI Suggestion
@@ -323,7 +342,7 @@ export function Showcase() {
                       <div>
                         <span className="text-foreground/40 mr-2">10:43 AM</span>
                         <span className="text-primary font-semibold mr-2">Hive AI:</span>
-                        <span className="text-foreground/80">Suggestion available for layout.tsx</span>
+                        <span className="text-foreground/80">Suggestion available for #frontend</span>
                       </div>
                     </div>
                     <div className="mt-2 h-8 rounded bg-foreground/5 border border-foreground/10 flex items-center px-2 text-foreground/40">
@@ -350,4 +369,7 @@ function PhoneOffIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+
+
 

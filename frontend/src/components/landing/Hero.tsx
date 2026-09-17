@@ -200,7 +200,7 @@ export function Hero() {
         {/* Project Name / Label */}
         <div ref={labelRef} className="mb-6 flex items-center gap-2 px-4 py-1.5 rounded-full bg-foreground/5 border border-foreground/10 backdrop-blur-md shadow-subtle">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
-          <span className="text-xs font-semibold text-foreground/80 tracking-wide">ProjectHive Collaboration Hub</span>
+          <span className="text-xs font-semibold text-foreground/80 tracking-wide">The University Collaboration Hub</span>
         </div>
 
         {/* Main Headline */}
@@ -229,7 +229,7 @@ export function Hero() {
             href="/register"
             className="group relative flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-foreground text-background font-semibold text-base transition-transform hover:scale-105 hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.4)] w-full sm:w-auto overflow-hidden"
           >
-            <span className="relative z-10">Start Building Free</span>
+            <span className="relative z-10">Join the Hive</span>
             <ArrowRight className="relative z-10 w-4 h-4 transition-transform group-hover:translate-x-1" />
             <div className="absolute inset-0 bg-foreground/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
           </Link>
@@ -255,3 +255,4 @@ export function Hero() {
     </section>
   );
 }
+

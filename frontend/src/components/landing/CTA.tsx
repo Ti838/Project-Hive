@@ -87,7 +87,7 @@ export function CTA() {
         <div ref={contentRef} className="flex flex-col items-center">
           <h2 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground mb-6">
             Stop searching.<br />
-            <span className="text-foreground/60">Start shipping.</span>
+            <span className="text-foreground/60">Find your squad.</span>
           </h2>
           
           <p className="text-xl text-foreground/50 max-w-xl mx-auto mb-12 font-medium">
@@ -111,4 +111,5 @@ export function CTA() {
     </section>
   );
 }
+
 
