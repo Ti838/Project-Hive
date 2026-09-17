@@ -1,5 +1,5 @@
-'use client';
-// ─── Hive AI Message Component (Obsidian Code Blocks & Refined Typography) ───────
+﻿'use client';
+// â”€â”€â”€ Hive AI Message Component (Obsidian Code Blocks & Refined Typography) â”€â”€â”€â”€â”€â”€â”€
 
 import { useState } from 'react';
 import { Copy, Check, Volume2, VolumeX, Sparkles, User as UserIcon } from 'lucide-react';
@@ -66,7 +66,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
       className={cn(
         'group flex gap-3.5 transition-all',
         isAssistant
-          ? 'surface-glass p-5 rounded-3xl border border-white/10 shadow-sm leading-relaxed tracking-tight'
+          ? 'surface-glass p-5 rounded-3xl border border-foreground/10 shadow-sm leading-relaxed tracking-tight'
           : 'bg-primary/10 border border-primary/20 p-4 rounded-2xl ml-auto max-w-[85%] sm:max-w-[78%]',
         className
       )}
@@ -103,7 +103,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                 type="button"
                 onClick={toggleSpeech}
                 title={isSpeaking ? 'Mute speech' : 'Read aloud'}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground tap-press transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-foreground/10 text-muted-foreground hover:text-foreground tap-press transition-colors cursor-pointer"
               >
                 {isSpeaking ? <VolumeX className="w-3.5 h-3.5 text-amber-500" /> : <Volume2 className="w-3.5 h-3.5" />}
               </button>
@@ -113,7 +113,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
 
         {/* Attachment Thumbnail if present */}
         {message.imageUrl && (
-          <div className="rounded-2xl overflow-hidden border border-white/15 max-w-sm max-h-56 bg-zinc-950 my-1 shadow-lg">
+          <div className="rounded-2xl overflow-hidden border border-foreground/15 max-w-sm max-h-56 bg-zinc-950 my-1 shadow-lg">
             <img src={message.imageUrl} alt="Context Attachment" className="w-full h-full object-contain" />
           </div>
         )}
@@ -136,7 +136,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                       <span className="uppercase font-bold tracking-wider text-[10px] text-primary">
                         {part.lang || 'code'}
                       </span>
-                      <span className="text-zinc-600">·</span>
+                      <span className="text-zinc-600">Â·</span>
                       <span className="text-[10px] text-zinc-500 font-sans">
                         {lineCount} {lineCount === 1 ? 'line' : 'lines'} (~{approxTokens} tokens)
                       </span>
@@ -183,7 +183,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                     if (line.startsWith('- ') || line.startsWith('* ')) {
                       return (
                         <div key={lIdx} className="flex items-start gap-2 ml-2 my-0.5">
-                          <span className="text-primary font-bold text-xs shrink-0 mt-0.5">•</span>
+                          <span className="text-primary font-bold text-xs shrink-0 mt-0.5">â€¢</span>
                           <span>{line.replace(/^[-*]\s+/, '')}</span>
                         </div>
                       );
@@ -198,3 +198,4 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
     </div>
   );
 }
+

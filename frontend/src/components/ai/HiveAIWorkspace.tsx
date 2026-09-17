@@ -1,5 +1,5 @@
-'use client';
-// ─── Hive AI Workspace Component (Studio-Grade Intelligence Canvas) ─────────────
+﻿'use client';
+// â”€â”€â”€ Hive AI Workspace Component (Studio-Grade Intelligence Canvas) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Features full-width responsive canvas, live artifact split-pane & unified mode selector
 
 import { useState, useRef, useEffect } from 'react';
@@ -147,7 +147,7 @@ export function HiveAIWorkspace({
       'flex flex-col h-full w-full min-h-0 surface-overlay overflow-hidden',
       className
     )}>
-      {/* ── Top Header with Interactive Mode Trigger ─────────────────── */}
+      {/* â”€â”€ Top Header with Interactive Mode Trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <HiveAIHeader
         activeCapability={capability}
         onSelectCapability={handleSelectCapability}
@@ -155,15 +155,15 @@ export function HiveAIWorkspace({
         onClearSession={messages.length > 0 ? handleClear : undefined}
       />
 
-      {/* ── Workspace Body (Full-Width Studio Canvas + Right Split-Pane) ── */}
+      {/* â”€â”€ Workspace Body (Full-Width Studio Canvas + Right Split-Pane) â”€â”€ */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <HiveAIContextRail context={context} />
 
-        {/* ── Responsive Viewport Switcher Controls (when artifacts exist) ──── */}
+        {/* â”€â”€ Responsive Viewport Switcher Controls (when artifacts exist) â”€â”€â”€â”€ */}
         {artifacts.length > 0 && (
           <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b border-border/60 text-xs shrink-0">
             {/* Mobile Tab Switcher */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-white/10 lg:hidden">
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl border border-foreground/10 lg:hidden">
               <button
                 type="button"
                 onClick={() => setActiveTab('chat')}
@@ -195,7 +195,7 @@ export function HiveAIWorkspace({
             <div className="hidden lg:flex items-center justify-between w-full">
               <div className="flex items-center gap-2 text-muted-foreground font-mono text-[11px]">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span>Workspace Studio · {artifacts.length} live artifact{artifacts.length === 1 ? '' : 's'}</span>
+                <span>Workspace Studio Â· {artifacts.length} live artifact{artifacts.length === 1 ? '' : 's'}</span>
               </div>
 
               <button
@@ -210,7 +210,7 @@ export function HiveAIWorkspace({
           </div>
         )}
 
-        {/* ── Main Workspace Body (Responsive Split-Pane) ───────── */}
+        {/* â”€â”€ Main Workspace Body (Responsive Split-Pane) â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden relative">
           {/* Main Column: Chat Thread & Floating Composer */}
           <div
@@ -263,12 +263,12 @@ export function HiveAIWorkspace({
             <div
               className={cn(
                 'w-full flex-col min-h-0 surface-glass backdrop-blur-2xl overflow-hidden',
-                splitPaneEnabled ? 'lg:w-[48%] lg:border-l lg:border-white/10 lg:flex' : 'hidden',
+                splitPaneEnabled ? 'lg:w-[48%] lg:border-l lg:border-foreground/10 lg:flex' : 'hidden',
                 activeTab === 'artifacts' ? 'flex' : 'hidden lg:flex'
               )}
             >
               {/* Artifact Toolbar */}
-              <div className="p-3 border-b border-white/10 flex items-center justify-between gap-2 bg-muted/10 shrink-0">
+              <div className="p-3 border-b border-foreground/10 flex items-center justify-between gap-2 bg-muted/10 shrink-0">
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
                   {artifacts.map((art) => (
                     <button
@@ -279,7 +279,7 @@ export function HiveAIWorkspace({
                         'px-3 py-1 rounded-xl text-xs font-semibold whitespace-nowrap transition-all tap-press cursor-pointer flex items-center gap-1.5',
                         selectedArtifact?.id === art.id
                           ? 'bg-primary text-primary-foreground shadow-xs'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-foreground/5'
                       )}
                     >
                       <FileCode className="w-3.5 h-3.5" />
@@ -306,4 +306,5 @@ export function HiveAIWorkspace({
     </div>
   );
 }
+
 

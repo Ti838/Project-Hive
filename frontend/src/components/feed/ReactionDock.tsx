@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-// ─── Facebook & LinkedIn-Grade Jitter-Free Reaction Dock ──────────────────────
+// â”€â”€â”€ Facebook & LinkedIn-Grade Jitter-Free Reaction Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,7 +21,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'like',
     label: 'Like',
-    emoji: '👍',
+    emoji: 'ðŸ‘',
     color: '#1877F2',
     activeTextColor: 'text-[#1877F2]',
     activeBg: 'bg-[#1877F2]/10 text-[#1877F2] border-[#1877F2]/30',
@@ -29,7 +29,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'love',
     label: 'Love',
-    emoji: '❤️',
+    emoji: 'â¤ï¸',
     color: '#E41E3F',
     activeTextColor: 'text-[#E41E3F]',
     activeBg: 'bg-[#E41E3F]/10 text-[#E41E3F] border-[#E41E3F]/30',
@@ -37,7 +37,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'care',
     label: 'Care',
-    emoji: '🥰',
+    emoji: 'ðŸ¥°',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -45,7 +45,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'haha',
     label: 'Haha',
-    emoji: '😆',
+    emoji: 'ðŸ˜†',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -53,7 +53,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'wow',
     label: 'Wow',
-    emoji: '😮',
+    emoji: 'ðŸ˜®',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -61,7 +61,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'sad',
     label: 'Sad',
-    emoji: '😢',
+    emoji: 'ðŸ˜¢',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -69,7 +69,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'angry',
     label: 'Angry',
-    emoji: '😡',
+    emoji: 'ðŸ˜¡',
     color: '#E9710F',
     activeTextColor: 'text-[#E9710F]',
     activeBg: 'bg-[#E9710F]/10 text-[#E9710F] border-[#E9710F]/30',
@@ -78,7 +78,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'celebrate',
     label: 'Celebrate',
-    emoji: '🎉',
+    emoji: 'ðŸŽ‰',
     color: '#F59E0B',
     activeTextColor: 'text-amber-500',
     activeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
@@ -86,7 +86,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'insightful',
     label: 'Insightful',
-    emoji: '💡',
+    emoji: 'ðŸ’¡',
     color: '#10B981',
     activeTextColor: 'text-emerald-500',
     activeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
@@ -94,7 +94,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'fire',
     label: 'Fire',
-    emoji: '🔥',
+    emoji: 'ðŸ”¥',
     color: '#F97316',
     activeTextColor: 'text-orange-500',
     activeBg: 'bg-orange-500/10 text-orange-500 border-orange-500/30',
@@ -102,7 +102,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'support',
     label: 'Support',
-    emoji: '🤝',
+    emoji: 'ðŸ¤',
     color: '#6366F1',
     activeTextColor: 'text-indigo-500',
     activeBg: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/30',
@@ -159,7 +159,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
       onMouseEnter={openFlyout}
       onMouseLeave={closeFlyout}
     >
-      {/* ── Facebook Floating Reaction Dock (Seamless Hover Bridge) ──────── */}
+      {/* â”€â”€ Facebook Floating Reaction Dock (Seamless Hover Bridge) â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {showFlyout && (
           <div className="absolute left-0 bottom-full pb-2.5 z-50 pointer-events-auto">
@@ -171,7 +171,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
               className={cn(
                 'flex items-center gap-1 sm:gap-1.5 px-2.5 py-1.5 rounded-full',
                 'bg-card/98 dark:bg-zinc-900/98 backdrop-blur-2xl',
-                'border border-border/80 dark:border-white/10 shadow-2xl'
+                'border border-border/80 dark:border-foreground/10 shadow-2xl'
               )}
             >
               {PRIMARY_DOCK_TYPES.map((type) => {
@@ -202,7 +202,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
 
                     {/* Floating pill tooltip */}
                     <div className="absolute -top-7 left-1/2 -translate-x-1/2 pointer-events-none opacity-0 group-hover/emoji:opacity-100 transition-all duration-150 z-20">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/90 text-white shadow-xl whitespace-nowrap block">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-background/90 text-white shadow-xl whitespace-nowrap block">
                         {item.label}
                       </span>
                     </div>
@@ -214,7 +214,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
         )}
       </AnimatePresence>
 
-      {/* ── Trigger Button (Facebook Like / Reaction Button) ──────────────── */}
+      {/* â”€â”€ Trigger Button (Facebook Like / Reaction Button) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <button
         type="button"
         onTouchStart={handleTouchStart}
@@ -246,7 +246,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
   );
 }
 
-// ── Stacked Miniature Reaction Indicator ──────────────────────────────────────
+// â”€â”€ Stacked Miniature Reaction Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 interface StackedReactionBadgeProps {
   reactionCounts?: Record<string, number>;
   total?: number;
@@ -288,7 +288,7 @@ export function StackedReactionBadge({
           return (
             <span
               key={type}
-              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-card border border-white/20 text-[11px] shadow-xs group-hover:scale-110 transition-transform"
+              className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-card border border-foreground/20 text-[11px] shadow-xs group-hover:scale-110 transition-transform"
               title={`${cfg.label}: ${reactionCounts[type]}`}
             >
               {cfg.emoji}
@@ -303,3 +303,4 @@ export function StackedReactionBadge({
     </div>
   );
 }
+

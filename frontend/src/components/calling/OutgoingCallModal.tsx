@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Outgoing Call Modal ────────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Outgoing Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { PhoneOff, Video, Phone } from 'lucide-react';
 import { useCallStore } from '@/lib/callStore';
@@ -25,8 +25,8 @@ export function OutgoingCallModal({
   const isVoice = session.callType === 'audio';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-      <div className="surface-floating border border-white/15 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center space-y-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in">
+      <div className="surface-floating border border-foreground/15 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center space-y-6">
         {/* Pulsing rings around target avatar */}
         <div className="relative my-3">
           <div className="w-28 h-28 rounded-full border-2 border-primary/40 flex items-center justify-center animate-ping absolute inset-0" />
@@ -50,7 +50,7 @@ export function OutgoingCallModal({
         {/* Status */}
         <div className="space-y-1">
           <h3 className="font-bold text-lg text-foreground truncate max-w-[260px]">{targetName}</h3>
-          <p className="text-xs text-muted-foreground animate-pulse font-medium">Calling…</p>
+          <p className="text-xs text-muted-foreground animate-pulse font-medium">Callingâ€¦</p>
         </div>
 
         {/* Cancel Call Button */}
@@ -69,3 +69,4 @@ export function OutgoingCallModal({
     </div>
   );
 }
+

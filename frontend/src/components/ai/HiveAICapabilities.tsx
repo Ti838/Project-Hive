@@ -1,5 +1,5 @@
-'use client';
-// ─── Hive AI Capabilities Selector & Modal Command Picker ───────────────────
+﻿'use client';
+// â”€â”€â”€ Hive AI Capabilities Selector & Modal Command Picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Minimal, glassmorphism mode selector with categorized matrix & instant switching
 
 import { useState } from 'react';
@@ -144,7 +144,7 @@ export function HiveAICapabilitiesModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-background/60 backdrop-blur-md animate-in fade-in duration-200">
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -185,7 +185,7 @@ export function HiveAICapabilitiesModal({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search modes by name, keyword or skill…"
+                placeholder="Search modes by name, keyword or skillâ€¦"
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-muted/60 border border-border/60 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/50"
                 autoFocus
               />
@@ -358,5 +358,6 @@ export function HiveAICapabilities({
     </div>
   );
 }
+
 
 

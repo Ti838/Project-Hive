@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -77,8 +77,8 @@ export default function AdminTeamsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header & Search ──────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-white/5">
+      {/* â”€â”€â”€ Header & Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             <Layers className="w-5 h-5 text-purple-400" />
@@ -97,7 +97,7 @@ export default function AdminTeamsPage() {
               placeholder="Search squads by name, tag, or topic..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-500 transition-colors"
             />
             {search && (
               <button
@@ -120,14 +120,14 @@ export default function AdminTeamsPage() {
         </form>
       </div>
 
-      {/* ─── Squads Grid ──────────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Squads Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {loading ? (
-        <div className="py-20 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-white/5">
+        <div className="py-20 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-400" />
           <p className="font-mono text-xs">Querying Campus Squad Nodes...</p>
         </div>
       ) : teams.length === 0 ? (
-        <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-white/5 space-y-2">
+        <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5 space-y-2">
           <Layers className="w-10 h-10 mx-auto text-purple-400/40" />
           <h3 className="text-sm font-bold text-white">No Squads Found</h3>
           <p className="text-xs text-slate-400">Try adjusting your search criteria or create a new squad.</p>
@@ -137,7 +137,7 @@ export default function AdminTeamsPage() {
           {teams.map((t) => (
             <div
               key={t.id}
-              className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 hover:border-purple-500/30 transition-all flex flex-col justify-between group space-y-4"
+              className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 hover:border-purple-500/30 transition-all flex flex-col justify-between group space-y-4"
             >
               <div className="space-y-3">
                 <div className="flex items-start justify-between gap-2">
@@ -172,7 +172,7 @@ export default function AdminTeamsPage() {
                 </p>
               </div>
 
-              <div className="space-y-3 pt-3 border-t border-white/5">
+              <div className="space-y-3 pt-3 border-t border-foreground/5">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <span className="flex items-center gap-1.5">
                     <Users className="w-3.5 h-3.5 text-purple-400" />
@@ -180,7 +180,7 @@ export default function AdminTeamsPage() {
                   </span>
 
                   {t.open_roles && (Array.isArray(t.open_roles) ? t.open_roles.length > 0 : Number(t.open_roles) > 0) && (
-                    <span className="px-2 py-0.5 rounded bg-white/5 text-[10px] text-slate-300">
+                    <span className="px-2 py-0.5 rounded bg-foreground/5 text-[10px] text-slate-300">
                       {Array.isArray(t.open_roles) ? t.open_roles.length : t.open_roles} Open Roles
                     </span>
                   )}
@@ -214,3 +214,4 @@ export default function AdminTeamsPage() {
     </div>
   );
 }
+

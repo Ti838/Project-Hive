@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive Sidebar & Resizable Workspace Drawer ──────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive Sidebar & Resizable Workspace Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -132,7 +132,7 @@ export function Sidebar() {
 
   return (
     <>
-      {/* ─── Mobile Drawer Overlay ────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Mobile Drawer Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -141,7 +141,7 @@ export function Sidebar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 bg-black/65 backdrop-blur-sm z-50 md:hidden"
+              className="fixed inset-0 bg-background/65 backdrop-blur-sm z-50 md:hidden"
             />
             <motion.aside
               initial={{ x: '-100%' }}
@@ -231,7 +231,7 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* ─── Desktop Resizable Sidebar ───────────────────────────────────── */}
+      {/* â”€â”€â”€ Desktop Resizable Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <motion.aside
         ref={sidebarRef}
         initial={false}
@@ -251,7 +251,7 @@ export function Sidebar() {
             onPointerDown={startResizing}
             onDoubleClick={() => setSidebarWidth(260)}
             style={{ touchAction: 'none' }}
-            title="Drag to resize sidebar • Double-click to reset"
+            title="Drag to resize sidebar â€¢ Double-click to reset"
             className={cn(
               'absolute top-0 right-0 w-1.5 h-full cursor-col-resize z-40 transition-colors group-hover/sidebar:bg-primary/20',
               'hover:w-2 hover:bg-primary/40 active:bg-primary',
@@ -319,7 +319,7 @@ export function Sidebar() {
               {!sidebarCollapsed && <span className="truncate">ADMIN CONSOLE</span>}
             </Link>
             {sidebarCollapsed && (
-              <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-amber-500 text-xs font-bold rounded-xl shadow-xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
+              <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-amber-500 text-xs font-bold rounded-xl shadow-xl border border-foreground/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
                 Admin Console
               </div>
             )}
@@ -375,7 +375,7 @@ export function Sidebar() {
 
                 {/* Refined Linear-style Tooltip in Collapsed Mode */}
                 {sidebarCollapsed && (
-                  <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-foreground text-xs font-semibold rounded-xl shadow-2xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
+                  <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-foreground text-xs font-semibold rounded-xl shadow-2xl border border-foreground/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
                     {label}
                   </div>
                 )}
@@ -423,7 +423,7 @@ export function Sidebar() {
           </div>
 
           {sidebarCollapsed && (
-            <div className="absolute left-full ml-3 px-3 py-2 surface-floating text-foreground text-xs font-medium rounded-xl shadow-2xl border border-white/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
+            <div className="absolute left-full ml-3 px-3 py-2 surface-floating text-foreground text-xs font-medium rounded-xl shadow-2xl border border-foreground/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
               <p className="font-semibold text-foreground">{name}</p>
               <p className="text-[10px] text-muted-foreground">{user?.email || user?.university}</p>
             </div>
@@ -447,3 +447,4 @@ export function Sidebar() {
     </>
   );
 }
+

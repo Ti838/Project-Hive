@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Screen Share View ──────────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Screen Share View â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useRef, useCallback } from 'react';
 import { Monitor, X } from 'lucide-react';
@@ -39,11 +39,11 @@ export function ScreenShareView({ sharer }: { sharer: ParticipantTrackItem }) {
   }, [sharer.screenTrack]);
 
   return (
-    <div className="relative w-full h-full bg-black/95 rounded-2xl overflow-hidden flex items-center justify-center border border-white/10 shadow-2xl">
+    <div className="relative w-full h-full bg-background/95 rounded-2xl overflow-hidden flex items-center justify-center border border-foreground/10 shadow-2xl">
       <video ref={setVideoRef} autoPlay playsInline className="w-full h-full object-contain" />
 
       {/* Presenter Banner */}
-      <div className="absolute top-3 left-3 flex items-center gap-2 bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs text-white">
+      <div className="absolute top-3 left-3 flex items-center gap-2 bg-background/75 backdrop-blur-md px-3 py-1.5 rounded-full border border-foreground/10 text-xs text-white">
         <Monitor className="w-3.5 h-3.5 text-primary" />
         <span className="font-semibold">{sharer.isLocal ? 'You are sharing your screen' : `${sharer.name}'s screen`}</span>
       </div>
@@ -61,3 +61,4 @@ export function ScreenShareView({ sharer }: { sharer: ParticipantTrackItem }) {
     </div>
   );
 }
+

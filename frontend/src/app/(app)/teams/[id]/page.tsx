@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 // ─── Team Workspace Component (/teams/[id]) ─────────────────────────────────
 // Discord/GitHub/LinkedIn Grade Collaborative Workspace
 
@@ -354,7 +354,7 @@ export default function TeamWorkspacePage() {
         >
           <div className="absolute inset-0 bg-grid-white/[0.03] bg-[size:24px_24px]" />
           <div className="absolute bottom-3 right-4 sm:right-8 flex items-center gap-2">
-            <span className="text-[11px] font-mono text-white/60 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
+            <span className="text-[11px] font-mono text-foreground/60 bg-background/40 backdrop-blur-md px-2.5 py-1 rounded-lg border border-foreground/10">
               Capacity: {memberCount}/{maxSize}
             </span>
           </div>
@@ -672,7 +672,7 @@ export default function TeamWorkspacePage() {
                         )}>
                           {parsedMedia ? (
                             <div className="space-y-2">
-                              <img src={parsedMedia.url} alt="Attachment" className="rounded-xl max-h-64 object-contain bg-black/10" />
+                              <img src={parsedMedia.url} alt="Attachment" className="rounded-xl max-h-64 object-contain bg-background/10" />
                               {parsedMedia.caption && <p>{parsedMedia.caption}</p>}
                             </div>
                           ) : (
@@ -879,7 +879,7 @@ export default function TeamWorkspacePage() {
       {/* ── LEADER JOIN REQUESTS DRAWER (LinkedIn Job Manager Style) ──── */}
       <AnimatePresence>
         {showRequestsDrawer && (
-          <div className="fixed inset-0 z-50 overflow-hidden bg-black/60 backdrop-blur-xs flex justify-end">
+          <div className="fixed inset-0 z-50 overflow-hidden bg-background/60 backdrop-blur-xs flex justify-end">
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
@@ -967,7 +967,7 @@ export default function TeamWorkspacePage() {
       {/* ── TRANSFER LEADERSHIP CONFIRMATION MODAL ─────────────────────── */}
       <AnimatePresence>
         {transferTarget && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

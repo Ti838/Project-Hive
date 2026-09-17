@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useMemo } from 'react';
 import { ExternalLink, Globe } from 'lucide-react';
@@ -23,7 +23,7 @@ export function RichPostContent({
 
   const displayedText = useMemo(() => {
     if (!shouldTruncate || isExpanded) return decoded;
-    return decoded.slice(0, maxCharacters).trim() + '…';
+    return decoded.slice(0, maxCharacters).trim() + 'â€¦';
   }, [decoded, shouldTruncate, isExpanded, maxCharacters]);
 
   // Extract first URL for optional rich link card
@@ -56,7 +56,7 @@ export function RichPostContent({
             onClick={(e) => e.stopPropagation()}
             className="text-primary hover:underline font-medium break-all inline-flex items-center gap-0.5 mx-0.5"
           >
-            <span>{part.length > 35 ? domain + '/…' : part}</span>
+            <span>{part.length > 35 ? domain + '/â€¦' : part}</span>
             <ExternalLink className="w-3 h-3 inline-block shrink-0 opacity-70" />
           </a>
         );
@@ -122,7 +122,7 @@ export function RichPostContent({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="mt-2 block rounded-2xl border border-white/10 dark:border-white/5 bg-muted/40 hover:bg-muted/70 transition-all overflow-hidden group shadow-xs"
+          className="mt-2 block rounded-2xl border border-foreground/10 dark:border-foreground/5 bg-muted/40 hover:bg-muted/70 transition-all overflow-hidden group shadow-xs"
         >
           <div className="p-3.5 sm:p-4 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -151,4 +151,5 @@ export function RichPostContent({
     </div>
   );
 }
+
 

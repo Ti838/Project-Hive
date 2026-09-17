@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState } from 'react';
 import { Sparkles, X, Copy, Check, ShieldAlert, AlertTriangle, CheckCircle2, Share2, Loader2 } from 'lucide-react';
@@ -27,7 +27,7 @@ export function AiPrReviewModal({ isOpen, onClose, title, reviewContent, loading
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/70 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -56,7 +56,7 @@ export function AiPrReviewModal({ isOpen, onClose, title, reviewContent, loading
 
           {/* Model info banner */}
           <div className="px-6 py-2 bg-muted/20 border-b border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Engineering Intelligence Layer • Static & Security Analysis</span>
+            <span>Engineering Intelligence Layer â€¢ Static & Security Analysis</span>
             {model && (
               <span className="font-mono text-primary font-medium">
                 {provider ? `${provider} / ` : ''}{model}
@@ -105,4 +105,5 @@ export function AiPrReviewModal({ isOpen, onClose, title, reviewContent, loading
     </AnimatePresence>
   );
 }
+
 

@@ -1,5 +1,5 @@
-'use client';
-// ─── Hive AI Contextual Intelligence Drawer (Global Copilot) ─────────────────
+﻿'use client';
+// â”€â”€â”€ Hive AI Contextual Intelligence Drawer (Global Copilot) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Activated via contextual triggers or Ctrl+J. Frosted slide-over drawer with quick shortcuts.
 
 import { useState, useRef, useEffect } from 'react';
@@ -117,7 +117,7 @@ export function HiveAICopilotDrawer() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setCopilotOpen(false)}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-background/60 backdrop-blur-sm"
           />
 
           {/* Drawer Container */}
@@ -126,10 +126,10 @@ export function HiveAICopilotDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative w-full max-w-lg h-full surface-floating backdrop-blur-2xl border-l border-white/10 flex flex-col shadow-2xl z-10 overflow-hidden"
+            className="relative w-full max-w-lg h-full surface-floating backdrop-blur-2xl border-l border-foreground/10 flex flex-col shadow-2xl z-10 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/10 bg-muted/20 shrink-0">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-foreground/10 bg-muted/20 shrink-0">
               <div className="flex items-center gap-2.5">
                 <HiveAIAvatar size="sm" />
                 <div>
@@ -146,7 +146,7 @@ export function HiveAICopilotDrawer() {
                   href="/generator"
                   onClick={() => setCopilotOpen(false)}
                   title="Open Full AI Studio"
-                  className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground tap-press transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-foreground/10 text-muted-foreground hover:text-foreground tap-press transition-colors"
                 >
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
@@ -154,7 +154,7 @@ export function HiveAICopilotDrawer() {
                 <button
                   type="button"
                   onClick={() => setCopilotOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground tap-press transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg hover:bg-foreground/10 text-muted-foreground hover:text-foreground tap-press transition-colors cursor-pointer"
                   aria-label="Close copilot drawer"
                 >
                   <X className="w-4 h-4" />
@@ -163,7 +163,7 @@ export function HiveAICopilotDrawer() {
             </div>
 
             {/* Quick Capability Shortcuts Header Row */}
-            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-white/10 overflow-x-auto no-scrollbar bg-muted/10 shrink-0">
+            <div className="flex items-center gap-1.5 px-3 py-2 border-b border-foreground/10 overflow-x-auto no-scrollbar bg-muted/10 shrink-0">
               {QUICK_SHORTCUTS.map(({ label, cap, icon: Icon }) => (
                 <button
                   key={cap}
@@ -173,7 +173,7 @@ export function HiveAICopilotDrawer() {
                     'flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all tap-press cursor-pointer',
                     capability === cap
                       ? 'bg-primary text-primary-foreground shadow-xs glow-primary'
-                      : 'surface-glass text-muted-foreground hover:text-foreground border border-white/10'
+                      : 'surface-glass text-muted-foreground hover:text-foreground border border-foreground/10'
                   )}
                 >
                   <Icon className="w-3 h-3" />
@@ -216,7 +216,7 @@ export function HiveAICopilotDrawer() {
             </div>
 
             {/* Floating Composer at Bottom */}
-            <div className="p-2 border-t border-white/10 bg-transparent shrink-0">
+            <div className="p-2 border-t border-foreground/10 bg-transparent shrink-0">
               <HiveAIComposer
                 onSend={handleSend}
                 isProcessing={loading}
@@ -229,3 +229,4 @@ export function HiveAICopilotDrawer() {
     </AnimatePresence>
   );
 }
+

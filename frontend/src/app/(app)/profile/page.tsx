@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive Studio Profile Page (Facebook & LinkedIn Grade) ────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive Studio Profile Page (Facebook & LinkedIn Grade) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +22,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar';
 import { UserProfileHoverCard } from '@/components/ui/UserProfileHoverCard';
 import type { User, RelationshipState } from '@/types';
 
-// ─── Validation schema ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Validation schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const profileSchema = z.object({
   first_name:    z.string().min(1, 'First name required'),
   last_name:     z.string().min(1, 'Last name required'),
@@ -36,7 +36,7 @@ const profileSchema = z.object({
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 
-// ─── Skill Tag Editor ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Skill Tag Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: string[]) => void }) {
   const [input, setInput] = useState('');
   const add = () => {
@@ -68,9 +68,9 @@ function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: str
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), add())}
-          placeholder="Add technical or domain skill (press Enter)…"
+          placeholder="Add technical or domain skill (press Enter)â€¦"
           autoCapitalize="words"
-          className="flex-1 h-11 text-sm bg-muted/60 rounded-xl px-4 border border-white/10 focus:border-primary/50 focus:outline-none"
+          className="flex-1 h-11 text-sm bg-muted/60 rounded-xl px-4 border border-foreground/10 focus:border-primary/50 focus:outline-none"
         />
         <button
           type="button"
@@ -84,7 +84,7 @@ function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: str
   );
 }
 
-// ─── Profile Skeleton Loader ──────────────────────────────────────────────────
+// â”€â”€â”€ Profile Skeleton Loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function ProfileSkeleton() {
   return (
     <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6 animate-pulse">
@@ -151,7 +151,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     setTimeout(() => setToastMsg(null), 3200);
   };
 
-  // ─── Real-time Socket Event Listener ─────────────────────────────────────────
+  // â”€â”€â”€ Real-time Socket Event Listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useSocket({
     onRelationshipUpdate: (data) => {
       if (!activeUser || !currentUser) return;
@@ -170,7 +170,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     resolver: zodResolver(profileSchema) as any,
   });
 
-  // ─── Load Profile Data ───────────────────────────────────────────────────────
+  // â”€â”€â”€ Load Profile Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const loadProfile = useCallback(() => {
     if (isOwnProfile) {
       if (currentUser) {
@@ -237,7 +237,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     }
   }, [activeTab, activeUser?.id, isOwnProfile, friendsList.length, projectsList.length]);
 
-  // ─── Image Upload Handlers ───────────────────────────────────────────────────
+  // â”€â”€â”€ Image Upload Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -320,7 +320,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     reader.readAsDataURL(file);
   };
 
-  // ─── Skill Endorsements ──────────────────────────────────────────────────────
+  // â”€â”€â”€ Skill Endorsements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleEndorseSkill = async (skillName: string) => {
     if (!profileUser?.id || isOwnProfile) return;
     const currentCount = endorsedSkills[skillName] ?? 0;
@@ -351,7 +351,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     }
   };
 
-  // ─── Friendship Action Handlers ──────────────────────────────────────────────
+  // â”€â”€â”€ Friendship Action Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const handleSendFriendRequest = async () => {
     if (!profileUser?.id || actionLoading) return;
     setActionLoading(true);
@@ -466,7 +466,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     }
   };
 
-  // ─── Profile Form Submission ─────────────────────────────────────────────────
+  // â”€â”€â”€ Profile Form Submission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const onSubmit: SubmitHandler<ProfileForm> = async (data) => {
     setSaving(true);
     const updateData: Partial<User> = {
@@ -573,8 +573,8 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
         </div>
       )}
 
-      {/* ─── Hero Cover & Studio Avatar Dock ─────────────────────────────────── */}
-      <div className="relative rounded-3xl overflow-hidden border border-white/10 dark:border-white/5 bg-card shadow-xl">
+      {/* â”€â”€â”€ Hero Cover & Studio Avatar Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="relative rounded-3xl overflow-hidden border border-foreground/10 dark:border-foreground/5 bg-card shadow-xl">
         {/* Cover Banner */}
         <div
           className="h-44 sm:h-56 relative overflow-hidden group shadow-inner transition-all"
@@ -590,7 +590,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               type="button"
               onClick={() => bannerInputRef.current?.click()}
               disabled={uploadingBanner}
-              className="absolute top-3.5 left-3.5 px-3 py-1.5 surface-floating border border-white/20 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md tap-press cursor-pointer"
+              className="absolute top-3.5 left-3.5 px-3 py-1.5 surface-floating border border-foreground/20 rounded-xl text-white text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md tap-press cursor-pointer"
               title="Change Cover Banner"
             >
               {uploadingBanner ? (
@@ -598,7 +598,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               ) : (
                 <ImagePlus className="w-3.5 h-3.5" />
               )}
-              <span>{uploadingBanner ? 'Uploading…' : 'Edit Cover'}</span>
+              <span>{uploadingBanner ? 'Uploadingâ€¦' : 'Edit Cover'}</span>
             </button>
           )}
         </div>
@@ -624,7 +624,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                   type="button"
                   onClick={() => avatarInputRef.current?.click()}
                   disabled={uploadingAvatar}
-                  className="absolute inset-0 rounded-3xl bg-black/50 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity backdrop-blur-xs cursor-pointer active:scale-95"
+                  className="absolute inset-0 rounded-3xl bg-background/50 text-white opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition-opacity backdrop-blur-xs cursor-pointer active:scale-95"
                   title="Upload Profile Picture"
                 >
                   {uploadingAvatar ? (
@@ -639,7 +639,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               )}
             </div>
 
-            {/* ─── Context-Aware Dynamic Action Dock ─────────────────────────── */}
+            {/* â”€â”€â”€ Context-Aware Dynamic Action Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-end pt-2 sm:pt-0">
               {isOwnProfile ? (
                 <button
@@ -728,7 +728,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                             initial={{ opacity: 0, y: 6, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 6, scale: 0.95 }}
-                            className="absolute right-0 top-full mt-2 w-48 surface-floating border border-white/10 rounded-2xl p-1.5 shadow-2xl z-30 space-y-1"
+                            className="absolute right-0 top-full mt-2 w-48 surface-floating border border-foreground/10 rounded-2xl p-1.5 shadow-2xl z-30 space-y-1"
                           >
                             <Link
                               href={`/messages?userId=${activeUser.id}`}
@@ -797,7 +797,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               )}
               {(activeUser?.major || activeUser?.department) && (
                 <>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span>{activeUser.major || activeUser.department}</span>
                 </>
               )}
@@ -815,10 +815,10 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               </p>
             )}
 
-            {/* ─── Social Proof: Mutual Friends Pill ──────────────────────────── */}
+            {/* â”€â”€â”€ Social Proof: Mutual Friends Pill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             {!isOwnProfile && mutualCount > 0 && (
               <div className="pt-2">
-                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full surface-glass border border-white/10 text-xs text-muted-foreground shadow-xs">
+                <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full surface-glass border border-foreground/10 text-xs text-muted-foreground shadow-xs">
                   <div className="flex -space-x-2 shrink-0">
                     {mutualFriends.slice(0, 3).map((mf) => (
                       <UserProfileHoverCard key={mf.id} user={mf}>
@@ -884,8 +884,8 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
           </div>
         </div>
 
-        {/* ─── Profile Navigation Tabs ────────────────────────────────────────── */}
-        <div className="flex items-center gap-2 px-5 sm:px-7 border-t border-white/10 dark:border-white/5 bg-muted/20 overflow-x-auto py-2">
+        {/* â”€â”€â”€ Profile Navigation Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="flex items-center gap-2 px-5 sm:px-7 border-t border-foreground/10 dark:border-foreground/5 bg-muted/20 overflow-x-auto py-2">
           {[
             { id: 'overview',  label: 'Overview',              icon: BookOpen },
             { id: 'skills',    label: `Skills (${skills.length || activeUser?.skills?.length || 0})`, icon: Sparkles },
@@ -913,13 +913,13 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
         </div>
       </div>
 
-      {/* ─── Edit Profile Form (Expanded on Toggle) ─────────────────────────── */}
+      {/* â”€â”€â”€ Edit Profile Form (Expanded on Toggle) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {editing && isOwnProfile && (
         <motion.form
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           onSubmit={handleSubmit(onSubmit)}
-          className="surface-glass border border-white/10 rounded-3xl p-6 space-y-5 shadow-xl"
+          className="surface-glass border border-foreground/10 rounded-3xl p-6 space-y-5 shadow-xl"
         >
           <div className="flex items-center justify-between border-b border-border/50 pb-3">
             <h2 className="font-bold text-sm text-foreground uppercase tracking-wider flex items-center gap-2">
@@ -942,7 +942,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 autoCapitalize="words"
                 className={cn(
                   'w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border focus:outline-none focus:border-primary transition-colors',
-                  errors.first_name ? 'border-destructive' : 'border-white/10'
+                  errors.first_name ? 'border-destructive' : 'border-foreground/10'
                 )}
               />
               {errors.first_name && <p className="text-xs text-destructive">{errors.first_name.message}</p>}
@@ -955,7 +955,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 autoCapitalize="words"
                 className={cn(
                   'w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border focus:outline-none focus:border-primary transition-colors',
-                  errors.last_name ? 'border-destructive' : 'border-white/10'
+                  errors.last_name ? 'border-destructive' : 'border-foreground/10'
                 )}
               />
               {errors.last_name && <p className="text-xs text-destructive">{errors.last_name.message}</p>}
@@ -967,8 +967,8 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
             <textarea
               {...register('bio')}
               rows={3}
-              className="w-full min-h-[96px] text-sm bg-muted/50 rounded-xl p-4 border border-white/10 focus:border-primary focus:outline-none resize-none transition-colors"
-              placeholder="Tell other students and project recruiters about yourself…"
+              className="w-full min-h-[96px] text-sm bg-muted/50 rounded-xl p-4 border border-foreground/10 focus:border-primary focus:outline-none resize-none transition-colors"
+              placeholder="Tell other students and project recruiters about yourselfâ€¦"
             />
             {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
           </div>
@@ -979,7 +979,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               <input
                 {...register('university')}
                 autoCapitalize="words"
-                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-white/10 focus:border-primary focus:outline-none transition-colors"
+                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-foreground/10 focus:border-primary focus:outline-none transition-colors"
               />
             </div>
             <div className="space-y-1.5">
@@ -989,7 +989,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 type="number"
                 min={1}
                 max={10}
-                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-white/10 focus:border-primary focus:outline-none transition-colors"
+                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-foreground/10 focus:border-primary focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -1005,7 +1005,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               <input
                 {...register('github_url')}
                 placeholder="https://github.com/..."
-                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-white/10 focus:border-primary focus:outline-none"
+                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-foreground/10 focus:border-primary focus:outline-none"
               />
             </div>
             <div className="space-y-1.5">
@@ -1013,7 +1013,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               <input
                 {...register('linkedin_url')}
                 placeholder="https://linkedin.com/in/..."
-                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-white/10 focus:border-primary focus:outline-none"
+                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-foreground/10 focus:border-primary focus:outline-none"
               />
             </div>
             <div className="space-y-1.5">
@@ -1021,7 +1021,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               <input
                 {...register('portfolio_url')}
                 placeholder="https://yoursite.com"
-                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-white/10 focus:border-primary focus:outline-none"
+                className="w-full h-11 text-sm bg-muted/50 rounded-xl px-4 border border-foreground/10 focus:border-primary focus:outline-none"
               />
             </div>
           </div>
@@ -1033,7 +1033,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               className="h-11 flex items-center justify-center gap-2 px-6 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm tap-press cursor-pointer disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{saving ? 'Saving…' : 'Save Changes'}</span>
+              <span>{saving ? 'Savingâ€¦' : 'Save Changes'}</span>
             </button>
             <button
               type="button"
@@ -1046,14 +1046,14 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
         </motion.form>
       )}
 
-      {/* ─── TAB CONTENT PANELS ──────────────────────────────────────────────── */}
+      {/* â”€â”€â”€ TAB CONTENT PANELS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
 
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Identity & Academic Highlights */}
           <div className="grid sm:grid-cols-2 gap-4">
-            <div className="surface-glass border border-white/10 rounded-2xl p-5 space-y-3 shadow-sm">
+            <div className="surface-glass border border-foreground/10 rounded-2xl p-5 space-y-3 shadow-sm">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <School className="w-4 h-4 text-primary" /> Academic Profile
               </h3>
@@ -1073,7 +1073,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               </div>
             </div>
 
-            <div className="surface-glass border border-white/10 rounded-2xl p-5 space-y-3 shadow-sm">
+            <div className="surface-glass border border-foreground/10 rounded-2xl p-5 space-y-3 shadow-sm">
               <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Users className="w-4 h-4 text-primary" /> Activity & Collaboration
               </h3>
@@ -1115,7 +1115,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
               : calc;
 
             return (
-              <div className="surface-glass border border-white/10 rounded-3xl p-5 shadow-sm space-y-3">
+              <div className="surface-glass border border-foreground/10 rounded-3xl p-5 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-500" />
@@ -1128,7 +1128,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                     {completionPct}% Complete
                   </span>
                 </div>
-                <div className="h-2.5 bg-muted/70 rounded-full overflow-hidden p-0.5 border border-white/5">
+                <div className="h-2.5 bg-muted/70 rounded-full overflow-hidden p-0.5 border border-foreground/5">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${Math.min(100, Math.max(8, completionPct))}%` }}
@@ -1141,7 +1141,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {completionPct >= 100
-                    ? '🎉 Excellent! Your profile is 100% complete and highlighted to potential campus project recruiters.'
+                    ? 'ðŸŽ‰ Excellent! Your profile is 100% complete and highlighted to potential campus project recruiters.'
                     : 'Add your university, bio, technical skills, and social links to attract top teammates.'}
                 </p>
               </div>
@@ -1152,7 +1152,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
 
       {/* TAB 2: SKILLS & ENDORSEMENTS */}
       {activeTab === 'skills' && (
-        <div className="surface-glass border border-white/10 rounded-3xl p-6 space-y-4 shadow-sm">
+        <div className="surface-glass border border-foreground/10 rounded-3xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-base text-foreground flex items-center gap-2">
@@ -1193,7 +1193,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 return (
                   <div
                     key={skill}
-                    className="inline-flex items-center gap-2 text-xs bg-muted/60 border border-white/10 rounded-2xl pl-3.5 pr-2 py-1.5 shadow-2xs transition-all hover:border-primary/40"
+                    className="inline-flex items-center gap-2 text-xs bg-muted/60 border border-foreground/10 rounded-2xl pl-3.5 pr-2 py-1.5 shadow-2xs transition-all hover:border-primary/40"
                   >
                     <span className="font-semibold text-foreground">{skill}</span>
                     {count > 0 && (
@@ -1212,7 +1212,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                         )}
                         title="Endorse this student's skill"
                       >
-                        {isEndorsed ? '✓ Endorsed' : '+ Endorse'}
+                        {isEndorsed ? 'âœ“ Endorsed' : '+ Endorse'}
                       </button>
                     )}
                   </div>
@@ -1246,7 +1246,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
           {loadingProjects ? (
             <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" /></div>
           ) : projectsList.length === 0 ? (
-            <div className="surface-glass border border-white/10 rounded-3xl p-10 text-center text-muted-foreground space-y-3">
+            <div className="surface-glass border border-foreground/10 rounded-3xl p-10 text-center text-muted-foreground space-y-3">
               <FolderGit2 className="w-10 h-10 mx-auto text-muted-foreground/40" />
               <p className="text-sm font-medium">No projects showcase yet.</p>
             </div>
@@ -1256,7 +1256,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 <Link
                   key={p.id}
                   href={`/projects`}
-                  className="surface-glass border border-white/10 hover:border-primary/40 rounded-2xl p-4 transition-all shadow-sm block space-y-2"
+                  className="surface-glass border border-foreground/10 hover:border-primary/40 rounded-2xl p-4 transition-all shadow-sm block space-y-2"
                 >
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-sm text-foreground truncate">{p.title || p.name}</h4>
@@ -1285,7 +1285,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
           {loadingFriends ? (
             <div className="p-8 text-center"><Loader2 className="w-6 h-6 animate-spin text-primary mx-auto" /></div>
           ) : friendsList.length === 0 ? (
-            <div className="surface-glass border border-white/10 rounded-3xl p-10 text-center text-muted-foreground space-y-3">
+            <div className="surface-glass border border-foreground/10 rounded-3xl p-10 text-center text-muted-foreground space-y-3">
               <Users className="w-10 h-10 mx-auto text-muted-foreground/40" />
               <p className="text-sm font-medium">No connections listed yet.</p>
               <Link href="/people" className="inline-block px-4 py-2 bg-primary text-primary-foreground text-xs font-semibold rounded-xl hover:bg-primary/90">
@@ -1298,7 +1298,7 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
                 <UserProfileHoverCard key={f.id} user={f}>
                   <Link
                     href={`/profile/view?id=${f.id}`}
-                    className="flex items-center gap-3 p-3 rounded-2xl surface-glass border border-white/10 hover:border-primary/40 transition-all shadow-xs"
+                    className="flex items-center gap-3 p-3 rounded-2xl surface-glass border border-foreground/10 hover:border-primary/40 transition-all shadow-xs"
                   >
                     <UserAvatar user={f} size="md" showStatus status={f.online_status === 'online' ? 'online' : 'offline'} />
                     <div className="flex-1 min-w-0">
@@ -1313,14 +1313,14 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
         </div>
       )}
 
-      {/* ─── Floating Confirmation Toast ────────────────────────────────────── */}
+      {/* â”€â”€â”€ Floating Confirmation Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {toastMsg && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl surface-floating border border-white/10 text-white text-xs font-semibold shadow-2xl"
+            className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl surface-floating border border-foreground/10 text-white text-xs font-semibold shadow-2xl"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
             <span>{toastMsg}</span>
@@ -1330,3 +1330,4 @@ export default function ProfilePage({ paramsId }: { paramsId?: string }) {
     </div>
   );
 }
+

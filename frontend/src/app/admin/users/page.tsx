@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -176,8 +176,8 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header & Search Controls ──────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-white/5">
+      {/* â”€â”€â”€ Header & Search Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             <Users className="w-5 h-5 text-amber-400" />
@@ -196,7 +196,7 @@ export default function AdminUsersPage() {
               placeholder="Search by name, email, major..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900/90 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900/90 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
             />
             {search && (
               <button
@@ -216,7 +216,7 @@ export default function AdminUsersPage() {
               setRoleFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-xl bg-slate-900/90 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-slate-900/90 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
           >
             <option value="">All Roles</option>
             <option value="student">Students</option>
@@ -229,7 +229,7 @@ export default function AdminUsersPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-xl bg-slate-900/90 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-slate-900/90 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
           >
             <option value="">All Statuses</option>
             <option value="active">Active</option>
@@ -245,12 +245,12 @@ export default function AdminUsersPage() {
         </form>
       </div>
 
-      {/* ─── User Table Matrix ─────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#0b0e14] border border-white/5 overflow-hidden">
+      {/* â”€â”€â”€ User Table Matrix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.02] text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-foreground/5 bg-white/[0.02] text-[11px] font-mono text-slate-400 uppercase tracking-wider">
                 <th className="py-3.5 px-4 font-semibold">User Identity</th>
                 <th className="py-3.5 px-4 font-semibold">University & Major</th>
                 <th className="py-3.5 px-4 font-semibold">Role</th>
@@ -307,7 +307,7 @@ export default function AdminUsersPage() {
                           'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider',
                           u.role === 'admin'
                             ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                            : 'bg-white/5 text-slate-300 border border-white/10'
+                            : 'bg-foreground/5 text-slate-300 border border-foreground/10'
                         )}
                       >
                         {u.role || 'student'}
@@ -360,7 +360,7 @@ export default function AdminUsersPage() {
                         {/* Role Change */}
                         <button
                           onClick={() => handleChangeRole(u, u.role === 'admin' ? 'student' : 'admin')}
-                          className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 text-xs font-semibold transition-colors"
+                          className="px-2.5 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-slate-300 border border-foreground/10 text-xs font-semibold transition-colors"
                           title="Toggle Admin Privilege"
                         >
                           {u.role === 'admin' ? 'Demote' : 'Promote'}
@@ -384,7 +384,7 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-4 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+        <div className="p-4 border-t border-foreground/5 flex items-center justify-between text-xs text-slate-400">
           <span>
             Showing Page <strong className="text-white">{page}</strong> of <strong className="text-white">{totalPages}</strong>
           </span>
@@ -392,14 +392,14 @@ export default function AdminUsersPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -407,12 +407,12 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* ─── Strike Ledger & Infraction Modal ──────────────────────────── */}
+      {/* â”€â”€â”€ Strike Ledger & Infraction Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {strikesModalUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-xl bg-[#0e131b] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-xl bg-[#0e131b] border border-foreground/10 rounded-2xl p-6 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-foreground/10 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center">
                   <ShieldAlert className="w-5 h-5" />
@@ -426,7 +426,7 @@ export default function AdminUsersPage() {
               </div>
               <button
                 onClick={() => setStrikesModalUser(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-foreground/5 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -455,7 +455,7 @@ export default function AdminUsersPage() {
                   <span className="text-[11px]">Loading ledger records...</span>
                 </div>
               ) : userStrikes.length === 0 ? (
-                <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center text-slate-400 text-xs">
+                <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 text-center text-slate-400 text-xs">
                   Clean disciplinary record. No infractions recorded.
                 </div>
               ) : (
@@ -463,7 +463,7 @@ export default function AdminUsersPage() {
                   {userStrikes.map((s) => (
                     <div
                       key={s.id}
-                      className="p-3 rounded-xl bg-white/[0.03] border border-white/5 flex items-start justify-between gap-3 text-xs"
+                      className="p-3 rounded-xl bg-white/[0.03] border border-foreground/5 flex items-start justify-between gap-3 text-xs"
                     >
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -486,7 +486,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Issue New Strike Form */}
-            <form onSubmit={handleIssueStrike} className="space-y-4 pt-4 border-t border-white/10">
+            <form onSubmit={handleIssueStrike} className="space-y-4 pt-4 border-t border-foreground/10">
               <h3 className="text-xs font-bold text-white">Issue Disciplinary Strike</h3>
 
               {actionFeedback && (
@@ -512,7 +512,7 @@ export default function AdminUsersPage() {
                   placeholder="State the violation (e.g., Code of Conduct breach, plagiarism, harassment in squad chat)..."
                   value={strikeReason}
                   onChange={(e) => setStrikeReason(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+                  className="w-full p-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
                 />
               </div>
 
@@ -523,7 +523,7 @@ export default function AdminUsersPage() {
                 <select
                   value={strikeSeverity}
                   onChange={(e) => setStrikeSeverity(e.target.value as any)}
-                  className="w-full h-10 px-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full h-10 px-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white focus:outline-none focus:border-amber-500"
                 >
                   <option value="warning">Formal Warning (1 Strike)</option>
                   <option value="temporary_suspension">Temporary Suspension (2 Strikes)</option>
@@ -535,7 +535,7 @@ export default function AdminUsersPage() {
                 <button
                   type="button"
                   onClick={() => setStrikesModalUser(null)}
-                  className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors"
+                  className="px-4 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-300 text-xs font-semibold transition-colors"
                 >
                   Cancel
                 </button>
@@ -564,3 +564,4 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+

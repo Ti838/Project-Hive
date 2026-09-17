@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-// ─── Squads & Campus Communities Hub ──────────────────────────────────────────
+// â”€â”€â”€ Squads & Campus Communities Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -189,7 +189,7 @@ export default function TeamsHubPage() {
 
   return (
     <div className="min-h-screen pb-20 space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* ─── Hero Header & Creation CTA ────────────────────────────────────── */}
+      {/* â”€â”€â”€ Hero Header & Creation CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="pt-2 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-2">
@@ -217,7 +217,7 @@ export default function TeamsHubPage() {
         </div>
       </div>
 
-      {/* ─── Three-Tier Segmented Hub Navigation ────────────────────────────── */}
+      {/* â”€â”€â”€ Three-Tier Segmented Hub Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4">
         <div className="inline-flex p-1.5 rounded-2xl bg-muted/50 border border-border/80 backdrop-blur-md self-start">
           <button
@@ -233,7 +233,7 @@ export default function TeamsHubPage() {
             )}
           >
             <Rocket className="w-3.5 h-3.5 text-primary" />
-            <span>🚀 Active Squads</span>
+            <span>ðŸš€ Active Squads</span>
           </button>
 
           <button
@@ -249,7 +249,7 @@ export default function TeamsHubPage() {
             )}
           >
             <Landmark className="w-3.5 h-3.5 text-indigo-500" />
-            <span>🏛️ Campus Communities</span>
+            <span>ðŸ›ï¸ Campus Communities</span>
           </button>
 
           <button
@@ -262,7 +262,7 @@ export default function TeamsHubPage() {
             )}
           >
             <Star className="w-3.5 h-3.5 text-amber-500" />
-            <span>⭐ My Memberships</span>
+            <span>â­ My Memberships</span>
           </button>
         </div>
 
@@ -273,7 +273,7 @@ export default function TeamsHubPage() {
         </div>
       </div>
 
-      {/* ─── Search & Category Pill Strip ─────────────────────────────────── */}
+      {/* â”€â”€â”€ Search & Category Pill Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="space-y-4">
         {/* Search Bar */}
         <div className="relative">
@@ -323,7 +323,7 @@ export default function TeamsHubPage() {
         )}
       </div>
 
-      {/* ─── Studio Grid Display ─────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Studio Grid Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -411,9 +411,9 @@ export default function TeamsHubPage() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="surface-glass rounded-3xl border border-white/10 dark:border-white/5 hover:border-primary/40 hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden bg-card/70 backdrop-blur-md group"
+                className="surface-glass rounded-3xl border border-foreground/10 dark:border-foreground/5 hover:border-primary/40 hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden bg-card/70 backdrop-blur-md group"
               >
-                {/* ─── Top Banner & Avatar Header ─── */}
+                {/* â”€â”€â”€ Top Banner & Avatar Header â”€â”€â”€ */}
                 <div>
                   <div className="h-28 relative bg-linear-to-r from-primary/30 via-indigo-500/20 to-purple-500/20 overflow-hidden">
                     {team.banner_url ? (
@@ -429,7 +429,7 @@ export default function TeamsHubPage() {
 
                     {/* Type & Privacy Badges */}
                     <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/50 text-white backdrop-blur-md border border-white/10 flex items-center gap-1">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-background/50 text-white backdrop-blur-md border border-foreground/10 flex items-center gap-1">
                         {team.is_private ? (
                           <>
                             <Lock className="w-3 h-3 text-amber-400" /> Private
@@ -464,7 +464,7 @@ export default function TeamsHubPage() {
                     </div>
                   </div>
 
-                  {/* ─── Body Details ─── */}
+                  {/* â”€â”€â”€ Body Details â”€â”€â”€ */}
                   <div className="p-5 pt-6 space-y-3.5">
                     <div>
                       <div className="flex items-center gap-2">
@@ -519,7 +519,7 @@ export default function TeamsHubPage() {
                   </div>
                 </div>
 
-                {/* ─── Footer: Stacked Members & Action CTA ─── */}
+                {/* â”€â”€â”€ Footer: Stacked Members & Action CTA â”€â”€â”€ */}
                 <div className="p-5 pt-3 border-t border-border/50 flex items-center justify-between gap-3 bg-muted/20">
                   {/* Stacked Members Preview */}
                   <div className="flex items-center gap-2">
@@ -586,7 +586,7 @@ export default function TeamsHubPage() {
         </div>
       )}
 
-      {/* ─── Interactive Join Pitch Modal ─────────────────────────────────── */}
+      {/* â”€â”€â”€ Interactive Join Pitch Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <JoinRequestModal
         team={selectedTeamForJoin}
         isOpen={isJoinModalOpen}
@@ -599,3 +599,4 @@ export default function TeamsHubPage() {
     </div>
   );
 }
+

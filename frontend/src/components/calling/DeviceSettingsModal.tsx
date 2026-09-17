@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Hardware Device Settings Modal ─────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Hardware Device Settings Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { X, Mic, Volume2, Video } from 'lucide-react';
 import { useCallStore } from '@/lib/callStore';
@@ -16,7 +16,7 @@ export function DeviceSettingsModal({ onClose }: { onClose: () => void }) {
   } = useCallStore();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-xs animate-in fade-in">
       <div className="bg-card border border-border/80 rounded-2xl w-full max-w-md p-5 shadow-2xl space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-border/60">
           <h3 className="font-bold text-base text-foreground">Audio & Video Settings</h3>
@@ -100,3 +100,4 @@ export function DeviceSettingsModal({ onClose }: { onClose: () => void }) {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -90,8 +90,8 @@ export default function AdminSystemPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header ───────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-white/5">
+      {/* â”€â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             <Sliders className="w-5 h-5 text-cyan-400" />
@@ -105,7 +105,7 @@ export default function AdminSystemPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={fetchSystemData}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors"
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-300 text-xs font-semibold transition-colors"
           >
             <RefreshCw className={cn('w-3.5 h-3.5 text-cyan-400', loading && 'animate-spin')} />
             <span>Refresh Health</span>
@@ -129,7 +129,7 @@ export default function AdminSystemPage() {
         </div>
       )}
 
-      {/* ─── Runtime Feature Flags Matrix ──────────────────────────────── */}
+      {/* â”€â”€â”€ Runtime Feature Flags Matrix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="space-y-4">
         <h2 className="text-sm font-bold tracking-tight text-slate-200">
           Runtime Feature Flags & Access Gates
@@ -137,7 +137,7 @@ export default function AdminSystemPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Maintenance Mode */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 flex items-start justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-white">Platform Maintenance Barrier</span>
@@ -169,7 +169,7 @@ export default function AdminSystemPage() {
           </div>
 
           {/* Registration Enabled */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 flex items-start justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-white">Student Registration Gateway</span>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -194,7 +194,7 @@ export default function AdminSystemPage() {
           </div>
 
           {/* Email Verification */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 flex items-start justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-white">Enforce Email Verification</span>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -219,7 +219,7 @@ export default function AdminSystemPage() {
           </div>
 
           {/* Rate Limiting Strictness */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 flex items-start justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-white">Strict DDOS / Rate Limiting</span>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -244,7 +244,7 @@ export default function AdminSystemPage() {
           </div>
 
           {/* Public Project Showcases */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 flex items-start justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-white">Public Showcase Visibility</span>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -269,7 +269,7 @@ export default function AdminSystemPage() {
           </div>
 
           {/* AI Code Review Engine */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 flex items-start justify-between gap-4">
+          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
             <div className="space-y-1">
               <span className="text-xs font-bold text-white">AI GitHub PR & Code Reviewer</span>
               <p className="text-xs text-slate-400 leading-relaxed">
@@ -295,27 +295,27 @@ export default function AdminSystemPage() {
         </div>
       </div>
 
-      {/* ─── Detailed System & Runtime Telemetry ────────────────────────── */}
-      <div className="p-6 rounded-2xl bg-[#0b0e14] border border-white/5 space-y-4">
+      {/* â”€â”€â”€ Detailed System & Runtime Telemetry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5 space-y-4">
         <h2 className="text-sm font-bold tracking-tight text-slate-200 flex items-center gap-2">
           <Activity className="w-4 h-4 text-cyan-400" />
           Runtime Diagnostics & Node Specifications
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
             <p className="text-slate-400 uppercase text-[10px]">Database Engine</p>
             <p className="text-white font-bold">PostgreSQL v15.4</p>
             <p className="text-emerald-400 text-[11px]">Status: Healthy ({health?.database?.latencyMs ?? 14}ms)</p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
             <p className="text-slate-400 uppercase text-[10px]">Real-Time Gateway</p>
             <p className="text-white font-bold">Socket.IO WebSockets</p>
             <p className="text-cyan-400 text-[11px]">{health?.sockets?.activeConnections ?? 42} Active Sessions</p>
           </div>
 
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+          <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
             <p className="text-slate-400 uppercase text-[10px]">Runtime Memory</p>
             <p className="text-white font-bold">Node.js Engine</p>
             <p className="text-amber-400 text-[11px]">Uptime: {Math.floor((health?.server?.uptime ?? 3600) / 60)} min</p>
@@ -325,3 +325,4 @@ export default function AdminSystemPage() {
     </div>
   );
 }
+

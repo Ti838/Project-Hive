@@ -1,5 +1,5 @@
-'use client';
-// ─── Desktop-Only Workstation Security Gate ────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ Desktop-Only Workstation Security Gate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState } from 'react';
 import { ShieldAlert, Terminal, ArrowLeft, Lock, Activity, Cpu, Laptop, Radio, Database } from 'lucide-react';
@@ -122,7 +122,7 @@ export function DesktopGate({ children }: DesktopGateProps) {
           </div>
 
           {/* Diagnostic Telemetry Matrix */}
-          <div className="bg-black/60 border border-zinc-800 rounded-2xl p-4 text-left space-y-2.5 shadow-inner">
+          <div className="bg-background/60 border border-zinc-800 rounded-2xl p-4 text-left space-y-2.5 shadow-inner">
             <div className="text-[11px] font-bold text-zinc-400 flex items-center justify-between border-b border-zinc-800/80 pb-2">
               <span className="flex items-center gap-1.5">
                 <Terminal className="w-3.5 h-3.5 text-rose-400" /> Client Hardware Telemetry
@@ -164,7 +164,7 @@ export function DesktopGate({ children }: DesktopGateProps) {
               <div className="sm:col-span-2">
                 <span className="text-zinc-500 block">Display Resolution:</span>
                 <span className="text-zinc-300 font-bold">
-                  {dimensions.width}px × {dimensions.height}px (Ratio: {telemetry?.pixelRatio || 1}x, Screen: {telemetry?.screenResolution || '1920x1080'})
+                  {dimensions.width}px Ã— {dimensions.height}px (Ratio: {telemetry?.pixelRatio || 1}x, Screen: {telemetry?.screenResolution || '1920x1080'})
                 </span>
               </div>
             </div>
@@ -191,6 +191,7 @@ export function DesktopGate({ children }: DesktopGateProps) {
     );
   }
 
-  // Authorized Desktop Workstation — Mount Admin Tree Cleanly
+  // Authorized Desktop Workstation â€” Mount Admin Tree Cleanly
   return <>{children}</>;
 }
+

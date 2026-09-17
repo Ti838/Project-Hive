@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -98,8 +98,8 @@ export default function AdminAuditPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header & Search ──────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-white/5">
+      {/* â”€â”€â”€ Header & Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             <ScrollText className="w-5 h-5 text-amber-400" />
@@ -118,7 +118,7 @@ export default function AdminAuditPage() {
               placeholder="Search by action, reason, IP..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
             />
             {search && (
               <button
@@ -138,7 +138,7 @@ export default function AdminAuditPage() {
               setActionFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
           >
             <option value="">All Actions</option>
             <option value="BAN_USER">BAN_USER</option>
@@ -160,12 +160,12 @@ export default function AdminAuditPage() {
         </form>
       </div>
 
-      {/* ─── Audit Log Table ──────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#0b0e14] border border-white/5 overflow-hidden">
+      {/* â”€â”€â”€ Audit Log Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.02] text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-foreground/5 bg-white/[0.02] text-[11px] font-mono text-slate-400 uppercase tracking-wider">
                 <th className="py-3.5 px-4 font-semibold">Timestamp</th>
                 <th className="py-3.5 px-4 font-semibold">Admin Identity</th>
                 <th className="py-3.5 px-4 font-semibold">Action Performed</th>
@@ -239,7 +239,7 @@ export default function AdminAuditPage() {
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => setSelectedLog(log)}
-                        className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 ml-auto transition-colors"
+                        className="px-2.5 py-1 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 ml-auto transition-colors"
                       >
                         <Code className="w-3.5 h-3.5 text-amber-400" />
                         <span>Inspect JSON</span>
@@ -253,7 +253,7 @@ export default function AdminAuditPage() {
         </div>
 
         {/* Pagination Footer */}
-        <div className="p-4 border-t border-white/5 flex items-center justify-between text-xs text-slate-400">
+        <div className="p-4 border-t border-foreground/5 flex items-center justify-between text-xs text-slate-400">
           <span>
             Showing Page <strong className="text-white">{page}</strong> of <strong className="text-white">{totalPages}</strong> ({total} total entries)
           </span>
@@ -261,14 +261,14 @@ export default function AdminAuditPage() {
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -276,11 +276,11 @@ export default function AdminAuditPage() {
         </div>
       </div>
 
-      {/* ─── JSON Details Drawer ──────────────────────────────────────── */}
+      {/* â”€â”€â”€ JSON Details Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-2xl bg-[#0e131b] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-2xl bg-[#0e131b] border border-foreground/10 rounded-2xl p-6 shadow-2xl space-y-4 max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between border-b border-foreground/10 pb-3">
               <div className="flex items-center gap-2">
                 <Code className="w-5 h-5 text-amber-400" />
                 <h3 className="text-sm font-bold text-white font-mono">
@@ -290,7 +290,7 @@ export default function AdminAuditPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleCopyJson}
-                  className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors"
                 >
                   {copied ? (
                     <>
@@ -306,14 +306,14 @@ export default function AdminAuditPage() {
                 </button>
                 <button
                   onClick={() => setSelectedLog(null)}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-white/5"
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-foreground/5"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto rounded-xl bg-slate-950 p-4 border border-white/5 font-mono text-xs text-amber-300">
+            <div className="flex-1 overflow-y-auto rounded-xl bg-slate-950 p-4 border border-foreground/5 font-mono text-xs text-amber-300">
               <pre>{JSON.stringify(selectedLog, null, 2)}</pre>
             </div>
           </div>
@@ -322,3 +322,4 @@ export default function AdminAuditPage() {
     </div>
   );
 }
+

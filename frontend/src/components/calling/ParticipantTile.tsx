@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Studio-Grade Video Tile ────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Studio-Grade Video Tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useRef, useCallback } from 'react';
 import { MicOff, Wifi, WifiOff } from 'lucide-react';
@@ -73,7 +73,7 @@ export function ParticipantTile({
       case ConnectionQuality.Lost:
         return 'text-rose-400';
       default:
-        return 'text-white/40';
+        return 'text-foreground/40';
     }
   };
 
@@ -81,7 +81,7 @@ export function ParticipantTile({
     <div
       className={cn(
         'group relative w-full h-full aspect-video max-h-full rounded-2xl sm:rounded-3xl overflow-hidden flex items-center justify-center transition-all duration-300',
-        'bg-zinc-950/90 border border-white/10 shadow-2xl',
+        'bg-zinc-950/90 border border-foreground/10 shadow-2xl',
         item.isSpeaking && 'ring-2 ring-emerald-500/80 shadow-[0_0_30px_rgba(16,185,129,0.3)] glow-primary',
         isMainStage ? 'min-h-[280px] sm:min-h-[380px]' : 'min-h-[160px]'
       )}
@@ -113,7 +113,7 @@ export function ParticipantTile({
                 src={avatar}
                 alt={item.name}
                 className={cn(
-                  'rounded-full object-cover border-2 border-white/15 shadow-2xl transition-all',
+                  'rounded-full object-cover border-2 border-foreground/15 shadow-2xl transition-all',
                   isMainStage ? 'w-24 h-24 sm:w-28 sm:h-28' : 'w-16 h-16 sm:w-20 sm:h-20',
                   item.isSpeaking && 'ring-4 ring-emerald-400/70 shadow-[0_0_25px_rgba(16,185,129,0.4)] animate-pulse'
                 )}
@@ -135,14 +135,14 @@ export function ParticipantTile({
             )}
           </div>
           <p className="text-white font-semibold text-sm truncate max-w-[180px] drop-shadow-md">{item.name}</p>
-          <span className="text-[11px] text-white/50 font-medium mt-0.5">Camera off</span>
+          <span className="text-[11px] text-foreground/50 font-medium mt-0.5">Camera off</span>
         </div>
       )}
 
       {/* Micro-Overlay Chips using .surface-floating */}
       <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
         {/* Participant Name & Mic Status Pill */}
-        <div className="surface-floating px-3 py-1 rounded-full text-xs font-medium text-white/95 border border-white/10 shadow-xl flex items-center gap-2 backdrop-blur-xl">
+        <div className="surface-floating px-3 py-1 rounded-full text-xs font-medium text-foreground/95 border border-foreground/10 shadow-xl flex items-center gap-2 backdrop-blur-xl">
           <span className="truncate max-w-[140px] tracking-tight font-semibold">
             {item.isLocal ? `${item.name} (You)` : item.name}
           </span>
@@ -160,7 +160,7 @@ export function ParticipantTile({
 
         {/* Signal Quality Pill */}
         <div
-          className="surface-floating px-2 py-1 rounded-full border border-white/10 shadow-xl flex items-center gap-1.5 backdrop-blur-xl"
+          className="surface-floating px-2 py-1 rounded-full border border-foreground/10 shadow-xl flex items-center gap-1.5 backdrop-blur-xl"
           title={`Network Quality: ${item.connectionQuality}`}
         >
           {item.connectionQuality === ConnectionQuality.Lost ? (
@@ -173,3 +173,4 @@ export function ParticipantTile({
     </div>
   );
 }
+

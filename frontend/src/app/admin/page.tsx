@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -58,7 +58,7 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
-      {/* ─── Top Telemetry Banner ────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Top Telemetry Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-900/40 to-slate-900/60 border border-amber-500/20 backdrop-blur-xl">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-wider">
@@ -77,7 +77,7 @@ export default function AdminOverviewPage() {
           <button
             onClick={loadDashboardData}
             disabled={refreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-xs font-semibold text-slate-200 hover:text-white transition-all active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-foreground/10 text-xs font-semibold text-slate-200 hover:text-white transition-all active:scale-95 disabled:opacity-50"
           >
             <RefreshCw className={cn('w-3.5 h-3.5 text-amber-400', refreshing && 'animate-spin')} />
             <span>Sync Metrics</span>
@@ -98,10 +98,10 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* ─── Metric Matrix (KPI Cards) ──────────────────────────────────── */}
+      {/* â”€â”€â”€ Metric Matrix (KPI Cards) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Verified Builders */}
-        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-white/5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
+        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-foreground/5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               Verified Builders
@@ -116,14 +116,14 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-emerald-400 font-bold">{stats?.users?.activeToday ?? 0} active today</span>
-              <span>•</span>
+              <span>â€¢</span>
               <span className="text-rose-400">{stats?.users?.banned ?? 0} banned</span>
             </div>
           </div>
         </div>
 
         {/* Daily Post Volume */}
-        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-white/5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
+        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-foreground/5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               Post Activity
@@ -138,14 +138,14 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-cyan-400 font-bold">+{stats?.posts?.today ?? 0} posts today</span>
-              <span>•</span>
+              <span>â€¢</span>
               <span>All campus feeds</span>
             </div>
           </div>
         </div>
 
         {/* Active Squads & Hubs */}
-        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-white/5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
+        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-foreground/5 backdrop-blur-md relative overflow-hidden group hover:border-amber-500/30 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               Active Squads
@@ -160,14 +160,14 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-purple-400 font-bold">{stats?.projects?.total ?? 0} showcases</span>
-              <span>•</span>
+              <span>â€¢</span>
               <span>Collab hubs</span>
             </div>
           </div>
         </div>
 
         {/* Pending Content Reports */}
-        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-white/5 backdrop-blur-md relative overflow-hidden group hover:border-rose-500/30 transition-all">
+        <div className="p-5 rounded-2xl bg-[#0b0e14]/80 border border-foreground/5 backdrop-blur-md relative overflow-hidden group hover:border-rose-500/30 transition-all">
           <div className="flex items-center justify-between">
             <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
               Flagged Reports
@@ -182,14 +182,14 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-rose-400 font-bold">Requires Action</span>
-              <span>•</span>
+              <span>â€¢</span>
               <span>{stats?.reports?.total ?? 0} lifetime</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ─── Infrastructure Service Health Pulse ────────────────────────── */}
+      {/* â”€â”€â”€ Infrastructure Service Health Pulse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold tracking-tight text-slate-200 flex items-center gap-2">
@@ -203,7 +203,7 @@ export default function AdminOverviewPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* PostgreSQL Node */}
-          <div className="p-4 rounded-xl bg-[#0b0e14] border border-white/5 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center">
                 <Database className="w-5 h-5" />
@@ -222,7 +222,7 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* Socket.IO Real-Time Gateway */}
-          <div className="p-4 rounded-xl bg-[#0b0e14] border border-white/5 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
                 <Radio className="w-5 h-5" />
@@ -241,7 +241,7 @@ export default function AdminOverviewPage() {
           </div>
 
           {/* LiveKit Voice/Video SFU */}
-          <div className="p-4 rounded-xl bg-[#0b0e14] border border-white/5 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center">
                 <Zap className="w-5 h-5" />
@@ -261,7 +261,7 @@ export default function AdminOverviewPage() {
         </div>
       </div>
 
-      {/* ─── Split Grid: Quick Action Hub & Security Audit Stream ────────── */}
+      {/* â”€â”€â”€ Split Grid: Quick Action Hub & Security Audit Stream â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Quick Command Actions (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
@@ -272,7 +272,7 @@ export default function AdminOverviewPage() {
           <div className="space-y-2.5">
             <Link
               href="/admin/users"
-              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-white/5 hover:border-amber-500/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 hover:border-amber-500/30 hover:bg-white/[0.02] transition-all group"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-lg bg-amber-500/10 text-amber-400 group-hover:bg-amber-500/20 transition-colors">
@@ -292,7 +292,7 @@ export default function AdminOverviewPage() {
 
             <Link
               href="/admin/moderation"
-              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-white/5 hover:border-rose-500/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 hover:border-rose-500/30 hover:bg-white/[0.02] transition-all group"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-lg bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-colors">
@@ -312,7 +312,7 @@ export default function AdminOverviewPage() {
 
             <Link
               href="/admin/system"
-              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-white/5 hover:border-cyan-500/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 hover:border-cyan-500/30 hover:bg-white/[0.02] transition-all group"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-lg bg-cyan-500/10 text-cyan-400 group-hover:bg-cyan-500/20 transition-colors">
@@ -332,7 +332,7 @@ export default function AdminOverviewPage() {
 
             <Link
               href="/admin/audit"
-              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-white/5 hover:border-purple-500/30 hover:bg-white/[0.02] transition-all group"
+              className="flex items-center justify-between p-4 rounded-xl bg-[#0b0e14] border border-foreground/5 hover:border-purple-500/30 hover:bg-white/[0.02] transition-all group"
             >
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-lg bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
@@ -362,11 +362,11 @@ export default function AdminOverviewPage() {
               href="/admin/audit"
               className="text-xs font-medium text-amber-400 hover:text-amber-300 transition-colors"
             >
-              View Full Ledger →
+              View Full Ledger â†’
             </Link>
           </div>
 
-          <div className="rounded-2xl bg-[#0b0e14] border border-white/5 p-4 space-y-3">
+          <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 p-4 space-y-3">
             {recentLogs.length === 0 ? (
               <div className="py-12 text-center text-slate-400">
                 <Clock className="w-8 h-8 mx-auto mb-2 opacity-40 text-slate-400" />
@@ -376,7 +376,7 @@ export default function AdminOverviewPage() {
               recentLogs.map((log) => (
                 <div
                   key={log.id}
-                  className="p-3 rounded-xl bg-white/[0.02] border border-white/5 hover:border-white/10 transition-colors flex items-start justify-between gap-4"
+                  className="p-3 rounded-xl bg-white/[0.02] border border-foreground/5 hover:border-foreground/10 transition-colors flex items-start justify-between gap-4"
                 >
                   <div className="space-y-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -410,3 +410,4 @@ export default function AdminOverviewPage() {
     </div>
   );
 }
+

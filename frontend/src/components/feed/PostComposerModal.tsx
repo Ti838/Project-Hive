@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -218,7 +218,7 @@ export function PostComposerModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/75 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-background/75 backdrop-blur-md transition-opacity"
       />
 
       {/* Modal Container */}
@@ -227,10 +227,10 @@ export function PostComposerModal({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 16 }}
         transition={{ type: 'spring', damping: 26, stiffness: 300 }}
-        className="relative w-full max-w-xl bg-card border border-white/10 dark:border-white/5 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10"
+        className="relative w-full max-w-xl bg-card border border-foreground/10 dark:border-foreground/5 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-white/5">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-foreground/5">
           <div className="flex items-center gap-3">
             <UserAvatar user={user} size="md" />
             <div>
@@ -274,14 +274,14 @@ export function PostComposerModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-muted-foreground hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
+            className="p-2 rounded-xl text-muted-foreground hover:bg-foreground/10 hover:text-foreground tap-press transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Selector */}
-        <div className="flex border-b border-white/5 px-4 bg-muted/20 overflow-x-auto no-scrollbar">
+        <div className="flex border-b border-foreground/5 px-4 bg-muted/20 overflow-x-auto no-scrollbar">
           {[
             { id: 'update' as TabType, label: 'Post', icon: Sparkles },
             { id: 'media' as TabType, label: `Photos (${images.length})`, icon: ImagePlus },
@@ -319,10 +319,10 @@ export function PostComposerModal({
             onChange={(e) => setContent(e.target.value)}
             placeholder={
               activeTab === 'code'
-                ? 'Describe what this code does or what problem it solves…'
+                ? 'Describe what this code does or what problem it solvesâ€¦'
                 : activeTab === 'poll'
-                ? 'Introduce your poll or ask a question to campus…'
-                : 'What are you working on? Share project updates, wins, or ideas…'
+                ? 'Introduce your poll or ask a question to campusâ€¦'
+                : 'What are you working on? Share project updates, wins, or ideasâ€¦'
             }
             rows={4}
             className="w-full text-sm sm:text-base bg-transparent border-none focus:outline-none resize-none placeholder:text-muted-foreground/60 leading-relaxed"
@@ -331,7 +331,7 @@ export function PostComposerModal({
 
           {/* Tab 2: Media Grid & Uploader */}
           {activeTab === 'media' && (
-            <div className="space-y-3 pt-2 border-t border-white/5">
+            <div className="space-y-3 pt-2 border-t border-foreground/5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground">
                   Upload images (PNG, JPG, WebP)
@@ -356,12 +356,12 @@ export function PostComposerModal({
               {images.length > 0 && (
                 <div className="grid grid-cols-3 gap-2.5 max-h-48 overflow-y-auto p-1">
                   {images.map((img, idx) => (
-                    <div key={idx} className="relative group rounded-xl overflow-hidden aspect-video border border-white/10">
+                    <div key={idx} className="relative group rounded-xl overflow-hidden aspect-video border border-foreground/10">
                       <img src={img} alt="Upload preview" className="w-full h-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removeImage(idx)}
-                        className="absolute top-1 right-1 p-1 rounded-lg bg-black/70 text-white hover:bg-destructive tap-press transition-colors cursor-pointer"
+                        className="absolute top-1 right-1 p-1 rounded-lg bg-background/70 text-white hover:bg-destructive tap-press transition-colors cursor-pointer"
                         title="Remove image"
                       >
                         <X className="w-3 h-3" />
@@ -375,19 +375,19 @@ export function PostComposerModal({
 
           {/* Tab 3: Code Snippet Form */}
           {activeTab === 'code' && (
-            <div className="space-y-3 pt-2 border-t border-white/5">
+            <div className="space-y-3 pt-2 border-t border-foreground/5">
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={codeTitle}
                   onChange={(e) => setCodeTitle(e.target.value)}
                   placeholder="Snippet Title (e.g. Auth Middleware, QuickSort)"
-                  className="flex-1 h-9 text-xs bg-muted/80 rounded-xl px-3 border border-white/10 focus:border-primary/50 focus:outline-none"
+                  className="flex-1 h-9 text-xs bg-muted/80 rounded-xl px-3 border border-foreground/10 focus:border-primary/50 focus:outline-none"
                 />
                 <select
                   value={codeLanguage}
                   onChange={(e) => setCodeLanguage(e.target.value)}
-                  className="h-9 text-xs bg-muted/80 rounded-xl px-3 border border-white/10 focus:border-primary/50 focus:outline-none cursor-pointer"
+                  className="h-9 text-xs bg-muted/80 rounded-xl px-3 border border-foreground/10 focus:border-primary/50 focus:outline-none cursor-pointer"
                 >
                   {CODE_LANGUAGES.map((lang) => (
                     <option key={lang} value={lang}>
@@ -400,22 +400,22 @@ export function PostComposerModal({
               <textarea
                 value={codeSnippet}
                 onChange={(e) => setCodeSnippet(e.target.value)}
-                placeholder="// Paste or write your code snippet here…"
+                placeholder="// Paste or write your code snippet hereâ€¦"
                 rows={5}
-                className="w-full font-mono text-xs bg-black/40 text-emerald-400 rounded-xl p-3 border border-white/10 focus:border-primary/50 focus:outline-none resize-none leading-relaxed"
+                className="w-full font-mono text-xs bg-background/40 text-emerald-400 rounded-xl p-3 border border-foreground/10 focus:border-primary/50 focus:outline-none resize-none leading-relaxed"
               />
             </div>
           )}
 
           {/* Tab 4: Poll Form */}
           {activeTab === 'poll' && (
-            <div className="space-y-3 pt-2 border-t border-white/5">
+            <div className="space-y-3 pt-2 border-t border-foreground/5">
               <input
                 type="text"
                 value={pollQuestion}
                 onChange={(e) => setPollQuestion(e.target.value)}
                 placeholder="Poll Question (e.g. Preferred tech stack for hackathon?)"
-                className="w-full h-10 text-xs bg-muted/80 rounded-xl px-3.5 border border-white/10 focus:border-primary/50 focus:outline-none font-semibold"
+                className="w-full h-10 text-xs bg-muted/80 rounded-xl px-3.5 border border-foreground/10 focus:border-primary/50 focus:outline-none font-semibold"
               />
 
               <div className="space-y-2">
@@ -426,7 +426,7 @@ export function PostComposerModal({
                       value={opt}
                       onChange={(e) => handleUpdatePollOption(i, e.target.value)}
                       placeholder={`Option ${i + 1}`}
-                      className="flex-1 h-9 text-xs bg-muted/60 rounded-xl px-3 border border-white/5 focus:border-primary/50 focus:outline-none"
+                      className="flex-1 h-9 text-xs bg-muted/60 rounded-xl px-3 border border-foreground/5 focus:border-primary/50 focus:outline-none"
                     />
                     {pollOptions.length > 2 && (
                       <button
@@ -459,7 +459,7 @@ export function PostComposerModal({
                   <select
                     value={pollDays}
                     onChange={(e) => setPollDays(Number(e.target.value))}
-                    className="bg-muted/80 text-foreground text-xs rounded-lg px-2 py-1 border border-white/10 cursor-pointer"
+                    className="bg-muted/80 text-foreground text-xs rounded-lg px-2 py-1 border border-foreground/10 cursor-pointer"
                   >
                     <option value={1}>24 Hours</option>
                     <option value={3}>3 Days</option>
@@ -473,13 +473,13 @@ export function PostComposerModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 border-t border-white/5 flex items-center justify-between bg-muted/10">
+        <div className="p-4 sm:p-5 border-t border-foreground/5 flex items-center justify-between bg-muted/10">
           <div className="flex items-center gap-1">
             <button
               type="button"
               onClick={() => setActiveTab('media')}
               className={cn(
-                'p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer',
+                'p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors cursor-pointer',
                 images.length > 0 && 'text-primary bg-primary/10'
               )}
               title="Add Photos"
@@ -490,7 +490,7 @@ export function PostComposerModal({
               type="button"
               onClick={() => setActiveTab('code')}
               className={cn(
-                'p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer',
+                'p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors cursor-pointer',
                 codeSnippet.trim() && 'text-primary bg-primary/10'
               )}
               title="Add Code Snippet"
@@ -501,7 +501,7 @@ export function PostComposerModal({
               type="button"
               onClick={() => setActiveTab('poll')}
               className={cn(
-                'p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer',
+                'p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors cursor-pointer',
                 pollQuestion.trim() && 'text-primary bg-primary/10'
               )}
               title="Create Poll"
@@ -514,7 +514,7 @@ export function PostComposerModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:bg-foreground/10 hover:text-foreground tap-press transition-colors cursor-pointer"
             >
               Cancel
             </button>
@@ -537,3 +537,4 @@ export function PostComposerModal({
     </div>
   );
 }
+

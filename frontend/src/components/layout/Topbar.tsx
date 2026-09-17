@@ -1,5 +1,5 @@
-'use client';
-// ─── Native-Grade Topbar & Command Search Navigation ─────────────────────────
+﻿'use client';
+// â”€â”€â”€ Native-Grade Topbar & Command Search Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -224,7 +224,7 @@ export function Topbar() {
   return (
     <>
       <header className="h-14 shrink-0 sticky top-0 z-30 flex items-center justify-between px-3.5 sm:px-5 surface-overlay transition-colors">
-        {/* ─── Left Section: Mobile Back / Hamburger & Command Trigger ────── */}
+        {/* â”€â”€â”€ Left Section: Mobile Back / Hamburger & Command Trigger â”€â”€â”€â”€â”€â”€ */}
         <div className="flex items-center gap-3 min-w-0">
           {/* Dynamic Mobile Back vs Drawer Toggle */}
           {isChild ? (
@@ -271,16 +271,16 @@ export function Topbar() {
             <div className="flex items-center gap-2.5 min-w-0">
               <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
               <span className="truncate group-hover:text-foreground transition-colors font-medium">
-                Search students, teams, showcase…
+                Search students, teams, showcaseâ€¦
               </span>
             </div>
             <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold text-muted-foreground group-hover:text-foreground bg-background/80 border border-border/80 rounded-md pointer-events-none transition-colors shrink-0">
-              {isMac ? '⌘K' : 'Ctrl+K'}
+              {isMac ? 'âŒ˜K' : 'Ctrl+K'}
             </kbd>
           </button>
         </div>
 
-        {/* ─── Right Section: Socket Status, Theme, Notifications & Profile ── */}
+        {/* â”€â”€â”€ Right Section: Socket Status, Theme, Notifications & Profile â”€â”€ */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           {/* Real-time Socket Indicator Dot */}
           <div
@@ -463,7 +463,7 @@ export function Topbar() {
                       onClick={() => setNotifOpen(false)}
                       className="text-xs font-semibold text-foreground/80 hover:text-foreground tap-press inline-block py-1"
                     >
-                      Open Notification Center →
+                      Open Notification Center â†’
                     </Link>
                   </div>
                 </motion.div>
@@ -567,7 +567,7 @@ export function Topbar() {
         </div>
       </header>
 
-      {/* ─── Command-Grade Raycast Search Modal Overlay ──────────────────── */}
+      {/* â”€â”€â”€ Command-Grade Raycast Search Modal Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {commandOpen && (
           <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4">
@@ -577,7 +577,7 @@ export function Topbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setCommandOpen(false)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md"
+              className="fixed inset-0 bg-background/70 backdrop-blur-md"
             />
 
             {/* Modal Dialog */}
@@ -621,7 +621,7 @@ export function Topbar() {
                     {searchLoading && (
                       <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground animate-pulse">
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                        <span>Searching students, squads, and projects…</span>
+                        <span>Searching students, squads, and projectsâ€¦</span>
                       </div>
                     )}
 
@@ -639,7 +639,7 @@ export function Topbar() {
                           <Users className="w-3.5 h-3.5 text-primary shrink-0" />
                           <span className="truncate">Search students directory for &ldquo;{cmdQuery}&rdquo;</span>
                         </div>
-                        <span className="text-[10px] text-muted-foreground shrink-0 font-mono">↵ Enter</span>
+                        <span className="text-[10px] text-muted-foreground shrink-0 font-mono">â†µ Enter</span>
                       </button>
 
                       <button
@@ -688,7 +688,7 @@ export function Topbar() {
                                   <div className="flex items-center gap-1.5 font-semibold text-foreground group-hover:text-primary transition-colors">
                                     <span className="truncate">{uName}</span>
                                     {u.is_verified && (
-                                      <span className="text-primary text-[10px]">✓</span>
+                                      <span className="text-primary text-[10px]">âœ“</span>
                                     )}
                                   </div>
                                   <p className="text-[10px] text-muted-foreground truncate">
@@ -725,7 +725,7 @@ export function Topbar() {
                                   {t.name}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground truncate">
-                                  {t.category || (t.type === 'community' ? 'Community Hub' : 'Project Squad')} • {t.member_count ?? t.members?.length ?? 1} members
+                                  {t.category || (t.type === 'community' ? 'Community Hub' : 'Project Squad')} â€¢ {t.member_count ?? t.members?.length ?? 1} members
                                 </p>
                               </div>
                             </div>
@@ -757,7 +757,7 @@ export function Topbar() {
                                   {p.title}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground truncate">
-                                  {p.category || 'Innovation'} • {p.upvotes ?? p.upvote_count ?? p.likes ?? 0} upvotes
+                                  {p.category || 'Innovation'} â€¢ {p.upvotes ?? p.upvote_count ?? p.likes ?? 0} upvotes
                                 </p>
                               </div>
                             </div>
@@ -808,7 +808,7 @@ export function Topbar() {
               <div className="px-4 py-2 border-t border-border/60 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground">
                 <span>Navigation & Search</span>
                 <span className="flex items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/60 text-[10px] font-mono">↵</kbd>
+                  <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/60 text-[10px] font-mono">â†µ</kbd>
                   to select
                 </span>
               </div>
@@ -819,3 +819,4 @@ export function Topbar() {
     </>
   );
 }
+

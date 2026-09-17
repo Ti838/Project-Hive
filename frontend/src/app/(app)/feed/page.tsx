@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive Social Feed (Facebook & LinkedIn Grade Experience) ───────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive Social Feed (Facebook & LinkedIn Grade Experience) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,7 @@ import { RichPostContent } from '@/components/feed/RichPostContent';
 import { ReactionListModal } from '@/components/feed/ReactionListModal';
 import type { Post, ReactionType } from '@/types';
 
-// ─── Post Card Component ───────────────────────────────────────────────────────
+// â”€â”€â”€ Post Card Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostCard({
   post,
   currentUserId,
@@ -80,7 +80,7 @@ function PostCard({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         id={`post-${post.id}`}
-        className="surface-glass rounded-3xl border border-white/10 dark:border-white/5 shadow-xl hover:shadow-2xl hover:border-primary/40 transition-all duration-300 overflow-hidden space-y-4 p-5 sm:p-6"
+        className="surface-glass rounded-3xl border border-foreground/10 dark:border-foreground/5 shadow-xl hover:shadow-2xl hover:border-primary/40 transition-all duration-300 overflow-hidden space-y-4 p-5 sm:p-6"
       >
         {/* Header */}
         <div className="flex items-start gap-3.5">
@@ -95,9 +95,9 @@ function PostCard({
             </UserProfileHoverCard>
             <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
               <span>{post.author?.university ?? 'Student'}</span>
-              <span>·</span>
+              <span>Â·</span>
               <span>{timeAgo(post.created_at)}</span>
-              <span>·</span>
+              <span>Â·</span>
               <span className="inline-flex items-center gap-0.5 text-muted-foreground/70" title="Public post">
                 <Globe className="w-3 h-3" />
               </span>
@@ -105,7 +105,7 @@ function PostCard({
           </div>
           <button
             onClick={() => setShowSheet(true)}
-            className="p-2 -mr-1 rounded-xl text-muted-foreground hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
+            className="p-2 -mr-1 rounded-xl text-muted-foreground hover:bg-foreground/10 hover:text-foreground tap-press transition-colors cursor-pointer"
             aria-label="Post actions"
           >
             <MoreHorizontal className="w-4 h-4" />
@@ -136,8 +136,8 @@ function PostCard({
 
           {/* Syntax-Highlighted Code Block */}
           {post.code_snippet && post.code_snippet.code && (
-            <div className="mt-3.5 rounded-2xl overflow-hidden border border-white/10 bg-black/60 shadow-inner">
-              <div className="flex items-center justify-between px-4 py-2 bg-white/5 border-b border-white/5 text-xs">
+            <div className="mt-3.5 rounded-2xl overflow-hidden border border-foreground/10 bg-background/60 shadow-inner">
+              <div className="flex items-center justify-between px-4 py-2 bg-foreground/5 border-b border-foreground/5 text-xs">
                 <div className="flex items-center gap-2">
                   <Code2 className="w-3.5 h-3.5 text-primary" />
                   <span className="font-semibold text-foreground/90">
@@ -145,7 +145,7 @@ function PostCard({
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono uppercase text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md">
+                  <span className="text-[10px] font-mono uppercase text-muted-foreground bg-foreground/5 px-2 py-0.5 rounded-md">
                     {post.code_snippet.language || 'code'}
                   </span>
                   <button
@@ -154,7 +154,7 @@ function PostCard({
                       setCopiedCode(true);
                       setTimeout(() => setCopiedCode(false), 2000);
                     }}
-                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
+                    className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors cursor-pointer"
                     title="Copy code"
                   >
                     {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -169,7 +169,7 @@ function PostCard({
 
           {/* Interactive Poll Component */}
           {post.poll_data && post.poll_data.options && post.poll_data.options.length > 0 && (
-            <div className="mt-3.5 space-y-2 p-3.5 sm:p-4 rounded-2xl border border-white/10 bg-muted/20">
+            <div className="mt-3.5 space-y-2 p-3.5 sm:p-4 rounded-2xl border border-foreground/10 bg-muted/20">
               {post.poll_data.question && post.poll_data.question !== post.content && (
                 <p className="font-bold text-xs sm:text-sm text-foreground mb-2">
                   {post.poll_data.question}
@@ -194,14 +194,14 @@ function PostCard({
                       'w-full relative p-3 rounded-xl border text-left overflow-hidden transition-all tap-press cursor-pointer group',
                       hasVotedThis
                         ? 'border-primary/50 bg-primary/10 shadow-xs'
-                        : 'border-white/10 bg-muted/40 hover:border-white/20'
+                        : 'border-foreground/10 bg-muted/40 hover:border-foreground/20'
                     )}
                   >
                     {/* Animated vote fill bar */}
                     <div
                       className={cn(
                         'absolute inset-y-0 left-0 transition-all duration-700 rounded-l-xl',
-                        hasVotedThis ? 'bg-primary/25' : 'bg-white/10'
+                        hasVotedThis ? 'bg-primary/25' : 'bg-foreground/10'
                       )}
                       style={{ width: `${percent}%` }}
                     />
@@ -223,7 +223,7 @@ function PostCard({
 
         {/* Facebook-Grade Reaction & Engagement Summary Row */}
         {((post.reaction_count ?? 0) > 0 || (post.comment_count ?? post.comments_count ?? 0) > 0) && (
-          <div className="flex items-center justify-between pt-2 pb-0.5 text-xs text-muted-foreground border-t border-border/40 dark:border-white/5">
+          <div className="flex items-center justify-between pt-2 pb-0.5 text-xs text-muted-foreground border-t border-border/40 dark:border-foreground/5">
             <StackedReactionBadge
               reactionCounts={post.reaction_counts}
               total={post.reaction_count}
@@ -245,7 +245,7 @@ function PostCard({
         )}
 
         {/* Facebook-Grade 3-Button Full Action Bar */}
-        <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-border/50 dark:border-white/10 relative select-none">
+        <div className="grid grid-cols-3 gap-1 pt-1.5 border-t border-border/50 dark:border-foreground/10 relative select-none">
           <div className="w-full flex items-center justify-center">
             <ReactionDock
               currentReaction={post.user_reaction}
@@ -278,7 +278,7 @@ function PostCard({
           </button>
         </div>
 
-        {/* ─── 2-Tier Threaded Discussion Tree ────────────────────────────── */}
+        {/* â”€â”€â”€ 2-Tier Threaded Discussion Tree â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <AnimatePresence>
           {expandedComments && (
             <motion.div
@@ -297,7 +297,7 @@ function PostCard({
         </AnimatePresence>
       </motion.article>
 
-      {/* ─── Native Mobile Bottom Sheet / Centered Desktop Modal ────────────── */}
+      {/* â”€â”€â”€ Native Mobile Bottom Sheet / Centered Desktop Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {showSheet && (
           <>
@@ -306,7 +306,7 @@ function PostCard({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowSheet(false)}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 transition-opacity"
+              className="fixed inset-0 bg-background/60 backdrop-blur-xs z-50 transition-opacity"
             />
 
             <motion.div
@@ -420,7 +420,7 @@ function PostCard({
         )}
       </AnimatePresence>
 
-      {/* ─── Reaction Details Modal (Who Reacted) ─────────────────────────── */}
+      {/* â”€â”€â”€ Reaction Details Modal (Who Reacted) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <ReactionListModal
         isOpen={showReactionModal}
         onClose={() => setShowReactionModal(false)}
@@ -432,7 +432,7 @@ function PostCard({
   );
 }
 
-// ─── Studio Post Composer Trigger Bar ──────────────────────────────────────────
+// â”€â”€â”€ Studio Post Composer Trigger Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostComposerTrigger({
   onOpen,
 }: {
@@ -442,23 +442,23 @@ function PostComposerTrigger({
   const firstName = user?.first_name || user?.firstName || 'Student';
 
   return (
-    <div className="surface-glass border border-white/10 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3.5">
+    <div className="surface-glass border border-foreground/10 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3.5">
       <div className="flex items-center gap-3">
         <UserAvatar user={user} size="md" />
         <button
           type="button"
           onClick={onOpen}
-          className="flex-1 h-11 px-4 text-left text-xs sm:text-sm bg-muted/60 hover:bg-muted/90 rounded-2xl border border-white/5 text-muted-foreground hover:text-foreground transition-all flex items-center cursor-pointer shadow-inner truncate"
+          className="flex-1 h-11 px-4 text-left text-xs sm:text-sm bg-muted/60 hover:bg-muted/90 rounded-2xl border border-foreground/5 text-muted-foreground hover:text-foreground transition-all flex items-center cursor-pointer shadow-inner truncate"
         >
-          What's on your mind, {firstName}? Share a project, code, or poll…
+          What's on your mind, {firstName}? Share a project, code, or pollâ€¦
         </button>
       </div>
 
-      <div className="flex items-center justify-between pt-2 border-t border-white/5 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between pt-2 border-t border-foreground/5 text-xs text-muted-foreground">
         <button
           type="button"
           onClick={onOpen}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-foreground/10 hover:text-foreground tap-press transition-colors cursor-pointer"
         >
           <ImagePlus className="w-4 h-4 text-emerald-400" />
           <span className="font-semibold hidden sm:inline">Photo/Media</span>
@@ -466,7 +466,7 @@ function PostComposerTrigger({
         <button
           type="button"
           onClick={onOpen}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-foreground/10 hover:text-foreground tap-press transition-colors cursor-pointer"
         >
           <Code2 className="w-4 h-4 text-primary" />
           <span className="font-semibold hidden sm:inline">Code Snippet</span>
@@ -474,7 +474,7 @@ function PostComposerTrigger({
         <button
           type="button"
           onClick={onOpen}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-white/10 hover:text-foreground tap-press transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-foreground/10 hover:text-foreground tap-press transition-colors cursor-pointer"
         >
           <BarChart2 className="w-4 h-4 text-amber-400" />
           <span className="font-semibold hidden sm:inline">Campus Poll</span>
@@ -484,10 +484,10 @@ function PostComposerTrigger({
   );
 }
 
-// ─── Post Skeleton Loader ──────────────────────────────────────────────────────
+// â”€â”€â”€ Post Skeleton Loader â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function PostCardSkeleton() {
   return (
-    <div className="bg-card border border-border/50 dark:border-white/10 rounded-3xl p-5 space-y-4 shadow-xs animate-pulse">
+    <div className="bg-card border border-border/50 dark:border-foreground/10 rounded-3xl p-5 space-y-4 shadow-xs animate-pulse">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-2xl bg-muted/70 shrink-0" />
         <div className="space-y-1.5 flex-1">
@@ -508,7 +508,7 @@ function PostCardSkeleton() {
   );
 }
 
-// ─── Main Feed Page ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Feed Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function FeedPage() {
   const { user } = useAuthStore();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -523,7 +523,7 @@ export default function FeedPage() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
 
-  // ── Stories Reel State ──────────────────────────────────────────────────────
+  // â”€â”€ Stories Reel State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const [storyGroups, setStoryGroups] = useState<Array<{
     author: any;
     stories: Array<{ id: string; mediaUrl: string; mediaType: string; caption?: string; createdAt: string; hasViewed: boolean }>;
@@ -621,7 +621,7 @@ export default function FeedPage() {
     fetchPosts(1);
   }, [fetchPosts]);
 
-  // ── Real-Time Socket.IO Synchronization ─────────────────────────────────────
+  // â”€â”€ Real-Time Socket.IO Synchronization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useSocket({
     onPostNew: (data) => {
       if (data.post) {
@@ -808,8 +808,8 @@ export default function FeedPage() {
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-5">
-      {/* ─── Campus Stories Reel ────────────────────────────────────────────── */}
-      <div className="surface-glass border border-white/10 rounded-3xl p-4 shadow-xl">
+      {/* â”€â”€â”€ Campus Stories Reel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="surface-glass border border-foreground/10 rounded-3xl p-4 shadow-xl">
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
           {/* Add Story Button for Current User */}
           <div className="flex flex-col items-center gap-1.5 shrink-0">
@@ -881,17 +881,17 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* ─── Studio Post Composer Trigger ───────────────────────────────────── */}
+      {/* â”€â”€â”€ Studio Post Composer Trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <PostComposerTrigger onOpen={() => setComposerOpen(true)} />
 
-      {/* ─── Feed Filter Bar ─────────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Feed Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
         {[
           { id: 'all', label: 'All Posts' },
-          { id: 'achievements', label: '🏆 Achievements' },
-          { id: 'updates', label: '📢 Updates' },
-          { id: 'code', label: '💻 Code Snippets' },
-          { id: 'polls', label: '📊 Campus Polls' },
+          { id: 'achievements', label: 'ðŸ† Achievements' },
+          { id: 'updates', label: 'ðŸ“¢ Updates' },
+          { id: 'code', label: 'ðŸ’» Code Snippets' },
+          { id: 'polls', label: 'ðŸ“Š Campus Polls' },
         ].map((item) => (
           <button
             key={item.id}
@@ -900,7 +900,7 @@ export default function FeedPage() {
               'tap-press px-4 py-2 rounded-2xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer',
               filter === item.id
                 ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25 scale-[1.02]'
-                : 'bg-card/80 dark:bg-muted/60 border border-border/60 dark:border-white/10 text-muted-foreground hover:bg-accent hover:text-foreground'
+                : 'bg-card/80 dark:bg-muted/60 border border-border/60 dark:border-foreground/10 text-muted-foreground hover:bg-accent hover:text-foreground'
             )}
           >
             {item.label}
@@ -969,7 +969,7 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* ─── Rich Modal Post Composer & Post Editor ───────────────────────────── */}
+      {/* â”€â”€â”€ Rich Modal Post Composer & Post Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <PostComposerModal
         isOpen={composerOpen || Boolean(editingPost)}
         editPost={editingPost}
@@ -985,20 +985,20 @@ export default function FeedPage() {
         }
       />
 
-      {/* ─── Full-Screen Campus Story Viewer ────────────────────────────────── */}
+      {/* â”€â”€â”€ Full-Screen Campus Story Viewer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {activeStoryGroup && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center select-none"
+            className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center select-none"
           >
             <div className="relative w-full max-w-md h-full max-h-[100dvh] flex flex-col bg-neutral-900 overflow-hidden">
               {/* Progress Bar Segments */}
               <div className="absolute top-3 inset-x-3 z-30 flex gap-1.5">
                 {activeStoryGroup.stories.map((s: any, idx: number) => (
-                  <div key={s.id || idx} className="flex-1 h-1 bg-white/30 rounded-full overflow-hidden">
+                  <div key={s.id || idx} className="flex-1 h-1 bg-foreground/30 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-white transition-all duration-100 ease-linear"
                       style={{
@@ -1025,12 +1025,12 @@ export default function FeedPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold leading-tight truncate">{displayName(activeStoryGroup.author)}</p>
-                    <p className="text-[10px] text-white/70">{timeAgo(activeStoryGroup.stories[activeStoryIdx]?.createdAt)}</p>
+                    <p className="text-[10px] text-foreground/70">{timeAgo(activeStoryGroup.stories[activeStoryIdx]?.createdAt)}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setActiveStoryGroup(null)}
-                  className="p-2 rounded-full bg-black/40 hover:bg-black/60 text-white transition-colors cursor-pointer"
+                  className="p-2 rounded-full bg-background/40 hover:bg-background/60 text-white transition-colors cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -1079,7 +1079,7 @@ export default function FeedPage() {
 
               {/* Caption */}
               {activeStoryGroup.stories[activeStoryIdx]?.caption && (
-                <div className="absolute bottom-6 inset-x-4 z-30 p-3 bg-black/60 backdrop-blur-md rounded-xl text-white text-xs text-center">
+                <div className="absolute bottom-6 inset-x-4 z-30 p-3 bg-background/60 backdrop-blur-md rounded-xl text-white text-xs text-center">
                   {activeStoryGroup.stories[activeStoryIdx].caption}
                 </div>
               )}
@@ -1090,3 +1090,4 @@ export default function FeedPage() {
     </div>
   );
 }
+

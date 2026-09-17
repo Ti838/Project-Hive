@@ -1,5 +1,5 @@
-'use client';
-// ─── In-Call Collaborative Whiteboard (HTML5 Canvas Engine) ─────────────────────
+﻿'use client';
+// â”€â”€â”€ In-Call Collaborative Whiteboard (HTML5 Canvas Engine) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
@@ -54,7 +54,7 @@ export function InCallWhiteboard({
   const historyRef = useRef<ImageData[]>([]);
   const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // ── Resize canvas to fill container ──────────────────────────────────────────
+  // â”€â”€ Resize canvas to fill container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const syncCanvasSize = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -122,7 +122,7 @@ export function InCallWhiteboard({
     onEmitClear?.();
   };
 
-  // ── Commit inline text directly onto Canvas ─────────────────────────────────
+  // â”€â”€ Commit inline text directly onto Canvas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const commitText = () => {
     if (!textPos || !inlineText.trim()) {
       setTextPos(null);
@@ -157,7 +157,7 @@ export function InCallWhiteboard({
     setInlineText('');
   };
 
-  // ── Remote Draw Listener ───────────────────────────────────────────────────
+  // â”€â”€ Remote Draw Listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useEffect(() => {
     if (!remoteDrawEvent) return;
     const canvas = canvasRef.current;
@@ -197,7 +197,7 @@ export function InCallWhiteboard({
     }
   }, [remoteClearEvent]);
 
-  // ── Mouse & Touch Drawing Handlers ──────────────────────────────────────────
+  // â”€â”€ Mouse & Touch Drawing Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const getCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -317,7 +317,7 @@ export function InCallWhiteboard({
     }
   };
 
-  // ── Export Canvas to PNG ────────────────────────────────────────────────────
+  // â”€â”€ Export Canvas to PNG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const exportPNG = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -331,10 +331,10 @@ export function InCallWhiteboard({
 
   return (
     <div className="relative w-full h-full flex flex-col bg-neutral-950 text-white select-none rounded-2xl overflow-hidden border border-border/40">
-      {/* ─── Top Whiteboard Toolbar ──────────────────────────────────────── */}
+      {/* â”€â”€â”€ Top Whiteboard Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="h-12 bg-neutral-900/90 backdrop-blur-md border-b border-border/40 px-3 flex items-center justify-between gap-2 shrink-0 z-20">
         {/* Tool selector */}
-        <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl">
+        <div className="flex items-center gap-1 bg-background/40 p-1 rounded-xl">
           {[
             { id: 'pen' as const, icon: Pen, title: 'Draw Pen' },
             { id: 'text' as const, icon: Type, title: 'Click-to-Type Text' },
@@ -366,7 +366,7 @@ export function InCallWhiteboard({
         </div>
 
         {/* Color Palette */}
-        <div className="hidden sm:flex items-center gap-1.5 bg-black/40 px-2 py-1 rounded-xl">
+        <div className="hidden sm:flex items-center gap-1.5 bg-background/40 px-2 py-1 rounded-xl">
           {COLOR_PALETTE.map((c) => (
             <button
               key={c.value}
@@ -421,7 +421,7 @@ export function InCallWhiteboard({
         </div>
       </div>
 
-      {/* ─── Canvas Workspace ────────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Canvas Workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div ref={containerRef} className="relative flex-1 w-full h-full cursor-crosshair overflow-hidden">
         <canvas
           ref={canvasRef}
@@ -434,7 +434,7 @@ export function InCallWhiteboard({
           className="absolute inset-0 w-full h-full block"
         />
 
-        {/* ── Click-to-Type Live Textarea Overlay ─────────────────────────── */}
+        {/* â”€â”€ Click-to-Type Live Textarea Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {textPos && (
           <div
             className="absolute z-30 flex flex-col gap-1 p-1 bg-neutral-900/95 border border-primary/50 rounded-xl shadow-2xl"
@@ -454,7 +454,7 @@ export function InCallWhiteboard({
                   setInlineText('');
                 }
               }}
-              placeholder="Type note (Enter to place, Shift+Enter newline)…"
+              placeholder="Type note (Enter to place, Shift+Enter newline)â€¦"
               className="bg-transparent text-sm p-1.5 focus:outline-none resize-none min-w-[200px]"
               style={{ color: activeColor }}
             />
@@ -475,7 +475,7 @@ export function InCallWhiteboard({
           </div>
         )}
 
-        {/* ── Sticky Notes Layer ─────────────────────────────────────────── */}
+        {/* â”€â”€ Sticky Notes Layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {stickyNotes.map((note) => (
           <div
             key={note.id}
@@ -506,3 +506,4 @@ export function InCallWhiteboard({
     </div>
   );
 }
+

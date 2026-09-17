@@ -1,5 +1,5 @@
-'use client';
-// ─── Messages Page (Telegram / Messenger / WhatsApp Studio Grade) ──────────────
+﻿'use client';
+// â”€â”€â”€ Messages Page (Telegram / Messenger / WhatsApp Studio Grade) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -19,9 +19,9 @@ import { UserProfileHoverCard } from '@/components/ui/UserProfileHoverCard';
 import type { Message, User, Conversation } from '@/types';
 
 // Messenger Floating Reactions
-const REACTION_EMOJIS = ['❤️', '🔥', '🚀', '👍', '👏', '😂'];
+const REACTION_EMOJIS = ['â¤ï¸', 'ðŸ”¥', 'ðŸš€', 'ðŸ‘', 'ðŸ‘', 'ðŸ˜‚'];
 
-// ─── Safe Reply Snippet Helper ─────────────────────────────────────────────────
+// â”€â”€â”€ Safe Reply Snippet Helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function renderReplySnippet(rawContent: string | null | undefined): { isMedia: boolean; mediaUrl?: string; label: string } {
   if (!rawContent) return { isMedia: false, label: '' };
 
@@ -35,16 +35,16 @@ function renderReplySnippet(rawContent: string | null | undefined): { isMedia: b
         return {
           isMedia: true,
           mediaUrl: parsed.url,
-          label: parsed.caption ? sanitizeAndDecodeText(parsed.caption) : '📷 Photo',
+          label: parsed.caption ? sanitizeAndDecodeText(parsed.caption) : 'ðŸ“· Photo',
         };
       }
       if (parsed.type === 'voice') {
-        return { isMedia: false, label: '🎤 Voice Note' };
+        return { isMedia: false, label: 'ðŸŽ¤ Voice Note' };
       }
       if (parsed.type === 'file') {
         return {
           isMedia: false,
-          label: `📎 ${parsed.name || 'Attachment'}`,
+          label: `ðŸ“Ž ${parsed.name || 'Attachment'}`,
         };
       }
     } catch {
@@ -53,23 +53,23 @@ function renderReplySnippet(rawContent: string | null | undefined): { isMedia: b
   }
 
   if (trimmed.startsWith('data:image') || (trimmed.startsWith('http') && (trimmed.includes('.png') || trimmed.includes('.jpg') || trimmed.includes('.jpeg') || trimmed.includes('.webp')))) {
-    return { isMedia: true, mediaUrl: trimmed, label: '📷 Photo' };
+    return { isMedia: true, mediaUrl: trimmed, label: 'ðŸ“· Photo' };
   }
 
   if (trimmed.startsWith('data:audio')) {
-    return { isMedia: false, label: '🎤 Voice Note' };
+    return { isMedia: false, label: 'ðŸŽ¤ Voice Note' };
   }
 
-  if (trimmed.startsWith('📞 Join my')) {
-    return { isMedia: false, label: '📞 Meeting Invite' };
+  if (trimmed.startsWith('ðŸ“ž Join my')) {
+    return { isMedia: false, label: 'ðŸ“ž Meeting Invite' };
   }
 
   const cleaned = sanitizeAndDecodeText(trimmed);
-  const truncated = cleaned.length > 60 ? cleaned.slice(0, 57) + '…' : cleaned;
+  const truncated = cleaned.length > 60 ? cleaned.slice(0, 57) + 'â€¦' : cleaned;
   return { isMedia: false, label: truncated };
 }
 
-// ─── Voice Message Player (Waveform Audio Visualizer) ─────────────────────────
+// â”€â”€â”€ Voice Message Player (Waveform Audio Visualizer) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function VoiceMessagePlayer({ audioUrl, isMine }: { audioUrl: string; isMine: boolean }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState(0);
@@ -160,7 +160,7 @@ function VoiceMessagePlayer({ audioUrl, isMine }: { audioUrl: string; isMine: bo
   );
 }
 
-// ─── Message Bubble (WhatsApp/Telegram Ticks + Reactions) ────────────────────
+// â”€â”€â”€ Message Bubble (WhatsApp/Telegram Ticks + Reactions) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MessageBubble({
   msg,
   isMine,
@@ -320,7 +320,7 @@ function MessageBubble({
               <img
                 src={mediaImgUrl}
                 alt="Message attachment"
-                className="max-h-64 rounded-xl object-contain bg-black/10"
+                className="max-h-64 rounded-xl object-contain bg-background/10"
               />
               {textContent && (
                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
@@ -328,7 +328,7 @@ function MessageBubble({
                 </p>
               )}
             </div>
-          ) : textContent?.startsWith('📞 Join my') ? (
+          ) : textContent?.startsWith('ðŸ“ž Join my') ? (
             <div className="space-y-2 p-1">
               <p className="font-semibold text-sm flex items-center gap-2">
                 <Phone className="w-4 h-4" /> Live Call Invite
@@ -400,7 +400,7 @@ function MessageBubble({
   );
 }
 
-// ─── Messages Core Content ───────────────────────────────────────────────────
+// â”€â”€â”€ Messages Core Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MessagesContent() {
   const searchParams = useSearchParams();
   const deepLinkUserId = searchParams.get('user') || searchParams.get('userId');
@@ -574,7 +574,7 @@ function MessagesContent() {
     if (roomId) {
       socket.sendMessage(
         roomId,
-        `📞 Join my ${type} call: In-App Collaborative Room`,
+        `ðŸ“ž Join my ${type} call: In-App Collaborative Room`,
         { type: 'call_invite', callType: type }
       );
     }
@@ -910,7 +910,7 @@ function MessagesContent() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search conversations…"
+                placeholder="Search conversationsâ€¦"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full h-10 pl-10 pr-10 text-sm bg-muted/70 rounded-xl border border-transparent focus:border-primary focus:outline-none transition-colors"
@@ -1001,7 +1001,7 @@ function MessagesContent() {
                             </div>
                             <div className="flex items-center justify-between mt-0.5">
                               <p className="text-xs text-muted-foreground truncate">
-                                {conv.last_message?.content?.startsWith('data:audio') ? '🎤 Voice note' : (conv.last_message?.content ?? 'No messages yet')}
+                                {conv.last_message?.content?.startsWith('data:audio') ? 'ðŸŽ¤ Voice note' : (conv.last_message?.content ?? 'No messages yet')}
                               </p>
                               <div className="flex items-center gap-1.5 ml-2">
                                 <button
@@ -1053,7 +1053,7 @@ function MessagesContent() {
                         </div>
                         <div className="flex items-center justify-between mt-0.5">
                           <p className="text-xs text-muted-foreground truncate">
-                            {conv.last_message?.content?.startsWith('data:audio') ? '🎤 Voice note' : (conv.last_message?.content ?? 'No messages yet')}
+                            {conv.last_message?.content?.startsWith('data:audio') ? 'ðŸŽ¤ Voice note' : (conv.last_message?.content ?? 'No messages yet')}
                           </p>
                           <div className="flex items-center gap-1.5 ml-2">
                             <button
@@ -1098,7 +1098,7 @@ function MessagesContent() {
               <p className="font-semibold text-sm truncate">{displayName(selectedUser ?? undefined)}</p>
               <p className="text-xs text-muted-foreground">
                 {peerTyping ? (
-                  <span className="text-primary animate-pulse font-medium">typing…</span>
+                  <span className="text-primary animate-pulse font-medium">typingâ€¦</span>
                 ) : getUserPresence(selectedUser).isOnline ? (
                   <span className="capitalize text-emerald-500 font-medium">{getUserPresence(selectedUser).status}</span>
                 ) : (
@@ -1128,7 +1128,7 @@ function MessagesContent() {
           {!isConnected && (
             <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2 text-xs text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 shrink-0">
               <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              <span className="font-medium">Connecting to real-time chat service…</span>
+              <span className="font-medium">Connecting to real-time chat serviceâ€¦</span>
             </div>
           )}
 
@@ -1223,7 +1223,7 @@ function MessagesContent() {
                     </p>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    {imageAttachment.size || 'Image Ready'} · Add caption & hit Enter
+                    {imageAttachment.size || 'Image Ready'} Â· Add caption & hit Enter
                   </p>
                 </div>
                 <button
@@ -1247,7 +1247,7 @@ function MessagesContent() {
                     {formatRecordingTime(recordingSeconds)}
                   </span>
                   <span className="text-xs font-medium text-rose-400/80 hidden sm:inline">
-                    Recording Audio Note…
+                    Recording Audio Noteâ€¦
                   </span>
                 </div>
 
@@ -1272,11 +1272,11 @@ function MessagesContent() {
                 </div>
               </div>
             ) : (
-              <div className="surface-floating border border-white/10 rounded-2xl sm:rounded-3xl shadow-2xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 backdrop-blur-2xl focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
+              <div className="surface-floating border border-foreground/10 rounded-2xl sm:rounded-3xl shadow-2xl p-1.5 sm:p-2 flex items-center gap-1.5 sm:gap-2 backdrop-blur-2xl focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all">
                 <button
                   type="button"
                   onClick={() => chatFileInputRef.current?.click()}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-colors shrink-0 cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 tap-press transition-colors shrink-0 cursor-pointer"
                   title="Attach photo or file (or paste with Ctrl+V)"
                 >
                   <Paperclip className="w-4 h-4" />
@@ -1295,7 +1295,7 @@ function MessagesContent() {
                   onChange={(e) => handleTyping(e.target.value)}
                   onPaste={handlePaste}
                   onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage())}
-                  placeholder={imageAttachment ? "Add a caption to attachment…" : "Type a message or paste screenshot (Ctrl+V)…"}
+                  placeholder={imageAttachment ? "Add a caption to attachmentâ€¦" : "Type a message or paste screenshot (Ctrl+V)â€¦"}
                   autoCapitalize="sentences"
                   autoComplete="off"
                   className="flex-1 h-10 text-sm bg-transparent px-2 text-foreground placeholder:text-muted-foreground/70 focus:outline-none transition-colors"
@@ -1304,7 +1304,7 @@ function MessagesContent() {
                 <button
                   type="button"
                   onClick={startVoiceRecording}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-colors shrink-0 cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 tap-press transition-colors shrink-0 cursor-pointer"
                   title="Record voice note"
                 >
                   <Mic className="w-4 h-4" />
@@ -1342,8 +1342,9 @@ function MessagesContent() {
 
 export default function MessagesPage() {
   return (
-    <Suspense fallback={<div className="h-full flex items-center justify-center text-sm text-muted-foreground">Loading workspace…</div>}>
+    <Suspense fallback={<div className="h-full flex items-center justify-center text-sm text-muted-foreground">Loading workspaceâ€¦</div>}>
       <MessagesContent />
     </Suspense>
   );
 }
+

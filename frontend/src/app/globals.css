@@ -23,7 +23,7 @@
   --radius: var(--radius);
 }
 
-/* ─── Light Mode Theme Tokens ────────────────────────────────────────────── */
+/* â”€â”€â”€ Light Mode Theme Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 :root {
   --background: 240 10% 98.5%;
   --foreground: 240 10% 3.9%;
@@ -47,7 +47,7 @@
   --radius: 0.85rem;
 }
 
-/* ─── Modernized Obsidian/Zinc Dark Mode Palette ───────────────────────────── */
+/* â”€â”€â”€ Modernized Obsidian/Zinc Dark Mode Palette â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .dark {
   --background: 240 10% 3.9%;
   --foreground: 0 0% 98%;
@@ -68,6 +68,22 @@
   --border: 240 6% 14%;
   --input: 240 6% 14%;
   --ring: 263.4 85% 62%;
+}
+
+/* -------------------------------------------------------------------------- */
+/* ACCESSIBILITY & FOCUS STATES                                               */
+/* -------------------------------------------------------------------------- */
+@layer base {
+  a:focus-visible, 
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
 }
 
 * {
@@ -94,7 +110,7 @@ html, body {
   min-height: 100dvh;
 }
 
-/* ─── Standardized Glassmorphism & Depth Surfaces ──────────────────────────── */
+/* â”€â”€â”€ Standardized Glassmorphism & Depth Surfaces â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .surface-glass {
   background-color: hsl(var(--card) / 0.85);
   backdrop-filter: blur(16px);
@@ -142,7 +158,7 @@ html, body {
   border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* ─── Elevation Shadows & Ambient Glow Tokens ──────────────────────────────── */
+/* â”€â”€â”€ Elevation Shadows & Ambient Glow Tokens â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .shadow-subtle {
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
@@ -167,7 +183,7 @@ html, body {
   box-shadow: 0 0 10px 1px hsl(var(--primary) / 0.45);
 }
 
-/* ─── Motion & Tactile Micro-Interactions ───────────────────────────────────── */
+/* â”€â”€â”€ Motion & Tactile Micro-Interactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .tap-press {
   transition: transform 140ms cubic-bezier(0.16, 1, 0.3, 1), opacity 140ms cubic-bezier(0.16, 1, 0.3, 1);
   user-select: none;
@@ -199,7 +215,7 @@ html, body {
   box-shadow: 0 14px 32px -8px hsl(var(--primary) / 0.25);
 }
 
-/* ─── Unified Skeleton Wave Shimmer ────────────────────────────────────────── */
+/* â”€â”€â”€ Unified Skeleton Wave Shimmer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -215,7 +231,7 @@ html, body {
   animation: shimmer 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* ─── Typography & Contrast Utilities ──────────────────────────────────────── */
+/* â”€â”€â”€ Typography & Contrast Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .micro-label {
   font-size: 10.5px;
   font-weight: 600;
@@ -230,7 +246,7 @@ html, body {
   -webkit-text-fill-color: transparent;
 }
 
-/* ─── Mobile Ergonomics & Accessibility Standards ─────────────────────────── */
+/* â”€â”€â”€ Mobile Ergonomics & Accessibility Standards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .touch-target {
   min-width: 44px;
   min-height: 44px;
@@ -247,7 +263,7 @@ html, body {
   }
 }
 
-/* ─── Scrollbars & Page Transitions ────────────────────────────────────────── */
+/* â”€â”€â”€ Scrollbars & Page Transitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background-color: hsl(var(--border)); border-radius: 9999px; }
@@ -258,3 +274,51 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 .page-enter { animation: fadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* -------------------------------------------------------------------------- */
+/* CINEMATIC LANDING PAGE FOUNDATION                                          */
+/* -------------------------------------------------------------------------- */
+.bg-noise {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+.dark .bg-noise {
+  opacity: 0.04;
+}
+
+.cinematic-bg {
+  background: radial-gradient(circle at 50% 0%, hsl(var(--background)), hsl(var(--muted)) 100%);
+}
+.dark .cinematic-bg {
+  background: radial-gradient(circle at 50% 0%, hsl(var(--background)), #050505 100%);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow linear infinite;
+}
+.animate-reverse {
+  animation-direction: reverse;
+}
+@keyframes scroll-down {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.animate-scroll-down {
+  animation: scroll-down 2s infinite ease-in-out;
+}

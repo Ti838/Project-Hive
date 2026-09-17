@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Incoming Call Modal ────────────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Incoming Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Video, Users } from 'lucide-react';
@@ -69,8 +69,8 @@ export function IncomingCallModal({
   const isVoiceOnly = !!incomingInvite.isVoiceOnly;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in">
-      <div className="surface-floating border border-white/15 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center space-y-5">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in">
+      <div className="surface-floating border border-foreground/15 rounded-3xl w-full max-w-sm p-6 shadow-2xl flex flex-col items-center text-center space-y-5">
         {/* Pulsing Avatar */}
         <div className="relative my-2">
           <div className="w-24 h-24 rounded-full border-4 border-emerald-500/50 shadow-xl shadow-emerald-500/25 flex items-center justify-center animate-pulse">
@@ -91,7 +91,7 @@ export function IncomingCallModal({
           <h3 className="font-bold text-lg text-foreground truncate max-w-[260px]">{callerName}</h3>
           <p className="text-xs font-semibold text-emerald-500 flex items-center justify-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span>Incoming {isGroup ? 'Team Group Call' : isVoiceOnly ? 'Voice Call' : 'Video Call'}…</span>
+            <span>Incoming {isGroup ? 'Team Group Call' : isVoiceOnly ? 'Voice Call' : 'Video Call'}â€¦</span>
           </p>
         </div>
 
@@ -123,3 +123,4 @@ export function IncomingCallModal({
     </div>
   );
 }
+

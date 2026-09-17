@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -156,11 +156,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <DesktopGate>
       <div className="min-h-screen flex bg-[#07090e] text-slate-100 font-sans selection:bg-amber-500/30">
-        {/* ─── Cybernetic Admin Sidebar ───────────────────────────────────── */}
-        <aside className="w-64 shrink-0 bg-[#0b0e14] border-r border-white/5 flex flex-col justify-between sticky top-0 h-screen z-40">
+        {/* â”€â”€â”€ Cybernetic Admin Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <aside className="w-64 shrink-0 bg-[#0b0e14] border-r border-foreground/5 flex flex-col justify-between sticky top-0 h-screen z-40">
           <div>
             {/* Top Brand Header */}
-            <div className="p-4 border-b border-white/5 bg-slate-950/40">
+            <div className="p-4 border-b border-foreground/5 bg-slate-950/40">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
@@ -232,24 +232,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
 
           {/* Bottom Profile & Institutional Controls */}
-          <div className="p-3 border-t border-white/5 bg-slate-950/30 space-y-2">
+          <div className="p-3 border-t border-foreground/5 bg-slate-950/30 space-y-2">
             {/* Quick Student App Link */}
             <Link
               href="/feed"
               target="_blank"
-              className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.06] border border-white/5 text-[11px] font-medium text-slate-300 hover:text-slate-200 transition-colors"
+              className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.06] border border-foreground/5 text-[11px] font-medium text-slate-300 hover:text-slate-200 transition-colors"
             >
               <span className="flex items-center gap-1.5">
                 <ExternalLink className="w-3.5 h-3.5 text-slate-300" />
                 <span>Launch Student Shell</span>
               </span>
-              <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+              <span className="text-[9px] font-mono text-slate-400 bg-foreground/5 px-1.5 py-0.5 rounded">
                 NEW TAB
               </span>
             </Link>
 
             {/* Admin Profile Card */}
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-white/5 flex items-center justify-between">
+            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-foreground/5 flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-black text-xs shrink-0">
                   {user?.first_name?.[0] || 'A'}
@@ -274,10 +274,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </aside>
 
-        {/* ─── Main Content Container ────────────────────────────────────── */}
+        {/* â”€â”€â”€ Main Content Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Monospace Telemetry Header */}
-          <header className="h-12 bg-[#090d13]/90 backdrop-blur-md border-b border-white/5 px-6 flex items-center justify-between sticky top-0 z-30 font-mono text-[11px] text-slate-400">
+          <header className="h-12 bg-[#090d13]/90 backdrop-blur-md border-b border-foreground/5 px-6 flex items-center justify-between sticky top-0 z-30 font-mono text-[11px] text-slate-400">
             {/* Left Telemetry Indicators */}
             <div className="flex items-center gap-4 lg:gap-6 min-w-0 overflow-hidden">
               {/* Real Client IP Badge */}
@@ -332,3 +332,4 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     </DesktopGate>
   );
 }
+

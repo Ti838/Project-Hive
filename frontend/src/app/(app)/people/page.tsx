@@ -1,6 +1,6 @@
-'use client';
+﻿'use client';
 
-// ─── Student Discovery Directory ──────────────────────────────────────────────
+// â”€â”€â”€ Student Discovery Directory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useCallback, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -321,7 +321,7 @@ export default function PeoplePage() {
 
   return (
     <div className="min-h-screen pb-16 space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* ─── Hero Header & Search Bar ────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Hero Header & Search Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="pt-2 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -371,8 +371,8 @@ export default function PeoplePage() {
           )}
         </div>
 
-        {/* ─── Faceted Filter Suite ────────────────────────────────────────── */}
-        <div className="bg-card/70 border border-white/10 dark:border-white/5 rounded-3xl p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
+        {/* â”€â”€â”€ Faceted Filter Suite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        <div className="bg-card/70 border border-foreground/10 dark:border-foreground/5 rounded-3xl p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
             <div className="flex items-center gap-2 text-xs font-bold text-foreground">
               <Filter className="w-4 h-4 text-primary" />
@@ -495,7 +495,7 @@ export default function PeoplePage() {
         </div>
       </div>
 
-      {/* ─── Recommended Peers Shelf ────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Recommended Peers Shelf â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {recommended.length > 0 && !hasActiveFilters && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -592,7 +592,7 @@ export default function PeoplePage() {
         </section>
       )}
 
-      {/* ─── Main Directory Grid ────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Main Directory Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-foreground tracking-tight">
@@ -645,7 +645,7 @@ export default function PeoplePage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.2 }}
-                  className="surface-glass rounded-3xl p-5 border border-white/10 dark:border-white/5 hover:border-primary/40 hover:shadow-xl transition-all flex flex-col justify-between gap-4 bg-card/60 backdrop-blur-md"
+                  className="surface-glass rounded-3xl p-5 border border-foreground/10 dark:border-foreground/5 hover:border-primary/40 hover:shadow-xl transition-all flex flex-col justify-between gap-4 bg-card/60 backdrop-blur-md"
                 >
                   {/* Student Header Details */}
                   <div className="space-y-3">
@@ -687,7 +687,7 @@ export default function PeoplePage() {
                             <Building2 className="w-3 h-3 shrink-0 text-muted-foreground/60" />
                             <span className="truncate">{student.university}</span>
                             {(student.year_of_study || student.yearOfStudy) && (
-                              <span>· Year {student.year_of_study || student.yearOfStudy}</span>
+                              <span>Â· Year {student.year_of_study || student.yearOfStudy}</span>
                             )}
                           </div>
                         )}
@@ -745,7 +745,7 @@ export default function PeoplePage() {
                     )}
                   </div>
 
-                  {/* ─── Footer: Social Proof & Context-Aware Action Dock ───────────── */}
+                  {/* â”€â”€â”€ Footer: Social Proof & Context-Aware Action Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
                   <div className="pt-3 border-t border-border/50 flex items-center justify-between gap-2">
                     {/* Mutual Friends Social Proof */}
                     <div>
@@ -780,7 +780,7 @@ export default function PeoplePage() {
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/25 transition-all shadow-xs"
                         >
                           <CheckCheck className="w-3.5 h-3.5" />
-                          <span>Friends ✓</span>
+                          <span>Friends âœ“</span>
                         </Link>
                       ) : relState === 'REQUEST_SENT' ? (
                         <button
@@ -828,7 +828,7 @@ export default function PeoplePage() {
           </div>
         )}
 
-        {/* ─── Pagination Controls ────────────────────────────────────────── */}
+        {/* â”€â”€â”€ Pagination Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-6">
             <button
@@ -854,3 +854,4 @@ export default function PeoplePage() {
     </div>
   );
 }
+

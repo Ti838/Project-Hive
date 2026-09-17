@@ -1,5 +1,5 @@
-'use client';
-// ─── Project Showcase with ProductHunt-Grade Upvotes ──────────────────────────
+﻿'use client';
+// â”€â”€â”€ Project Showcase with ProductHunt-Grade Upvotes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -19,7 +19,7 @@ import type { Project } from '@/types';
 
 const CATEGORY_PILLS = [
   { id: 'all', label: 'All Projects' },
-  { id: 'trending', label: '🔥 Trending on Campus' },
+  { id: 'trending', label: 'ðŸ”¥ Trending on Campus' },
   { id: 'Web & Mobile', label: 'Web & Mobile' },
   { id: 'AI & Machine Learning', label: 'AI & Machine Learning' },
   { id: 'Hardware/Robotics', label: 'Hardware & IoT' },
@@ -234,7 +234,7 @@ export default function ProjectsPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search by title, tech stack (React, PyTorch...), or creator…"
+              placeholder="Search by title, tech stack (React, PyTorch...), or creatorâ€¦"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full h-11 pl-10 pr-10 text-sm bg-card border border-border/80 rounded-2xl focus:border-primary focus:outline-none transition-colors shadow-2xs"
@@ -421,7 +421,7 @@ export default function ProjectsPage() {
       {/* Project Submission Modal */}
       <AnimatePresence>
         {showSubmitModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -454,7 +454,7 @@ export default function ProjectsPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. HiveSync — Peer Collaborative IDE"
+                    placeholder="e.g. HiveSync â€” Peer Collaborative IDE"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                     className="w-full h-11 px-4 text-sm bg-muted/60 border border-border/80 rounded-xl focus:border-primary focus:outline-none"
@@ -466,7 +466,7 @@ export default function ProjectsPage() {
                   <textarea
                     rows={3}
                     required
-                    placeholder="Explain what problem this solves and what technologies make it stand out…"
+                    placeholder="Explain what problem this solves and what technologies make it stand outâ€¦"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full p-3 text-sm bg-muted/60 border border-border/80 rounded-xl focus:border-primary focus:outline-none resize-none"
@@ -574,7 +574,7 @@ export default function ProjectsPage() {
                     disabled={submitting}
                     className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-xs rounded-xl hover:bg-primary/90 tap-press shadow-xs disabled:opacity-50 cursor-pointer"
                   >
-                    {submitting ? 'Publishing…' : 'Publish Showcase'}
+                    {submitting ? 'Publishingâ€¦' : 'Publish Showcase'}
                   </button>
                 </div>
               </form>
@@ -585,3 +585,4 @@ export default function ProjectsPage() {
     </div>
   );
 }
+

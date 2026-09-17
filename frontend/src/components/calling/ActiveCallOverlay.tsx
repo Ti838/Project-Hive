@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Active Call Overlay (Studio-Grade LiveKit SFU) ─────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Active Call Overlay (Studio-Grade LiveKit SFU) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useState } from 'react';
 import {
@@ -79,9 +79,9 @@ export function ActiveCallOverlay({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 select-none animate-in fade-in duration-200 overflow-hidden">
-      {/* ─── Top Control Bar ──────────────────────────────────────────────── */}
-      <div className="w-full flex items-center justify-between pb-3 border-b border-white/10 shrink-0 z-30">
+    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 select-none animate-in fade-in duration-200 overflow-hidden">
+      {/* â”€â”€â”€ Top Control Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="w-full flex items-center justify-between pb-3 border-b border-foreground/10 shrink-0 z-30">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-xs">
             <span
@@ -95,21 +95,21 @@ export function ActiveCallOverlay({
             <span>{formatDuration(callDurationSeconds)}</span>
           </div>
 
-          <div className="text-white/90 text-sm font-medium hidden sm:flex items-center gap-2">
-            <span className="text-muted-foreground text-xs">🔒 Encrypted SFU Room:</span>
+          <div className="text-foreground/90 text-sm font-medium hidden sm:flex items-center gap-2">
+            <span className="text-muted-foreground text-xs">ðŸ”’ Encrypted SFU Room:</span>
             <span className="font-semibold text-white truncate max-w-[220px]">{title}</span>
           </div>
         </div>
 
         {/* Center Mode Switcher Tabs */}
-        <div className="flex items-center bg-white/10 rounded-full p-1 border border-white/10 text-xs shadow-inner">
+        <div className="flex items-center bg-foreground/10 rounded-full p-1 border border-foreground/10 text-xs shadow-inner">
           <button
             onClick={() => isWhiteboardOpen && toggleWhiteboard()}
             className={cn(
               'px-3.5 py-1.5 rounded-full font-medium transition-all tap-press cursor-pointer',
               !isWhiteboardOpen
                 ? 'bg-primary text-primary-foreground shadow-md font-semibold'
-                : 'text-white/70 hover:text-white'
+                : 'text-foreground/70 hover:text-white'
             )}
           >
             Video Grid ({participants.length})
@@ -120,7 +120,7 @@ export function ActiveCallOverlay({
               'px-3.5 py-1.5 rounded-full font-medium transition-all tap-press flex items-center gap-1.5 cursor-pointer',
               isWhiteboardOpen
                 ? 'bg-primary text-primary-foreground shadow-md font-semibold'
-                : 'text-white/70 hover:text-white'
+                : 'text-foreground/70 hover:text-white'
             )}
           >
             <Presentation className="w-3.5 h-3.5" />
@@ -132,7 +132,7 @@ export function ActiveCallOverlay({
         <div className="flex items-center gap-2">
           <button
             onClick={() => setViewMode('minimized')}
-            className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors tap-press cursor-pointer"
+            className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 text-white transition-colors tap-press cursor-pointer"
             title="Minimize to Picture-in-Picture"
             aria-label="Minimize to Picture-in-Picture"
           >
@@ -141,19 +141,19 @@ export function ActiveCallOverlay({
         </div>
       </div>
 
-      {/* ─── Network Warning Banner ───────────────────────────────────────── */}
+      {/* â”€â”€â”€ Network Warning Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {networkQuality === 'reconnecting' && (
         <div className="my-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 shadow-sm animate-pulse shrink-0">
           <WifiOff className="w-4 h-4" />
-          <span className="font-medium">Unstable network connection. Reconnecting to LiveKit SFU…</span>
+          <span className="font-medium">Unstable network connection. Reconnecting to LiveKit SFUâ€¦</span>
         </div>
       )}
 
-      {/* ─── Main Viewport (with bottom padding for floating dock) ─────────── */}
+      {/* â”€â”€â”€ Main Viewport (with bottom padding for floating dock) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="flex-1 w-full my-2 sm:my-3 relative flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl pb-20 sm:pb-24">
         {isWhiteboardOpen ? (
           /* Whiteboard Mode */
-          <div className="relative w-full h-full flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+          <div className="relative w-full h-full flex flex-col rounded-2xl sm:rounded-3xl overflow-hidden border border-foreground/10 shadow-2xl">
             <InCallWhiteboard
               roomId={session?.roomName || 'default-room'}
               onEmitDraw={(data) => socketEmit?.('whiteboard:draw', data)}
@@ -163,9 +163,9 @@ export function ActiveCallOverlay({
             />
 
             {/* Floating corner participant indicator */}
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-black/80 backdrop-blur-md border border-white/15 px-3 py-1.5 rounded-full shadow-xl pointer-events-none">
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-2 bg-background/80 backdrop-blur-md border border-foreground/15 px-3 py-1.5 rounded-full shadow-xl pointer-events-none">
               <Users className="w-3.5 h-3.5 text-primary" />
-              <span className="text-xs text-white/90 font-medium">{participants.length} in room</span>
+              <span className="text-xs text-foreground/90 font-medium">{participants.length} in room</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </div>
           </div>
@@ -205,8 +205,8 @@ export function ActiveCallOverlay({
         )}
       </div>
 
-      {/* ─── Floating Frosted-Glass Pill Control Dock ─────────────────────── */}
-      <div className="fixed bottom-5 sm:bottom-6 inset-x-0 mx-auto w-fit z-40 px-3 sm:px-5 py-2 sm:py-2.5 surface-floating rounded-full border border-white/10 shadow-2xl flex items-center gap-2 sm:gap-3.5 backdrop-blur-2xl pb-[max(0.5rem,env(safe-area-inset-bottom,8px))]">
+      {/* â”€â”€â”€ Floating Frosted-Glass Pill Control Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="fixed bottom-5 sm:bottom-6 inset-x-0 mx-auto w-fit z-40 px-3 sm:px-5 py-2 sm:py-2.5 surface-floating rounded-full border border-foreground/10 shadow-2xl flex items-center gap-2 sm:gap-3.5 backdrop-blur-2xl pb-[max(0.5rem,env(safe-area-inset-bottom,8px))]">
         {/* Mic Toggle */}
         <button
           onClick={toggleMute}
@@ -214,7 +214,7 @@ export function ActiveCallOverlay({
             'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
             isMuted
               ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30'
-              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+              : 'bg-foreground/10 text-white hover:bg-foreground/20 border border-foreground/10'
           )}
           title={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
           aria-label={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
@@ -229,7 +229,7 @@ export function ActiveCallOverlay({
             'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
             isVideoOff
               ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30'
-              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+              : 'bg-foreground/10 text-white hover:bg-foreground/20 border border-foreground/10'
           )}
           title={isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'}
           aria-label={isVideoOff ? 'Turn Camera On' : 'Turn Camera Off'}
@@ -244,7 +244,7 @@ export function ActiveCallOverlay({
             'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
             isScreenSharing
               ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/40 glow-primary border border-primary/50'
-              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+              : 'bg-foreground/10 text-white hover:bg-foreground/20 border border-foreground/10'
           )}
           title={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
           aria-label={isScreenSharing ? 'Stop Sharing Screen' : 'Share Screen'}
@@ -259,7 +259,7 @@ export function ActiveCallOverlay({
             'w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center transition-all tap-press cursor-pointer',
             isWhiteboardOpen
               ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/40 glow-primary border border-primary/50'
-              : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+              : 'bg-foreground/10 text-white hover:bg-foreground/20 border border-foreground/10'
           )}
           title={isWhiteboardOpen ? 'Exit Whiteboard' : 'Open In-Call Whiteboard'}
           aria-label={isWhiteboardOpen ? 'Exit Whiteboard' : 'Open In-Call Whiteboard'}
@@ -270,7 +270,7 @@ export function ActiveCallOverlay({
         {/* Device Settings Modal Toggle */}
         <button
           onClick={() => setShowSettings(true)}
-          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/10 flex items-center justify-center tap-press transition-colors cursor-pointer"
+          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-foreground/10 hover:bg-foreground/20 text-white border border-foreground/10 flex items-center justify-center tap-press transition-colors cursor-pointer"
           title="Audio & Video Settings"
           aria-label="Audio & Video Settings"
         >
@@ -293,3 +293,4 @@ export function ActiveCallOverlay({
     </div>
   );
 }
+

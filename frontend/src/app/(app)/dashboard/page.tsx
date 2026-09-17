@@ -1,5 +1,5 @@
-'use client';
-// ─── Dashboard Page (Studio-Grade Metric-Driven Architecture) ───────────────────
+﻿'use client';
+// â”€â”€â”€ Dashboard Page (Studio-Grade Metric-Driven Architecture) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -14,7 +14,7 @@ import { useAuthStore } from '@/lib/store';
 import { displayName, timeAgo, getInitials, getAvatarColor, cn } from '@/lib/utils';
 import type { Stats, Post, Team } from '@/types';
 
-// ─── Studio-Grade Stat Card with Micro-Sparkline & Trend ───────────────────────
+// â”€â”€â”€ Studio-Grade Stat Card with Micro-Sparkline & Trend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatCard({
   label,
   value,
@@ -34,7 +34,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      className="surface-glass rounded-2xl p-5 sm:p-6 border border-white/10 dark:border-white/5 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all duration-200"
+      className="surface-glass rounded-2xl p-5 sm:p-6 border border-foreground/10 dark:border-foreground/5 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all duration-200"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1.5">
@@ -47,7 +47,7 @@ function StatCard({
       </div>
 
       {/* Trend Badge & Micro Progress Sparkline */}
-      <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between gap-2">
+      <div className="mt-4 pt-3 border-t border-foreground/5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
           <TrendingUp className="w-3 h-3" />
           <span>{trend}</span>
@@ -65,7 +65,7 @@ function StatCard({
   );
 }
 
-// ─── Quick Action Pill ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Quick Action Pill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function QuickAction({
   href,
   icon: Icon,
@@ -82,7 +82,7 @@ function QuickAction({
   return (
     <Link
       href={href}
-      className="group surface-glass rounded-2xl p-4 sm:p-5 border border-white/10 dark:border-white/5 shadow-lg hover:border-primary/40 tap-press transition-all duration-200 flex items-center gap-4"
+      className="group surface-glass rounded-2xl p-4 sm:p-5 border border-foreground/10 dark:border-foreground/5 shadow-lg hover:border-primary/40 tap-press transition-all duration-200 flex items-center gap-4"
     >
       <div className={cn('p-3 rounded-xl shrink-0 shadow-xs group-hover:scale-105 transition-transform', color)}>
         <Icon className="w-5 h-5" />
@@ -149,19 +149,19 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
-      {/* ─── Refined Obsidian Hero Welcome Banner ────────────────────────── */}
+      {/* â”€â”€â”€ Refined Obsidian Hero Welcome Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl surface-floating border border-white/15 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-2xl backdrop-blur-2xl glow-primary-subtle"
+        className="relative overflow-hidden rounded-3xl surface-floating border border-foreground/15 p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-2xl backdrop-blur-2xl glow-primary-subtle"
       >
         <div className="space-y-2.5 max-w-xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full surface-glass border border-white/10 text-primary text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full surface-glass border border-foreground/10 text-primary text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
             <span>ProjectHive Engineering Grid</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-            Welcome back, <span className="text-primary">{user?.first_name ?? 'Student'}</span> 👋
+            Welcome back, <span className="text-primary">{user?.first_name ?? 'Student'}</span> ðŸ‘‹
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Collaborate with peers across campus, build verified team projects, and brainstorm with multimodal AI intelligence.
@@ -180,7 +180,7 @@ export default function DashboardPage() {
 
           <Link
             href="/generator"
-            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl surface-glass border border-white/15 text-xs sm:text-sm font-semibold text-foreground hover:bg-white/10 tap-press transition-all"
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl surface-glass border border-foreground/15 text-xs sm:text-sm font-semibold text-foreground hover:bg-foreground/10 tap-press transition-all"
           >
             <Sparkles className="w-4 h-4 text-amber-400" />
             <span>AI Studio</span>
@@ -188,7 +188,7 @@ export default function DashboardPage() {
 
           <Link
             href="/showcase"
-            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl surface-glass border border-white/15 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-all"
+            className="flex items-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl surface-glass border border-foreground/15 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-foreground/10 tap-press transition-all"
           >
             <span>Showcase</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
@@ -196,7 +196,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* ─── Network Error Alert ────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Network Error Alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-destructive shadow-sm">
           <div className="flex items-center gap-3 text-sm">
@@ -212,11 +212,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ─── Studio Metric Cards with Micro-Sparklines ──────────────────── */}
+      {/* â”€â”€â”€ Studio Metric Cards with Micro-Sparklines â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="surface-glass rounded-2xl p-5 sm:p-6 border border-white/10 space-y-4">
+            <div key={i} className="surface-glass rounded-2xl p-5 sm:p-6 border border-foreground/10 space-y-4">
               <div className="flex justify-between items-start">
                 <div className="space-y-2 flex-1">
                   <div className="h-3 w-16 bg-muted/70 rounded-md skeleton-shimmer" />
@@ -265,7 +265,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ─── Quick Shortcuts ────────────────────────────────────────────── */}
+      {/* â”€â”€â”€ Quick Shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="space-y-3.5">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
@@ -297,10 +297,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ─── Active Squads & Highlights Grid ────────────────────────────── */}
+      {/* â”€â”€â”€ Active Squads & Highlights Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Left: Active Squads */}
-        <div className="lg:col-span-5 surface-glass rounded-3xl p-5 sm:p-6 border border-white/10 shadow-xl flex flex-col gap-4">
+        <div className="lg:col-span-5 surface-glass rounded-3xl p-5 sm:p-6 border border-foreground/10 shadow-xl flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <UserCheck className="w-4 h-4 text-primary" />
@@ -314,7 +314,7 @@ export default function DashboardPage() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl border border-white/5 surface-glass">
+                <div key={i} className="flex items-center gap-3 p-3.5 rounded-2xl border border-foreground/5 surface-glass">
                   <div className="w-11 h-11 rounded-xl bg-muted/70 skeleton-shimmer shrink-0" />
                   <div className="space-y-2 flex-1">
                     <div className="h-4 w-28 bg-muted/80 rounded-md skeleton-shimmer" />
@@ -324,12 +324,12 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : myTeams.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground border border-dashed border-white/10 rounded-2xl p-4">
+            <div className="text-center py-10 text-muted-foreground border border-dashed border-foreground/10 rounded-2xl p-4">
               <Users className="w-10 h-10 mx-auto mb-2 opacity-30 text-primary" />
               <p className="text-sm font-semibold text-foreground">You haven&apos;t joined a squad yet</p>
               <p className="text-xs text-muted-foreground mt-1">Join an existing squad or create your own</p>
               <Link href="/teams" className="text-xs text-primary font-bold mt-3 inline-block hover:underline">
-                Explore recruiting teams →
+                Explore recruiting teams â†’
               </Link>
             </div>
           ) : (
@@ -338,7 +338,7 @@ export default function DashboardPage() {
                 <Link
                   key={team.id}
                   href={`/teams`}
-                  className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-white/10 surface-glass hover:border-primary/40 tap-press transition-all group"
+                  className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-foreground/10 surface-glass hover:border-primary/40 tap-press transition-all group"
                 >
                   <div
                     className="w-11 h-11 rounded-xl flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-md group-hover:scale-105 transition-transform"
@@ -351,7 +351,7 @@ export default function DashboardPage() {
                       {team.name}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] font-mono font-semibold uppercase px-1.5 py-0.2 rounded-md bg-white/5 border border-white/10 text-muted-foreground">
+                      <span className="text-[10px] font-mono font-semibold uppercase px-1.5 py-0.2 rounded-md bg-foreground/5 border border-foreground/10 text-muted-foreground">
                         {team.status || 'Active'}
                       </span>
                       <span className="text-xs text-muted-foreground">
@@ -367,7 +367,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Right: Activity Highlights */}
-        <div className="lg:col-span-7 surface-glass rounded-3xl p-5 sm:p-6 border border-white/10 shadow-xl flex flex-col gap-4">
+        <div className="lg:col-span-7 surface-glass rounded-3xl p-5 sm:p-6 border border-foreground/10 shadow-xl flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Compass className="w-4 h-4 text-amber-400" />
@@ -381,7 +381,7 @@ export default function DashboardPage() {
           {loading ? (
             <div className="space-y-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="p-4 rounded-2xl border border-white/5 surface-glass space-y-2.5">
+                <div key={i} className="p-4 rounded-2xl border border-foreground/5 surface-glass space-y-2.5">
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-full bg-muted/70 skeleton-shimmer shrink-0" />
                     <div className="space-y-1.5 flex-1">
@@ -397,11 +397,11 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground border border-dashed border-white/10 rounded-2xl p-4">
+            <div className="text-center py-10 text-muted-foreground border border-dashed border-foreground/10 rounded-2xl p-4">
               <Compass className="w-10 h-10 mx-auto mb-2 opacity-30 text-primary" />
               <p className="text-sm font-semibold text-foreground">No recent activity yet</p>
               <Link href="/feed" className="text-xs text-primary font-bold mt-2 inline-block hover:underline">
-                Be the first to share an update →
+                Be the first to share an update â†’
               </Link>
             </div>
           ) : (
@@ -410,7 +410,7 @@ export default function DashboardPage() {
                 <Link
                   key={post.id}
                   href={`/feed#post-${post.id}`}
-                  className="block p-4 rounded-2xl border border-white/10 surface-glass hover:border-primary/40 tap-press transition-all space-y-2 group"
+                  className="block p-4 rounded-2xl border border-foreground/10 surface-glass hover:border-primary/40 tap-press transition-all space-y-2 group"
                 >
                   <div className="flex items-center gap-2.5">
                     <div
@@ -440,3 +440,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

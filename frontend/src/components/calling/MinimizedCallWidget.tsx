@@ -1,5 +1,5 @@
-'use client';
-// ─── ProjectHive — Minimized Call PiP Widget ──────────────────────────────────
+﻿'use client';
+// â”€â”€â”€ ProjectHive â€” Minimized Call PiP Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useRef, useEffect, useCallback } from 'react';
 import { Maximize2, Mic, MicOff, PhoneOff } from 'lucide-react';
@@ -92,7 +92,7 @@ export function MinimizedCallWidget({
   }, [previewParticipant?.videoTrack]);
 
   return (
-    <div className="fixed top-4 right-4 sm:top-auto sm:bottom-6 sm:right-6 w-72 h-48 z-50 surface-floating rounded-3xl border border-white/15 shadow-2xl p-2.5 flex flex-col justify-between backdrop-blur-2xl overflow-hidden animate-in fade-in zoom-in-95 select-none">
+    <div className="fixed top-4 right-4 sm:top-auto sm:bottom-6 sm:right-6 w-72 h-48 z-50 surface-floating rounded-3xl border border-foreground/15 shadow-2xl p-2.5 flex flex-col justify-between backdrop-blur-2xl overflow-hidden animate-in fade-in zoom-in-95 select-none">
       {/* Top status header */}
       <div className="flex items-center justify-between z-10 px-1 pt-0.5">
         <div className="flex items-center gap-2 truncate max-w-[150px]">
@@ -104,7 +104,7 @@ export function MinimizedCallWidget({
                 : 'bg-emerald-500 animate-pulse'
             )}
           />
-          <span className="text-xs font-bold text-white/95 truncate">{title}</span>
+          <span className="text-xs font-bold text-foreground/95 truncate">{title}</span>
         </div>
 
         <span className="text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
@@ -113,7 +113,7 @@ export function MinimizedCallWidget({
       </div>
 
       {/* Center preview */}
-      <div className="flex-1 my-1.5 relative rounded-2xl overflow-hidden bg-neutral-900/90 flex items-center justify-center border border-white/5">
+      <div className="flex-1 my-1.5 relative rounded-2xl overflow-hidden bg-neutral-900/90 flex items-center justify-center border border-foreground/5">
         {previewParticipant ? (
           <>
             <video
@@ -135,7 +135,7 @@ export function MinimizedCallWidget({
                     src={avatar}
                     alt={previewParticipant.name}
                     className={cn(
-                      'w-10 h-10 rounded-full object-cover border border-white/20',
+                      'w-10 h-10 rounded-full object-cover border border-foreground/20',
                       previewParticipant.isSpeaking && 'ring-2 ring-emerald-500 animate-pulse'
                     )}
                   />
@@ -150,7 +150,7 @@ export function MinimizedCallWidget({
                     {getInitials(previewParticipant.name)}
                   </div>
                 )}
-                <span className="text-white/80 text-[10px] font-medium mt-1 truncate max-w-[120px]">
+                <span className="text-foreground/80 text-[10px] font-medium mt-1 truncate max-w-[120px]">
                   {previewParticipant.name}
                 </span>
               </div>
@@ -170,17 +170,17 @@ export function MinimizedCallWidget({
             )}
           </>
         ) : (
-          <div className="w-full h-full bg-white/5 flex items-center justify-center text-xs text-white/60">
+          <div className="w-full h-full bg-foreground/5 flex items-center justify-center text-xs text-foreground/60">
             Connecting audio/video...
           </div>
         )}
       </div>
 
       {/* Bottom controls with touch ergonomics */}
-      <div className="flex items-center justify-between pt-1 border-t border-white/10 z-10">
+      <div className="flex items-center justify-between pt-1 border-t border-foreground/10 z-10">
         <button
           onClick={() => setViewMode('fullscreen')}
-          className="px-3 py-1.5 min-h-[38px] rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs flex items-center gap-1.5 tap-press transition-colors font-semibold cursor-pointer"
+          className="px-3 py-1.5 min-h-[38px] rounded-xl bg-foreground/10 hover:bg-foreground/20 text-white text-xs flex items-center gap-1.5 tap-press transition-colors font-semibold cursor-pointer"
           title="Expand Call"
           aria-label="Expand Call"
         >
@@ -195,7 +195,7 @@ export function MinimizedCallWidget({
               'p-2 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-xl transition-all tap-press cursor-pointer',
               isMuted
                 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30'
-                : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
+                : 'bg-foreground/10 text-white hover:bg-foreground/20 border border-foreground/10'
             )}
             title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
             aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
@@ -216,3 +216,4 @@ export function MinimizedCallWidget({
     </div>
   );
 }
+

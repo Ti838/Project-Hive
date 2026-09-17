@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -119,8 +119,8 @@ export default function AdminModerationPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header & Queue Filter Suite ──────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-white/5">
+      {/* â”€â”€â”€ Header & Queue Filter Suite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-rose-400" />
@@ -133,7 +133,7 @@ export default function AdminModerationPage() {
 
         <div className="flex items-center gap-2 flex-wrap">
           {/* Status Tabs */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-white/10">
+          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-foreground/10">
             {(['pending', 'resolved', 'dismissed'] as const).map((st) => (
               <button
                 key={st}
@@ -154,7 +154,7 @@ export default function AdminModerationPage() {
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
-            className="h-9 px-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
           >
             <option value="">All Entities</option>
             <option value="post">Posts</option>
@@ -165,7 +165,7 @@ export default function AdminModerationPage() {
 
           <button
             onClick={fetchReports}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors"
+            className="p-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-300 border border-foreground/10 transition-colors"
             title="Refresh Queue"
           >
             <RefreshCw className={cn('w-4 h-4 text-amber-400', loading && 'animate-spin')} />
@@ -182,15 +182,15 @@ export default function AdminModerationPage() {
         </div>
       )}
 
-      {/* ─── Reports Grid / Cards ─────────────────────────────────────── */}
+      {/* â”€â”€â”€ Reports Grid / Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <div className="space-y-4">
         {loading ? (
-          <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-white/5">
+          <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
             <p className="font-mono text-xs">Querying Flagged Incidents...</p>
           </div>
         ) : reports.length === 0 ? (
-          <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-white/5 space-y-2">
+          <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5 space-y-2">
             <ShieldCheck className="w-10 h-10 mx-auto text-emerald-400/60" />
             <h3 className="text-sm font-bold text-white">Queue is Clear</h3>
             <p className="text-xs text-slate-400 max-w-sm mx-auto">
@@ -201,12 +201,12 @@ export default function AdminModerationPage() {
           reports.map((report) => (
             <div
               key={report.id}
-              className="p-5 rounded-2xl bg-[#0b0e14] border border-white/5 hover:border-white/10 transition-all space-y-4"
+              className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 hover:border-foreground/10 transition-all space-y-4"
             >
               {/* Card Header: Target Type & Reason Pills */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-foreground/5 pb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-white/5 border border-white/10">
+                  <div className="p-2 rounded-xl bg-foreground/5 border border-foreground/10">
                     {getTargetIcon(report.target_type)}
                   </div>
                   <div>
@@ -252,7 +252,7 @@ export default function AdminModerationPage() {
               {/* Card Body: Reporter Info & Report Details */}
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 text-xs">
                 {/* Reporter Metadata */}
-                <div className="md:col-span-4 p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+                <div className="md:col-span-4 p-3 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
                   <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
                     Filed By
                   </p>
@@ -265,7 +265,7 @@ export default function AdminModerationPage() {
                 </div>
 
                 {/* Report Content Details / Evidence */}
-                <div className="md:col-span-8 p-3 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+                <div className="md:col-span-8 p-3 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
                   <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
                     Report Details / Claim Evidence
                   </p>
@@ -274,7 +274,7 @@ export default function AdminModerationPage() {
                   </p>
 
                   {report.resolution_notes && (
-                    <div className="mt-2 pt-2 border-t border-white/5 text-[11px] text-amber-400/90 font-mono">
+                    <div className="mt-2 pt-2 border-t border-foreground/5 text-[11px] text-amber-400/90 font-mono">
                       Resolution Note: {report.resolution_notes}
                     </div>
                   )}
@@ -287,7 +287,7 @@ export default function AdminModerationPage() {
                   <button
                     onClick={() => handleResolveAction(report, 'dismissed', 'dismiss')}
                     disabled={submitting}
-                    className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors flex items-center gap-1.5"
+                    className="px-3 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-slate-300 text-xs font-semibold transition-colors flex items-center gap-1.5"
                   >
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Dismiss</span>
@@ -299,7 +299,7 @@ export default function AdminModerationPage() {
                     className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-amber-500/10 flex items-center gap-1.5"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Resolve Incident…</span>
+                    <span>Resolve Incidentâ€¦</span>
                   </button>
                 </div>
               )}
@@ -308,11 +308,11 @@ export default function AdminModerationPage() {
         )}
       </div>
 
-      {/* ─── Resolution Action Modal ───────────────────────────────────── */}
+      {/* â”€â”€â”€ Resolution Action Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       {activeReport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg bg-[#0e131b] border border-white/10 rounded-2xl p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-[#0e131b] border border-foreground/10 rounded-2xl p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-foreground/10 pb-3">
               <div className="flex items-center gap-2">
                 <ShieldAlert className="w-5 h-5 text-amber-400" />
                 <h3 className="text-sm font-bold text-white">Resolve Content Violation</h3>
@@ -321,7 +321,7 @@ export default function AdminModerationPage() {
                 onClick={() => setActiveReport(null)}
                 className="text-slate-400 hover:text-white text-xs"
               >
-                ✕
+                âœ•
               </button>
             </div>
 
@@ -342,15 +342,15 @@ export default function AdminModerationPage() {
                   placeholder="Describe disciplinary action or reason for resolution..."
                   value={resolutionNotes}
                   onChange={(e) => setResolutionNotes(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-900 border border-white/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+                  className="w-full p-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
                 />
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-foreground/10">
               <button
                 onClick={() => setActiveReport(null)}
-                className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold"
+                className="px-3.5 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-300 text-xs font-semibold"
               >
                 Cancel
               </button>
@@ -379,3 +379,4 @@ export default function AdminModerationPage() {
     </div>
   );
 }
+

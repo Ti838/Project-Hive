@@ -1,5 +1,5 @@
-'use client';
-// ─── Hive AI Composer Component (Google Gemini & Raycast Floating Studio) ───────
+﻿'use client';
+// â”€â”€â”€ Hive AI Composer Component (Google Gemini & Raycast Floating Studio) â”€â”€â”€â”€â”€â”€â”€
 // Central prompt composer with voice waveform dictation & screenshot paste
 
 import { useState, useRef, useEffect } from 'react';
@@ -129,29 +129,29 @@ export function HiveAIComposer({
   };
 
   const defaultPlaceholder = activeCapability === 'project_generator'
-    ? 'Describe your project idea, domain or MVP goals…'
+    ? 'Describe your project idea, domain or MVP goalsâ€¦'
     : activeCapability === 'idea_analyzer'
-    ? 'Paste your project concept to analyze novelty, market fit & feasibility…'
+    ? 'Paste your project concept to analyze novelty, market fit & feasibilityâ€¦'
     : activeCapability === 'copilot_chat'
-    ? 'Ask Hive AI or paste code & screenshots (Ctrl+V)…'
+    ? 'Ask Hive AI or paste code & screenshots (Ctrl+V)â€¦'
     : activeCapability === 'project_critic'
-    ? 'Paste your architecture or code to receive rigorous review…'
+    ? 'Paste your architecture or code to receive rigorous reviewâ€¦'
     : activeCapability === 'documentation_ai'
-    ? 'Describe project components to generate README & API docs…'
+    ? 'Describe project components to generate README & API docsâ€¦'
     : activeCapability === 'code_assistant'
-    ? 'Paste code or debug challenge…'
+    ? 'Paste code or debug challengeâ€¦'
     : activeCapability === 'architecture_design'
-    ? 'Describe system architecture, database schema, or cache requirements…'
-    : 'Ask Hive AI or paste code & screenshots (Ctrl+V)…';
+    ? 'Describe system architecture, database schema, or cache requirementsâ€¦'
+    : 'Ask Hive AI or paste code & screenshots (Ctrl+V)â€¦';
 
   return (
     <div className={cn('p-3 sm:p-4 bg-transparent shrink-0 max-w-3xl mx-auto w-full', className)}>
       {/* Floating Frosted Pill Container */}
-      <div className="surface-floating rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl p-2.5 sm:p-3.5 space-y-2 transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 backdrop-blur-2xl">
+      <div className="surface-floating rounded-2xl sm:rounded-3xl border border-foreground/10 shadow-2xl p-2.5 sm:p-3.5 space-y-2 transition-all focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 backdrop-blur-2xl">
         {/* Attached Image Preview Pill */}
         {imagePreview && (
-          <div className="surface-glass relative inline-flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl border border-white/15 shadow-xl max-w-xs group animate-in fade-in zoom-in-95">
-            <div className="w-10 h-10 rounded-xl overflow-hidden bg-black/60 shrink-0 border border-white/10">
+          <div className="surface-glass relative inline-flex items-center gap-2.5 p-1.5 pr-3 rounded-2xl border border-foreground/15 shadow-xl max-w-xs group animate-in fade-in zoom-in-95">
+            <div className="w-10 h-10 rounded-xl overflow-hidden bg-background/60 shrink-0 border border-foreground/10">
               <img src={imagePreview} alt="Upload preview" className="w-full h-full object-cover" />
             </div>
             <div className="min-w-0 flex-1">
@@ -184,7 +184,7 @@ export function HiveAIComposer({
         </div>
 
         {/* Bottom Tooling Bar & Actions */}
-        <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-white/5">
+        <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-foreground/5">
           {/* Left: 1-Click Engine Cycle Badge, Attachments & Voice */}
           <div className="flex items-center gap-1.5 flex-wrap">
             {/* Single 1-Click Engine Toggle */}
@@ -192,12 +192,12 @@ export function HiveAIComposer({
               type="button"
               onClick={cycleTier}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold bg-muted/60 hover:bg-muted border border-border/60 hover:border-primary/40 text-foreground transition-all tap-press cursor-pointer shrink-0 group select-none shadow-xs"
-              title="Click to toggle engine: Turbo ➔ Pro ➔ Ultra"
+              title="Click to toggle engine: Turbo âž” Pro âž” Ultra"
             >
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-muted-foreground text-[11px] font-medium hidden sm:inline">Engine:</span>
               <span className="font-extrabold text-primary">Hive {activeTier}</span>
-              <span className="text-[10px] text-muted-foreground group-hover:text-foreground">▾</span>
+              <span className="text-[10px] text-muted-foreground group-hover:text-foreground">â–¾</span>
             </button>
 
             <input
@@ -212,7 +212,7 @@ export function HiveAIComposer({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               title="Attach screenshot or diagram (Ctrl+V)"
-              className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 tap-press transition-colors cursor-pointer"
             >
               <ImageIcon className="w-4 h-4" />
             </button>
@@ -230,14 +230,14 @@ export function HiveAIComposer({
                   <span className="w-0.5 h-3 bg-rose-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <span className="w-0.5 h-1.5 bg-rose-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-[10px] font-bold">Listening…</span>
+                <span className="text-[10px] font-bold">Listeningâ€¦</span>
               </button>
             ) : (
               <button
                 type="button"
                 onClick={toggleListening}
                 title="Dictate with voice"
-                className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/10 tap-press transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl text-muted-foreground hover:text-foreground hover:bg-foreground/10 tap-press transition-colors cursor-pointer"
               >
                 <Mic className="w-4 h-4" />
               </button>
@@ -247,7 +247,7 @@ export function HiveAIComposer({
           {/* Right: Circular Tactile Send Button */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground hidden md:inline select-none">
-              Shift + ↵ for newline
+              Shift + â†µ for newline
             </span>
 
             <button
@@ -269,3 +269,4 @@ export function HiveAIComposer({
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -53,7 +53,7 @@ export function JoinRequestModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 bg-background/70 backdrop-blur-md"
         />
 
         {/* Modal Window */}
@@ -62,7 +62,7 @@ export function JoinRequestModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-          className="relative w-full max-w-lg bg-card/95 border border-white/15 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden z-10 backdrop-blur-xl"
+          className="relative w-full max-w-lg bg-card/95 border border-foreground/15 dark:border-foreground/10 rounded-3xl shadow-2xl overflow-hidden z-10 backdrop-blur-xl"
         >
           {/* Header Cover / Gradient */}
           <div className="h-28 relative overflow-hidden bg-linear-to-r from-primary/30 via-accent/20 to-primary/10 flex items-end p-5">
@@ -77,14 +77,14 @@ export function JoinRequestModal({
 
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white/80 hover:text-white transition-colors cursor-pointer"
+              className="absolute top-4 right-4 p-2 rounded-full bg-background/40 hover:bg-background/60 text-foreground/80 hover:text-white transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
 
             {/* Team Identity badge */}
             <div className="relative z-10 flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-white/20 flex items-center justify-center text-primary font-bold text-xl shadow-lg backdrop-blur-md overflow-hidden shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-foreground/20 flex items-center justify-center text-primary font-bold text-xl shadow-lg backdrop-blur-md overflow-hidden shrink-0">
                 {team.avatar_url || team.avatar ? (
                   <img
                     src={team.avatar_url || team.avatar}
@@ -190,3 +190,4 @@ export function JoinRequestModal({
     </AnimatePresence>
   );
 }
+

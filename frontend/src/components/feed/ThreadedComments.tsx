@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,7 +51,7 @@ export function ThreadedComments({
     fetchComments();
   }, [fetchComments]);
 
-  // ── Real-Time Socket Listener ───────────────────────────────────────────────
+  // â”€â”€ Real-Time Socket Listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   useSocket({
     onPostComment: (data) => {
       if (data.postId !== postId) return;
@@ -171,7 +171,7 @@ export function ThreadedComments({
         </UserProfileHoverCard>
 
         <div className="flex-1 min-w-0">
-          <div className="bg-muted/70 dark:bg-white/5 rounded-2xl px-3.5 py-2 text-sm border border-white/5 shadow-xs">
+          <div className="bg-muted/70 dark:bg-foreground/5 rounded-2xl px-3.5 py-2 text-sm border border-foreground/5 shadow-xs">
             <div className="flex items-center justify-between gap-2 mb-1">
               <div className="flex items-center gap-1.5 flex-wrap">
                 <UserProfileHoverCard user={c.author}>
@@ -221,14 +221,14 @@ export function ThreadedComments({
             )}
           </div>
 
-          {/* ── Nested Replies ────────────────────────────────────────────── */}
+          {/* â”€â”€ Nested Replies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {c.replies && c.replies.length > 0 && (
-            <div className="mt-1 ml-2 sm:ml-4 pl-3 border-l-2 border-primary/20 dark:border-white/10 space-y-2">
+            <div className="mt-1 ml-2 sm:ml-4 pl-3 border-l-2 border-primary/20 dark:border-foreground/10 space-y-2">
               {c.replies.map((reply) => renderCommentNode(reply, true))}
             </div>
           )}
 
-          {/* ── Inline Reply Input Box ────────────────────────────────────── */}
+          {/* â”€â”€ Inline Reply Input Box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {replyingToId === c.id && (
             <div className="mt-2.5 ml-2 sm:ml-4 pl-3 border-l-2 border-primary/40 flex gap-2 items-center">
               <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
@@ -237,8 +237,8 @@ export function ThreadedComments({
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddComment(c.id)}
-                placeholder={`Reply to ${displayName(c.author ?? undefined)}…`}
-                className="flex-1 h-9 text-xs bg-muted/80 rounded-xl px-3 border border-white/10 focus:border-primary/50 focus:outline-none transition-colors"
+                placeholder={`Reply to ${displayName(c.author ?? undefined)}â€¦`}
+                className="flex-1 h-9 text-xs bg-muted/80 rounded-xl px-3 border border-foreground/10 focus:border-primary/50 focus:outline-none transition-colors"
                 autoFocus
               />
               <button
@@ -261,7 +261,7 @@ export function ThreadedComments({
       <div className="p-4 space-y-3.5 max-h-96 overflow-y-auto no-scrollbar">
         {loading ? (
           <div className="flex items-center justify-center py-6 text-muted-foreground gap-2 text-xs">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading conversation…
+            <Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading conversationâ€¦
           </div>
         ) : comments.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-3">
@@ -273,15 +273,15 @@ export function ThreadedComments({
       </div>
 
       {/* Main Comment Input */}
-      <div className="flex gap-2 p-3 sm:px-4 sm:pb-4 border-t border-white/5">
+      <div className="flex gap-2 p-3 sm:px-4 sm:pb-4 border-t border-foreground/5">
         <UserAvatar user={currentUser} size="sm" />
         <input
           type="text"
           value={mainInput}
           onChange={(e) => setMainInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-          placeholder="Write a thoughtful comment…"
-          className="flex-1 h-10 text-xs sm:text-sm bg-muted/80 rounded-xl px-4 border border-white/10 focus:border-primary/50 focus:outline-none transition-colors"
+          placeholder="Write a thoughtful commentâ€¦"
+          className="flex-1 h-10 text-xs sm:text-sm bg-muted/80 rounded-xl px-4 border border-foreground/10 focus:border-primary/50 focus:outline-none transition-colors"
         />
         <button
           type="button"
@@ -296,3 +296,4 @@ export function ThreadedComments({
     </div>
   );
 }
+

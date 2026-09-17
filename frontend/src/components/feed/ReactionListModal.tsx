@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,18 +26,18 @@ interface ReactionListModalProps {
 }
 
 const EMOJI_MAP: Record<string, { label: string; emoji: string }> = {
-  all: { label: 'All', emoji: '🌟' },
-  like: { label: 'Like', emoji: '👍' },
-  love: { label: 'Love', emoji: '❤️' },
-  care: { label: 'Care', emoji: '🥰' },
-  haha: { label: 'Haha', emoji: '😆' },
-  wow: { label: 'Wow', emoji: '😮' },
-  sad: { label: 'Sad', emoji: '😢' },
-  angry: { label: 'Angry', emoji: '😡' },
-  celebrate: { label: 'Celebrate', emoji: '🎉' },
-  insightful: { label: 'Insightful', emoji: '💡' },
-  fire: { label: 'Fire', emoji: '🔥' },
-  support: { label: 'Support', emoji: '🤝' },
+  all: { label: 'All', emoji: 'ðŸŒŸ' },
+  like: { label: 'Like', emoji: 'ðŸ‘' },
+  love: { label: 'Love', emoji: 'â¤ï¸' },
+  care: { label: 'Care', emoji: 'ðŸ¥°' },
+  haha: { label: 'Haha', emoji: 'ðŸ˜†' },
+  wow: { label: 'Wow', emoji: 'ðŸ˜®' },
+  sad: { label: 'Sad', emoji: 'ðŸ˜¢' },
+  angry: { label: 'Angry', emoji: 'ðŸ˜¡' },
+  celebrate: { label: 'Celebrate', emoji: 'ðŸŽ‰' },
+  insightful: { label: 'Insightful', emoji: 'ðŸ’¡' },
+  fire: { label: 'Fire', emoji: 'ðŸ”¥' },
+  support: { label: 'Support', emoji: 'ðŸ¤' },
 };
 
 export function ReactionListModal({
@@ -82,7 +82,7 @@ export function ReactionListModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+          className="fixed inset-0 bg-background/60 backdrop-blur-xs"
         />
 
         {/* Modal Dialog */}
@@ -91,7 +91,7 @@ export function ReactionListModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 10 }}
           transition={{ duration: 0.16 }}
-          className="relative w-full max-w-md surface-floating border border-white/10 dark:border-white/5 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[80vh]"
+          className="relative w-full max-w-md surface-floating border border-foreground/10 dark:border-foreground/5 rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[80vh]"
         >
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-border/40">
@@ -125,7 +125,7 @@ export function ReactionListModal({
             </button>
 
             {activeTabs.map(([type, count]) => {
-              const meta = EMOJI_MAP[type] || { label: type, emoji: '👍' };
+              const meta = EMOJI_MAP[type] || { label: type, emoji: 'ðŸ‘' };
               return (
                 <button
                   key={type}
@@ -153,18 +153,18 @@ export function ReactionListModal({
               </div>
             ) : filteredReactors.length > 0 ? (
               filteredReactors.map((item) => {
-                const emoji = EMOJI_MAP[item.type]?.emoji || '👍';
+                const emoji = EMOJI_MAP[item.type]?.emoji || 'ðŸ‘';
                 return (
                   <div
                     key={item.id}
-                    className="flex items-center justify-between p-3 rounded-2xl hover:bg-white/5 transition-colors gap-3"
+                    className="flex items-center justify-between p-3 rounded-2xl hover:bg-foreground/5 transition-colors gap-3"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative shrink-0">
                         <UserProfileHoverCard user={item.user}>
                           <UserAvatar user={item.user} size="md" interactive />
                         </UserProfileHoverCard>
-                        <span className="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-card border border-white/20 text-[11px] shadow-xs">
+                        <span className="absolute -bottom-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-card border border-foreground/20 text-[11px] shadow-xs">
                           {emoji}
                         </span>
                       </div>
@@ -198,7 +198,7 @@ export function ReactionListModal({
             ) : (
               <div className="py-10 text-center text-xs text-muted-foreground">
                 <span className="text-3xl mb-2 block">
-                  {EMOJI_MAP[selectedTab]?.emoji || '👍'}
+                  {EMOJI_MAP[selectedTab]?.emoji || 'ðŸ‘'}
                 </span>
                 <p className="font-semibold text-foreground text-sm">
                   {selectedTab === 'all'
@@ -216,4 +216,5 @@ export function ReactionListModal({
     </AnimatePresence>
   );
 }
+
 

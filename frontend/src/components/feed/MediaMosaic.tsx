@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -49,7 +49,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
         {count === 1 && (
           <div
             onClick={() => setLightboxIdx(0)}
-            className="group relative max-h-[500px] w-full overflow-hidden rounded-2xl border border-white/10 bg-black/40 shadow-md cursor-pointer"
+            className="group relative max-h-[500px] w-full overflow-hidden rounded-2xl border border-foreground/10 bg-background/40 shadow-md cursor-pointer"
           >
             <img
               src={images[0]}
@@ -57,7 +57,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
               loading="lazy"
               className="w-full max-h-[500px] object-cover transition-transform duration-300 group-hover:scale-[1.015]"
             />
-            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 p-2 rounded-xl text-white backdrop-blur-md">
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity bg-background/60 p-2 rounded-xl text-white backdrop-blur-md">
               <Maximize2 className="w-4 h-4" />
             </div>
           </div>
@@ -70,7 +70,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
               <div
                 key={i}
                 onClick={() => setLightboxIdx(i)}
-                className="group relative h-full w-full overflow-hidden border border-white/10 bg-black/40 shadow-xs cursor-pointer"
+                className="group relative h-full w-full overflow-hidden border border-foreground/10 bg-background/40 shadow-xs cursor-pointer"
               >
                 <img
                   src={img}
@@ -88,7 +88,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
           <div className="grid grid-cols-3 gap-2 h-80 rounded-2xl overflow-hidden">
             <div
               onClick={() => setLightboxIdx(0)}
-              className="group relative col-span-2 h-full w-full overflow-hidden border border-white/10 bg-black/40 shadow-xs cursor-pointer"
+              className="group relative col-span-2 h-full w-full overflow-hidden border border-foreground/10 bg-background/40 shadow-xs cursor-pointer"
             >
               <img
                 src={images[0]}
@@ -102,7 +102,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
                 <div
                   key={i + 1}
                   onClick={() => setLightboxIdx(i + 1)}
-                  className="group relative h-full w-full overflow-hidden border border-white/10 bg-black/40 shadow-xs cursor-pointer"
+                  className="group relative h-full w-full overflow-hidden border border-foreground/10 bg-background/40 shadow-xs cursor-pointer"
                 >
                   <img
                     src={img}
@@ -123,7 +123,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
               <div
                 key={i}
                 onClick={() => setLightboxIdx(i)}
-                className="group relative h-full w-full overflow-hidden border border-white/10 bg-black/40 shadow-xs cursor-pointer"
+                className="group relative h-full w-full overflow-hidden border border-foreground/10 bg-background/40 shadow-xs cursor-pointer"
               >
                 <img
                   src={img}
@@ -143,7 +143,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
               <div
                 key={i}
                 onClick={() => setLightboxIdx(i)}
-                className="group relative h-full w-full overflow-hidden border border-white/10 bg-black/40 shadow-xs cursor-pointer"
+                className="group relative h-full w-full overflow-hidden border border-foreground/10 bg-background/40 shadow-xs cursor-pointer"
               >
                 <img
                   src={img}
@@ -156,7 +156,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
             {/* 4th cell with overlay */}
             <div
               onClick={() => setLightboxIdx(3)}
-              className="group relative h-full w-full overflow-hidden border border-white/10 bg-black/40 shadow-xs cursor-pointer"
+              className="group relative h-full w-full overflow-hidden border border-foreground/10 bg-background/40 shadow-xs cursor-pointer"
             >
               <img
                 src={images[3]}
@@ -164,7 +164,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
                 loading="lazy"
                 className="w-full h-full object-cover brightness-50 transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center text-white font-black text-2xl tracking-tight">
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-xs flex items-center justify-center text-white font-black text-2xl tracking-tight">
                 +{count - 3}
               </div>
             </div>
@@ -172,23 +172,23 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
         )}
       </div>
 
-      {/* ── Fullscreen Lightbox Modal ────────────────────────────────────── */}
+      {/* â”€â”€ Fullscreen Lightbox Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
       <AnimatePresence>
         {lightboxIdx !== null && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-lg flex items-center justify-center select-none"
+            className="fixed inset-0 z-50 bg-background/95 backdrop-blur-lg flex items-center justify-center select-none"
           >
             {/* Top Toolbar */}
             <div className="absolute top-4 inset-x-6 z-50 flex items-center justify-between text-white drop-shadow-md">
-              <span className="text-xs sm:text-sm font-semibold text-white/80 bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-md">
+              <span className="text-xs sm:text-sm font-semibold text-foreground/80 bg-foreground/10 px-3 py-1.5 rounded-full backdrop-blur-md">
                 {lightboxIdx + 1} / {count}
               </span>
               <button
                 onClick={() => setLightboxIdx(null)}
-                className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white tap-press transition-colors cursor-pointer"
+                className="p-2.5 rounded-full bg-foreground/10 hover:bg-foreground/20 text-white tap-press transition-colors cursor-pointer"
                 aria-label="Close Lightbox"
               >
                 <X className="w-5 h-5" />
@@ -200,14 +200,14 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
               <>
                 <button
                   onClick={() => setLightboxIdx((prev) => (prev !== null && prev > 0 ? prev - 1 : count - 1))}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/25 text-white tap-press transition-all z-50 cursor-pointer"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-foreground/10 hover:bg-foreground/25 text-white tap-press transition-all z-50 cursor-pointer"
                   aria-label="Previous image"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button
                   onClick={() => setLightboxIdx((prev) => (prev !== null && prev < count - 1 ? prev + 1 : 0))}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 hover:bg-white/25 text-white tap-press transition-all z-50 cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-foreground/10 hover:bg-foreground/25 text-white tap-press transition-all z-50 cursor-pointer"
                   aria-label="Next image"
                 >
                   <ChevronRight className="w-6 h-6" />
@@ -237,3 +237,4 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
     </>
   );
 }
+
