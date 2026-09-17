@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { ReactNode, useEffect, useRef } from 'react';
 import Lenis from 'lenis';
@@ -12,8 +12,6 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Initialize Lenis
-    // Cleanup old triggers first
-    ScrollTrigger.getAll().forEach(t => t.kill());
 
     const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -58,3 +56,4 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
   return <>{children}</>;
 }
+

@@ -9,9 +9,9 @@ import { Sun, Moon, Monitor, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
-  { label: 'Features', href: '#features' },
-  { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Tech Stack', href: '#tech-stack' },
+  { label: 'Discover', href: '/people' },
+  { label: 'Squads', href: '/teams' },
+  { label: 'Projects', href: '/projects' },
 ];
 
 export function Navbar() {
@@ -295,4 +295,5 @@ export function Navbar() {
     </>
   );
 }
+
 
