@@ -91,3 +91,4 @@ ProjectHive unifies eleven specialized industry leaders into a cohesive academic
 | **Multimodal AI** | Groq LPU + Gemini 2.0 Flash | `POST /api/ai/chat` | `HiveAIWorkspace.tsx` | Transient stream + local history |
 | **User Settings** | Express `users.controller` | `PUT /api/users/settings` | `settings/page.tsx` | PostgreSQL `user_settings` |
 | **Theme Synchronization**| DOM Engine + User API | `PUT /api/users/settings` | `ThemeContext.tsx` | `localStorage` + PostgreSQL |
+
