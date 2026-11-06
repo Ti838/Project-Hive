@@ -188,3 +188,4 @@ CREATE INDEX IF NOT EXISTS idx_messages_conv_created ON "public"."messages" ("co
 CREATE INDEX IF NOT EXISTS idx_posts_author_created ON "public"."posts" ("author_id", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_user_status ON "public"."support_tickets" ("user_id", "status");
 CREATE INDEX IF NOT EXISTS idx_admin_audit_action_created ON "public"."admin_audit_logs" ("action", "created_at" DESC);
+
