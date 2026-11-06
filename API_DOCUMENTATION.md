@@ -349,7 +349,56 @@ React to a community post with an emoji.
 
 ---
 
-## 9. Real-Time Socket.IO Event Reference
+## 9. Two-Way Helpline & Support Management API (`/api/support`)
+
+The ProjectHive Helpline connects the student-facing assistance center (`/help`) with the administrative investigation and triage center (`/admin/support`).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student as Student Client
+    participant Gateway as Express /api/support
+    participant DB as Supabase support_tickets
+    actor Admin as Admin Portal
+
+    Student->>Gateway: POST /api/support/tickets { subject, category, message, priority }
+    Gateway->>DB: INSERT into support_tickets (ticket_number, user_id, status: 'Open')
+    DB-->>Gateway: Stored Ticket Record
+    Gateway-->>Student: { ok: true, ticket: { id, ticket_number: 'PH-2026-XXXXXX' } }
+
+    Admin->>Gateway: GET /api/support/admin/tickets?status=Open
+    Gateway->>DB: SELECT with User Profile Join
+    DB-->>Gateway: Filtered Ticket Queue
+    Gateway-->>Admin: { ok: true, tickets: [...] }
+
+    Admin->>Gateway: POST /api/support/admin/tickets/:id/reply { message, is_internal: false }
+    Gateway->>DB: UPDATE support_tickets (append message JSONB, status: 'Waiting for User')
+    Gateway-->>Admin: { ok: true, message: 'Reply sent' }
+
+    Student->>Gateway: POST /api/support/tickets/:id/reply { message }
+    Gateway->>DB: UPDATE support_tickets (append message JSONB, status: 'Waiting for Admin')
+    Gateway-->>Student: { ok: true, ticket: { ... } }
+
+    Admin->>Gateway: PATCH /api/support/admin/tickets/:id/status { status: 'Resolved' }
+    Gateway->>DB: UPDATE support_tickets (status: 'Resolved')
+    Gateway-->>Admin: { ok: true, status: 'Resolved' }
+```
+
+### Student Endpoints (Authenticated)
+- `GET /api/support/my-tickets` - List all support tickets submitted by current user.
+- `POST /api/support/tickets` - Create a new support ticket with subject, category, priority, and message.
+- `GET /api/support/tickets/:id` - Fetch single ticket with complete message thread (strictly IDOR-guarded).
+- `POST /api/support/tickets/:id/reply` - Append a reply message to an active ticket.
+
+### Administrative Endpoints (Admin / Super Admin Only)
+- `GET /api/support/admin/tickets` - List all support tickets across the platform with filtering by `status`, `category`, `priority`, and text search.
+- `GET /api/support/admin/tickets/:id` - Fetch ticket details with internal staff notes and submitter metadata.
+- `POST /api/support/admin/tickets/:id/reply` - Send an official support resolution reply or save an internal staff note (`is_internal: true`).
+- `PATCH /api/support/admin/tickets/:id/status` - Transition ticket status (`Open`, `Waiting for Admin`, `Waiting for User`, `Resolved`, `Closed`).
+
+---
+
+## 10. Real-Time Socket.IO Event Reference
 
 ```mermaid
 graph TD
