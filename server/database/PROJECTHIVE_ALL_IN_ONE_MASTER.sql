@@ -1,7 +1,7 @@
 -- ╔══════════════════════════════════════════════════════════════════════════════════════╗
 -- ║  PROJECTHIVE: ALL-IN-ONE MASTER PRODUCTION DATABASE & SECURITY HARDENING ENGINE   ║
 -- ║  Platform: Supabase PostgreSQL Singapore Cluster                                   ║
--- ║  Execution Mode: Idempotent (Zero Data Loss, Safe to Run Repeatedly)               ║
+-- ║  Execution Mode: 100% Idempotent (Zero Data Loss, Safe on Pre-existing Tables)    ║
 -- ║  Guarantees: Tables, Foreign Keys, B-Tree Indexes, RLS, Trigger & Storage Security ║
 -- ╚══════════════════════════════════════════════════════════════════════════════════════╝
 
@@ -40,8 +40,8 @@ ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "github" VARCHAR(255);
 ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "leetcode" VARCHAR(255);
 ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "scholar" VARCHAR(255);
 ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "devpost" VARCHAR(255);
-ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "strikes" INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "is_banned" BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "strikes" INTEGER DEFAULT 0;
+ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "is_banned" BOOLEAN DEFAULT FALSE;
 
 -- ─── 2. USER SETTINGS & PREFERENCES ───────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "public"."user_settings" (
@@ -61,23 +61,27 @@ CREATE TABLE IF NOT EXISTS "public"."teams" (
   "category" VARCHAR(100) NOT NULL DEFAULT 'General',
   "leader_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
   "max_members" INTEGER NOT NULL DEFAULT 6,
-  "status" VARCHAR(50) NOT NULL DEFAULT 'open' CHECK ("status" IN ('open', 'closed', 'recruiting', 'archived')),
+  "status" VARCHAR(50) NOT NULL DEFAULT 'open',
   "rules" JSONB NOT NULL DEFAULT '{}'::jsonb,
   "avatar_url" TEXT,
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE "public"."teams" ADD COLUMN IF NOT EXISTS "rules" JSONB NOT NULL DEFAULT '{}'::jsonb;
+-- Column safety for pre-existing teams table
+ALTER TABLE "public"."teams" ADD COLUMN IF NOT EXISTS "max_members" INTEGER DEFAULT 6;
+ALTER TABLE "public"."teams" ADD COLUMN IF NOT EXISTS "status" VARCHAR(50) DEFAULT 'open';
+ALTER TABLE "public"."teams" ADD COLUMN IF NOT EXISTS "rules" JSONB DEFAULT '{}'::jsonb;
 
 CREATE TABLE IF NOT EXISTS "public"."team_members" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "team_id" UUID NOT NULL REFERENCES "public"."teams"("id") ON DELETE CASCADE,
   "user_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
   "role" VARCHAR(50) NOT NULL DEFAULT 'member' CHECK ("role" IN ('leader', 'maintainer', 'member')),
-  "joined_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  UNIQUE("team_id", "user_id")
+  "joined_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_team_members_team_user ON "public"."team_members" ("team_id", "user_id");
 
 -- ─── 4. INCUBATION PROJECTS & SPRINT WORKSPACES ──────────────────────────────
 CREATE TABLE IF NOT EXISTS "public"."projects" (
@@ -87,7 +91,7 @@ CREATE TABLE IF NOT EXISTS "public"."projects" (
   "owner_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
   "team_id" UUID REFERENCES "public"."teams"("id") ON DELETE SET NULL,
   "category" VARCHAR(100) NOT NULL DEFAULT 'General',
-  "status" VARCHAR(50) NOT NULL DEFAULT 'planning' CHECK ("status" IN ('planning', 'in-development', 'completed', 'showcased')),
+  "status" VARCHAR(50) NOT NULL DEFAULT 'planning',
   "github_url" TEXT,
   "demo_url" TEXT,
   "tags" JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -125,13 +129,18 @@ CREATE TABLE IF NOT EXISTS "public"."messages" (
   "room_id" VARCHAR(255),
   "sender_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
   "content" TEXT NOT NULL,
-  "type" VARCHAR(50) NOT NULL DEFAULT 'text' CHECK ("type" IN ('text', 'image', 'audio', 'file', 'system')),
+  "type" VARCHAR(50) NOT NULL DEFAULT 'text',
   "file_url" TEXT,
   "reply_to" UUID REFERENCES "public"."messages"("id") ON DELETE SET NULL,
   "reactions" JSONB NOT NULL DEFAULT '{}'::jsonb,
   "is_read" BOOLEAN NOT NULL DEFAULT FALSE,
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Column safety for pre-existing messages table
+ALTER TABLE "public"."messages" ADD COLUMN IF NOT EXISTS "conversation_id" UUID REFERENCES "public"."conversations"("id") ON DELETE CASCADE;
+ALTER TABLE "public"."messages" ADD COLUMN IF NOT EXISTS "file_url" TEXT;
+ALTER TABLE "public"."messages" ADD COLUMN IF NOT EXISTS "is_read" BOOLEAN DEFAULT FALSE;
 
 -- ─── 6. LIVEKIT WEBRTC CALLING SESSIONS ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "public"."call_sessions" (
@@ -141,8 +150,7 @@ CREATE TABLE IF NOT EXISTS "public"."call_sessions" (
   "initiator_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
   "recipient_id" UUID REFERENCES "public"."users"("id") ON DELETE SET NULL,
   "team_id" UUID REFERENCES "public"."teams"("id") ON DELETE SET NULL,
-  "status" VARCHAR(20) NOT NULL DEFAULT 'initiated' 
-    CHECK ("status" IN ('initiated', 'ringing', 'connected', 'ended', 'rejected', 'missed', 'failed')),
+  "status" VARCHAR(20) NOT NULL DEFAULT 'initiated',
   "started_at" TIMESTAMPTZ DEFAULT NOW(),
   "connected_at" TIMESTAMPTZ,
   "ended_at" TIMESTAMPTZ,
@@ -159,9 +167,10 @@ CREATE TABLE IF NOT EXISTS "public"."call_participants" (
   "joined_at" TIMESTAMPTZ DEFAULT NOW(),
   "left_at" TIMESTAMPTZ,
   "duration_seconds" INTEGER DEFAULT 0,
-  "created_at" TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE("call_id", "user_id")
+  "created_at" TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_call_participants ON "public"."call_participants" ("call_id", "user_id");
 
 -- ─── 7. CAMPUS SOCIAL FEED & SHOWCASE ─────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "public"."posts" (
@@ -176,6 +185,9 @@ CREATE TABLE IF NOT EXISTS "public"."posts" (
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE "public"."posts" ADD COLUMN IF NOT EXISTS "tags" JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE "public"."posts" ADD COLUMN IF NOT EXISTS "upvotes" INTEGER DEFAULT 0;
+
 CREATE TABLE IF NOT EXISTS "public"."post_comments" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   "post_id" UUID NOT NULL REFERENCES "public"."posts"("id") ON DELETE CASCADE,
@@ -185,6 +197,8 @@ CREATE TABLE IF NOT EXISTS "public"."post_comments" (
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE "public"."post_comments" ADD COLUMN IF NOT EXISTS "parent_id" UUID REFERENCES "public"."post_comments"("id") ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS "public"."notifications" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -200,18 +214,32 @@ CREATE TABLE IF NOT EXISTS "public"."notifications" (
 -- ─── 8. TWO-WAY HELPLINE & SUPPORT TICKETS ────────────────────────────────────
 CREATE TABLE IF NOT EXISTS "public"."support_tickets" (
   "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  "ticket_number" VARCHAR(50) NOT NULL UNIQUE,
+  "ticket_number" VARCHAR(50),
   "user_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
   "subject" TEXT NOT NULL,
   "category" VARCHAR(100) NOT NULL DEFAULT 'General',
-  "priority" VARCHAR(20) NOT NULL DEFAULT 'normal' CHECK ("priority" IN ('low', 'normal', 'urgent')),
-  "status" VARCHAR(50) NOT NULL DEFAULT 'Open' CHECK ("status" IN ('Open', 'Waiting for Admin', 'Waiting for User', 'Resolved', 'Closed')),
+  "priority" VARCHAR(20) NOT NULL DEFAULT 'normal',
+  "status" VARCHAR(50) NOT NULL DEFAULT 'Open',
   "messages" JSONB NOT NULL DEFAULT '[]'::jsonb,
   "related_team_id" UUID REFERENCES "public"."teams"("id") ON DELETE SET NULL,
   "related_project_id" UUID REFERENCES "public"."projects"("id") ON DELETE SET NULL,
   "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Column safety for pre-existing support_tickets table
+ALTER TABLE "public"."support_tickets" ADD COLUMN IF NOT EXISTS "ticket_number" VARCHAR(50);
+ALTER TABLE "public"."support_tickets" ADD COLUMN IF NOT EXISTS "priority" VARCHAR(20) DEFAULT 'normal';
+ALTER TABLE "public"."support_tickets" ADD COLUMN IF NOT EXISTS "messages" JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE "public"."support_tickets" ADD COLUMN IF NOT EXISTS "related_team_id" UUID REFERENCES "public"."teams"("id") ON DELETE SET NULL;
+ALTER TABLE "public"."support_tickets" ADD COLUMN IF NOT EXISTS "related_project_id" UUID REFERENCES "public"."projects"("id") ON DELETE SET NULL;
+
+-- Backfill ticket_number for any existing rows
+UPDATE "public"."support_tickets"
+SET "ticket_number" = 'TICK-' || UPPER(SUBSTRING(id::text FROM 1 FOR 8))
+WHERE "ticket_number" IS NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_support_tickets_number ON "public"."support_tickets" ("ticket_number");
 
 -- ─── 9. ADMINISTRATIVE AUDIT LEDGER & SYSTEM FLAGS ────────────────────────────
 CREATE TABLE IF NOT EXISTS "public"."admin_audit_logs" (
@@ -245,6 +273,7 @@ CREATE INDEX IF NOT EXISTS idx_teams_leader ON "public"."teams" ("leader_id");
 CREATE INDEX IF NOT EXISTS idx_team_members_lookup ON "public"."team_members" ("team_id", "user_id");
 CREATE INDEX IF NOT EXISTS idx_projects_owner ON "public"."projects" ("owner_id");
 CREATE INDEX IF NOT EXISTS idx_tasks_project_status ON "public"."tasks" ("project_id", "status");
+CREATE INDEX IF NOT EXISTS idx_messages_room_created ON "public"."messages" ("room_id", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_conv_created ON "public"."messages" ("conversation_id", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_author_created ON "public"."posts" ("author_id", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON "public"."notifications" ("user_id", "is_read", "created_at" DESC);
@@ -277,8 +306,8 @@ BEGIN
   FOR tbl IN
     SELECT tablename FROM pg_tables WHERE schemaname = 'public'
   LOOP
-    EXECUTE format('DROP POLICY IF EXISTS "service_role_all_%I" ON "public".%I;', tbl, tbl);
-    EXECUTE format('CREATE POLICY "service_role_all_%I" ON "public".%I FOR ALL TO service_role USING (true) WITH CHECK (true);', tbl, tbl);
+    EXECUTE format('DROP POLICY IF EXISTS %I ON "public".%I;', 'service_role_all_' || tbl, tbl);
+    EXECUTE format('CREATE POLICY %I ON "public".%I FOR ALL TO service_role USING (true) WITH CHECK (true);', 'service_role_all_' || tbl, tbl);
   END LOOP;
 END $$;
 
@@ -375,6 +404,7 @@ CREATE POLICY "authenticated_update_posts" ON "public"."posts" FOR UPDATE TO aut
 DROP POLICY IF EXISTS "authenticated_delete_posts" ON "public"."posts";
 CREATE POLICY "authenticated_delete_posts" ON "public"."posts" FOR DELETE TO authenticated USING (auth.uid() = author_id);
 
+-- POST COMMENTS
 DROP POLICY IF EXISTS "authenticated_select_post_comments" ON "public"."post_comments";
 CREATE POLICY "authenticated_select_post_comments" ON "public"."post_comments" FOR SELECT TO authenticated, anon USING (true);
 
