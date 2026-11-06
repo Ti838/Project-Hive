@@ -31,6 +31,7 @@ import postsRoutes from './routes/posts.routes.js';
 import storiesRoutes from './routes/stories.routes.js';
 import callsRoutes from './routes/calls.routes.js';
 import githubRoutes from './routes/github.routes.js';
+import supportRoutes from './routes/support.routes.js';
 import { keySigner } from './services/crypto/keySigner.service.js';
 
 const app = express();
@@ -338,6 +339,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/friends', friendsRoutes);
 app.use('/api/stories', storiesRoutes); // stories
 app.use('/api/calls', callsRoutes); // native LiveKit calling
+app.use('/api/support', supportRoutes); // two-way support & helpline
 app.use('/api', postsRoutes);   // feed, posts, reactions, comments
 app.post('/api/reports', authMiddleware, createReport); // public/student content reporting
 

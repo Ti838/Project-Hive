@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -10,6 +10,7 @@ import {
   Layers,
   Sliders,
   ScrollText,
+  MessageSquare,
   LogOut,
   ExternalLink,
   Shield,
@@ -39,6 +40,7 @@ const navItems = [
   { name: 'User Directory & Strikes', href: '/admin/users', icon: Users },
   { name: 'Moderation Queue', href: '/admin/moderation', icon: ShieldAlert },
   { name: 'Squads & Hubs', href: '/admin/teams', icon: Layers },
+  { name: 'Support & Helpline', href: '/admin/support', icon: MessageSquare },
   { name: 'System Flags & Health', href: '/admin/system', icon: Sliders },
   { name: 'Audit Ledger', href: '/admin/audit', icon: ScrollText },
 ];

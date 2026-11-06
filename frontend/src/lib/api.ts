@@ -766,5 +766,32 @@ export const api = {
     promoteMe: () =>
       request<{ message: string; role: string }>('/admin/promote-me', { method: 'POST' }),
   },
+  support: {
+    getMyTickets: () =>
+      request<{ tickets: any[] }>('/support/my-tickets'),
+    createTicket: (body: { subject: string; category: string; description: string; priority?: string; relatedTeamId?: string; relatedProjectId?: string }) =>
+      request<{ ticket: any }>('/support/tickets', { method: 'POST', body: JSON.stringify(body) }),
+    getTicket: (id: string) =>
+      request<{ ticket: any }>(`/support/tickets/${id}`),
+    replyTicket: (id: string, content: string, attachments?: any[]) =>
+      request<{ ticket: any; message: any }>(`/support/tickets/${id}/reply`, { method: 'POST', body: JSON.stringify({ content, attachments }) }),
+    closeTicket: (id: string) =>
+      request<{ message: string; ticket: any }>(`/support/tickets/${id}/close`, { method: 'PATCH' }),
+    getAdminTickets: (params?: { status?: string; category?: string; priority?: string; search?: string }) => {
+      const q = new URLSearchParams();
+      if (params?.status && params.status !== 'All') q.set('status', params.status);
+      if (params?.category && params.category !== 'All') q.set('category', params.category);
+      if (params?.priority && params.priority !== 'All') q.set('priority', params.priority);
+      if (params?.search) q.set('search', params.search);
+      const qs = q.toString();
+      return request<{ tickets: any[] }>(`/support/admin/tickets${qs ? `?${qs}` : ''}`);
+    },
+    getAdminStats: () =>
+      request<{ total: number; open: number; waitingAdmin: number; resolved: number; avgResponseHours: number }>('/support/admin/stats'),
+    adminReply: (id: string, body: { content: string; isInternal?: boolean; newStatus?: string }) =>
+      request<{ ticket: any; message: any }>(`/support/admin/tickets/${id}/reply`, { method: 'POST', body: JSON.stringify(body) }),
+    updateAdminStatus: (id: string, body: { status?: string; priority?: string; category?: string }) =>
+      request<{ message: string; ticket: any }>(`/support/admin/tickets/${id}/status`, { method: 'PATCH', body: JSON.stringify(body) }),
+  },
 };
 
