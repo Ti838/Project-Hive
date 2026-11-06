@@ -33,3 +33,4 @@ export async function logSecurityEvent({
 export default {
   logSecurityEvent,
 };
+
