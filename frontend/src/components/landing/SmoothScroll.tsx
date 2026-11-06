@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { ReactNode, useEffect, useRef } from 'react';
 import Lenis from 'lenis';
@@ -17,6 +17,8 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
 
     // Only init smooth scroll and advanced ticks if user prefers motion
     let lenis: Lenis | null = null;
+    let handleAnchorClick: ((e: MouseEvent) => void) | null = null;
+
     if (!isReducedMotion) {
       lenis = new Lenis({
         duration: 1.2,
@@ -32,6 +34,19 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
       lenis.on('scroll', ScrollTrigger.update);
       lenisRef.current = lenis;
 
+      // Handle anchor links with smooth scroll
+      handleAnchorClick = (e: MouseEvent) => {
+        const target = (e.target as HTMLElement).closest('a');
+        if (target && target.hash && target.pathname === window.location.pathname) {
+          const el = document.querySelector(target.hash);
+          if (el) {
+            e.preventDefault();
+            lenis?.scrollTo(el as HTMLElement, { offset: -80, duration: 1.2 });
+          }
+        }
+      };
+      document.addEventListener('click', handleAnchorClick);
+
       // Add Lenis's requestAnimationFrame to GSAP's ticker
       gsap.ticker.add((time) => {
         lenis?.raf(time * 1000);
@@ -44,6 +59,9 @@ export function SmoothScroll({ children }: { children: ReactNode }) {
     }
 
     return () => {
+      if (handleAnchorClick) {
+        document.removeEventListener('click', handleAnchorClick);
+      }
       if (lenis) {
         gsap.ticker.remove((time) => {
           lenis?.raf(time * 1000);

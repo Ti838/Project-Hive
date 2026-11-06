@@ -11,8 +11,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const NAV_LINKS = [
   { label: 'Discover', href: '/teams' },
   { label: 'Features', href: '/#features' },
-  { label: 'Showcase', href: '/showcase' },
-  { label: 'About', href: '/#about' },
+  { label: 'Showcase', href: '/#showcase' },
+  { label: 'FAQ', href: '/#faq' },
 ];
 
 export function Navbar() {
