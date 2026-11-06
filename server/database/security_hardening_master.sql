@@ -144,3 +144,4 @@ CREATE INDEX IF NOT EXISTS idx_support_tickets_user_status
 
 CREATE INDEX IF NOT EXISTS idx_support_tickets_updated
   ON "public"."support_tickets" ("updated_at" DESC);
+
