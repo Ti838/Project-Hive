@@ -156,3 +156,35 @@ flowchart LR
     P6 <-->|Showcase Records| D4
 ```
 
+---
+
+## 4. Zero-Trust Security & Row Level Security (RLS) Isolation Architecture
+
+```mermaid
+flowchart TD
+    ClientReq([Client DB Operation]) --> RoleCheck{Caller Security Role}
+
+    RoleCheck -->|SUPABASE_SERVICE_ROLE_KEY| BackendEngine[Node.js Express / System Engine]
+    BackendEngine --> FullBypass[Full Access / Service Role Bypass Policy]
+
+    RoleCheck -->|Authenticated JWT| TableGuard{Table & Operation}
+    
+    TableGuard -->|users / user_settings| UserCheck{auth.uid == target_id}
+    UserCheck -->|Match| AllowUser[Access Granted]
+    UserCheck -->|Mismatch| BlockUser[IDOR Protection: Access Denied]
+
+    TableGuard -->|support_tickets| TicketCheck{auth.uid == user_id}
+    TicketCheck -->|Match| AllowTicket[Access Granted]
+    TicketCheck -->|Mismatch| BlockTicket[Access Denied]
+
+    TableGuard -->|admin_audit_logs| AdminBlock[Forbidden: No Client Access Permitted]
+
+    TableGuard -->|tr_user_immutability Trigger| PrivCheck{Modifying role / is_banned / strikes?}
+    PrivCheck -->|Yes| ElevateBlock[Privilege Escalation Blocked Exception]
+    PrivCheck -->|No| AllowUpdate[Profile Fields Updated]
+
+    RoleCheck -->|Anonymous Key| AnonGuard{Target Table}
+    AnonGuard -->|posts, system_flags| AnonRead[Public Read-Only Allowed]
+    AnonGuard -->|users, tickets, messages, admin_logs| AnonBlock[Access Denied]
+```
+

@@ -89,64 +89,116 @@ graph TD
 
 ## 2. Database Entity-Relationship Diagram (ERD)
 
-The persistent database schema is hosted on Supabase (PostgreSQL), utilizing foreign key constraints, cascading deletions, and indexed lookups for fast retrieval across users, squads, messages, feed posts, tickets, and audit trails.
+The persistent database schema is hosted on Supabase (PostgreSQL 15+ in Singapore region), governed by the single canonical schema [`server/database/schema.sql`](file:///c:/Users/TIMON/Desktop/Project-Hive/server/database/schema.sql). It enforces zero-trust Row Level Security (RLS) across 100% of tables, anti-privilege escalation triggers, and composite indexing.
 
 ```mermaid
 erDiagram
-    USERS ||--o{ TEAM_MEMBERS : "joins"
-    USERS ||--o{ TEAMS : "owns/leads"
-    USERS ||--o{ TEAM_JOIN_REQUESTS : "applies"
-    USERS ||--o{ MESSAGES : "sends"
-    USERS ||--o{ POSTS : "publishes"
-    USERS ||--o{ POST_REACTIONS : "reacts"
-    USERS ||--o{ TICKETS : "files"
-    USERS ||--o{ AUDIT_LOGS : "triggers (admin)"
+    users ||--o{ user_settings : "1-to-1 preferences"
+    users ||--o{ teams : "leads"
+    users ||--o{ team_members : "joins"
+    teams ||--o{ team_members : "contains"
+    users ||--o{ projects : "authors"
+    teams ||--o{ projects : "owns"
+    projects ||--o{ tasks : "contains"
+    users ||--o{ tasks : "assigned"
+    conversations ||--o{ messages : "contains"
+    users ||--o{ messages : "sends"
+    call_sessions ||--o{ call_participants : "tracks"
+    users ||--o{ call_participants : "participates"
+    users ||--o{ posts : "publishes"
+    posts ||--o{ post_comments : "receives"
+    users ||--o{ post_comments : "writes"
+    users ||--o{ notifications : "receives"
+    users ||--o{ support_tickets : "submits"
+    users ||--o{ admin_audit_logs : "audited"
 
-    TEAMS ||--o{ TEAM_MEMBERS : "contains"
-    TEAMS ||--o{ TEAM_JOIN_REQUESTS : "receives"
-    TEAMS ||--o{ MESSAGES : "hosts group chat"
-
-    POSTS ||--o{ POST_REACTIONS : "accumulates"
-
-    USERS {
+    users {
         uuid id PK
         string email UK
         string password_hash
         string first_name
         string last_name
-        string university
-        string role "student | admin"
-        string avatar_color
-        string bio
-        string[] skills
-        string github_url
-        string linkedin_url
+        string role "user | moderator | admin | super_admin"
+        boolean is_verified
         boolean is_banned
-        string last_login_ip
-        string last_login_device
-        timestamp created_at
-        timestamp updated_at
+        integer strikes
+        string university
+        string major
+        string department
+        string academic_year
+        jsonb skills
+        jsonb interests
+        timestamptz created_at
     }
 
-    TEAMS {
+    teams {
         uuid id PK
         string name
         string description
         string category
         uuid leader_id FK
-        integer max_size
-        string recruiting_status "recruiting | full"
-        string[] required_skills
-        timestamp created_at
+        integer max_members
+        string status "open | closed"
+        jsonb rules
+        timestamptz created_at
     }
 
-    TEAM_MEMBERS {
+    team_members {
         uuid id PK
         uuid team_id FK
         uuid user_id FK
-        string role "leader | member"
-        timestamp joined_at
+        string role "leader | maintainer | member"
+        timestamptz joined_at
     }
+
+    projects {
+        uuid id PK
+        string title
+        string description
+        uuid owner_id FK
+        uuid team_id FK
+        string status "planning | in-development | completed"
+        string github_url
+        string demo_url
+        jsonb tech_stack
+        integer upvotes
+        timestamptz created_at
+    }
+
+    tasks {
+        uuid id PK
+        uuid project_id FK
+        string title
+        string status "todo | in_progress | review | done"
+        string priority "low | normal | high | urgent"
+        uuid assigned_to FK
+        timestamptz due_date
+    }
+
+    support_tickets {
+        uuid id PK
+        string ticket_number UK
+        uuid user_id FK
+        string subject
+        string category
+        string priority "low | normal | urgent"
+        string status "Open | Waiting for Admin | Waiting for User | Resolved | Closed"
+        jsonb messages
+        timestamptz created_at
+    }
+
+    admin_audit_logs {
+        uuid id PK
+        uuid admin_id FK
+        string admin_email
+        string action
+        string target_type
+        string target_id
+        jsonb details
+        string ip_address
+        timestamptz created_at
+    }
+```
 
     TEAM_JOIN_REQUESTS {
         uuid id PK
