@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive â€” Outgoing Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ ProjectHive — Outgoing Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { PhoneOff, Video, Phone } from 'lucide-react';
 import { useCallStore } from '@/lib/callStore';
@@ -50,7 +50,7 @@ export function OutgoingCallModal({
         {/* Status */}
         <div className="space-y-1">
           <h3 className="font-bold text-lg text-foreground truncate max-w-[260px]">{targetName}</h3>
-          <p className="text-xs text-muted-foreground animate-pulse font-medium">Callingâ€¦</p>
+          <p className="text-xs text-muted-foreground animate-pulse font-medium">Calling…</p>
         </div>
 
         {/* Cancel Call Button */}

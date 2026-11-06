@@ -86,7 +86,7 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="w-full max-w-md bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl text-center space-y-6">
+    <div className="w-full max-w-md bg-card/70 border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl text-center space-y-6">
       <div className="w-16 h-16 rounded-3xl mx-auto flex items-center justify-center">
         {loading ? (
           <div className="w-16 h-16 bg-primary/10 border border-primary/25 rounded-3xl flex items-center justify-center text-primary">

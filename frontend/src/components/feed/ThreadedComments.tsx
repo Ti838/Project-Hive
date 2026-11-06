@@ -237,7 +237,7 @@ export function ThreadedComments({
                 value={replyText}
                 onChange={(e) => setReplyText(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleAddComment(c.id)}
-                placeholder={`Reply to ${displayName(c.author ?? undefined)}â€¦`}
+                placeholder={`Reply to ${displayName(c.author ?? undefined)}…`}
                 className="flex-1 h-9 text-xs bg-muted/80 rounded-xl px-3 border border-foreground/10 focus:border-primary/50 focus:outline-none transition-colors"
                 autoFocus
               />
@@ -261,7 +261,7 @@ export function ThreadedComments({
       <div className="p-4 space-y-3.5 max-h-96 overflow-y-auto no-scrollbar">
         {loading ? (
           <div className="flex items-center justify-center py-6 text-muted-foreground gap-2 text-xs">
-            <Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading conversationâ€¦
+            <Loader2 className="w-4 h-4 animate-spin text-primary" /> Loading conversation…
           </div>
         ) : comments.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-3">
@@ -280,7 +280,7 @@ export function ThreadedComments({
           value={mainInput}
           onChange={(e) => setMainInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
-          placeholder="Write a thoughtful commentâ€¦"
+          placeholder="Write a thoughtful comment…"
           className="flex-1 h-10 text-xs sm:text-sm bg-muted/80 rounded-xl px-4 border border-foreground/10 focus:border-primary/50 focus:outline-none transition-colors"
         />
         <button

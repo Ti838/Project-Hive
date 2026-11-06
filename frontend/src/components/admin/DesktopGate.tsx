@@ -164,7 +164,7 @@ export function DesktopGate({ children }: DesktopGateProps) {
               <div className="sm:col-span-2">
                 <span className="text-zinc-500 block">Display Resolution:</span>
                 <span className="text-zinc-300 font-bold">
-                  {dimensions.width}px Ã— {dimensions.height}px (Ratio: {telemetry?.pixelRatio || 1}x, Screen: {telemetry?.screenResolution || '1920x1080'})
+                  {dimensions.width}px × {dimensions.height}px (Ratio: {telemetry?.pixelRatio || 1}x, Screen: {telemetry?.screenResolution || '1920x1080'})
                 </span>
               </div>
             </div>
@@ -191,7 +191,7 @@ export function DesktopGate({ children }: DesktopGateProps) {
     );
   }
 
-  // Authorized Desktop Workstation â€” Mount Admin Tree Cleanly
+  // Authorized Desktop Workstation — Mount Admin Tree Cleanly
   return <>{children}</>;
 }
 

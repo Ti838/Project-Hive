@@ -80,7 +80,7 @@ function ResetPasswordContent() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-6 bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+    <div className="w-full max-w-md space-y-6 bg-card/70 border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
       <Link href="/login" className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors group">
         <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Back to sign in
       </Link>

@@ -23,7 +23,7 @@ export function RichPostContent({
 
   const displayedText = useMemo(() => {
     if (!shouldTruncate || isExpanded) return decoded;
-    return decoded.slice(0, maxCharacters).trim() + 'â€¦';
+    return decoded.slice(0, maxCharacters).trim() + '…';
   }, [decoded, shouldTruncate, isExpanded, maxCharacters]);
 
   // Extract first URL for optional rich link card
@@ -56,7 +56,7 @@ export function RichPostContent({
             onClick={(e) => e.stopPropagation()}
             className="text-primary hover:underline font-medium break-all inline-flex items-center gap-0.5 mx-0.5"
           >
-            <span>{part.length > 35 ? domain + '/â€¦' : part}</span>
+            <span>{part.length > 35 ? domain + '/…' : part}</span>
             <ExternalLink className="w-3 h-3 inline-block shrink-0 opacity-70" />
           </a>
         );

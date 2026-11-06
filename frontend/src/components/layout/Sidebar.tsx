@@ -251,7 +251,7 @@ export function Sidebar() {
             onPointerDown={startResizing}
             onDoubleClick={() => setSidebarWidth(260)}
             style={{ touchAction: 'none' }}
-            title="Drag to resize sidebar â€¢ Double-click to reset"
+            title="Drag to resize sidebar • Double-click to reset"
             className={cn(
               'absolute top-0 right-0 w-1.5 h-full cursor-col-resize z-40 transition-colors group-hover/sidebar:bg-primary/20',
               'hover:w-2 hover:bg-primary/40 active:bg-primary',

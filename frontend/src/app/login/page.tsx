@@ -1,5 +1,5 @@
 'use client';
-// ─── ProjectHive — Modern Sign In Page ─────────────────────────────────────────
+// ─── ProjectHive — Modern Sign In Page (Harmonized Auth System) ─────────────────
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -103,7 +103,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col selection:bg-primary/20">
       {/* Top Navigation Bar with Back to Home */}
-      <header className="w-full px-4 sm:px-8 py-3 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+      <header className="w-full px-4 sm:px-8 py-3.5 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
@@ -112,7 +112,7 @@ export default function LoginPage() {
           <span>Back to Home</span>
         </Link>
 
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
             <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
           </div>
@@ -121,18 +121,18 @@ export default function LoginPage() {
       </header>
 
       {/* Main Content Split Layout */}
-      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
-        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-xl">
+      <div className="flex-1 flex w-full max-w-6xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-card/70 border border-border/80 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-2xl">
 
           {/* Left Feature Branding (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[460px]">
-            <div className="space-y-4">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[580px]">
+            <div className="space-y-6">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center p-3 shadow-inner">
                 <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
               </div>
 
               <div>
-                <h1 className="text-3xl font-black tracking-tight">Welcome Back to ProjectHive</h1>
+                <h1 className="text-3xl font-black tracking-tight leading-tight">Welcome Back to ProjectHive</h1>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   Log in to your workspace to collaborate with your team, join live calls, and build projects.
                 </p>
@@ -145,7 +145,7 @@ export default function LoginPage() {
                   { icon: Sparkles, text: 'HiveMind AI Assistant & Project Architect' },
                   { icon: ShieldCheck, text: 'Secure student authentication & RBAC' },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 text-xs font-medium text-foreground/90">
+                  <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-background/50 border border-border/60 text-xs font-medium text-foreground/90">
                     <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0">
                       <item.icon className="w-4 h-4" />
                     </div>
@@ -162,19 +162,19 @@ export default function LoginPage() {
           </div>
 
           {/* Right Form Container */}
-          <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-4 max-w-md mx-auto w-full">
+          <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-2 max-w-lg mx-auto w-full">
             {/* Quick Switch Tabs */}
-            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-4 border border-border/60 text-center text-xs font-semibold">
-              <span className="py-2 rounded-lg bg-background text-foreground shadow-xs">Sign In</span>
+            <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-5 border border-border/60 text-center text-xs font-semibold">
+              <span className="py-2.5 rounded-lg bg-background text-foreground shadow-xs">Sign In</span>
               <Link
                 href="/register"
-                className="py-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                className="py-2.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               >
                 Create Account
               </Link>
             </div>
 
-            <div className="space-y-1.5 mb-4">
+            <div className="space-y-1.5 mb-5">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sign in to your account</h2>
               <p className="text-xs sm:text-sm text-muted-foreground">Enter your university credentials to continue</p>
             </div>
@@ -217,13 +217,13 @@ export default function LoginPage() {
                 <div className="w-full border-t border-border/80" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card/60 px-3 text-muted-foreground font-medium backdrop-blur-xs">
+                <span className="bg-card px-3 text-muted-foreground font-medium">
                   Or continue with email
                 </span>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {/* Email */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
@@ -238,7 +238,7 @@ export default function LoginPage() {
                   spellCheck={false}
                   placeholder="you@university.edu"
                   className={cn(
-                    'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                    'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                     errors.email ? 'border-destructive' : 'border-border/80'
                   )}
                 />
@@ -262,7 +262,7 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     autoComplete="current-password"
                     className={cn(
-                      'w-full h-11 text-sm bg-muted/60 rounded-xl px-3.5 pr-11 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                      'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 pr-11 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                       errors.password ? 'border-destructive' : 'border-border/80'
                     )}
                   />

@@ -614,7 +614,7 @@ export default function SettingsPage() {
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {sess.browser} Â· IP: {sess.ip} Â· {sess.lastActive}
+                      {sess.browser} · IP: {sess.ip} · {sess.lastActive}
                     </p>
                   </div>
                 </div>

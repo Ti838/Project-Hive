@@ -129,20 +129,20 @@ export function HiveAIComposer({
   };
 
   const defaultPlaceholder = activeCapability === 'project_generator'
-    ? 'Describe your project idea, domain or MVP goalsâ€¦'
+    ? 'Describe your project idea, domain or MVP goals…'
     : activeCapability === 'idea_analyzer'
-    ? 'Paste your project concept to analyze novelty, market fit & feasibilityâ€¦'
+    ? 'Paste your project concept to analyze novelty, market fit & feasibility…'
     : activeCapability === 'copilot_chat'
-    ? 'Ask Hive AI or paste code & screenshots (Ctrl+V)â€¦'
+    ? 'Ask Hive AI or paste code & screenshots (Ctrl+V)…'
     : activeCapability === 'project_critic'
-    ? 'Paste your architecture or code to receive rigorous reviewâ€¦'
+    ? 'Paste your architecture or code to receive rigorous review…'
     : activeCapability === 'documentation_ai'
-    ? 'Describe project components to generate README & API docsâ€¦'
+    ? 'Describe project components to generate README & API docs…'
     : activeCapability === 'code_assistant'
-    ? 'Paste code or debug challengeâ€¦'
+    ? 'Paste code or debug challenge…'
     : activeCapability === 'architecture_design'
-    ? 'Describe system architecture, database schema, or cache requirementsâ€¦'
-    : 'Ask Hive AI or paste code & screenshots (Ctrl+V)â€¦';
+    ? 'Describe system architecture, database schema, or cache requirements…'
+    : 'Ask Hive AI or paste code & screenshots (Ctrl+V)…';
 
   return (
     <div className={cn('p-3 sm:p-4 bg-transparent shrink-0 max-w-3xl mx-auto w-full', className)}>
@@ -230,7 +230,7 @@ export function HiveAIComposer({
                   <span className="w-0.5 h-3 bg-rose-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
                   <span className="w-0.5 h-1.5 bg-rose-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
-                <span className="text-[10px] font-bold">Listeningâ€¦</span>
+                <span className="text-[10px] font-bold">Listening…</span>
               </button>
             ) : (
               <button

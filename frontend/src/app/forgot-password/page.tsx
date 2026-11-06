@@ -54,8 +54,8 @@ export default function ForgotPasswordPage() {
         </Link>
       </header>
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-6">
-        <div className="w-full max-w-md space-y-6 bg-card border border-border/80 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-xl">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md space-y-6 bg-card/70 border border-border/80 rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
 
           {submitted ? (
             <div className="text-center space-y-5 py-4 animate-in fade-in zoom-in-95 duration-300">

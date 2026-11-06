@@ -299,7 +299,7 @@ export default function AdminModerationPage() {
                     className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-md shadow-amber-500/10 flex items-center gap-1.5"
                   >
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Resolve Incidentâ€¦</span>
+                    <span>Resolve Incident…</span>
                   </button>
                 </div>
               )}

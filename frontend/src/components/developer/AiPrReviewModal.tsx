@@ -56,7 +56,7 @@ export function AiPrReviewModal({ isOpen, onClose, title, reviewContent, loading
 
           {/* Model info banner */}
           <div className="px-6 py-2 bg-muted/20 border-b border-border/40 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>Engineering Intelligence Layer â€¢ Static & Security Analysis</span>
+            <span>Engineering Intelligence Layer • Static & Security Analysis</span>
             {model && (
               <span className="font-mono text-primary font-medium">
                 {provider ? `${provider} / ` : ''}{model}

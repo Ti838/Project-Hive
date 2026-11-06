@@ -161,7 +161,7 @@ export default function DashboardPage() {
             <span>ProjectHive Engineering Grid</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-            Welcome back, <span className="text-primary">{user?.first_name ?? 'Student'}</span> ðŸ‘‹
+            Welcome back, <span className="text-primary">{user?.first_name ?? 'Student'}</span> 👋
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Collaborate with peers across campus, build verified team projects, and brainstorm with multimodal AI intelligence.

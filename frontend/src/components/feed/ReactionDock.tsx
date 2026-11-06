@@ -21,7 +21,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'like',
     label: 'Like',
-    emoji: 'ðŸ‘',
+    emoji: '👍',
     color: '#1877F2',
     activeTextColor: 'text-[#1877F2]',
     activeBg: 'bg-[#1877F2]/10 text-[#1877F2] border-[#1877F2]/30',
@@ -29,7 +29,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'love',
     label: 'Love',
-    emoji: 'â¤ï¸',
+    emoji: '❤️',
     color: '#E41E3F',
     activeTextColor: 'text-[#E41E3F]',
     activeBg: 'bg-[#E41E3F]/10 text-[#E41E3F] border-[#E41E3F]/30',
@@ -37,7 +37,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'care',
     label: 'Care',
-    emoji: 'ðŸ¥°',
+    emoji: '🥰',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -45,7 +45,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'haha',
     label: 'Haha',
-    emoji: 'ðŸ˜†',
+    emoji: '😆',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -53,7 +53,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'wow',
     label: 'Wow',
-    emoji: 'ðŸ˜®',
+    emoji: '😮',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -61,7 +61,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'sad',
     label: 'Sad',
-    emoji: 'ðŸ˜¢',
+    emoji: '😢',
     color: '#F7B125',
     activeTextColor: 'text-[#F7B125]',
     activeBg: 'bg-[#F7B125]/10 text-[#F7B125] border-[#F7B125]/30',
@@ -69,7 +69,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'angry',
     label: 'Angry',
-    emoji: 'ðŸ˜¡',
+    emoji: '😡',
     color: '#E9710F',
     activeTextColor: 'text-[#E9710F]',
     activeBg: 'bg-[#E9710F]/10 text-[#E9710F] border-[#E9710F]/30',
@@ -78,7 +78,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'celebrate',
     label: 'Celebrate',
-    emoji: 'ðŸŽ‰',
+    emoji: '🎉',
     color: '#F59E0B',
     activeTextColor: 'text-amber-500',
     activeBg: 'bg-amber-500/10 text-amber-500 border-amber-500/30',
@@ -86,7 +86,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'insightful',
     label: 'Insightful',
-    emoji: 'ðŸ’¡',
+    emoji: '💡',
     color: '#10B981',
     activeTextColor: 'text-emerald-500',
     activeBg: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/30',
@@ -94,7 +94,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'fire',
     label: 'Fire',
-    emoji: 'ðŸ”¥',
+    emoji: '🔥',
     color: '#F97316',
     activeTextColor: 'text-orange-500',
     activeBg: 'bg-orange-500/10 text-orange-500 border-orange-500/30',
@@ -102,7 +102,7 @@ export const REACTION_CONFIG: ReactionConfigItem[] = [
   {
     type: 'support',
     label: 'Support',
-    emoji: 'ðŸ¤',
+    emoji: '🤝',
     color: '#6366F1',
     activeTextColor: 'text-indigo-500',
     activeBg: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/30',

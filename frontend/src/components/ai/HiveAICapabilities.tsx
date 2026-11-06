@@ -185,7 +185,7 @@ export function HiveAICapabilitiesModal({
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search modes by name, keyword or skillâ€¦"
+                placeholder="Search modes by name, keyword or skill…"
                 className="w-full pl-9 pr-4 py-2 rounded-xl bg-muted/60 border border-border/60 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-primary/50"
                 autoFocus
               />

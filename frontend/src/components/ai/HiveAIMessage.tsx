@@ -136,7 +136,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                       <span className="uppercase font-bold tracking-wider text-[10px] text-primary">
                         {part.lang || 'code'}
                       </span>
-                      <span className="text-zinc-600">Â·</span>
+                      <span className="text-zinc-600">·</span>
                       <span className="text-[10px] text-zinc-500 font-sans">
                         {lineCount} {lineCount === 1 ? 'line' : 'lines'} (~{approxTokens} tokens)
                       </span>
@@ -183,7 +183,7 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
                     if (line.startsWith('- ') || line.startsWith('* ')) {
                       return (
                         <div key={lIdx} className="flex items-start gap-2 ml-2 my-0.5">
-                          <span className="text-primary font-bold text-xs shrink-0 mt-0.5">â€¢</span>
+                          <span className="text-primary font-bold text-xs shrink-0 mt-0.5">•</span>
                           <span>{line.replace(/^[-*]\s+/, '')}</span>
                         </div>
                       );

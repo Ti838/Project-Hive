@@ -1,5 +1,5 @@
 'use client';
-// ─── ProjectHive — Modern Register Page ─────────────────────────────────────────
+// ─── ProjectHive — Modern Register Page (Harmonized Auth System) ────────────────
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -142,7 +142,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col selection:bg-primary/20">
       {/* Top Navigation Bar with Back to Home */}
-      <header className="w-full px-4 sm:px-8 py-3 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
+      <header className="w-full px-4 sm:px-8 py-3.5 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
@@ -151,7 +151,7 @@ export default function RegisterPage() {
           <span>Back to Home</span>
         </Link>
 
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
             <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
           </div>
@@ -160,24 +160,24 @@ export default function RegisterPage() {
       </header>
 
       {/* Main Content Split Layout */}
-      <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-4">
-        <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-6 lg:p-6 shadow-xl backdrop-blur-xl">
+      <div className="flex-1 flex w-full max-w-6xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-card/70 border border-border/80 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-2xl">
 
           {/* Left Feature Branding (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[580px]">
-            <div className="space-y-3">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[580px]">
+            <div className="space-y-6">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center p-3 shadow-inner">
                 <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
               </div>
 
               <div>
-                <h1 className="text-3xl font-black tracking-tight">Join ProjectHive</h1>
+                <h1 className="text-3xl font-black tracking-tight leading-tight">Join ProjectHive</h1>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                   Join thousands of student developers, designers, and innovators building the next generation of software.
                 </p>
               </div>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-3.5 pt-2">
                 {[
                   {
                     title: 'Form Hackathon Squads',
@@ -272,17 +272,17 @@ export default function RegisterPage() {
               /* Registration Form */
               <>
                 {/* Quick Switch Tabs */}
-                <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-4 border border-border/60 text-center text-xs font-semibold">
+                <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-5 border border-border/60 text-center text-xs font-semibold">
                   <Link
                     href="/login"
-                    className="py-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
+                    className="py-2.5 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Sign In
                   </Link>
-                  <span className="py-2 rounded-lg bg-background text-foreground shadow-xs">Create Account</span>
+                  <span className="py-2.5 rounded-lg bg-background text-foreground shadow-xs">Create Account</span>
                 </div>
 
-                <div className="space-y-1 mb-4">
+                <div className="space-y-1.5 mb-5">
                   <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Create your account</h2>
                   <p className="text-xs sm:text-sm text-muted-foreground">Fill in your information to get started for free</p>
                 </div>
@@ -292,7 +292,7 @@ export default function RegisterPage() {
                   type="button"
                   onClick={handleGoogleSignUp}
                   disabled={isGoogleLoading}
-                  className="w-full h-11 flex items-center justify-center gap-3 rounded-xl bg-card border border-border/80 hover:bg-accent/60 text-foreground font-semibold text-sm transition-all duration-200 active:scale-[0.99] shadow-xs disabled:opacity-60 mb-4"
+                  className="w-full h-11 flex items-center justify-center gap-3 rounded-xl bg-card border border-border/80 hover:bg-accent/60 text-foreground font-semibold text-sm transition-all duration-200 active:scale-[0.99] shadow-xs disabled:opacity-60 mb-5"
                 >
                   {isGoogleLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin text-primary" />
@@ -320,21 +320,21 @@ export default function RegisterPage() {
                 </button>
 
                 {/* Visual Divider */}
-                <div className="relative mb-4">
+                <div className="relative mb-5">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-border/80" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card/60 px-3 text-muted-foreground font-medium backdrop-blur-xs">
+                    <span className="bg-card px-3 text-muted-foreground font-medium">
                       Or register with email
                     </span>
                   </div>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
                   {/* Name fields */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-muted-foreground" /> First Name
                       </label>
@@ -344,14 +344,14 @@ export default function RegisterPage() {
                         autoComplete="given-name"
                         placeholder="Alex"
                         className={cn(
-                          'w-full h-10 text-sm bg-muted/60 rounded-xl px-3 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                          'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                           errors.first_name ? 'border-destructive' : 'border-border/80'
                         )}
                       />
                       {errors.first_name && <p className="text-[11px] text-destructive">{errors.first_name.message}</p>}
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-muted-foreground" /> Last Name
                       </label>
@@ -361,7 +361,7 @@ export default function RegisterPage() {
                         autoComplete="family-name"
                         placeholder="Morgan"
                         className={cn(
-                          'w-full h-10 text-sm bg-muted/60 rounded-xl px-3 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                          'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                           errors.last_name ? 'border-destructive' : 'border-border/80'
                         )}
                       />
@@ -370,7 +370,7 @@ export default function RegisterPage() {
                   </div>
 
                   {/* University */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                       <School className="w-3.5 h-3.5 text-muted-foreground" /> University / Institution
                     </label>
@@ -382,7 +382,7 @@ export default function RegisterPage() {
                         autoComplete="off"
                         placeholder="Search university (e.g. DU, BUET, NSU, BRACU, MIT...)"
                         className={cn(
-                          'w-full h-10 text-sm bg-muted/60 rounded-xl px-3 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                          'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                           errors.university ? 'border-destructive' : 'border-border/80'
                         )}
                       />
@@ -414,7 +414,7 @@ export default function RegisterPage() {
                   </div>
 
                   {/* Email */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5 text-muted-foreground" /> Email Address
                     </label>
@@ -427,7 +427,7 @@ export default function RegisterPage() {
                       spellCheck={false}
                       placeholder="you@university.edu"
                       className={cn(
-                        'w-full h-10 text-sm bg-muted/60 rounded-xl px-3 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                        'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                         errors.email ? 'border-destructive' : 'border-border/80'
                       )}
                     />
@@ -436,7 +436,7 @@ export default function RegisterPage() {
 
                   {/* Passwords */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5 text-muted-foreground" /> Password
                       </label>
@@ -447,7 +447,7 @@ export default function RegisterPage() {
                           autoComplete="new-password"
                           placeholder="Min 6 characters"
                           className={cn(
-                            'w-full h-10 text-sm bg-muted/60 rounded-xl px-3 pr-10 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                            'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 pr-10 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                             errors.password ? 'border-destructive' : 'border-border/80'
                           )}
                         />
@@ -462,7 +462,7 @@ export default function RegisterPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
                         <Lock className="w-3.5 h-3.5 text-muted-foreground" /> Confirm Password
                       </label>
@@ -472,7 +472,7 @@ export default function RegisterPage() {
                         autoComplete="new-password"
                         placeholder="Repeat password"
                         className={cn(
-                          'w-full h-10 text-sm bg-muted/60 rounded-xl px-3 border focus:outline-none focus:border-primary focus:bg-background transition-all',
+                          'w-full h-11 text-sm bg-muted/50 rounded-xl px-3.5 border focus:outline-none focus:border-primary focus:bg-background transition-all',
                           errors.confirm_password ? 'border-destructive' : 'border-border/80'
                         )}
                       />
@@ -505,7 +505,7 @@ export default function RegisterPage() {
                   )}
 
                   {/* Terms & Conditions Acceptance */}
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer select-none">
                       <input
                         {...register('accept_terms')}
@@ -547,7 +547,7 @@ export default function RegisterPage() {
                   </button>
                 </form>
 
-                <div className="mt-4 pt-4 border-t border-border/60 text-center">
+                <div className="mt-6 pt-4 border-t border-border/60 text-center">
                   <p className="text-xs text-muted-foreground">
                     Already have an account?{' '}
                     <Link href="/login" className="text-primary font-semibold hover:underline">

@@ -116,7 +116,7 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-emerald-400 font-bold">{stats?.users?.activeToday ?? 0} active today</span>
-              <span>â€¢</span>
+              <span>•</span>
               <span className="text-rose-400">{stats?.users?.banned ?? 0} banned</span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-cyan-400 font-bold">+{stats?.posts?.today ?? 0} posts today</span>
-              <span>â€¢</span>
+              <span>•</span>
               <span>All campus feeds</span>
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-purple-400 font-bold">{stats?.projects?.total ?? 0} showcases</span>
-              <span>â€¢</span>
+              <span>•</span>
               <span>Collab hubs</span>
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function AdminOverviewPage() {
             </div>
             <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-400">
               <span className="text-rose-400 font-bold">Requires Action</span>
-              <span>â€¢</span>
+              <span>•</span>
               <span>{stats?.reports?.total ?? 0} lifetime</span>
             </div>
           </div>

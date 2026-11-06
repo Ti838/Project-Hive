@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive â€” Incoming Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ ProjectHive — Incoming Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Video, Users } from 'lucide-react';
@@ -91,7 +91,7 @@ export function IncomingCallModal({
           <h3 className="font-bold text-lg text-foreground truncate max-w-[260px]">{callerName}</h3>
           <p className="text-xs font-semibold text-emerald-500 flex items-center justify-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            <span>Incoming {isGroup ? 'Team Group Call' : isVoiceOnly ? 'Voice Call' : 'Video Call'}â€¦</span>
+            <span>Incoming {isGroup ? 'Team Group Call' : isVoiceOnly ? 'Voice Call' : 'Video Call'}…</span>
           </p>
         </div>
 

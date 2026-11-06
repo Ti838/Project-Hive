@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive â€” Active Call Overlay (Studio-Grade LiveKit SFU) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â”€â”€â”€ ProjectHive — Active Call Overlay (Studio-Grade LiveKit SFU) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useState } from 'react';
 import {
@@ -96,7 +96,7 @@ export function ActiveCallOverlay({
           </div>
 
           <div className="text-foreground/90 text-sm font-medium hidden sm:flex items-center gap-2">
-            <span className="text-muted-foreground text-xs">ðŸ”’ Encrypted SFU Room:</span>
+            <span className="text-muted-foreground text-xs">🔒 Encrypted SFU Room:</span>
             <span className="font-semibold text-white truncate max-w-[220px]">{title}</span>
           </div>
         </div>
@@ -145,7 +145,7 @@ export function ActiveCallOverlay({
       {networkQuality === 'reconnecting' && (
         <div className="my-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 shadow-sm animate-pulse shrink-0">
           <WifiOff className="w-4 h-4" />
-          <span className="font-medium">Unstable network connection. Reconnecting to LiveKit SFUâ€¦</span>
+          <span className="font-medium">Unstable network connection. Reconnecting to LiveKit SFU…</span>
         </div>
       )}
 

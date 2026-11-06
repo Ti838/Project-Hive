@@ -234,7 +234,7 @@ export default function TeamsHubPage() {
             )}
           >
             <Rocket className="w-3.5 h-3.5 text-primary" />
-            <span>ðŸš€ Active Squads</span>
+            <span>🚀 Active Squads</span>
           </button>
 
           <button
@@ -250,7 +250,7 @@ export default function TeamsHubPage() {
             )}
           >
             <Landmark className="w-3.5 h-3.5 text-indigo-500" />
-            <span>ðŸ›ï¸ Campus Communities</span>
+            <span>🏛ï¸ Campus Communities</span>
           </button>
 
           <button
@@ -263,7 +263,7 @@ export default function TeamsHubPage() {
             )}
           >
             <Star className="w-3.5 h-3.5 text-amber-500" />
-            <span>â­ My Memberships</span>
+            <span>⭐ My Memberships</span>
           </button>
         </div>
 

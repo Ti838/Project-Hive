@@ -68,7 +68,7 @@ function SkillEditor({ skills, onChange }: { skills: string[]; onChange: (s: str
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), add())}
-          placeholder="Add technical or domain skill (press Enter)â€¦"
+          placeholder="Add technical or domain skill (press Enter)…"
           autoCapitalize="words"
           className="flex-1 h-11 text-sm bg-muted/60 rounded-xl px-4 border border-foreground/10 focus:border-primary/50 focus:outline-none"
         />
@@ -598,7 +598,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
               ) : (
                 <ImagePlus className="w-3.5 h-3.5" />
               )}
-              <span>{uploadingBanner ? 'Uploadingâ€¦' : 'Edit Cover'}</span>
+              <span>{uploadingBanner ? 'Uploading…' : 'Edit Cover'}</span>
             </button>
           )}
         </div>
@@ -797,7 +797,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
               )}
               {(activeUser?.major || activeUser?.department) && (
                 <>
-                  <span>â€¢</span>
+                  <span>•</span>
                   <span>{activeUser.major || activeUser.department}</span>
                 </>
               )}
@@ -968,7 +968,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
               {...register('bio')}
               rows={3}
               className="w-full min-h-[96px] text-sm bg-muted/50 rounded-xl p-4 border border-foreground/10 focus:border-primary focus:outline-none resize-none transition-colors"
-              placeholder="Tell other students and project recruiters about yourselfâ€¦"
+              placeholder="Tell other students and project recruiters about yourself…"
             />
             {errors.bio && <p className="text-xs text-destructive">{errors.bio.message}</p>}
           </div>
@@ -1033,7 +1033,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
               className="h-11 flex items-center justify-center gap-2 px-6 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-all shadow-sm tap-press cursor-pointer disabled:opacity-50"
             >
               {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-              <span>{saving ? 'Savingâ€¦' : 'Save Changes'}</span>
+              <span>{saving ? 'Saving…' : 'Save Changes'}</span>
             </button>
             <button
               type="button"
@@ -1195,7 +1195,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {completionPct >= 100
-                    ? 'ðŸŽ‰ Excellent! Your profile is 100% complete and highlighted to potential campus project recruiters.'
+                    ? '🎉 Excellent! Your profile is 100% complete and highlighted to potential campus project recruiters.'
                     : 'Add your university, bio, technical skills, and social links to attract top teammates.'}
                 </p>
               </div>

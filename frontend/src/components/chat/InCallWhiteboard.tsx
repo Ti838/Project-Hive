@@ -454,7 +454,7 @@ export function InCallWhiteboard({
                   setInlineText('');
                 }
               }}
-              placeholder="Type note (Enter to place, Shift+Enter newline)â€¦"
+              placeholder="Type note (Enter to place, Shift+Enter newline)…"
               className="bg-transparent text-sm p-1.5 focus:outline-none resize-none min-w-[200px]"
               style={{ color: activeColor }}
             />

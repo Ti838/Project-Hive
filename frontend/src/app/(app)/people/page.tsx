@@ -687,7 +687,7 @@ export default function PeoplePage() {
                             <Building2 className="w-3 h-3 shrink-0 text-muted-foreground/60" />
                             <span className="truncate">{student.university}</span>
                             {(student.year_of_study || student.yearOfStudy) && (
-                              <span>Â· Year {student.year_of_study || student.yearOfStudy}</span>
+                              <span>· Year {student.year_of_study || student.yearOfStudy}</span>
                             )}
                           </div>
                         )}

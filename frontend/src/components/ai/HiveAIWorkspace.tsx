@@ -195,7 +195,7 @@ export function HiveAIWorkspace({
             <div className="hidden lg:flex items-center justify-between w-full">
               <div className="flex items-center gap-2 text-muted-foreground font-mono text-[11px]">
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
-                <span>Workspace Studio Â· {artifacts.length} live artifact{artifacts.length === 1 ? '' : 's'}</span>
+                <span>Workspace Studio · {artifacts.length} live artifact{artifacts.length === 1 ? '' : 's'}</span>
               </div>
 
               <button

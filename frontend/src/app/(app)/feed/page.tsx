@@ -95,9 +95,9 @@ function PostCard({
             </UserProfileHoverCard>
             <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
               <span>{post.author?.university ?? 'Student'}</span>
-              <span>Â·</span>
+              <span>·</span>
               <span>{timeAgo(post.created_at)}</span>
-              <span>Â·</span>
+              <span>·</span>
               <span className="inline-flex items-center gap-0.5 text-muted-foreground/70" title="Public post">
                 <Globe className="w-3 h-3" />
               </span>
@@ -450,7 +450,7 @@ function PostComposerTrigger({
           onClick={onOpen}
           className="flex-1 h-11 px-4 text-left text-xs sm:text-sm bg-muted/60 hover:bg-muted/90 rounded-2xl border border-foreground/5 text-muted-foreground hover:text-foreground transition-all flex items-center cursor-pointer shadow-inner truncate"
         >
-          What's on your mind, {firstName}? Share a project, code, or pollâ€¦
+          What's on your mind, {firstName}? Share a project, code, or poll…
         </button>
       </div>
 
@@ -888,10 +888,10 @@ export default function FeedPage() {
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
         {[
           { id: 'all', label: 'All Posts' },
-          { id: 'achievements', label: 'ðŸ† Achievements' },
-          { id: 'updates', label: 'ðŸ“¢ Updates' },
-          { id: 'code', label: 'ðŸ’» Code Snippets' },
-          { id: 'polls', label: 'ðŸ“Š Campus Polls' },
+          { id: 'achievements', label: '🏆 Achievements' },
+          { id: 'updates', label: '📢 Updates' },
+          { id: 'code', label: '💻 Code Snippets' },
+          { id: 'polls', label: '📊 Campus Polls' },
         ].map((item) => (
           <button
             key={item.id}

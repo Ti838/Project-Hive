@@ -271,7 +271,7 @@ export function Topbar() {
             <div className="flex items-center gap-2.5 min-w-0">
               <Search className="w-3.5 h-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
               <span className="truncate group-hover:text-foreground transition-colors font-medium">
-                Search students, teams, showcaseâ€¦
+                Search students, teams, showcase…
               </span>
             </div>
             <kbd className="px-1.5 py-0.5 text-[10px] font-mono font-semibold text-muted-foreground group-hover:text-foreground bg-background/80 border border-border/80 rounded-md pointer-events-none transition-colors shrink-0">
@@ -621,7 +621,7 @@ export function Topbar() {
                     {searchLoading && (
                       <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground animate-pulse">
                         <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                        <span>Searching students, squads, and projectsâ€¦</span>
+                        <span>Searching students, squads, and projects…</span>
                       </div>
                     )}
 
@@ -725,7 +725,7 @@ export function Topbar() {
                                   {t.name}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground truncate">
-                                  {t.category || (t.type === 'community' ? 'Community Hub' : 'Project Squad')} â€¢ {t.member_count ?? t.members?.length ?? 1} members
+                                  {t.category || (t.type === 'community' ? 'Community Hub' : 'Project Squad')} • {t.member_count ?? t.members?.length ?? 1} members
                                 </p>
                               </div>
                             </div>
@@ -757,7 +757,7 @@ export function Topbar() {
                                   {p.title}
                                 </p>
                                 <p className="text-[10px] text-muted-foreground truncate">
-                                  {p.category || 'Innovation'} â€¢ {p.upvotes ?? p.upvote_count ?? p.likes ?? 0} upvotes
+                                  {p.category || 'Innovation'} • {p.upvotes ?? p.upvote_count ?? p.likes ?? 0} upvotes
                                 </p>
                               </div>
                             </div>

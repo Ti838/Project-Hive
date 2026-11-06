@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,18 +26,18 @@ interface ReactionListModalProps {
 }
 
 const EMOJI_MAP: Record<string, { label: string; emoji: string }> = {
-  all: { label: 'All', emoji: 'ðŸŒŸ' },
-  like: { label: 'Like', emoji: 'ðŸ‘' },
-  love: { label: 'Love', emoji: 'â¤ï¸' },
-  care: { label: 'Care', emoji: 'ðŸ¥°' },
-  haha: { label: 'Haha', emoji: 'ðŸ˜†' },
-  wow: { label: 'Wow', emoji: 'ðŸ˜®' },
-  sad: { label: 'Sad', emoji: 'ðŸ˜¢' },
-  angry: { label: 'Angry', emoji: 'ðŸ˜¡' },
-  celebrate: { label: 'Celebrate', emoji: 'ðŸŽ‰' },
-  insightful: { label: 'Insightful', emoji: 'ðŸ’¡' },
-  fire: { label: 'Fire', emoji: 'ðŸ”¥' },
-  support: { label: 'Support', emoji: 'ðŸ¤' },
+  all: { label: 'All', emoji: '🌟' },
+  like: { label: 'Like', emoji: '👍' },
+  love: { label: 'Love', emoji: '❤️' },
+  care: { label: 'Care', emoji: '🥰' },
+  haha: { label: 'Haha', emoji: '😆' },
+  wow: { label: 'Wow', emoji: '😮' },
+  sad: { label: 'Sad', emoji: '😢' },
+  angry: { label: 'Angry', emoji: '😡' },
+  celebrate: { label: 'Celebrate', emoji: '🎉' },
+  insightful: { label: 'Insightful', emoji: '💡' },
+  fire: { label: 'Fire', emoji: '🔥' },
+  support: { label: 'Support', emoji: '🤝' },
 };
 
 export function ReactionListModal({
@@ -125,7 +125,7 @@ export function ReactionListModal({
             </button>
 
             {activeTabs.map(([type, count]) => {
-              const meta = EMOJI_MAP[type] || { label: type, emoji: 'ðŸ‘' };
+              const meta = EMOJI_MAP[type] || { label: type, emoji: '👍' };
               return (
                 <button
                   key={type}
@@ -153,7 +153,7 @@ export function ReactionListModal({
               </div>
             ) : filteredReactors.length > 0 ? (
               filteredReactors.map((item) => {
-                const emoji = EMOJI_MAP[item.type]?.emoji || 'ðŸ‘';
+                const emoji = EMOJI_MAP[item.type]?.emoji || '👍';
                 return (
                   <div
                     key={item.id}
@@ -198,7 +198,7 @@ export function ReactionListModal({
             ) : (
               <div className="py-10 text-center text-xs text-muted-foreground">
                 <span className="text-3xl mb-2 block">
-                  {EMOJI_MAP[selectedTab]?.emoji || 'ðŸ‘'}
+                  {EMOJI_MAP[selectedTab]?.emoji || '👍'}
                 </span>
                 <p className="font-semibold text-foreground text-sm">
                   {selectedTab === 'all'

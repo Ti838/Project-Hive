@@ -319,10 +319,10 @@ export function PostComposerModal({
             onChange={(e) => setContent(e.target.value)}
             placeholder={
               activeTab === 'code'
-                ? 'Describe what this code does or what problem it solvesâ€¦'
+                ? 'Describe what this code does or what problem it solves…'
                 : activeTab === 'poll'
-                ? 'Introduce your poll or ask a question to campusâ€¦'
-                : 'What are you working on? Share project updates, wins, or ideasâ€¦'
+                ? 'Introduce your poll or ask a question to campus…'
+                : 'What are you working on? Share project updates, wins, or ideas…'
             }
             rows={4}
             className="w-full text-sm sm:text-base bg-transparent border-none focus:outline-none resize-none placeholder:text-muted-foreground/60 leading-relaxed"
@@ -400,7 +400,7 @@ export function PostComposerModal({
               <textarea
                 value={codeSnippet}
                 onChange={(e) => setCodeSnippet(e.target.value)}
-                placeholder="// Paste or write your code snippet hereâ€¦"
+                placeholder="// Paste or write your code snippet here…"
                 rows={5}
                 className="w-full font-mono text-xs bg-background/40 text-emerald-400 rounded-xl p-3 border border-foreground/10 focus:border-primary/50 focus:outline-none resize-none leading-relaxed"
               />
