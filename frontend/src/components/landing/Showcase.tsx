@@ -1,364 +1,378 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Sparkles, Code2, Video, MessageSquare, Plus, Hash, Mic, MicOff, Maximize2, Terminal, Users, PhoneOffIcon } from 'lucide-react';
-
-gsap.registerPlugin(ScrollTrigger);
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { 
+  Users, 
+  Video, 
+  MessageSquare, 
+  Sparkles, 
+  Kanban, 
+  ArrowRight, 
+  CheckCircle2, 
+  ShieldCheck, 
+  Flame, 
+  Rocket, 
+  Mic, 
+  MicOff, 
+  Share2, 
+  FileCode2, 
+  ExternalLink 
+} from 'lucide-react';
 
 export function Showcase() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const uiWrapperRef = useRef<HTMLDivElement>(null);
-  const appWindowRef = useRef<HTMLDivElement>(null);
-  
-  // Specific UI Elements to highlight
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const videoGridRef = useRef<HTMLDivElement>(null);
-  const codeEditorRef = useRef<HTMLDivElement>(null);
-  const aiOverlayRef = useRef<HTMLDivElement>(null);
-  
-  // Text content for sequence
-  const caption1Ref = useRef<HTMLDivElement>(null);
-  const caption2Ref = useRef<HTMLDivElement>(null);
-  const caption3Ref = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<'squads' | 'calling' | 'chat' | 'ai' | 'kanban'>('squads');
 
-  useEffect(() => {
-    // Master Pin Timeline
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: containerRef.current,
-        start: 'top top',
-        end: '+=4000', // Long scroll duration for the whole showcase
-        pin: true,
-        scrub: 1,
-      }
-    });
-
-    // Initial state: UI is tilted and zoomed out
-    gsap.set(appWindowRef.current, { 
-      rotateX: 45, 
-      rotateY: -10, 
-      rotateZ: 5, 
-      scale: 0.6, 
-      y: 100, 
-      boxShadow: '0 50px 100px -20px rgba(0,0,0,0.8)' 
-    });
-    
-    gsap.set([caption1Ref.current, caption2Ref.current, caption3Ref.current], { opacity: 0, y: 30 });
-    gsap.set(aiOverlayRef.current, { opacity: 0, scale: 0.9, y: 20 });
-
-    // STEP 1: Swoop in to flat, centered view
-    tl.to(appWindowRef.current, {
-      rotateX: 0,
-      rotateY: 0,
-      rotateZ: 0,
-      scale: 1.05,
-      y: -20,
-      boxShadow: '0 0 0 1px rgba(255,255,255,0.1), 0 30px 60px -10px rgba(0,0,0,0.9)',
-      duration: 1,
-      ease: 'power2.inOut'
-    })
-    .to(caption1Ref.current, { opacity: 1, y: 0, duration: 0.5 }, '-=0.5');
-
-    // Hold step 1
-    tl.to({}, { duration: 0.5 });
-
-    // STEP 2: Focus on the Live Video/Collaboration (Zoom into top right)
-    tl.to(caption1Ref.current, { opacity: 0, y: -30, duration: 0.5 })
-      .to(appWindowRef.current, {
-        scale: 1.4,
-        x: '-25%', // Pan left to bring right side (video) into focus
-        y: '15%',  // Pan down to bring top into focus
-        duration: 1,
-        ease: 'power2.inOut'
-      }, '<')
-      .to(sidebarRef.current, { opacity: 0.2, filter: 'blur(4px)', duration: 0.5 }, '<')
-      .to(codeEditorRef.current, { opacity: 0.3, filter: 'blur(2px)', duration: 0.5 }, '<')
-      .to(videoGridRef.current, { boxShadow: '0 0 40px -10px rgba(139, 92, 246, 0.5)', borderColor: 'rgba(139, 92, 246, 0.5)', duration: 0.5 }, '<')
-      .to(caption2Ref.current, { opacity: 1, y: 0, duration: 0.5 });
-
-    // Hold step 2
-    tl.to({}, { duration: 0.5 });
-
-    // STEP 3: Shift focus to Code & AI Copilot
-    tl.to(caption2Ref.current, { opacity: 0, y: -30, duration: 0.5 })
-      .to(videoGridRef.current, { boxShadow: 'none', borderColor: 'rgba(255,255,255,0.05)', opacity: 0.3, filter: 'blur(2px)', duration: 0.5 }, '<')
-      .to(appWindowRef.current, {
-        scale: 1.3,
-        x: '5%',   // Pan right to center code editor
-        y: '-10%', // Pan up
-        duration: 1,
-        ease: 'power2.inOut'
-      }, '<')
-      .to(codeEditorRef.current, { opacity: 1, filter: 'blur(0px)', duration: 0.5 }, '<')
-      .to(aiOverlayRef.current, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'back.out(1.5)' }, '-=0.2')
-      .to(caption3Ref.current, { opacity: 1, y: 0, duration: 0.5 }, '<');
-
-    // Hold step 3
-    tl.to({}, { duration: 0.5 });
-
-    // STEP 4: Zoom out and fade to transition to next section
-    tl.to([caption3Ref.current, aiOverlayRef.current], { opacity: 0, y: -30, duration: 0.5 })
-      .to(appWindowRef.current, {
-        scale: 0.8,
-        x: 0,
-        y: -100,
-        opacity: 0,
-        rotateX: -10,
-        duration: 1,
-        ease: 'power2.in'
-      }, '<');
-
-    return () => {
-      ScrollTrigger.getAll().forEach(t => {
-        if (t.vars.trigger === containerRef.current) t.kill();
-      });
-    };
-  }, []);
+  const tabs = [
+    { id: 'squads', label: 'Squad Discovery', icon: Users, desc: 'Find teammates matched by university, major, and verified skills.' },
+    { id: 'calling', label: 'LiveKit 4K Calling', icon: Video, desc: 'Ultra-low latency SFU group calling with Picture-in-Picture.' },
+    { id: 'chat', label: 'Real-Time Messaging', icon: MessageSquare, desc: 'WhatsApp-grade chat with delivery receipts and emoji reactions.' },
+    { id: 'ai', label: 'HiveMind AI Copilot', icon: Sparkles, desc: 'Cascading AI with Groq sub-500ms and Gemini Flash vision.' },
+    { id: 'kanban', label: 'Sprint Kanban & Wiki', icon: Kanban, desc: 'Notion-grade documentation and sprint deliverable tracking.' },
+  ];
 
   return (
-    <section ref={containerRef} className="relative w-full h-screen bg-background overflow-hidden flex items-center justify-center perspective-[2000px]">
-      
-      {/* Dynamic Background Glows */}
-      <div className="absolute inset-0 z-0 flex items-center justify-center pointer-events-none opacity-40">
-        <div className="w-[800px] h-[600px] bg-primary/20 blur-3xl rounded-full " />
-      </div>
-
-      {/* Captions Overlay */}
-      <div className="absolute top-24 left-0 w-full z-30 pointer-events-none px-6 flex justify-center text-center">
-        <div className="relative w-full max-w-2xl h-20">
-          <div ref={caption1Ref} className="absolute inset-0 flex flex-col items-center justify-center">
-            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">Discord-Grade Workspaces</h3>
-            <p className="text-lg text-foreground/80 font-medium">Text, voice, and AI tools for your university team.</p>
-          </div>
-          <div ref={caption2Ref} className="absolute inset-0 flex flex-col items-center justify-center">
-            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">LiveKit Enterprise Calling</h3>
-            <p className="text-lg text-foreground/80 font-medium">Low-latency group video calls directly in your squad.</p>
-          </div>
-          <div ref={caption3Ref} className="absolute inset-0 flex flex-col items-center justify-center">
-            <h3 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground mb-2 shadow-foreground drop-shadow-lg">Hive AI Copilot</h3>
-            <p className="text-lg text-foreground/80 font-medium">Multimodal intelligence for your team incubation.</p>
-          </div>
+    <section id="features" className="relative w-full py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+      {/* ── Section Header ───────────────────────────────────────────── */}
+      <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-semibold text-primary mb-4">
+          <Sparkles className="w-3.5 h-3.5" />
+          Interactive Product Showcase
         </div>
+        <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-tight">
+          Everything You Need to <br className="hidden sm:inline" />
+          <span className="bg-gradient-to-r from-primary to-purple-500 bg-clip-text text-transparent">
+            Build and Ship Together
+          </span>
+        </h2>
+        <p className="mt-4 text-base sm:text-lg text-muted-foreground">
+          Explore how ProjectHive unifies team recruitment, real-time communication, and AI-powered project incubation in one cohesive experience.
+        </p>
       </div>
 
-      {/* App Interface Container */}
-      <div ref={uiWrapperRef} className="relative z-10 w-full max-w-[1200px] aspect-[16/9] px-4 md:px-12 flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
+      {/* ── Tab Selector Strip ────────────────────────────────────────── */}
+      <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 cursor-pointer ${
+                isActive
+                  ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]'
+                  : 'bg-card/80 hover:bg-muted text-muted-foreground hover:text-foreground border border-border/60'
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Interactive Stage Showcase Canvas ─────────────────────────── */}
+      <div className="relative rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl shadow-2xl overflow-hidden p-6 sm:p-10 min-h-[500px]">
         
-        {/* The Application Window */}
-        <div 
-          ref={appWindowRef}
-          className="relative w-full h-full rounded-xl overflow-hidden bg-background border border-foreground/10 flex flex-col shadow-2xl"
-        >
-          {/* Mac-style Window Header */}
-          <div className="h-10 bg-card border-b border-foreground/5 flex items-center px-4 justify-between shrink-0">
-            <div className="flex gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#ff5f56]" />
-              <div className="w-3 h-3 rounded-full bg-[#ffbd2e]" />
-              <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
+        {/* Tab 1: Squad Discovery Showcase */}
+        {activeTab === 'squads' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 space-y-5">
+              <span className="text-xs font-mono font-semibold text-primary uppercase tracking-wider">Discord-Grade Teamwork</span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
+                Assemble High-Velocity Academic Squads
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Stop begging on WhatsApp or Reddit. Discover teammates by university course, programming languages, and verified GitHub & LeetCode accomplishments.
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Interactive applicant approval drawers with one-click decisioning</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Dynamic recruiting indicators (Actively Recruiting vs Squad Full)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Leadership delegation and peer skill endorsements</span>
+                </li>
+              </ul>
+              <div className="pt-2">
+                <Link
+                  href="/teams"
+                  className="inline-flex items-center gap-2 text-xs font-semibold text-primary hover:underline"
+                >
+                  Explore Active University Squads <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-xs font-medium text-foreground/40">
-              <Sparkles className="w-3 h-3" /> project-hive-studio
+
+            <div className="lg:col-span-7 rounded-xl border border-border/60 bg-muted/30 p-5 space-y-3.5">
+              <div className="flex items-center justify-between pb-3 border-b border-border/40">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-white text-sm">
+                    AI
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-foreground flex items-center gap-2">
+                      Autonomous Robotics Lab
+                      <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-semibold border border-emerald-500/20">
+                        🟢 Recruiting
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">State University • Capstone CSE 499</div>
+                  </div>
+                </div>
+                <span className="text-xs font-mono bg-primary/10 text-primary px-2.5 py-1 rounded-md font-semibold">
+                  4/6 Members
+                </span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-lg bg-background/80 border border-border/60">
+                  <div className="text-xs font-semibold text-foreground">Timon B. (Lead)</div>
+                  <div className="text-[11px] text-muted-foreground">Full-Stack & Distributed Systems</div>
+                  <div className="mt-2 text-[10px] text-primary font-mono">GitHub: Ti838</div>
+                </div>
+                <div className="p-3 rounded-lg bg-background/80 border border-border/60">
+                  <div className="text-xs font-semibold text-foreground">Sarah K.</div>
+                  <div className="text-[11px] text-muted-foreground">Computer Vision & PyTorch</div>
+                  <div className="mt-2 text-[10px] text-purple-400 font-mono">LeetCode: 2140</div>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg border border-dashed border-primary/40 bg-primary/5 flex items-center justify-between">
+                <div>
+                  <div className="text-xs font-semibold text-foreground">Looking for: Embedded ROS2 Developer</div>
+                  <div className="text-[11px] text-muted-foreground">Experience with micro-ROS & Gazebo preferred</div>
+                </div>
+                <Link href="/register" className="text-xs font-semibold px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                  Join Squad
+                </Link>
+              </div>
             </div>
-            <div className="w-16" /> {/* Spacer for symmetry */}
           </div>
+        )}
 
-          {/* App Body */}
-          <div className="flex-1 flex overflow-hidden">
-            
-            {/* Sidebar */}
-            <div ref={sidebarRef} className="hidden md:flex w-64 border-r border-foreground/5 bg-muted flex-col shrink-0">
-              <div className="p-4 border-b border-foreground/5">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-foreground/60 uppercase tracking-widest">Your Squads</span>
-                  <Plus className="w-4 h-4 text-foreground/40 hover:text-foreground cursor-pointer" />
-                </div>
-                <div className="flex items-center gap-3 px-3 py-2 rounded-md bg-foreground/5 border border-foreground/10 cursor-pointer">
-                  <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary">H</span>
-                  </div>
-                  <span className="text-sm font-semibold text-foreground/90">HackMIT Team</span>
-                </div>
+        {/* Tab 2: LiveKit Calling Showcase */}
+        {activeTab === 'calling' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 space-y-5">
+              <span className="text-xs font-mono font-semibold text-indigo-500 uppercase tracking-wider">LiveKit Cloud SFU Engine</span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
+                Low-Latency 4K Video Calling with Ambient PiP
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Connect instantly with your team. Powered by LiveKit Cloud's Selective Forwarding Unit (SFU), you get crystal-clear multi-peer video, screen sharing, and automatic bandwidth adaptation.
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Floating Picture-in-Picture (PiP) ambient call widget</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Real-time active speaker audio waveforms & glowing indicators</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Auto-reconnection resilience across mobile and desktop</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="lg:col-span-7 rounded-xl border border-border/60 bg-slate-950 p-4 space-y-3">
+              <div className="flex items-center justify-between text-xs text-white/80 pb-2 border-b border-white/10">
+                <span className="flex items-center gap-1.5 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  LiveKit SFU Room: #squad-daily-standup
+                </span>
+                <span className="font-mono text-white/50">Active: 3 Peers</span>
               </div>
-              <div className="p-4 flex-1 overflow-y-auto">
-                <div className="text-xs font-bold text-foreground/40 uppercase tracking-widest mb-3">Channels</div>
-                <div className="space-y-1">
-                  {['general', 'architecture', 'frontend', 'backend'].map((ch, i) => (
-                    <div key={ch} className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm ${i === 2 ? 'bg-primary/10 text-primary font-medium' : 'text-foreground/60 hover:bg-foreground/5 hover:text-foreground/90'} cursor-pointer transition-colors`}>
-                      <Hash className="w-4 h-4 opacity-50" /> {ch}
-                    </div>
-                  ))}
-                </div>
-                <div className="text-xs font-bold text-foreground/40 uppercase tracking-widest mt-6 mb-3">Live Rooms</div>
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm bg-purple-500/10 text-purple-400 font-medium cursor-pointer border border-purple-500/20">
-                  <Video className="w-4 h-4" /> Collab Stage
-                </div>
-                <div className="pl-9 mt-2 space-y-2">
-                  <div className="flex items-center gap-2 text-xs text-foreground/70">
-                    <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/50" />
-                    Alex (You)
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-foreground/70">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
-                    Sarah
+
+              <div className="grid grid-cols-3 gap-2.5 aspect-video">
+                <div className="relative rounded-lg overflow-hidden bg-slate-900 border-2 border-emerald-500 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-white">Timon (Speaking...)</span>
+                  <div className="absolute top-2 right-2 bg-black/60 px-1 rounded text-[10px] text-emerald-400">
+                    <Mic className="w-3 h-3" />
                   </div>
                 </div>
-              </div>
-              <div className="p-4 border-t border-foreground/5 bg-background">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/50" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-foreground truncate">Alex Dev</div>
-                    <div className="text-xs text-foreground/40 truncate">Online</div>
+                <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-white/80">Sarah K.</span>
+                  <div className="absolute top-2 right-2 bg-black/60 px-1 rounded text-[10px] text-white/50">
+                    <Mic className="w-3 h-3" />
+                  </div>
+                </div>
+                <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-white/80">David M.</span>
+                  <div className="absolute top-2 right-2 bg-black/60 px-1 rounded text-[10px] text-white/50">
+                    <MicOff className="w-3 h-3 text-rose-400" />
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Main Area */}
-            <div className="flex-1 flex flex-col bg-[#141416] min-w-0">
-              {/* Toolbar */}
-              <div className="h-12 border-b border-foreground/5 flex items-center justify-between px-4 shrink-0 bg-muted overflow-x-auto">
-                <div className="flex items-center gap-4 text-sm whitespace-nowrap">
-                  <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">#general</span>
-                  <span className="text-primary border-b-2 border-primary pb-3 mt-3 cursor-pointer">#frontend</span>
-                  <span className="text-foreground/50 hover:text-foreground cursor-pointer transition-colors">#backend</span>
-                </div>
-                <div className="flex items-center gap-3 ml-4">
-                  <button className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-emerald-500/20 text-emerald-400 text-xs font-medium hover:bg-emerald-500/30 transition-colors border border-emerald-500/20 shrink-0">
-                    <Users className="w-3.5 h-3.5" /> 4 Members
-                  </button>
-                </div>
-              </div>
-
-              {/* Code & Video Split */}
-              <div className="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
-                
-                {/* Code Editor */}
-<div ref={codeEditorRef} className="flex-1 p-4 md:p-6 font-sans text-xs md:text-sm leading-relaxed overflow-hidden relative flex flex-col justify-end">
-  
-  <div className="flex gap-3 mb-4">
-    <div className="w-8 h-8 rounded-full bg-emerald-500/20 shrink-0 border border-emerald-500/50" />
-    <div className="flex-1">
-      <div className="flex items-baseline gap-2">
-        <span className="font-semibold text-emerald-400">Sarah</span>
-        <span className="text-[10px] text-foreground/40">10:41 AM</span>
-      </div>
-      <p className="text-foreground/80 mt-1">Hey guys! I just pushed the new teammate discovery UI. Can someone review?</p>
-    </div>
-  </div>
-
-  <div className="flex gap-3 mb-4">
-    <div className="w-8 h-8 rounded-full bg-blue-500/20 shrink-0 border border-blue-500/50" />
-    <div className="flex-1">
-      <div className="flex items-baseline gap-2">
-        <span className="font-semibold text-blue-400">Alex</span>
-        <span className="text-[10px] text-foreground/40">10:42 AM</span>
-      </div>
-      <p className="text-foreground/80 mt-1">Looks awesome! Im joining the LiveKit room now to screenshare the WebRTC integration.</p>
-    </div>
-  </div>
-
-  <div className="flex gap-3 mb-4">
-    <div className="w-8 h-8 rounded-full bg-amber-500/20 shrink-0 flex items-center justify-center border border-amber-500/50">
-      <Sparkles className="w-4 h-4 text-amber-400" />
-    </div>
-    <div className="flex-1">
-      <div className="flex items-baseline gap-2">
-        <span className="font-semibold text-amber-400">HiveMind AI</span>
-        <span className="text-[10px] text-foreground/40">10:42 AM</span>
-      </div>
-      <p className="text-foreground/80 mt-1">I noticed you are working on WebRTC. Would you like me to generate a Socket.IO signaling server template?</p>
-      <div className="mt-2 p-2 rounded bg-background border border-foreground/10 text-xs text-foreground/60 w-fit flex items-center gap-2 cursor-pointer hover:bg-foreground/5">
-        <Terminal className="w-3.5 h-3.5" /> generate-signaling.ts
-      </div>
-    </div>
-  </div>
-
-  {/* Chat Input box mock */}
-  <div className="mt-2 h-10 rounded-lg bg-background border border-foreground/10 flex items-center px-3 text-foreground/40 gap-2">
-    <Plus className="w-4 h-4" /> Message #frontend...
-  </div>
-
-  {/* AI Copilot Overlay */}
-                  <div ref={aiOverlayRef} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 md:top-48 md:left-12 md:translate-x-0 md:translate-y-0 w-[90%] md:w-[400px] max-w-[400px] rounded-lg bg-[#1a1a24] border border-primary/40 shadow-[0_10px_40px_-10px_rgba(139,92,246,0.3)] flex flex-col overflow-hidden z-20">
-                    <div className="px-3 py-2 bg-primary/10 border-b border-primary/20 flex items-center gap-2 text-xs font-semibold text-primary">
-                      <Sparkles className="w-3.5 h-3.5" /> Hive AI Suggestion
-                    </div>
-                    <div className="p-3 text-xs leading-relaxed text-foreground/80">
-                      Consider wrapping the ThemeProvider with a SessionProvider if you are implementing next-auth for squad authentication.
-                    </div>
-                    <div className="px-3 py-2 bg-background/20 flex gap-2 justify-end">
-                      <button className="px-3 py-1 rounded text-xs text-foreground/50 hover:bg-foreground/5">Dismiss</button>
-                      <button className="px-3 py-1 rounded bg-primary/20 text-primary text-xs hover:bg-primary/30 font-medium">Accept Change</button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Video Call & Chat Pane */}
-                <div ref={videoGridRef} className="hidden lg:flex w-80 border-l border-foreground/5 bg-muted flex-col shrink-0 transition-shadow">
-                  {/* Video Grid */}
-                  <div className="p-3 grid grid-cols-2 gap-2 h-48 shrink-0">
-                    <div className="relative rounded-lg bg-card border border-foreground/10 overflow-hidden">
-                      <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=200&auto=format&fit=crop" className="w-full h-full object-cover opacity-80" alt="Sarah" />
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-background/60 text-[10px] text-foreground backdrop-blur-md">Sarah</div>
-                      <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-green-500/20 border border-green-500/50 flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
-                      </div>
-                    </div>
-                    <div className="relative rounded-lg bg-[#1a1a24] border border-primary/30 overflow-hidden shadow-[0_0_15px_rgba(139,92,246,0.1)]">
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-sm font-bold">AL</div>
-                      </div>
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-background/60 text-[10px] text-foreground backdrop-blur-md">Alex (You)</div>
-                      <div className="absolute top-2 right-2 w-4 h-4 rounded-full bg-red-500/20 border border-red-500/50 flex items-center justify-center">
-                        <MicOff className="w-2.5 h-2.5 text-red-400" />
-                      </div>
-                    </div>
-                    <div className="relative rounded-lg bg-card border border-foreground/10 overflow-hidden col-span-2">
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop" className="w-full h-full object-cover opacity-80" alt="David" />
-                      <div className="absolute bottom-2 left-2 px-1.5 py-0.5 rounded bg-background/60 text-[10px] text-foreground backdrop-blur-md">David (Sharing)</div>
-                    </div>
-                  </div>
-
-                  {/* Room Controls */}
-                  <div className="px-3 pb-3 flex items-center justify-center gap-2 border-b border-foreground/5">
-                    <button className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center text-foreground/80 hover:bg-foreground/20"><Mic className="w-4 h-4" /></button>
-                    <button className="w-8 h-8 rounded-full bg-foreground/10 flex items-center justify-center text-foreground/80 hover:bg-foreground/20"><Video className="w-4 h-4" /></button>
-                    <button className="w-8 h-8 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500 hover:text-foreground"><PhoneOffIcon className="w-4 h-4" /></button>
-                    <div className="w-px h-4 bg-foreground/10 mx-1" />
-                    <button className="w-8 h-8 rounded-full bg-foreground/5 flex items-center justify-center text-foreground/50 hover:bg-foreground/10 hover:text-foreground"><Maximize2 className="w-3.5 h-3.5" /></button>
-                  </div>
-
-                  {/* Mini Chat */}
-                  <div className="flex-1 p-3 flex flex-col text-xs">
-                    <div className="flex-1 overflow-y-auto space-y-3">
-                      <div>
-                        <span className="text-foreground/40 mr-2">10:42 AM</span>
-                        <span className="text-emerald-400 font-semibold mr-2">Sarah:</span>
-                        <span className="text-foreground/80">I just updated the layout file.</span>
-                      </div>
-                      <div>
-                        <span className="text-foreground/40 mr-2">10:43 AM</span>
-                        <span className="text-primary font-semibold mr-2">Hive AI:</span>
-                        <span className="text-foreground/80">Suggestion available for #frontend</span>
-                      </div>
-                    </div>
-                    <div className="mt-2 h-8 rounded bg-foreground/5 border border-foreground/10 flex items-center px-2 text-foreground/40">
-                      Type in Collab Stage...
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
           </div>
-        </div>
+        )}
+
+        {/* Tab 3: Real-Time Messaging Showcase */}
+        {activeTab === 'chat' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 space-y-5">
+              <span className="text-xs font-mono font-semibold text-emerald-500 uppercase tracking-wider">Socket.IO 4.x Messaging</span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
+                WhatsApp-Grade Real-Time Communication
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Experience seamless team conversations with sub-50ms message latency, read receipts, emoji reactions, and direct clipboard image pasting.
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Exact delivery state (Sending → Sent → Delivered → Read)</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Instant screenshot pasting via Ctrl+V</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Direct DMs and room-isolated squad channels</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="lg:col-span-7 rounded-xl border border-border/60 bg-muted/30 p-5 space-y-3">
+              <div className="flex items-start gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                  TB
+                </div>
+                <div className="bg-background border border-border/60 p-3 rounded-2xl rounded-tl-sm text-xs text-foreground max-w-md shadow-sm">
+                  <span className="font-semibold text-primary block text-[11px] mb-0.5">Timon Biswas</span>
+                  Here is the CAD model preview for the drone chassis. Check the dimensions!
+                  <div className="mt-2 p-2 rounded bg-muted/50 border border-border/40 text-[11px] font-mono flex items-center justify-between">
+                    <span>drone_chassis_v2.step (4.2 MB)</span>
+                    <span className="text-primary font-semibold cursor-pointer">Download</span>
+                  </div>
+                  <div className="mt-1.5 flex gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-muted border text-[10px]">🔥 3</span>
+                    <span className="px-2 py-0.5 rounded-full bg-muted border text-[10px]">👍 2</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2.5 justify-end">
+                <div className="bg-primary text-primary-foreground p-3 rounded-2xl rounded-tr-sm text-xs max-w-md shadow-sm">
+                  Looks perfect! Printing the 3D prototype in the engineering lab now.
+                  <div className="text-[10px] text-primary-foreground/70 text-right mt-1">✓✓ Read 10:24 AM</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: HiveMind AI Showcase */}
+        {activeTab === 'ai' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 space-y-5">
+              <span className="text-xs font-mono font-semibold text-purple-500 uppercase tracking-wider">Cascading Multimodal AI</span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
+                HiveMind: Your Built-In Engineering Copilot
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Supercharge your sprint planning and debugging. HiveMind cascades queries across Groq Llama 3.3 70B (sub-500ms) and Gemini 2.5 Flash for vision and multimodal reasoning.
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Sub-second code reviews, bug explanations, and architecture advice</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Paste circuit schematics or UI mockups for instant vision analysis</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Hands-free voice dictation and voice speech feedback</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="lg:col-span-7 rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-5 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-semibold text-indigo-400 pb-2 border-b border-indigo-500/20">
+                <Sparkles className="w-4 h-4" /> HiveMind Engineering Assistant (Groq Cloud Tier)
+              </div>
+              <div className="text-xs text-muted-foreground bg-background/60 p-3 rounded-lg border border-border/40">
+                <span className="font-semibold text-foreground block mb-1">User Prompt:</span>
+                "Generate acceptance criteria for our autonomous takeoff safety check."
+              </div>
+              <div className="text-xs text-foreground bg-indigo-500/10 p-3.5 rounded-lg border border-indigo-500/20 leading-relaxed font-mono">
+                <span className="text-indigo-400 font-bold block mb-1">HiveMind Generated Criteria:</span>
+                1. GPS fix locks $\ge$ 8 satellites before motor arming.<br />
+                2. Battery cell voltage $\ge$ 3.8V per cell.<br />
+                3. LIDAR optical flow obstacle distance $\ge$ 2.0 meters.<br />
+                4. Failover return-to-home (RTH) waypoint stored in non-volatile flash.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 5: Sprint Kanban Showcase */}
+        {activeTab === 'kanban' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-5 space-y-5">
+              <span className="text-xs font-mono font-semibold text-amber-500 uppercase tracking-wider">Agile University Workflow</span>
+              <h3 className="text-2xl sm:text-3xl font-bold text-foreground">
+                Notion-Grade Wikis & Kanban Task Boards
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Stay aligned with academic deadlines. Track coursework milestones, sprint Kanban tasks, rubric compliance, and GitHub turn-in links.
+              </p>
+              <ul className="space-y-2.5 text-xs text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Kanban board categorized into To Do, In Progress, Review, and Done</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>Collaborative Markdown wiki for architecture specs & meeting notes</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span>1-click capstone deliverable links (GitHub PRs, Live Demos)</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="lg:col-span-7 grid grid-cols-3 gap-2.5">
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
+                <div className="text-[11px] font-bold text-muted-foreground uppercase mb-2">To Do (2)</div>
+                <div className="p-2.5 rounded bg-background border border-border/60 text-xs font-medium space-y-1 shadow-sm">
+                  <div>Motor ESC calibration</div>
+                  <span className="text-[10px] text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">High</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
+                <div className="text-[11px] font-bold text-indigo-400 uppercase mb-2">In Progress (1)</div>
+                <div className="p-2.5 rounded bg-background border border-indigo-500/30 text-xs font-medium space-y-1 shadow-sm">
+                  <div>LIDAR slam node</div>
+                  <span className="text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">Sarah K.</span>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
+                <div className="text-[11px] font-bold text-emerald-400 uppercase mb-2">Done (4)</div>
+                <div className="p-2.5 rounded bg-background border border-emerald-500/30 text-xs font-medium space-y-1 shadow-sm opacity-80">
+                  <div>Chassis 3D print</div>
+                  <span className="text-[10px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">✓ Complete</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </section>
   );
 }
-
-

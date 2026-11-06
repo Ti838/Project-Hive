@@ -3,35 +3,47 @@
 import { SmoothScroll } from '@/components/landing/SmoothScroll';
 import { Navbar } from '@/components/landing/Navbar';
 import { Hero } from '@/components/landing/Hero';
-import { ProductStory } from '@/components/landing/ProductStory';
-import { FeaturesSequence } from '@/components/landing/FeaturesSequence';
-import { Workflow } from '@/components/landing/Workflow';
 import { Showcase } from '@/components/landing/Showcase';
+import { BentoGrid } from '@/components/landing/BentoGrid';
+import { Testimonials } from '@/components/landing/Testimonials';
+import { FAQ } from '@/components/landing/FAQ';
 import { CTA } from '@/components/landing/CTA';
 import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
   return (
     <SmoothScroll>
-      <div className="relative bg-background text-foreground overflow-hidden cinematic-bg font-sans selection:bg-foreground/20 selection:text-white">
-        {/* Cinematic Grain/Noise Overlay */}
-        <div className="bg-noise" />
+      <div className="relative bg-background text-foreground overflow-hidden font-sans selection:bg-primary/20 selection:text-foreground">
+        {/* Subtle noise texture */}
+        <div className="bg-noise fixed inset-0 pointer-events-none opacity-20 z-50" />
         
+        {/* Sticky Translucent Navbar */}
         <Navbar />
 
-        {/* Foundation Main Content Container */}
-        <main className="relative z-10 flex flex-col items-center justify-center">
+        {/* Core Main Content Flow */}
+        <main className="relative z-10 flex flex-col items-center justify-center w-full">
+          {/* Section 1 & 2: Hero + Pulse Metrics */}
           <Hero />
-          <ProductStory />
-          <FeaturesSequence />
-          <Workflow />
+
+          {/* Section 3: Interactive 5-Tab Feature Showcase */}
           <Showcase />
+
+          {/* Section 4: 6-Superpower Bento Grid */}
+          <BentoGrid />
+
+          {/* Section 5: Student & Faculty Testimonials */}
+          <Testimonials />
+
+          {/* Section 6: Interactive FAQ Accordion */}
+          <FAQ />
+
+          {/* Section 7: Final Conversion Call to Action */}
           <CTA />
         </main>
 
+        {/* Global System Footer */}
         <Footer />
       </div>
     </SmoothScroll>
   );
 }
-
