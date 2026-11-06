@@ -107,3 +107,4 @@ Deep-dive feature matrices, reverse engineering reports, and legacy migration hi
 ## 📜 Standards & Contributing
 
 All contributions must adhere to the **Zero-Trust Security Standard**, maintain TypeScript strict-mode compliance, and preserve the single canonical database schema in [`server/database/schema.sql`](../server/database/schema.sql).
+
