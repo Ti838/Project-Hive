@@ -221,6 +221,25 @@ Retrieve comprehensive squad details including full member roster, leader inform
   }
   ```
 
+#### `PUT /api/teams/:id`
+Leader updates squad settings, description, tags, hiring availability, or Google Classroom / Canvas academic deliverables.
+- **Request Body**:
+  ```json
+  {
+    "description": "Updated team mission",
+    "is_open": true,
+    "tags": ["Next.js", "PyTorch"],
+    "rules": "{\"courseCode\":\"CSE470: Software Engineering\",\"deliverables\":[{\"id\":\"del_1\",\"title\":\"Sprint 1\",\"dueDate\":\"2026-11-20\",\"status\":\"submitted\",\"submissionUrl\":\"https://github.com/...\"}]}"
+  }
+  ```
+- **Response (200 OK)**:
+  ```json
+  {
+    "ok": true,
+    "team": { "id": "team-uuid", "name": "NeuroVision Hackers" }
+  }
+  ```
+
 #### `POST /api/teams/:id/requests`
 Submit a join request to a squad.
 - **Request Body**:

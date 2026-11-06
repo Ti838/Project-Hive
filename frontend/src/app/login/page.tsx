@@ -1,5 +1,5 @@
-﻿'use client';
-// â”€â”€â”€ ProjectHive â€” Modern Sign In Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+'use client';
+// ─── ProjectHive — Modern Sign In Page ─────────────────────────────────────────
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Eye, EyeOff, Loader2, ArrowLeft, Lock, Mail,
-  Sparkles, Users, Video, ShieldCheck, CheckCircle2
+  Sparkles, Users, Video, ShieldCheck, AlertCircle, MailCheck
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
@@ -26,6 +26,12 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState('');
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [requiresVerification, setRequiresVerification] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState('');
+  const [isResending, setIsResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const { login } = useAuthStore();
   const router = useRouter();
 
@@ -35,14 +41,46 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     setServerError('');
+    setRequiresVerification(false);
+    setResendMsg('');
     const deviceMeta = await getExactDeviceDetails();
     const res = await api.auth.login(data.email, data.password, deviceMeta);
     if (!res.ok || res.error) {
+      if (res.requiresVerification || (res.error && res.error.toLowerCase().includes('verify your email'))) {
+        setRequiresVerification(true);
+        setUnverifiedEmail(res.email || data.email);
+        setServerError('Please verify your email address to access your workspace.');
+        return;
+      }
       setServerError(res.error ?? 'Invalid email or password');
       return;
     }
     login(res.user, res.accessToken, res.refreshToken);
     router.push('/dashboard');
+  };
+
+  const handleResend = async () => {
+    if (resendCooldown > 0 || isResending) return;
+    try {
+      setIsResending(true);
+      setResendMsg('');
+      const res = await api.auth.resendVerification(unverifiedEmail);
+      setIsResending(false);
+      setResendMsg(res.message || 'Verification link resent. Please check your inbox.');
+      setResendCooldown(60);
+      const timer = setInterval(() => {
+        setResendCooldown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } catch {
+      setIsResending(false);
+      setResendMsg('Failed to resend. Please try again shortly.');
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -64,7 +102,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full bg-background text-foreground flex flex-col selection:bg-primary/20">
-      {/* â”€â”€â”€ Top Navigation Bar with Back to Home â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Top Navigation Bar with Back to Home */}
       <header className="w-full px-4 sm:px-8 py-3 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
         <Link
           href="/"
@@ -82,13 +120,13 @@ export default function LoginPage() {
         </Link>
       </header>
 
-      {/* â”€â”€â”€ Main Content Split Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* Main Content Split Layout */}
       <div className="flex-1 flex w-full max-w-7xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
         <div className="w-full grid lg:grid-cols-12 gap-8 items-center bg-card/60 border border-border/80 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-xl backdrop-blur-xl">
 
           {/* Left Feature Branding (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[400px]">
-            <div className="space-y-3">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-primary/15 via-primary/5 to-transparent border border-primary/20 min-h-[460px]">
+            <div className="space-y-4">
               <div className="w-14 h-14 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center p-3 shadow-inner">
                 <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
               </div>
@@ -104,8 +142,8 @@ export default function LoginPage() {
                 {[
                   { icon: Users, text: 'Real-time squad matching & team channels' },
                   { icon: Video, text: 'Instant HD WebRTC video calls & whiteboard' },
-                  { icon: Sparkles, text: 'ProjectHive AI Copilot & Brainstorming' },
-                  { icon: ShieldCheck, text: 'Verified student authentication & security' },
+                  { icon: Sparkles, text: 'HiveMind AI Assistant & Project Architect' },
+                  { icon: ShieldCheck, text: 'Secure student authentication & RBAC' },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 text-xs font-medium text-foreground/90">
                     <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0">
@@ -123,7 +161,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Right Form */}
+          {/* Right Form Container */}
           <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-4 max-w-md mx-auto w-full">
             {/* Quick Switch Tabs */}
             <div className="grid grid-cols-2 p-1 bg-muted/60 rounded-xl mb-4 border border-border/60 text-center text-xs font-semibold">
@@ -136,7 +174,7 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            <div className="space-y-2 mb-4">
+            <div className="space-y-1.5 mb-4">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Sign in to your account</h2>
               <p className="text-xs sm:text-sm text-muted-foreground">Enter your university credentials to continue</p>
             </div>
@@ -170,7 +208,7 @@ export default function LoginPage() {
                   />
                 </svg>
               )}
-              <span>{isGoogleLoading ? 'Connecting to Googleâ€¦' : 'Continue with Google'}</span>
+              <span>{isGoogleLoading ? 'Connecting to Google…' : 'Continue with Google'}</span>
             </button>
 
             {/* Visual Divider */}
@@ -185,7 +223,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
               {/* Email */}
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-foreground/90 flex items-center gap-1.5">
@@ -240,21 +278,42 @@ export default function LoginPage() {
                 {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
               </div>
 
-              {/* Server error */}
+              {/* Server error feedback */}
               {serverError && (
-                <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium">
-                  {serverError}
+                <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs font-medium flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <p>{serverError}</p>
+                    {requiresVerification && (
+                      <div className="pt-2">
+                        <button
+                          type="button"
+                          onClick={handleResend}
+                          disabled={isResending || resendCooldown > 0}
+                          className="inline-flex items-center gap-1 text-primary hover:underline font-semibold"
+                        >
+                          <MailCheck className="w-3.5 h-3.5" />
+                          <span>
+                            {resendCooldown > 0
+                              ? `Resend available in ${resendCooldown}s`
+                              : 'Resend Verification Email'}
+                          </span>
+                        </button>
+                        {resendMsg && <p className="text-[11px] text-emerald-500 mt-1">{resendMsg}</p>}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Submit */}
+              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 disabled:opacity-50 active:scale-[0.98] transition-all shadow-md mt-2"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                {isSubmitting ? 'Signing inâ€¦' : 'Sign In'}
+                {isSubmitting ? 'Signing in…' : 'Sign In'}
               </button>
             </form>
 
@@ -272,5 +331,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
-

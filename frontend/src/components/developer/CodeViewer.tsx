@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Folder, FileCode, ChevronRight, ChevronDown, Copy, Check,
   Sparkles, Bug, FileCheck2, ExternalLink, Loader2, Code2
@@ -31,6 +31,22 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
   // Fetch Git Tree
+  const loadFile = useCallback(async (path: string) => {
+    setSelectedPath(path);
+    setLoadingFile(true);
+    try {
+      const res = await api.github.getRepoFile(owner, repo, path, defaultBranch);
+      if (res && res.content !== undefined) {
+        setFileContent(res.content);
+      }
+    } catch (err) {
+      console.error('Failed to load file:', err);
+      setFileContent('// Error loading file contents.');
+    } finally {
+      setLoadingFile(false);
+    }
+  }, [owner, repo, defaultBranch]);
+
   useEffect(() => {
     async function loadTree() {
       setLoadingTree(true);
@@ -52,23 +68,7 @@ export function CodeViewer({ owner, repo, defaultBranch = 'main', onAskAi }: Pro
       }
     }
     loadTree();
-  }, [owner, repo, defaultBranch]);
-
-  const loadFile = async (path: string) => {
-    setSelectedPath(path);
-    setLoadingFile(true);
-    try {
-      const res = await api.github.getRepoFile(owner, repo, path, defaultBranch);
-      if (res && res.content !== undefined) {
-        setFileContent(res.content);
-      }
-    } catch (err) {
-      console.error('Failed to load file:', err);
-      setFileContent('// Error loading file contents.');
-    } finally {
-      setLoadingFile(false);
-    }
-  };
+  }, [owner, repo, defaultBranch, loadFile]);
 
   const toggleFolder = (folderPath: string) => {
     setExpandedFolders(prev => {

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
@@ -209,9 +209,9 @@ export function Hero() {
           className="text-5xl sm:text-7xl lg:text-[5.5rem] font-bold tracking-tight text-balance leading-[1.05] max-w-5xl"
           style={{ fontFeatureSettings: '"salt" 1, "ss01" 1' }} // For sharper typography look
         >
-          Discover Teammates. <br className="hidden sm:block" />
+          Find Your Team. <br className="hidden sm:block" />
           <span className="bg-gradient-to-r from-primary via-purple-400 to-primary bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-            Build the Future.
+            Build Your Future.
           </span>
         </h1>
 
@@ -220,7 +220,7 @@ export function Hero() {
           ref={sublineRef}
           className="mt-8 text-lg sm:text-xl text-foreground/60 font-light max-w-2xl mx-auto text-balance leading-relaxed"
         >
-          The cinematic platform for student developers, designers, and innovators. Form squads, brainstorm with AI, and showcase your builds to the world.
+          Discover talented teammates, collaborate in real time, and transform your ideas into meaningful projects with AI-powered assistance.
         </p>
 
         {/* Primary & Secondary CTAs */}
@@ -229,7 +229,7 @@ export function Hero() {
             href="/register"
             className="group relative flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-foreground text-background font-semibold text-base transition-transform hover:scale-105 hover:shadow-[0_0_30px_-5px_rgba(255,255,255,0.4)] w-full sm:w-auto overflow-hidden"
           >
-            <span className="relative z-10">Join the Hive</span>
+            <span className="relative z-10">Get Started Free</span>
             <ArrowRight className="relative z-10 w-4 h-4 transition-transform group-hover:translate-x-1" />
             <div className="absolute inset-0 bg-foreground/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
           </Link>

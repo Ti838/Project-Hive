@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 // â”€â”€â”€ Squads & Campus Communities Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -40,6 +40,7 @@ type HubTab = 'squads' | 'communities' | 'mine';
 
 const CATEGORIES = [
   'All',
+  'Coursework & Capstones',
   'Engineering',
   'AI / Data',
   'Web3',

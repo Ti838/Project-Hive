@@ -15,6 +15,7 @@ const teamSchema = z.object({
   name: z.string().min(2, 'Team name must be at least 2 characters'),
   description: z.string().min(10, 'Please write a brief description (at least 10 characters)'),
   category: z.string().optional(),
+  course_code: z.string().optional(),
   max_members: z.coerce.number().min(2).max(20).default(4),
   is_private: z.boolean().default(false),
 });
@@ -41,10 +42,32 @@ export default function CreateTeamPage() {
 
   const onSubmit = async (data: TeamForm) => {
     setServerError('');
+    const initialRules = data.course_code ? JSON.stringify({
+      courseCode: data.course_code,
+      instructor: 'Faculty Advisory Panel',
+      deliverables: [
+        {
+          id: `del_${Date.now()}_1`,
+          title: 'Sprint 1: Software Requirements & System Architecture',
+          dueDate: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+          rubric: 'Functional/Non-functional specifications, ERD, and C4 Architecture Diagrams.',
+          status: 'assigned',
+        },
+        {
+          id: `del_${Date.now()}_2`,
+          title: 'Sprint 2: MVP Core API & Database Integration',
+          dueDate: new Date(Date.now() + 28 * 86400000).toISOString().split('T')[0],
+          rubric: 'Working REST/WebSocket endpoints, authentication, and Supabase database schema.',
+          status: 'assigned',
+        },
+      ],
+    }) : undefined;
+
     const res = await api.teams.create({
       ...data,
       required_skills: skills,
       status: 'recruiting',
+      rules: initialRules as any,
     });
 
     if (!res.ok || res.error) {
@@ -93,6 +116,17 @@ export default function CreateTeamPage() {
             {...register('category')}
             placeholder="e.g. AI / Machine Learning, Mobile App, Web3"
             autoCapitalize="words"
+            className="w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border border-transparent focus:border-primary focus:outline-none"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Academic Course / Lab Track <span className="text-muted-foreground/60 font-normal">(Optional Google Classroom Track)</span>
+          </label>
+          <input
+            {...register('course_code')}
+            placeholder="e.g. CSE470: Software Engineering, EEE305: Embedded Systems"
             className="w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border border-transparent focus:border-primary focus:outline-none"
           />
         </div>

@@ -230,11 +230,14 @@ export async function sendVerificationEmail(email, firstName, token) {
   const verifyUrl = `${FRONTEND_URL}/verify-email?token=${token}`;
 
   const content = `
-    <p style="margin:0 0 20px;font-size:15px;color:#CBD5E1;line-height:1.7;">
-      Hey <strong style="color:#FFFFFF;">${firstName || 'Developer'}</strong>,
+    <p style="margin:0 0 16px;font-size:15px;color:#CBD5E1;line-height:1.7;">
+      Hello <strong style="color:#FFFFFF;">${firstName || 'Developer'}</strong>,
     </p>
-    <p style="margin:0 0 28px;font-size:15px;color:#94A3B8;line-height:1.7;">
-      Welcome to <strong style="color:#F59E0B;">ProjectHive</strong>! You are one step away from connecting with student developers, joining innovative teams, and building high-impact hackathon projects.
+    <p style="margin:0 0 14px;font-size:15px;color:#94A3B8;line-height:1.7;">
+      Welcome to <strong style="color:#6366F1;">ProjectHive</strong>!
+    </p>
+    <p style="margin:0 0 24px;font-size:15px;color:#94A3B8;line-height:1.7;">
+      Thank you for joining our collaboration community. Please verify your email address to confirm your account and continue your registration.
     </p>
 
     <!-- Call to Action Button -->
@@ -243,38 +246,45 @@ export async function sendVerificationEmail(email, firstName, token) {
         <td align="center">
           <a href="${verifyUrl}"
              target="_blank"
-             style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg, #F59E0B 0%, #D97706 100%);color:#0F172A;font-size:15px;font-weight:800;text-decoration:none;border-radius:14px;box-shadow:0 10px 25px -5px rgba(245,158,11,0.4);letter-spacing:0.2px;">
-            Verify Email Address →
+             style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);color:#FFFFFF;font-size:15px;font-weight:800;text-decoration:none;border-radius:14px;box-shadow:0 10px 25px -5px rgba(99,102,241,0.4);letter-spacing:0.2px;">
+            Verify My Email →
           </a>
         </td>
       </tr>
     </table>
 
-    <!-- Security Info Box -->
+    <!-- Expiration & Fallback Link Box -->
     <div style="background-color:#0E1526;border:1px solid #1E293B;border-radius:14px;padding:16px;margin-bottom:24px;">
-      <div style="display:flex;align-items:center;margin-bottom:6px;">
-        <span style="font-size:14px;margin-right:8px;">⏱</span>
-        <span style="font-size:12px;font-weight:700;color:#F59E0B;text-transform:uppercase;letter-spacing:0.5px;">Link Expires in 24 Hours</span>
-      </div>
-      <p style="margin:0 0 8px;font-size:12px;color:#64748B;">If the button above does not work, copy and paste this link into your browser:</p>
-      <div style="font-family:monospace;font-size:11px;color:#94A3B8;background:#131B2E;padding:8px 12px;border-radius:8px;word-break:break-all;border:1px solid #1E293B;">
+      <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#6366F1;text-transform:uppercase;letter-spacing:0.5px;">
+        ⏱ Verification link expires in 24 hours
+      </p>
+      <p style="margin:0 0 10px;font-size:12px;color:#64748B;line-height:1.5;">
+        This verification link is unique to your account and expires according to the configured authentication policy. If the button above does not work, copy and paste this link into your browser:
+      </p>
+      <div style="font-family:monospace;font-size:11px;color:#94A3B8;background:#131B2E;padding:10px 12px;border-radius:8px;word-break:break-all;border:1px solid #1E293B;">
         ${verifyUrl}
       </div>
     </div>
 
-    <p style="margin:0;font-size:12px;color:#475569;text-align:center;line-height:1.5;">
-      If you did not sign up for a ProjectHive account, you can safely ignore this email.
+    <p style="margin:0 0 16px;font-size:12px;color:#64748B;text-align:center;line-height:1.5;">
+      If you did not create this account, you can safely ignore this email.
     </p>
+
+    <div style="border-top:1px solid #1E293B;padding-top:16px;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#94A3B8;font-weight:600;">
+        Regards,<br /><span style="color:#FFFFFF;">ProjectHive Team</span>
+      </p>
+    </div>
   `;
 
   return sendEmail({
     to: email,
     toName: firstName,
-    subject: 'Verify your ProjectHive email address',
+    subject: 'Verify Your ProjectHive Account',
     html: emailWrapper({
       badge: 'ACCOUNT VERIFICATION',
-      title: 'Confirm Your Email Address',
-      subtitle: 'Complete your registration to unlock student collaboration',
+      title: 'Verify Your ProjectHive Account',
+      subtitle: 'Confirm your credentials to unlock developer collaboration',
       content,
     }),
   });
@@ -371,11 +381,11 @@ export async function sendPasswordResetEmail(email, firstName, token) {
   const resetUrl = `${FRONTEND_URL}/reset-password?token=${token}`;
 
   const content = `
-    <p style="margin:0 0 20px;font-size:15px;color:#CBD5E1;line-height:1.7;">
-      Hi <strong style="color:#FFFFFF;">${firstName || 'there'}</strong>,
+    <p style="margin:0 0 16px;font-size:15px;color:#CBD5E1;line-height:1.7;">
+      Hello <strong style="color:#FFFFFF;">${firstName || 'Developer'}</strong>,
     </p>
-    <p style="margin:0 0 28px;font-size:15px;color:#94A3B8;line-height:1.7;">
-      We received a request to reset the password for your ProjectHive account. Click the button below to set a new password.
+    <p style="margin:0 0 24px;font-size:15px;color:#94A3B8;line-height:1.7;">
+      We received a request to reset your ProjectHive account password. Click the button below to create a new password.
     </p>
 
     <!-- Call to Action Button -->
@@ -384,34 +394,44 @@ export async function sendPasswordResetEmail(email, firstName, token) {
         <td align="center">
           <a href="${resetUrl}"
              target="_blank"
-             style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg, #EC4899 0%, #BE185D 100%);color:#FFFFFF;font-size:15px;font-weight:800;text-decoration:none;border-radius:14px;box-shadow:0 10px 25px -5px rgba(236,72,153,0.4);letter-spacing:0.2px;">
-            Reset Password →
+             style="display:inline-block;padding:16px 36px;background:linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);color:#FFFFFF;font-size:15px;font-weight:800;text-decoration:none;border-radius:14px;box-shadow:0 10px 25px -5px rgba(99,102,241,0.4);letter-spacing:0.2px;">
+            Reset My Password →
           </a>
         </td>
       </tr>
     </table>
 
-    <!-- Expiry Box -->
+    <!-- Expiration & Fallback Link Box -->
     <div style="background-color:#0E1526;border:1px solid #1E293B;border-radius:14px;padding:16px;margin-bottom:24px;">
-      <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#F43F5E;">⏱ Link Expires in 1 Hour</p>
-      <p style="margin:0 0 8px;font-size:12px;color:#64748B;">If the button does not work, copy and paste this link:</p>
-      <div style="font-family:monospace;font-size:11px;color:#94A3B8;background:#131B2E;padding:8px 12px;border-radius:8px;word-break:break-all;border:1px solid #1E293B;">
+      <p style="margin:0 0 6px;font-size:12px;font-weight:700;color:#F43F5E;text-transform:uppercase;letter-spacing:0.5px;">
+        ⏱ Link expires in 1 hour
+      </p>
+      <p style="margin:0 0 10px;font-size:12px;color:#64748B;line-height:1.5;">
+        This password reset link is single-use and will expire shortly. If the button above does not work, copy and paste this link into your browser:
+      </p>
+      <div style="font-family:monospace;font-size:11px;color:#94A3B8;background:#131B2E;padding:10px 12px;border-radius:8px;word-break:break-all;border:1px solid #1E293B;">
         ${resetUrl}
       </div>
     </div>
 
-    <p style="margin:0;font-size:12px;color:#475569;text-align:center;line-height:1.5;">
-      If you did not request a password reset, you can safely ignore this message. Your password will remain unchanged.
+    <p style="margin:0 0 16px;font-size:12px;color:#64748B;text-align:center;line-height:1.5;">
+      If you did not request this change, you can ignore this email. Your current password will remain unchanged.
     </p>
+
+    <div style="border-top:1px solid #1E293B;padding-top:16px;text-align:center;">
+      <p style="margin:0;font-size:12px;color:#94A3B8;font-weight:600;">
+        Regards,<br /><span style="color:#FFFFFF;">ProjectHive Team</span>
+      </p>
+    </div>
   `;
 
   return sendEmail({
     to: email,
     toName: firstName,
-    subject: '🔐 Reset your ProjectHive password',
+    subject: 'Reset Your ProjectHive Password',
     html: emailWrapper({
       badge: 'SECURITY ALERT',
-      title: 'Password Reset Request',
+      title: 'Reset Your ProjectHive Password',
       subtitle: 'Create a new secure password for your account',
       content,
     }),

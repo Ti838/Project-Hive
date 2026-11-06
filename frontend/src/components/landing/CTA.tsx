@@ -1,9 +1,10 @@
-﻿'use client';
+'use client';
 
 import { useEffect, useRef } from 'react';
+import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, Terminal } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -96,15 +97,20 @@ export function CTA() {
         </div>
 
         <div ref={ctaButtonsRef} className="flex flex-col sm:flex-row items-center gap-4">
-          <button className="h-14 px-8 rounded-full bg-foreground text-background font-semibold text-base flex items-center gap-2 hover:bg-foreground/90 transition-transform hover:scale-105 active:scale-95 group">
-            Create Your Profile
+          <Link 
+            href="/register"
+            className="h-14 px-8 rounded-full bg-foreground text-background font-semibold text-base flex items-center gap-2 hover:bg-foreground/90 transition-transform hover:scale-105 active:scale-95 group"
+          >
+            Get Started Free
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-          </button>
+          </Link>
           
-          <button className="h-14 px-8 rounded-full bg-foreground/5 text-foreground font-semibold text-base flex items-center gap-2 hover:bg-foreground/10 transition-colors border border-foreground/10">
-            <Terminal className="w-5 h-5" />
-            Continue with GitHub
-          </button>
+          <Link 
+            href="/login"
+            className="h-14 px-8 rounded-full bg-foreground/5 text-foreground font-semibold text-base flex items-center gap-2 hover:bg-foreground/10 transition-colors border border-foreground/10"
+          >
+            Sign In to Workspace
+          </Link>
         </div>
 
       </div>

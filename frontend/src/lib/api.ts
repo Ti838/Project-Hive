@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   User, Team, TeamMember, Project, Message, Conversation, Notification, Post, PostComment, FriendRequest, Stats,
   GitHubRepo, GitHubCommit, GitHubBranch, GitHubIssue, GitHubPullRequest, GitHubWorkflowRun, GitHubRelease,
   ProjectHealthMetrics, GitHubUserProfile,
@@ -213,9 +213,12 @@ export const api = {
       request<{ message: string }>('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
 
     login: (email: string, password: string, deviceMeta?: any) =>
-      request<{ accessToken: string; refreshToken: string; user: User }>('/auth/login', {
+      request<{ accessToken: string; refreshToken: string; user: User; requiresVerification?: boolean; email?: string }>('/auth/login', {
         method: 'POST', body: JSON.stringify({ email, password, deviceMeta }),
       }),
+
+    resendVerification: (email: string) =>
+      request<{ message: string }>('/auth/resend-verification', { method: 'POST', body: JSON.stringify({ email }) }),
 
     logout: async () => {
       const refresh = getRefreshToken();

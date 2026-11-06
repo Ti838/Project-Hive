@@ -437,6 +437,55 @@ sequenceDiagram
 
 ---
 
+## 9. Academic Mesh (Google Classroom & Canvas Integration) Architecture
+
+ProjectHive unifies university coursework with agile hackathon incubation. Teams can link to academic courses and manage deliverable milestones:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Student as Squad Member
+    participant UI as TeamClassworkView
+    participant API as Express API (/api/teams/:id)
+    participant DB as Supabase PostgreSQL (teams.rules)
+
+    Note over Student,UI: Viewing Academic Deliverables & Sprints
+    Student->>UI: Selects "Academic & Sprints" Tab in Team Workspace
+    UI->>API: GET /api/teams/:id
+    API->>DB: Query team record & JSON rules
+    DB-->>API: Return team details with parsed coursework data
+    API-->>UI: Display Course Code, Sprints, Due Dates & Rubrics
+
+    Note over Student,UI: Turning in Deliverable (GitHub / Demo / Drive)
+    Student->>UI: Click "Turn In" -> Submits GitHub PR URL
+    UI->>API: PUT /api/teams/:id { rules: updatedCourseworkJSON }
+    API->>DB: Update teams.rules JSON payload
+    DB-->>API: Success response
+    API-->>UI: Live update state: Marked "Submitted" with timestamp & link
+```
+
+---
+
+## 10. 3-Mode Adaptive Global Theme Engine Architecture
+
+The theme engine supports Light, Dark, and System Default (Auto) modes without layout shifts or initial theme flashing:
+
+```mermaid
+flowchart TD
+    UserPref["User Selects Theme Preference (Settings or Topbar)"]
+    Storage["localStorage ('ph-theme')"]
+    CloudSync["Cloud Sync via api.users.updateSettings()"]
+    OSListener["window.matchMedia('(prefers-color-scheme: dark)')"]
+    DOMClass["DOM DocumentElement (.dark class toggle)"]
+
+    UserPref --> Storage
+    UserPref --> CloudSync
+    UserPref --> DOMClass
+    OSListener -->|When System Auto is active| DOMClass
+```
+
+---
+
 ## 📜 License
 
 This architecture and codebase are licensed under the **[MIT License](LICENSE)**.

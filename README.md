@@ -24,11 +24,15 @@
 ## 🌟 Executive Overview
 
 **ProjectHive** is a production-grade collaborative ecosystem connecting university developers, designers, and innovators. Built to the interaction and resilience standards of Discord, WhatsApp, Messenger, and GitHub, ProjectHive integrates:
+- **Google Classroom & Canvas-Grade Academic Mesh (`/teams/[id]`)**: Academic course track linkage (`Coursework & Capstones`), sprint milestones with due date countdowns, rubric criteria checklists, and 1-click deliverable turn-in (GitHub PRs, live demo URLs, Google Drive links).
+- **Notion-Grade Project Wiki & Engineering Specs**: Full-bleed collaborative markdown wiki for project blueprints, technical architecture, and meeting minutes with real-time database persistence.
+- **Verified Developer & Academic Identity (`/profile`)**: Dynamic badge integrations for GitHub Contributor activity, LeetCode/Codeforces competitive programming, Google Scholar research, and Devpost hackathon achievements with peer skill endorsements.
+- **3-Mode Adaptive Global Theme Engine**: Seamless Light, Dark, and **System Default (Auto Mode)** with real-time OS `matchMedia` listeners, zero-flash transitions, and cloud profile synchronization.
 - **Multimodal AI Copilot ("HiveMind AI")**: 4-tier cascading intelligence (Groq Llama 3.3 70B, Google Gemini 2.5 Flash, OpenRouter Free, and Browser Native Web Speech API for real-time speech dictation and voice readback).
 - **Enterprise Audio/Video Calling**: Low-latency SFU group calling powered by **LiveKit Cloud** with adaptive bitrate streaming and an interactive Picture-in-Picture (PiP) Minimized Call Widget.
 - **Discord-Grade Team Workspaces (`/teams/[id]`)**: Interactive roster management, squad group chat over Socket.IO, recruitment indicators, applicant approval drawers, and leadership delegation.
 - **WhatsApp-Grade Real-Time Messaging (`/messages`)**: Full message delivery receipts (`sent` / `delivered` / `read`), emoji reactions, instant clipboard image pasting, and presence indicators.
-- **Ultra-Responsive International Design System**: Zero Cumulative Layout Shift (CLS), strict dynamic viewport height bounds (`100dvh`), iOS Safari auto-zoom prevention (`text-base sm:text-sm`), and WCAG 2.1 AAA 44x44px touch targets.
+- **Linear Mobile & Android Adaptive Navigation**: 5-tab thumb-reachable safe-area bottom navigation (`Home`, `Feed`, `Chat`, `Teams`, `Profile`), touch targets $\ge 44\text{px}$, sliding bottom sheets, and zero horizontal root overflow.
 - **Enterprise Admin Control Center (`/admin/dashboard`)**: Dual desktop/mobile views, real-time node telemetry, instant user governance, feed moderation, support ticketing, and persistent audit trail logging.
 
 ---
@@ -235,7 +239,7 @@ npm run dev
 ```bash
 npm --prefix frontend run build
 ```
-*Compiles all 27 routes with zero TypeScript or Next.js errors.*
+*Compiles all 37 routes with zero TypeScript, Next.js, or ESLint errors.*
 
 ---
 

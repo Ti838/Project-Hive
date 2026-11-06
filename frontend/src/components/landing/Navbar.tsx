@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import { useAuthStore } from '@/lib/store';
@@ -9,9 +9,10 @@ import { Sun, Moon, Monitor, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_LINKS = [
-  { label: 'Discover', href: '/people' },
-  { label: 'Squads', href: '/teams' },
-  { label: 'Projects', href: '/projects' },
+  { label: 'Discover', href: '/teams' },
+  { label: 'Features', href: '/#features' },
+  { label: 'Showcase', href: '/showcase' },
+  { label: 'About', href: '/#about' },
 ];
 
 export function Navbar() {

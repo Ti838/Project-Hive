@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { SmoothScroll } from '@/components/landing/SmoothScroll';
 import { Navbar } from '@/components/landing/Navbar';
@@ -8,6 +8,7 @@ import { FeaturesSequence } from '@/components/landing/FeaturesSequence';
 import { Workflow } from '@/components/landing/Workflow';
 import { Showcase } from '@/components/landing/Showcase';
 import { CTA } from '@/components/landing/CTA';
+import { Footer } from '@/components/landing/Footer';
 
 export default function LandingPage() {
   return (
@@ -27,6 +28,8 @@ export default function LandingPage() {
           <Showcase />
           <CTA />
         </main>
+
+        <Footer />
       </div>
     </SmoothScroll>
   );

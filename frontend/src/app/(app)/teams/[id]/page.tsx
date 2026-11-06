@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // ─── Team Workspace Component (/teams/[id]) ─────────────────────────────────
 // Discord/GitHub/LinkedIn Grade Collaborative Workspace
 
@@ -10,16 +10,19 @@ import {
   Users, Video, ArrowLeft, MessageSquare, Settings, ShieldCheck, UserMinus,
   CheckCircle2, Clock, Send, Image as ImageIcon, Trash2, Globe, Lock,
   Plus, Check, X, AlertTriangle, Sparkles, RefreshCw, Smile, Crown,
-  ExternalLink, ChevronRight, UserCheck, ShieldAlert
+  ExternalLink, ChevronRight, UserCheck, ShieldAlert,
+  GraduationCap, BookOpen
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { useCallStore } from '@/lib/callStore';
 import { useSocket } from '@/hooks/useSocket';
 import { displayName, timeAgo, getInitials, getAvatarColor, cn, sanitizeAndDecodeText, parseDescription } from '@/lib/utils';
+import { TeamClassworkView } from '@/components/teams/TeamClassworkView';
+import { TeamDocsView } from '@/components/teams/TeamDocsView';
 import type { Team, TeamMember, Message } from '@/types';
 
-type WorkspaceTab = 'overview' | 'chat' | 'settings';
+type WorkspaceTab = 'overview' | 'classwork' | 'chat' | 'docs' | 'settings';
 
 const QUICK_EMOJIS = ['😀', '😂', '🔥', '🚀', '👍', '👏', '❤️', '🎉', '💡', '💯', '🤝', '⚡'];
 
@@ -437,7 +440,9 @@ export default function TeamWorkspacePage() {
           <div className="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto py-2.5">
             {[
               { id: 'overview', label: 'Roster & Overview', icon: Users },
+              { id: 'classwork', label: 'Academic & Sprints', icon: GraduationCap },
               { id: 'chat', label: 'Squad Chat', icon: MessageSquare, badge: messages.length > 0 ? messages.length : undefined },
+              { id: 'docs', label: 'Wiki & Specs', icon: BookOpen },
               ...(isLeader ? [{ id: 'settings', label: 'Recruitment & Settings', icon: Settings }] : []),
             ].map((tab) => {
               const Icon = tab.icon;
@@ -609,7 +614,18 @@ export default function TeamWorkspacePage() {
           </div>
         )}
 
-        {/* ── TAB 2: SQUAD GROUP CHAT (Discord style) ────────────────── */}
+        {/* ── TAB 2: CLASSWORK & ACADEMIC SPRINTS (Google Classroom / Canvas) ── */}
+        {activeTab === 'classwork' && (
+          <TeamClassworkView
+            teamId={teamId}
+            team={team}
+            isLeader={isLeader}
+            isMember={isMember}
+            onUpdate={loadTeam}
+          />
+        )}
+
+        {/* ── TAB 3: SQUAD GROUP CHAT (Discord style) ────────────────── */}
         {activeTab === 'chat' && (
           <div className="bg-card border border-border rounded-2xl overflow-hidden shadow-xs flex flex-col h-[650px]">
             {/* Discord-style Channel Header */}
@@ -780,7 +796,18 @@ export default function TeamWorkspacePage() {
           </div>
         )}
 
-        {/* ── TAB 3: SQUAD SETTINGS (Leader only) ──────────────────────── */}
+        {/* ── TAB 4: WIKI & SPECS (Notion Style Knowledge Base) ────────── */}
+        {activeTab === 'docs' && (
+          <TeamDocsView
+            teamId={teamId}
+            team={team}
+            isLeader={isLeader}
+            isMember={isMember}
+            onUpdate={loadTeam}
+          />
+        )}
+
+        {/* ── TAB 5: SQUAD SETTINGS (Leader only) ──────────────────────── */}
         {activeTab === 'settings' && isLeader && (
           <div className="bg-card border border-border rounded-2xl p-6 space-y-6 max-w-2xl shadow-xs">
             <div>

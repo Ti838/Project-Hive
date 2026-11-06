@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // â”€â”€â”€ ProjectHive â€” Minimized Call PiP Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useRef, useEffect, useCallback } from 'react';
@@ -65,7 +65,7 @@ export function MinimizedCallWidget({
         previewParticipant.videoTrack.track.attach(el);
       }
     },
-    [previewParticipant?.videoTrack, previewParticipant?.isVideoMuted]
+    [previewParticipant]
   );
 
   // Sync track mute/unmute events without remounting DOM
