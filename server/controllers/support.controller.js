@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../config/supabase.js';
 import { logSecurityEvent } from '../services/audit.service.js';
+import { getIo, broadcastNotification } from '../services/socket.service.js';
 
 /**
  * ── Helper to format Ticket Reference (e.g. PH-2026-004128) ───────────────
@@ -84,9 +85,17 @@ export async function createTicket(req, res) {
       return res.status(201).json({ ticket: { ...newTicket, id: 'temp_' + Date.now() } });
     }
 
-    // Emit realtime socket event if io is available
-    if (global.io) {
-      global.io.emit('support:new_ticket', data);
+    // Emit realtime socket event for both admin and client
+    const io = getIo() || (typeof global !== 'undefined' ? global.io : null);
+    if (io) {
+      io.emit('support:new_ticket', data);
+      io.emit('admin:reload', { section: 'support' });
+      io.emit('admin:notification', {
+        type: 'support',
+        title: 'New Support Ticket',
+        message: `Ticket #${data.ticket_number || ticketNumber}: ${data.subject}`,
+        ticketId: data.id,
+      });
     }
 
     res.status(201).json({ ticket: data });
@@ -180,9 +189,16 @@ export async function replyToTicket(req, res) {
       return res.status(500).json({ error: updateErr.message });
     }
 
-    if (global.io) {
-      global.io.emit(`support:ticket:${id}`, newMessage);
-      global.io.emit('support:admin_update', { ticketId: id, status: 'Waiting for Admin' });
+    const io = getIo() || (typeof global !== 'undefined' ? global.io : null);
+    if (io) {
+      io.emit(`support:ticket:${id}`, newMessage);
+      io.emit('support:admin_update', { ticketId: id, status: 'Waiting for Admin' });
+      io.emit('admin:notification', {
+        type: 'support_reply',
+        title: 'New Support Ticket Reply',
+        message: `User replied on Ticket #${ticket.ticket_number || id}`,
+        ticketId: id,
+      });
     }
 
     res.json({ ticket: updated, message: newMessage });
@@ -353,12 +369,34 @@ export async function replyAdminTicket(req, res) {
       return res.status(500).json({ error: updateErr.message });
     }
 
-    // Broadcast only if not an internal note to the user room
-    if (global.io) {
+    // Broadcast real-time ticket messages and user notifications
+    const io = getIo() || (typeof global !== 'undefined' ? global.io : null);
+    if (io) {
       if (!isInternal) {
-        global.io.emit(`support:ticket:${id}`, newMessage);
+        io.emit(`support:ticket:${id}`, newMessage);
       }
-      global.io.emit('support:admin_update', { ticketId: id, status: statusToApply });
+      io.emit('support:admin_update', { ticketId: id, status: statusToApply });
+    }
+
+    // Persist real-time notification for the user
+    if (!isInternal && ticket.user_id) {
+      try {
+        const notifPayload = {
+          user_id: ticket.user_id,
+          type: 'system',
+          title: 'Support Ticket Update',
+          message: `Admin replied to your ticket #${ticket.ticket_number || id}`,
+          data: { ticketId: id, ticketNumber: ticket.ticket_number },
+          is_read: false,
+          created_at: new Date().toISOString(),
+        };
+        const { data: createdNotif } = await supabaseAdmin
+          .from('notifications')
+          .insert(notifPayload)
+          .select()
+          .single();
+        broadcastNotification(io, ticket.user_id, createdNotif || notifPayload);
+      } catch (_) {}
     }
 
     res.json({ ticket: updated, message: newMessage });

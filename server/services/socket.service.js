@@ -1,8 +1,15 @@
 import { supabaseAdmin } from '../config/supabase.js';
 
 let _io = null;
-export function setIo(io) { _io = io; }
-export function getIo() { return _io; }
+export function setIo(io) {
+  _io = io;
+  if (typeof global !== 'undefined') {
+    global.io = io;
+  }
+}
+export function getIo() {
+  return _io || (typeof global !== 'undefined' ? global.io : null);
+}
 
 const activeUsers = new Map(); // userId -> Set of sockets
 const userActivity = new Map(); // userId -> { lastActivity: ISO string }
@@ -286,6 +293,16 @@ export async function handleMessageRead(socket, io, data) {
 }
 
 export function broadcastNotification(io, recipientId, notification) {
+  const targetIo = io || _io || (typeof global !== 'undefined' ? global.io : null);
+  
+  // 1. Dual-dispatch to personal user room (cross-worker/cluster resilient)
+  if (targetIo && recipientId) {
+    try {
+      targetIo.to('user_' + recipientId).emit('notification:new', notification);
+    } catch (_) {}
+  }
+
+  // 2. Direct socket dispatch to local connected sockets
   const userSockets = getUserSockets(recipientId);
   userSockets.forEach(socket => {
     try {
@@ -355,6 +372,11 @@ export async function handleCallInitiate(socket, data) {
 
     console.log('[Call] 📤 Emitting call:incoming to', targetSockets.length, 'sockets');
 
+    const targetIo = _io || (typeof global !== 'undefined' ? global.io : null);
+    if (targetIo) {
+      targetIo.to('user_' + targetId).emit('call:incoming', payload);
+    }
+
     targetSockets.forEach(s => {
       s.emit('call:incoming', payload);
       console.log('[Call] 📨 Sent to socket:', s.id);
@@ -371,6 +393,8 @@ export async function handleCallInitiate(socket, data) {
 export function handleCallAccept(socket, data) {
   const { roomId, targetId } = data;
   if (!roomId || !targetId) return;
+  const targetIo = _io || (typeof global !== 'undefined' ? global.io : null);
+  if (targetIo) targetIo.to('user_' + targetId).emit('call:accepted', { roomId });
   const targetSockets = getUserSockets(targetId);
   targetSockets.forEach(s => s.emit('call:accepted', { roomId }));
 }
@@ -378,6 +402,8 @@ export function handleCallAccept(socket, data) {
 export function handleCallDecline(socket, data) {
   const { roomId, targetId } = data;
   if (!roomId || !targetId) return;
+  const targetIo = _io || (typeof global !== 'undefined' ? global.io : null);
+  if (targetIo) targetIo.to('user_' + targetId).emit('call:declined', { roomId });
   const targetSockets = getUserSockets(targetId);
   targetSockets.forEach(s => s.emit('call:declined', { roomId }));
 }
@@ -412,6 +438,8 @@ export async function handleCallHangup(socket, data) {
   }
 
   if (targetId) {
+    const targetIo = _io || (typeof global !== 'undefined' ? global.io : null);
+    if (targetIo) targetIo.to('user_' + targetId).emit('call:hungup', { roomId });
     const targetSockets = getUserSockets(targetId);
     targetSockets.forEach(s => s.emit('call:hungup', { roomId }));
   }

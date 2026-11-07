@@ -23,13 +23,19 @@ import {
   AlertTriangle,
   RefreshCw,
   Cpu,
-  Laptop
+  Laptop,
+  Bell,
+  Volume2,
+  VolumeX,
+  X
 } from 'lucide-react';
 import { DesktopGate } from '@/components/admin/DesktopGate';
-import { useAuthStore } from '@/lib/store';
+import { useAuthStore, useUIStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { getExactDeviceTelemetry, DeviceTelemetry } from '@/lib/deviceTelemetry';
+import { useSocket } from '@/hooks/useSocket';
+import { soundEngine } from '@/lib/soundEngine';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -49,12 +55,62 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, isAuthenticated, isLoading, logout } = useAuthStore();
+  const { soundEnabled, setSoundEnabled } = useUIStore();
   const [currentTime, setCurrentTime] = useState<string>('');
   const [activeSockets, setActiveSockets] = useState<number>(42);
   const [dbLatency, setDbLatency] = useState<number>(14);
   const [cpuUsage, setCpuUsage] = useState<number>(18);
   const [telemetry, setTelemetry] = useState<DeviceTelemetry | null>(null);
   const [detectedIp, setDetectedIp] = useState<string>('Resolving...');
+  const [liveAlert, setLiveAlert] = useState<{ title: string; message: string; timestamp: string } | null>(null);
+  const [unreadSupportCount, setUnreadSupportCount] = useState<number>(0);
+
+  const socketRef = useSocket({
+    onNotification: (notif: any) => {
+      soundEngine?.play('notification');
+      if (notif?.title) {
+        setLiveAlert({
+          title: notif.title,
+          message: notif.message || '',
+          timestamp: new Date().toLocaleTimeString(),
+        });
+      }
+    },
+  });
+
+  useEffect(() => {
+    const raw = socketRef.socket;
+    if (!raw) return;
+
+    const onSupportNewTicket = (ticket: any) => {
+      soundEngine?.play('notification');
+      setUnreadSupportCount((prev) => prev + 1);
+      setLiveAlert({
+        title: 'New Support Ticket',
+        message: `Ticket #${ticket?.ticket_number || 'New'}: ${ticket?.subject || 'User Inquiry'}`,
+        timestamp: new Date().toLocaleTimeString(),
+      });
+    };
+
+    const onAdminNotification = (data: any) => {
+      soundEngine?.play('notification');
+      if (data?.title) {
+        setLiveAlert({
+          title: data.title,
+          message: data.message || '',
+          timestamp: new Date().toLocaleTimeString(),
+        });
+      }
+    };
+
+    raw.on('support:new_ticket', onSupportNewTicket);
+    raw.on('admin:notification', onAdminNotification);
+
+    return () => {
+      raw.off('support:new_ticket', onSupportNewTicket);
+      raw.off('admin:notification', onAdminNotification);
+    };
+  }, [socketRef.socket]);
 
   const isLoginPage = pathname === '/admin/login';
 
@@ -223,6 +279,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                         )}
                       />
                       <span>{item.name}</span>
+                      {item.href === '/admin/support' && unreadSupportCount > 0 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-500 text-black animate-pulse">
+                          {unreadSupportCount}
+                        </span>
+                      )}
                     </div>
                     {isActive && (
                       <ChevronRight className="w-3.5 h-3.5 text-amber-400 opacity-75" />
@@ -314,7 +375,34 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
 
             {/* Right Telemetry Clock & Clearance */}
-            <div className="flex items-center gap-4 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
+              {/* Admin Audio Chime Toggle */}
+              <div className="flex items-center bg-white/[0.04] border border-white/10 rounded-lg p-0.5 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !soundEnabled;
+                    setSoundEnabled(next);
+                    if (next) soundEngine?.test('notification');
+                  }}
+                  className={cn(
+                    "p-1 rounded transition-colors cursor-pointer",
+                    soundEnabled ? "text-amber-400 hover:bg-amber-500/10" : "text-slate-500 hover:bg-white/5"
+                  )}
+                  title={soundEnabled ? 'Admin Chimes: ACTIVE • Click to Mute' : 'Admin Chimes: MUTED • Click to Enable'}
+                >
+                  {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => soundEngine?.test('notification')}
+                  className="px-1.5 py-0.5 text-slate-400 hover:text-white font-medium transition-colors cursor-pointer"
+                  title="Test chime"
+                >
+                  Test 🔔
+                </button>
+              </div>
+
               <div className="flex items-center gap-1.5 text-slate-400">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{currentTime || 'SYNCHRONIZING...'}</span>
@@ -324,6 +412,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </span>
             </div>
           </header>
+
+          {/* Live Alert Toast Banner */}
+          {liveAlert && (
+            <div className="bg-amber-500/15 border-b border-amber-500/30 px-6 py-2 flex items-center justify-between text-xs text-amber-200 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center gap-2">
+                <Bell className="w-4 h-4 text-amber-400 animate-bounce" />
+                <span className="font-bold text-amber-300">[{liveAlert.title}]</span>
+                <span>{liveAlert.message}</span>
+                <span className="text-[10px] text-amber-400/60 font-mono ml-2">{liveAlert.timestamp}</span>
+              </div>
+              <button
+                onClick={() => setLiveAlert(null)}
+                className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Sub-Route Page Body */}
           <main className="flex-1 p-6 lg:p-8 overflow-y-auto bg-[#07090e]">
