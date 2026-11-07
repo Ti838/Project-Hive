@@ -51,7 +51,7 @@ export function FAQ() {
   };
 
   return (
-    <section id="faq" className="w-full py-28 px-6 sm:px-12 bg-background relative overflow-hidden border-t border-border/40">
+    <section id="faq" className="w-full py-24 sm:py-28 px-4 sm:px-6 lg:px-12 bg-background relative overflow-hidden border-t border-border/40">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-16">
@@ -83,7 +83,7 @@ export function FAQ() {
                 <button
                   type="button"
                   onClick={() => toggle(idx)}
-                  className="w-full p-6 text-left flex items-center justify-between gap-4 cursor-pointer focus:outline-none"
+                  className="w-full p-4 sm:p-6 text-left flex items-start sm:items-center justify-between gap-3 sm:gap-4 cursor-pointer focus:outline-none"
                   aria-expanded={isOpen}
                 >
                   <div className="space-y-1">

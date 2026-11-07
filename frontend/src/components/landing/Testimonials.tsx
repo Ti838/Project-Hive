@@ -40,7 +40,7 @@ const TESTIMONIALS = [
 
 export function Testimonials() {
   return (
-    <section className="w-full py-28 px-6 sm:px-12 bg-background relative overflow-hidden border-t border-border/40">
+    <section className="w-full py-24 sm:py-28 px-4 sm:px-6 lg:px-12 bg-background relative overflow-hidden border-t border-border/40">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-16 sm:mb-20">
@@ -65,7 +65,7 @@ export function Testimonials() {
           {TESTIMONIALS.map((t, idx) => (
             <div
               key={idx}
-              className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl p-8 flex flex-col justify-between hover:border-primary/40 transition-all duration-300 relative group shadow-sm hover:shadow-md"
+              className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between hover:border-primary/40 transition-all duration-300 relative group shadow-sm hover:shadow-md"
             >
               <div>
                 {/* Rating Stars & Quote Icon */}

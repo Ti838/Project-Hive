@@ -6,7 +6,7 @@ import { ArrowUpRight, Shield, Sparkles, Globe, Terminal, MessageSquare } from '
 export function Footer() {
   return (
     <footer className="w-full border-t border-border/80 bg-background/95 text-foreground selection:bg-primary/20">
-      <div className="max-w-7xl mx-auto px-6 sm:px-12 py-16 sm:py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-12 sm:py-16 lg:py-20">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 mb-16">
           
           {/* Brand & Mission column */}

@@ -193,20 +193,20 @@ export function Showcase() {
                 <span className="font-mono text-white/50">Active: 3 Peers</span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2.5 aspect-video">
-                <div className="relative rounded-lg overflow-hidden bg-slate-900 border-2 border-emerald-500 flex items-center justify-center">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 min-h-[140px] sm:aspect-video">
+                <div className="relative rounded-lg overflow-hidden bg-slate-900 border-2 border-emerald-500 flex items-center justify-center p-3 sm:p-0 min-h-[60px] sm:min-h-0">
                   <span className="text-xs font-semibold text-white">Timon (Speaking...)</span>
                   <div className="absolute top-2 right-2 bg-black/60 px-1 rounded text-[10px] text-emerald-400">
                     <Mic className="w-3 h-3" />
                   </div>
                 </div>
-                <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
+                <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center p-3 sm:p-0 min-h-[60px] sm:min-h-0">
                   <span className="text-xs font-semibold text-white/80">Sarah K.</span>
                   <div className="absolute top-2 right-2 bg-black/60 px-1 rounded text-[10px] text-white/50">
                     <Mic className="w-3 h-3" />
                   </div>
                 </div>
-                <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center">
+                <div className="relative rounded-lg overflow-hidden bg-slate-900 border border-white/10 flex items-center justify-center p-3 sm:p-0 min-h-[60px] sm:min-h-0">
                   <span className="text-xs font-semibold text-white/80">David M.</span>
                   <div className="absolute top-2 right-2 bg-black/60 px-1 rounded text-[10px] text-white/50">
                     <MicOff className="w-3 h-3 text-rose-400" />
@@ -346,7 +346,7 @@ export function Showcase() {
               </ul>
             </div>
 
-            <div className="lg:col-span-7 grid grid-cols-3 gap-2.5">
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div className="p-3 rounded-lg bg-muted/40 border border-border/60">
                 <div className="text-[11px] font-bold text-muted-foreground uppercase mb-2">To Do (2)</div>
                 <div className="p-2.5 rounded bg-background border border-border/60 text-xs font-medium space-y-1 shadow-sm">

@@ -103,7 +103,7 @@ export function Navbar() {
             : 'py-5 bg-transparent border-transparent'
         }`}
       >
-        <div className="max-w-[1400px] mx-auto px-6 sm:px-8 flex items-center justify-between">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between">
           
           {/* LEFT: Logo */}
           <Link href="/" className="flex items-center gap-3 group relative z-[60]" onClick={() => setMobileMenuOpen(false)}>

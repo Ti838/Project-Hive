@@ -39,7 +39,7 @@ export function BentoGrid() {
   };
 
   return (
-    <section id="features" className="w-full py-28 px-6 sm:px-12 bg-background relative overflow-hidden border-t border-border/40">
+    <section id="features" className="w-full py-24 sm:py-28 px-4 sm:px-6 lg:px-12 bg-background relative overflow-hidden border-t border-border/40">
       {/* Subtle backdrop accents */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/5 rounded-full blur-[140px] pointer-events-none -z-10" />
       <div className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-accent/5 rounded-full blur-[120px] pointer-events-none -z-10" />
@@ -104,9 +104,9 @@ export function BentoGrid() {
               </div>
 
               {/* Matched Teammate Pill Card */}
-              <div className="bg-background/80 border border-border/70 rounded-2xl p-4 flex items-center justify-between shadow-2xs">
+              <div className="bg-background/80 border border-border/70 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
                     TB
                   </div>
                   <div>
@@ -123,7 +123,7 @@ export function BentoGrid() {
                 </div>
                 <Link
                   href="/teams"
-                  className="px-3 py-1.5 rounded-xl bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-all flex items-center gap-1.5"
+                  className="px-3.5 py-2 rounded-xl bg-foreground text-background text-xs font-semibold hover:bg-foreground/90 transition-all flex items-center justify-center gap-1.5 w-full sm:w-auto"
                 >
                   Invite to Squad <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
@@ -302,7 +302,7 @@ export function BentoGrid() {
           </div>
 
           {/* Card 6: Zero-Trust Security & Institutional Assurance (Col Span 3) */}
-          <div className="md:col-span-3 rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 hover:border-primary/40 transition-all duration-300 relative overflow-hidden group shadow-sm">
+          <div className="md:col-span-3 rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 hover:border-primary/40 transition-all duration-300 relative overflow-hidden group shadow-sm">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
                 <ShieldCheck className="w-6 h-6" />
@@ -316,14 +316,14 @@ export function BentoGrid() {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="px-4 py-2 rounded-xl bg-background border border-border/80 text-xs font-semibold text-foreground flex items-center gap-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <div className="px-4 py-2.5 rounded-xl bg-background border border-border/80 text-xs font-semibold text-foreground flex items-center justify-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-400" />
                 16 RLS Shields Active
               </div>
               <Link
                 href="/register"
-                className="px-5 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold hover:bg-foreground/90 transition-all flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-xl bg-foreground text-background text-xs font-bold hover:bg-foreground/90 transition-all flex items-center justify-center gap-1.5"
               >
                 Create Free Account <ArrowRight className="w-3.5 h-3.5" />
               </Link>

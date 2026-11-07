@@ -103,54 +103,57 @@ export function Hero() {
         <div className="relative rounded-2xl border border-border/80 bg-card/60 backdrop-blur-xl shadow-[0_20px_70px_-15px_rgba(0,0,0,0.5)] overflow-hidden">
           
           {/* Mockup Window Topbar */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border/60 bg-muted/40">
-            <div className="flex items-center gap-2">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border/60 bg-muted/40 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="flex gap-1.5 shrink-0">
+                <div className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-rose-500/80" />
+                <div className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-amber-500/80" />
+                <div className="w-2.5 sm:w-3 h-2.5 sm:h-3 rounded-full bg-emerald-500/80" />
               </div>
-              <span className="ml-3 text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-primary" /> ProjectHive Workspace — Autonomous Drone AI
+              <span className="ml-1 sm:ml-2 text-xs font-semibold text-foreground/80 flex items-center gap-1.5 truncate">
+                <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                <span className="hidden sm:inline">ProjectHive Workspace — </span>Autonomous Drone AI
               </span>
             </div>
 
             {/* Interactive Preview Mode Tabs */}
-            <div className="hidden sm:flex items-center bg-background/80 border border-border/60 rounded-lg p-0.5 text-xs font-medium">
+            <div className="flex items-center bg-background/80 border border-border/60 rounded-lg p-0.5 text-[11px] sm:text-xs font-medium shrink-0">
               <button
                 onClick={() => setActiveTab('squad')}
-                className={`px-3 py-1 rounded-md transition-all ${
+                className={`px-2 sm:px-3 py-1 rounded-md transition-all ${
                   activeTab === 'squad' 
                     ? 'bg-primary text-primary-foreground shadow-sm' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Squad Roster
+                <span className="hidden md:inline">Squad Roster</span>
+                <span className="md:hidden">Squad</span>
               </button>
               <button
                 onClick={() => setActiveTab('calling')}
-                className={`px-3 py-1 rounded-md transition-all ${
+                className={`px-2 sm:px-3 py-1 rounded-md transition-all ${
                   activeTab === 'calling' 
                     ? 'bg-primary text-primary-foreground shadow-sm' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                LiveKit SFU Call
+                <span className="hidden md:inline">LiveKit SFU</span>
+                <span className="md:hidden">LiveKit</span>
               </button>
               <button
                 onClick={() => setActiveTab('chat')}
-                className={`px-3 py-1 rounded-md transition-all ${
+                className={`px-2 sm:px-3 py-1 rounded-md transition-all ${
                   activeTab === 'chat' 
                     ? 'bg-primary text-primary-foreground shadow-sm' 
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                Real-Time Chat
+                Chat
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="hidden md:inline-flex items-center gap-1 text-emerald-500 font-mono text-[11px]">
+            <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground shrink-0">
+              <span className="inline-flex items-center gap-1 text-emerald-500 font-mono text-[11px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> LiveKit SFU Connected
               </span>
             </div>
@@ -348,22 +351,22 @@ export function Hero() {
       </div>
 
       {/* ── Live Performance Metrics Strip ───────────────────────────── */}
-      <div className="relative z-10 w-full max-w-5xl mt-16 mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-        <div className="p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-2xl sm:text-3xl font-extrabold text-foreground">1,200+</div>
-          <div className="text-xs text-muted-foreground mt-1 font-medium">University Innovators</div>
+      <div className="relative z-10 w-full max-w-5xl mt-12 sm:mt-16 mx-auto grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-center">
+        <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
+          <div className="text-xl sm:text-3xl font-extrabold text-foreground">1,200+</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">University Innovators</div>
         </div>
-        <div className="p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-2xl sm:text-3xl font-extrabold text-foreground">50+</div>
-          <div className="text-xs text-muted-foreground mt-1 font-medium">Active Squads</div>
+        <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
+          <div className="text-xl sm:text-3xl font-extrabold text-foreground">50+</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">Active Squads</div>
         </div>
-        <div className="p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-2xl sm:text-3xl font-extrabold text-foreground">&lt; 50ms</div>
-          <div className="text-xs text-muted-foreground mt-1 font-medium">Socket.IO Latency</div>
+        <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
+          <div className="text-xl sm:text-3xl font-extrabold text-foreground">&lt; 50ms</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">Socket.IO Latency</div>
         </div>
-        <div className="p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-2xl sm:text-3xl font-extrabold text-foreground">99.9%</div>
-          <div className="text-xs text-muted-foreground mt-1 font-medium">LiveKit SFU Uptime</div>
+        <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
+          <div className="text-xl sm:text-3xl font-extrabold text-foreground">99.9%</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">LiveKit SFU Uptime</div>
         </div>
       </div>
     </section>
