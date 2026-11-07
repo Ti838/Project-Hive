@@ -577,7 +577,7 @@ CREATE INDEX IF NOT EXISTS idx_teams_status_created ON "public"."teams" ("status
 CREATE INDEX IF NOT EXISTS idx_posts_created ON "public"."posts" ("created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_sender ON "public"."messages" ("sender_id");
 CREATE INDEX IF NOT EXISTS idx_join_requests_team_status ON "public"."join_requests" ("team_id", "status");
-CREATE INDEX IF NOT EXISTS idx_project_views_project ON "public"."project_views" ("project_id");
+CREATE INDEX IF NOT EXISTS idx_projects_views_count ON "public"."projects" ("views_count" DESC);
 
 
 -- ──────────────────────────────────────────────────────────────────────────────────────────────
