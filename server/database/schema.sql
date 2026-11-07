@@ -571,13 +571,16 @@ CREATE INDEX IF NOT EXISTS idx_admin_audit_action_created ON "public"."admin_aud
 CREATE INDEX IF NOT EXISTS idx_content_reports_status ON "public"."content_reports" ("status");
 
 -- High-Concurrency Additive Index Optimizations
+ALTER TABLE "public"."projects" ADD COLUMN IF NOT EXISTS "views" INTEGER DEFAULT 0;
+ALTER TABLE "public"."projects" ADD COLUMN IF NOT EXISTS "likes" INTEGER DEFAULT 0;
+
 CREATE INDEX IF NOT EXISTS idx_projects_status_created ON "public"."projects" ("status", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_projects_status_likes ON "public"."projects" ("status", "likes" DESC);
 CREATE INDEX IF NOT EXISTS idx_teams_status_created ON "public"."teams" ("status", "created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_posts_created ON "public"."posts" ("created_at" DESC);
 CREATE INDEX IF NOT EXISTS idx_messages_sender ON "public"."messages" ("sender_id");
 CREATE INDEX IF NOT EXISTS idx_join_requests_team_status ON "public"."join_requests" ("team_id", "status");
-CREATE INDEX IF NOT EXISTS idx_projects_views_count ON "public"."projects" ("views_count" DESC);
+CREATE INDEX IF NOT EXISTS idx_projects_views ON "public"."projects" ("views" DESC);
 
 
 -- ──────────────────────────────────────────────────────────────────────────────────────────────
