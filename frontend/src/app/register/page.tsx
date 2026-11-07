@@ -14,6 +14,7 @@ import {
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { BANGLADESH_UNIVERSITIES } from '@/lib/universities';
+import { LegalModal } from '@/components/legal/LegalModal';
 
 const registerSchema = z.object({
   first_name: z.string().min(2, 'First name must be at least 2 characters'),
@@ -43,6 +44,7 @@ export default function RegisterPage() {
   // Waiting for email verification state
   const [verificationPending, setVerificationPending] = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState('');
+  const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
 
   const router = useRouter();
 
@@ -160,7 +162,7 @@ export default function RegisterPage() {
       </header>
 
       {/* Main Content Split Layout */}
-      <div className="flex-1 flex w-full max-w-6xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 flex w-full max-w-6xl mx-auto items-start justify-center p-4 sm:p-6 lg:p-8 py-6 sm:py-10">
         <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-card/70 border border-border/80 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-2xl">
 
           {/* Left Feature Branding (Desktop) */}
@@ -173,36 +175,22 @@ export default function RegisterPage() {
               <div>
                 <h1 className="text-3xl font-black tracking-tight leading-tight">Join ProjectHive</h1>
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                  Join thousands of student developers, designers, and innovators building the next generation of software.
+                  Join student developers, designers, and innovators building capstones and software together.
                 </p>
               </div>
 
               <div className="space-y-3.5 pt-2">
                 {[
-                  {
-                    title: 'Form Hackathon Squads',
-                    desc: 'Match with peers by university, field of study, and technical stacks.',
-                    icon: Users,
-                  },
-                  {
-                    title: 'Live Audio/Video Calling',
-                    desc: 'Connect in real-time with low-latency WebRTC and in-call whiteboard.',
-                    icon: Video,
-                  },
-                  {
-                    title: 'HiveMind AI Studio',
-                    desc: 'Brainstorm architectures, sprint plans, and tech stacks with AI.',
-                    icon: Sparkles,
-                  },
-                ].map((f, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-background/50 border border-border/60 text-xs">
-                    <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0 mt-0.5">
-                      <f.icon className="w-4 h-4" />
+                  { icon: Users, text: 'Real-time squad matching & team channels' },
+                  { icon: Video, text: 'Instant HD WebRTC video calls & whiteboard' },
+                  { icon: Sparkles, text: 'HiveMind AI Assistant & Project Architect' },
+                  { icon: ShieldCheck, text: 'Secure student authentication & Zero-Trust RLS' },
+                ].map((item, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-background/50 border border-border/60 text-xs font-medium text-foreground/90">
+                    <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0">
+                      <item.icon className="w-4 h-4" />
                     </div>
-                    <div>
-                      <p className="font-semibold text-foreground">{f.title}</p>
-                      <p className="text-muted-foreground text-[11px] mt-0.5">{f.desc}</p>
-                    </div>
+                    <span>{item.text}</span>
                   </div>
                 ))}
               </div>
@@ -506,21 +494,35 @@ export default function RegisterPage() {
 
                   {/* Terms & Conditions Acceptance */}
                   <div className="pt-1">
-                    <label className="flex items-start gap-2.5 text-xs text-muted-foreground cursor-pointer select-none">
+                    <label className="flex items-start gap-2.5 text-xs text-muted-foreground select-none">
                       <input
                         {...register('accept_terms')}
                         type="checkbox"
-                        className="mt-0.5 rounded border-border/80 text-primary focus:ring-primary h-4 w-4"
+                        className="mt-0.5 rounded border-border/80 text-primary focus:ring-primary h-4 w-4 cursor-pointer"
                       />
                       <span className="leading-tight">
                         I agree to the{' '}
-                        <Link href="/terms" target="_blank" className="text-primary font-medium hover:underline">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setLegalModal('terms');
+                          }}
+                          className="text-primary font-medium hover:underline inline-flex items-center cursor-pointer"
+                        >
                           Terms of Service
-                        </Link>{' '}
+                        </button>{' '}
                         and acknowledge the{' '}
-                        <Link href="/privacy" target="_blank" className="text-primary font-medium hover:underline">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setLegalModal('privacy');
+                          }}
+                          className="text-primary font-medium hover:underline inline-flex items-center cursor-pointer"
+                        >
                           Privacy Policy
-                        </Link>.
+                        </button>.
                       </span>
                     </label>
                     {errors.accept_terms && (
@@ -560,6 +562,13 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+
+      {/* Accessible In-Flow Legal Modals */}
+      <LegalModal
+        isOpen={!!legalModal}
+        onClose={() => setLegalModal(null)}
+        type={legalModal}
+      />
     </div>
   );
 }

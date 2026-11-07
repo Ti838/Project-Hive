@@ -121,7 +121,7 @@ export default function LoginPage() {
       </header>
 
       {/* Main Content Split Layout */}
-      <div className="flex-1 flex w-full max-w-6xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8">
+      <div className="flex-1 flex w-full max-w-6xl mx-auto items-start justify-center p-4 sm:p-6 lg:p-8 py-6 sm:py-10">
         <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-card/70 border border-border/80 rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-2xl">
 
           {/* Left Feature Branding (Desktop) */}
@@ -143,7 +143,7 @@ export default function LoginPage() {
                   { icon: Users, text: 'Real-time squad matching & team channels' },
                   { icon: Video, text: 'Instant HD WebRTC video calls & whiteboard' },
                   { icon: Sparkles, text: 'HiveMind AI Assistant & Project Architect' },
-                  { icon: ShieldCheck, text: 'Secure student authentication & RBAC' },
+                  { icon: ShieldCheck, text: 'Secure student authentication & Zero-Trust RLS' },
                 ].map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 p-2.5 rounded-xl bg-background/50 border border-border/60 text-xs font-medium text-foreground/90">
                     <div className="p-1.5 rounded-lg bg-primary/15 text-primary shrink-0">

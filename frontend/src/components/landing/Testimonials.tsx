@@ -1,40 +1,64 @@
 'use client';
 
-import { Star, Quote, GraduationCap, CheckCircle2 } from 'lucide-react';
+import Link from 'next/link';
+import { Layers, UserCheck, Users, Video, Trophy, ArrowRight, CheckCircle2 } from 'lucide-react';
 
-const TESTIMONIALS = [
+const LIFECYCLE_STAGES = [
   {
-    name: 'Ayesha Rahman',
-    role: 'Lead ML Researcher',
-    university: 'BUET · Dept. of CSE',
-    project: 'Autonomous Medical Diagnostic Drone',
-    avatar: 'AR',
-    color: 'from-blue-500 to-indigo-600',
-    stars: 5,
-    quote:
-      'Finding hardware and firmware engineers for our final year design project was an absolute nightmare until ProjectHive. Within 48 hours, we recruited two embedded engineers and a backend developer. We won 1st place in the National Capstone Expo!'
+    step: '01',
+    title: 'Verified Student Identity',
+    subtitle: 'Campus Verification & Skills',
+    icon: UserCheck,
+    color: 'from-blue-500/15 via-blue-500/5 to-transparent border-blue-500/30 text-blue-400',
+    description:
+      'Authenticate with your university email, list your verified programming competencies, and link external GitHub & LeetCode profiles for instant academic credibility.',
+    capabilities: [
+      'Institutional email verification',
+      'Verified tech stack badges',
+      'GitHub repository & LeetCode link integration'
+    ]
   },
   {
-    name: 'Marcus Vance',
-    role: 'Full-Stack Developer',
-    university: 'UC Berkeley · EECS',
-    project: 'Decentralized Energy Grid Simulator',
-    avatar: 'MV',
-    color: 'from-violet-500 to-purple-600',
-    stars: 5,
-    quote:
-      'The built-in LiveKit WebRTC call dock and sprint Kanban completely eliminated Discord and Slack for us. We were able to live-code together with zero lag, screen share our React terminals, and submit on time.'
+    step: '02',
+    title: 'Skill-Based Matchmaking',
+    subtitle: 'Squad Recruitment & Approvals',
+    icon: Users,
+    color: 'from-violet-500/15 via-violet-500/5 to-transparent border-violet-500/30 text-violet-400',
+    description:
+      'Browse active university project squads seeking complementary disciplines. Apply with one click and let squad leads review candidate profiles in real-time approval drawers.',
+    capabilities: [
+      'Filter by capstone tracks & technical stacks',
+      'Squad roster management & open role listings',
+      'One-click application & approval workflow'
+    ]
   },
   {
-    name: 'Tanvir Ahmed',
-    role: 'Robotics & AI Enthusiast',
-    university: 'IUT · Dept. of CSE',
-    project: 'Subsea Autonomous Exploration ROV',
-    avatar: 'TA',
-    color: 'from-emerald-500 to-teal-600',
-    stars: 5,
-    quote:
-      'HiveMind AI generated our initial ROS 2 architecture breakdown in 30 seconds. Being able to showcase our live demo directly on the ProjectHive Showcase got our squad noticed by three startup accelerators.'
+    step: '03',
+    title: 'Real-Time Incubation',
+    subtitle: 'SFU Calling & AI Copilot',
+    icon: Video,
+    color: 'from-amber-500/15 via-amber-500/5 to-transparent border-amber-500/30 text-amber-400',
+    description:
+      'Hop into low-latency LiveKit SFU 4K video calls, collaborate in dedicated Socket.IO squad channels with audio notification chimes, and scaffold sprint specs with HiveMind AI.',
+    capabilities: [
+      'LiveKit SFU 4K calling with spatial audio',
+      'Persistent squad chat & live notification sound chimes',
+      'HiveMind AI sprint PRDs & architecture generator'
+    ]
+  },
+  {
+    step: '04',
+    title: 'Verified Capstone Showcase',
+    subtitle: 'Public Portfolio & Mentorship',
+    icon: Trophy,
+    color: 'from-emerald-500/15 via-emerald-500/5 to-transparent border-emerald-500/30 text-emerald-400',
+    description:
+      'Publish your completed project build to the university showcase with live deployment links, verified GitHub repo turn-in badges, and team contributor attributions.',
+    capabilities: [
+      'Public showcase discoverable by peers & mentors',
+      'Live demo & source repository turn-in links',
+      'Immutable contributor credits & peer endorsements'
+    ]
   }
 ];
 
@@ -45,91 +69,79 @@ export function Testimonials() {
         {/* Header */}
         <div className="flex flex-col items-center text-center mb-16 sm:mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary text-xs font-semibold uppercase tracking-wider mb-4">
-            <GraduationCap className="w-3.5 h-3.5" />
-            Verified Campus Proof
+            <Layers className="w-3.5 h-3.5" />
+            End-to-End Collaboration Architecture
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground max-w-2xl leading-tight">
-            Built by students, for the teams{' '}
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground max-w-3xl leading-tight">
+            How University Squads Build on{' '}
             <span className="bg-gradient-to-r from-primary via-indigo-400 to-accent bg-clip-text text-transparent">
-              shaping tomorrow
+              ProjectHive
             </span>
-            .
           </h2>
-          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl">
-            See how engineering students and faculty mentors use ProjectHive to transform raw coursework into award-winning software and hardware.
+          <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl">
+            A deterministic four-stage platform lifecycle designed to take academic projects from initial team recruitment to verified capstone publication.
           </p>
         </div>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-          {TESTIMONIALS.map((t, idx) => (
-            <div
-              key={idx}
-              className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between hover:border-primary/40 transition-all duration-300 relative group shadow-sm hover:shadow-md"
-            >
-              <div>
-                {/* Rating Stars & Quote Icon */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-1 text-amber-400">
-                    {[...Array(t.stars)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-amber-400" />
-                    ))}
+        {/* Lifecycle Stages Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {LIFECYCLE_STAGES.map((stage) => {
+            const Icon = stage.icon;
+            return (
+              <div
+                key={stage.step}
+                className="rounded-3xl border border-border/80 bg-card/60 backdrop-blur-xl p-6 flex flex-col justify-between hover:border-primary/40 transition-all duration-300 relative group shadow-sm hover:shadow-md"
+              >
+                <div>
+                  {/* Top Bar with Step & Icon */}
+                  <div className="flex items-center justify-between mb-5">
+                    <span className="text-xs font-mono font-bold text-muted-foreground/80 bg-muted px-2.5 py-1 rounded-lg border border-border/60">
+                      STAGE {stage.step}
+                    </span>
+                    <div className={`w-9 h-9 rounded-xl border flex items-center justify-center ${stage.color}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
                   </div>
-                  <Quote className="w-8 h-8 text-primary/20 group-hover:text-primary/40 transition-colors" />
+
+                  {/* Title & Subtitle */}
+                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                    {stage.title}
+                  </h3>
+                  <div className="text-xs font-semibold text-primary/90 mt-0.5 mb-3">
+                    {stage.subtitle}
+                  </div>
+
+                  {/* Description */}
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-5">
+                    {stage.description}
+                  </p>
                 </div>
 
-                {/* Quote Content */}
-                <p className="text-sm sm:text-base text-foreground/90 leading-relaxed font-normal mb-6">
-                  "{t.quote}"
-                </p>
+                {/* Capabilities list */}
+                <div className="pt-4 border-t border-border/60 space-y-2">
+                  {stage.capabilities.map((cap, i) => (
+                    <div key={i} className="flex items-start gap-2 text-[11px] text-muted-foreground">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                      <span className="leading-tight">{cap}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-
-              {/* Author & Project info */}
-              <div className="pt-6 border-t border-border/60">
-                <div className="flex items-center gap-3 mb-2">
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-tr ${t.color} flex items-center justify-center text-white font-bold text-sm shrink-0`}
-                  >
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                      {t.name}
-                      <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                    </h4>
-                    <p className="text-xs text-muted-foreground font-medium">{t.role} · {t.university}</p>
-                  </div>
-                </div>
-
-                <div className="mt-3 px-3 py-1.5 rounded-lg bg-muted/40 border border-border/40 text-[11px] text-muted-foreground">
-                  <span className="font-semibold text-foreground">Project:</span> {t.project}
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Partner Logos or Universities banner */}
-        <div className="mt-16 pt-12 border-t border-border/40 flex flex-col items-center text-center">
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-6">
-            Trusted by student innovators from premier global institutions
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-60 text-sm font-bold tracking-tight text-foreground/80">
-            <span>BUET</span>
-            <span>·</span>
-            <span>UC BERKELEY</span>
-            <span>·</span>
-            <span>STANFORD</span>
-            <span>·</span>
-            <span>IUT</span>
-            <span>·</span>
-            <span>NUS SINGAPORE</span>
-            <span>·</span>
-            <span>TORONTO TECH</span>
-          </div>
+        {/* Bottom Navigation CTA */}
+        <div className="mt-12 text-center">
+          <Link
+            href="/teams"
+            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-primary hover:underline group"
+          >
+            <span>Explore Active University Squads</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
         </div>
       </div>
     </section>
   );
 }
-

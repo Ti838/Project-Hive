@@ -353,20 +353,20 @@ export function Hero() {
       {/* ── Live Performance Metrics Strip ───────────────────────────── */}
       <div className="relative z-10 w-full max-w-5xl mt-12 sm:mt-16 mx-auto grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 text-center">
         <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-xl sm:text-3xl font-extrabold text-foreground">1,200+</div>
-          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">University Innovators</div>
+          <div className="text-lg sm:text-2xl font-extrabold text-foreground">Zero-Trust</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">34 Supabase RLS Schemas</div>
         </div>
         <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-xl sm:text-3xl font-extrabold text-foreground">50+</div>
-          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">Active Squads</div>
+          <div className="text-lg sm:text-2xl font-extrabold text-foreground">LiveKit SFU</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">4K Edge WebRTC Calling</div>
         </div>
         <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-xl sm:text-3xl font-extrabold text-foreground">&lt; 50ms</div>
-          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">Socket.IO Latency</div>
+          <div className="text-lg sm:text-2xl font-extrabold text-foreground">&lt; 50ms</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">Socket.IO Singapore Edge</div>
         </div>
         <div className="p-3 sm:p-4 rounded-xl border border-border/60 bg-card/40 backdrop-blur-md">
-          <div className="text-xl sm:text-3xl font-extrabold text-foreground">99.9%</div>
-          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">LiveKit SFU Uptime</div>
+          <div className="text-lg sm:text-2xl font-extrabold text-foreground">HiveMind AI</div>
+          <div className="text-[11px] sm:text-xs text-muted-foreground mt-1 font-medium">Dual Groq & Gemini Flash</div>
         </div>
       </div>
     </section>

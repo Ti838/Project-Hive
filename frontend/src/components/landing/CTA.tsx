@@ -22,7 +22,7 @@ export function CTA() {
         {/* Status Chip */}
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-semibold mb-8 backdrop-blur-md">
           <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-          <span>Join +2,400 students building the future of software</span>
+          <span>The Next-Generation University Collaboration Mesh</span>
         </div>
 
         {/* Headline */}
