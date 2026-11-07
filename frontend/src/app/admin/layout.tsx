@@ -57,9 +57,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const { user, isAuthenticated, isLoading, logout } = useAuthStore();
   const { soundEnabled, setSoundEnabled } = useUIStore();
   const [currentTime, setCurrentTime] = useState<string>('');
-  const [activeSockets, setActiveSockets] = useState<number>(42);
-  const [dbLatency, setDbLatency] = useState<number>(14);
-  const [cpuUsage, setCpuUsage] = useState<number>(18);
+  const [activeSockets, setActiveSockets] = useState<number | null>(null);
+  const [dbLatency, setDbLatency] = useState<number | null>(null);
+  const [cpuUsage, setCpuUsage] = useState<number | null>(null);
   const [telemetry, setTelemetry] = useState<DeviceTelemetry | null>(null);
   const [detectedIp, setDetectedIp] = useState<string>('Resolving...');
   const [liveAlert, setLiveAlert] = useState<{ title: string; message: string; timestamp: string } | null>(null);
@@ -164,16 +164,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     const fetchHealth = async () => {
       try {
         const res = await api.admin.getHealth();
-        if (res && res.database) {
-          setDbLatency(res.database.latencyMs || 12);
+        if (res && res.services) {
+          const dbSvc = res.services.find((s: any) => s.name?.includes('PostgreSQL') || s.name?.includes('Supabase'));
+          if (dbSvc && dbSvc.ping) {
+            setDbLatency(parseInt(dbSvc.ping, 10) || 12);
+          }
         }
-        if (res && res.sockets) {
-          setActiveSockets(res.sockets.activeConnections || 38);
+        if (res && res.database && typeof res.database.latencyMs === 'number') {
+          setDbLatency(res.database.latencyMs);
+        }
+        if (res && res.sockets && typeof res.sockets.activeConnections === 'number') {
+          setActiveSockets(res.sockets.activeConnections);
         }
       } catch (err) {
-        // Fallback smooth fluctuations
-        setDbLatency((prev) => Math.min(45, Math.max(8, prev + Math.floor(Math.random() * 5 - 2))));
-        setCpuUsage((prev) => Math.min(75, Math.max(12, prev + Math.floor(Math.random() * 7 - 3))));
+        setDbLatency(null);
+        setActiveSockets(null);
+        setCpuUsage(null);
       }
     };
     fetchHealth();
@@ -370,7 +376,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
                 <Database className="w-3.5 h-3.5 text-emerald-400" />
                 <span>DB:</span>
-                <span className="text-emerald-400 font-bold">{dbLatency}ms</span>
+                <span className="text-emerald-400 font-bold">{dbLatency !== null ? `${dbLatency}ms` : 'Connecting...'}</span>
               </div>
             </div>
 

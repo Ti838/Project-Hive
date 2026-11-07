@@ -105,8 +105,41 @@ CREATE TABLE IF NOT EXISTS "public"."user_settings" (
   "privacy" JSONB NOT NULL DEFAULT '{"is_recruitable": true, "show_email": false, "show_academic": true}'::jsonb,
   "notifications" JSONB NOT NULL DEFAULT '{"email": true, "in_app": true, "sprint_alerts": true}'::jsonb,
   "ai_preferences" JSONB NOT NULL DEFAULT '{"tier": "balanced", "auto_suggest": true}'::jsonb,
+  "location_privacy" VARCHAR(50) NOT NULL DEFAULT 'campus' CHECK ("location_privacy" IN ('private', 'campus', 'city')),
   "updated_at" TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE "public"."user_settings" ADD COLUMN IF NOT EXISTS "location_privacy" VARCHAR(50) DEFAULT 'campus';
+ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "location_city" VARCHAR(100);
+ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "location_country" VARCHAR(100);
+ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "location_lat" FLOAT8;
+ALTER TABLE "public"."users" ADD COLUMN IF NOT EXISTS "location_lng" FLOAT8;
+
+-- ──────────────────────────────────────────────────────────────────────────────────────────────
+-- SECTION 3B: MULTI-DEVICE AUTHENTICATED SESSIONS REGISTRY
+-- ──────────────────────────────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS "public"."user_sessions" (
+  "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "user_id" UUID NOT NULL REFERENCES "public"."users"("id") ON DELETE CASCADE,
+  "session_token_hash" TEXT,
+  "device_category" VARCHAR(50) NOT NULL DEFAULT 'desktop',
+  "device_model" TEXT,
+  "os_name" VARCHAR(100),
+  "os_version" VARCHAR(100),
+  "browser_name" VARCHAR(100),
+  "browser_version" VARCHAR(100),
+  "ip_address" TEXT,
+  "country" VARCHAR(100),
+  "city" VARCHAR(100),
+  "is_current" BOOLEAN NOT NULL DEFAULT FALSE,
+  "last_active_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "created_at" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  "revoked_at" TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user_active ON "public"."user_sessions" ("user_id", "revoked_at");
+CREATE INDEX IF NOT EXISTS idx_user_sessions_created ON "public"."user_sessions" ("created_at" DESC);
+
 
 
 -- ──────────────────────────────────────────────────────────────────────────────────────────────

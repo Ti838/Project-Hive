@@ -954,4 +954,113 @@ export async function getClientTelemetry(req, res, next) {
   }
 }
 
+// ── GET /api/admin/devices (Aggregated Campus Device & Session Intelligence) ──
+export async function getDeviceStats(req, res, next) {
+  try {
+    let { data: sessions } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id, user_id, device_category, device_model, os_name, browser_name, ip_address, country, city, last_active_at, created_at, revoked_at')
+      .is('revoked_at', null)
+      .order('last_active_at', { ascending: false })
+      .limit(200);
+
+    // Fallback if user_sessions has few records
+    if (!sessions || sessions.length === 0) {
+      const { data: users } = await supabaseAdmin
+        .from('users')
+        .select('id, first_name, last_name, email, last_login_device_model, last_login_os, last_login_browser, last_login_ip, last_login_country, last_login_city, last_login_at')
+        .not('last_login_at', 'is', null)
+        .order('last_login_at', { ascending: false })
+        .limit(100);
+
+      sessions = (users || []).map(u => ({
+        id: `synth_${u.id}`,
+        user_id: u.id,
+        user_email: u.email,
+        user_name: `${u.first_name} ${u.last_name}`,
+        device_category: /mobile|phone/i.test(u.last_login_device_model || '') ? 'mobile' : 'desktop',
+        device_model: u.last_login_device_model || 'Desktop Workstation',
+        os_name: u.last_login_os || 'Windows',
+        browser_name: u.last_login_browser || 'Chrome',
+        ip_address: u.last_login_ip || '127.0.0.1',
+        country: u.last_login_country || 'Campus',
+        city: u.last_login_city || 'Main Hub',
+        last_active_at: u.last_login_at || new Date().toISOString(),
+      }));
+    }
+
+    const deviceCategoryCount = { desktop: 0, mobile: 0, tablet: 0 };
+    const browserCount = {};
+    const osCount = {};
+
+    sessions.forEach(s => {
+      const cat = s.device_category || 'desktop';
+      deviceCategoryCount[cat] = (deviceCategoryCount[cat] || 0) + 1;
+
+      const br = s.browser_name || 'Chrome';
+      browserCount[br] = (browserCount[br] || 0) + 1;
+
+      const os = s.os_name || 'Windows';
+      osCount[os] = (osCount[os] || 0) + 1;
+    });
+
+    res.json({
+      totalActiveSessions: sessions.length,
+      deviceCategoryCount,
+      browserCount,
+      osCount,
+      recentSessions: sessions.slice(0, 30),
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── GET /api/admin/users/:id/sessions ─────────────────────────────────────────
+export async function getUserSessionsAdmin(req, res, next) {
+  try {
+    const { id } = req.params;
+
+    const { data: sessions, error } = await supabaseAdmin
+      .from('user_sessions')
+      .select('*')
+      .eq('user_id', id)
+      .order('last_active_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ sessions: sessions || [] });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── DELETE /api/admin/users/:id/sessions/:sessionId ───────────────────────────
+export async function revokeSessionAdmin(req, res, next) {
+  try {
+    const { id: userId, sessionId } = req.params;
+
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('id', sessionId)
+      .eq('user_id', userId);
+
+    await logAdminAction({
+      adminId: req.user.id,
+      email: req.user.email,
+      action: 'ADMIN_REVOKE_SESSION',
+      targetType: 'user_session',
+      targetId: sessionId,
+      details: { userId, reason: 'Administrative session revocation' },
+      req,
+    });
+
+    res.json({ message: 'Session revoked administratively' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 

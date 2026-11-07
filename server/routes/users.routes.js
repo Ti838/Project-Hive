@@ -25,6 +25,11 @@ router.patch('/me/skills',  authMiddleware, usersController.updateSkills);
 router.post('/me/skills',   authMiddleware, usersController.addSkill);
 router.delete('/me/skills', authMiddleware, usersController.removeSkill);
 
+// Active Device & Session Intelligence
+router.get('/me/sessions',                authMiddleware, usersController.getUserSessions);
+router.delete('/me/sessions/:id',         authMiddleware, usersController.revokeUserSession);
+router.post('/me/sessions/revoke-others', authMiddleware, usersController.revokeOtherSessions);
+
 // Password change
 router.patch('/me/password', authMiddleware, usersController.changePassword);
 

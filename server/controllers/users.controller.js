@@ -1046,3 +1046,116 @@ export async function getUserFollowing(req, res, next) {
   } catch (err) { next(err); }
 }
 
+// ─── ACTIVE USER SESSIONS & DEVICE INTELLIGENCE ───────────────────────────────
+
+function maskIp(ip) {
+  if (!ip) return '127.0.0.1';
+  const parts = ip.split('.');
+  if (parts.length === 4) return `${parts[0]}.${parts[1]}.***.***`;
+  return ip.substring(0, Math.min(ip.length, 12)) + '***';
+}
+
+export async function getUserSessions(req, res, next) {
+  try {
+    const userId = req.user.id;
+
+    let { data: sessions } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id, device_category, device_model, os_name, os_version, browser_name, browser_version, ip_address, country, city, is_current, last_active_at, created_at')
+      .eq('user_id', userId)
+      .is('revoked_at', null)
+      .order('last_active_at', { ascending: false });
+
+    // Fallback if table empty or pending migration: synthesize from user profile
+    if (!sessions || sessions.length === 0) {
+      const { data: u } = await supabaseAdmin
+        .from('users')
+        .select('last_login_device_model, last_login_os, last_login_browser, last_login_ip, last_login_country, last_login_city, last_login_at')
+        .eq('id', userId)
+        .single();
+
+      const userAgent = req.headers['user-agent'] || '';
+      const isMobile = /mobile|iphone|android|ipad/i.test(userAgent);
+
+      sessions = [{
+        id: 'session_active_current',
+        device_category: isMobile ? 'mobile' : 'desktop',
+        device_model: u?.last_login_device_model || (isMobile ? 'Mobile Device' : 'Desktop Workstation'),
+        os_name: u?.last_login_os || (userAgent.includes('Windows') ? 'Windows' : userAgent.includes('Mac') ? 'macOS' : 'Linux'),
+        os_version: '',
+        browser_name: u?.last_login_browser || (userAgent.includes('Chrome') ? 'Chrome' : userAgent.includes('Firefox') ? 'Firefox' : 'Browser'),
+        browser_version: '',
+        ip_address: maskIp(u?.last_login_ip || req.ip),
+        country: u?.last_login_country || 'Local Network',
+        city: u?.last_login_city || 'Campus',
+        is_current: true,
+        last_active_at: u?.last_login_at || new Date().toISOString(),
+        created_at: u?.last_login_at || new Date().toISOString(),
+      }];
+    } else {
+      // Mark the first/latest session as current if not already flagged
+      sessions = sessions.map((s, idx) => ({
+        ...s,
+        ip_address: maskIp(s.ip_address),
+        is_current: idx === 0,
+      }));
+    }
+
+    res.json({ sessions });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function revokeUserSession(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const { id } = req.params;
+
+    if (id !== 'session_active_current') {
+      await supabaseAdmin
+        .from('user_sessions')
+        .update({ revoked_at: new Date().toISOString() })
+        .eq('id', id)
+        .eq('user_id', userId);
+    }
+
+    res.json({ message: 'Session successfully revoked' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function revokeOtherSessions(req, res, next) {
+  try {
+    const userId = req.user.id;
+
+    // Revoke all sessions except the latest active one
+    const { data: latest } = await supabaseAdmin
+      .from('user_sessions')
+      .select('id')
+      .eq('user_id', userId)
+      .is('revoked_at', null)
+      .order('last_active_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    let query = supabaseAdmin
+      .from('user_sessions')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .is('revoked_at', null);
+
+    if (latest?.id) {
+      query = query.neq('id', latest.id);
+    }
+
+    await query;
+
+    res.json({ message: 'All other active sessions have been terminated' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // â”€â”€â”€ Dashboard Page (Studio-Grade Metric-Driven Architecture) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState } from 'react';
@@ -6,13 +6,15 @@ import { motion } from 'framer-motion';
 import {
   Users, FolderKanban, GraduationCap, UserCheck, Plus, ArrowRight,
   Sparkles, Compass, MessageSquare, Trophy, ChevronRight, RefreshCw, AlertCircle,
-  TrendingUp, Activity, Video, ArrowUpRight
+  TrendingUp, Activity, Video, ArrowUpRight, MapPin
 } from 'lucide-react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { displayName, timeAgo, getInitials, getAvatarColor, cn } from '@/lib/utils';
 import type { Stats, Post, Team } from '@/types';
+import { useLocationIntelligence } from '@/hooks/useLocationIntelligence';
+import { LocationConsentModal } from '@/components/location/LocationConsentModal';
 
 // â”€â”€â”€ Studio-Grade Stat Card with Micro-Sparkline & Trend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StatCard({
@@ -102,6 +104,7 @@ function QuickAction({
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
+  const location = useLocationIntelligence();
   const [stats, setStats] = useState<Stats | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [myTeams, setMyTeams] = useState<Team[]>([]);
@@ -166,6 +169,20 @@ export default function DashboardPage() {
           <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
             Collaborate with peers across campus, build verified team projects, and brainstorm with multimodal AI intelligence.
           </p>
+
+          {/* Campus Location Attribution Pill */}
+          <div className="pt-1">
+            <button
+              type="button"
+              onClick={location.requestLocationWithConsent}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 border border-primary/25 text-primary text-xs font-semibold tap-press transition-all cursor-pointer shadow-xs"
+              title="Detect or change verified university campus"
+            >
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              <span>{user?.university || location.campus || 'Detect Campus Location'}</span>
+              <span className="text-[10px] opacity-60">· Change</span>
+            </button>
+          </div>
         </div>
 
         {/* Hero Quick Action Buttons */}
@@ -437,6 +454,15 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Campus Location Intelligence Modal */}
+      <LocationConsentModal
+        isOpen={location.showConsentModal}
+        onClose={() => location.setShowConsentModal(false)}
+        onConfirmBrowserLocation={location.confirmAndDetectLocation}
+        onSelectManualCampus={location.setManualCampus}
+        currentCampus={user?.university || location.campus}
+      />
     </div>
   );
 }

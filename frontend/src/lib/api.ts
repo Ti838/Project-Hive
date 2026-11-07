@@ -316,6 +316,12 @@ export const api = {
       }),
     getUserFriends: (id: string) =>
       request<{ friends: User[] }>(`/users/${id}/friends`),
+    getSessions: () =>
+      request<{ sessions: import('@/types').UserSession[] }>('/users/me/sessions'),
+    revokeSession: (id: string) =>
+      request<{ message: string }>(`/users/me/sessions/${id}`, { method: 'DELETE' }),
+    revokeOtherSessions: () =>
+      request<{ message: string }>('/users/me/sessions/revoke-others', { method: 'POST' }),
   },
 
   teams: {
@@ -765,6 +771,18 @@ export const api = {
       }),
     promoteMe: () =>
       request<{ message: string; role: string }>('/admin/promote-me', { method: 'POST' }),
+    getDevices: () =>
+      request<{
+        totalActiveSessions: number;
+        deviceCategoryCount: Record<string, number>;
+        browserCount: Record<string, number>;
+        osCount: Record<string, number>;
+        recentSessions: any[];
+      }>('/admin/devices'),
+    getUserSessions: (userId: string) =>
+      request<{ sessions: any[] }>(`/admin/users/${userId}/sessions`),
+    revokeUserSession: (userId: string, sessionId: string) =>
+      request<{ message: string }>(`/admin/users/${userId}/sessions/${sessionId}`, { method: 'DELETE' }),
   },
   support: {
     getMyTickets: () =>

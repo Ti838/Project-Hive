@@ -309,6 +309,35 @@ export async function login(req, res, next) {
         .eq('id', user.id);
     }
 
+    // ── Record verified session in multi-device registry ──────────────────────
+    try {
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      const userAgent = req.headers['user-agent'] || '';
+      const isMobile = /mobile|iphone|android|ipad/i.test(userAgent) || Boolean(deviceMeta.isMobile);
+      const isTablet = /tablet|ipad/i.test(userAgent);
+      const category = isTablet ? 'tablet' : (isMobile ? 'mobile' : 'desktop');
+
+      await supabaseAdmin
+        .from('user_sessions')
+        .insert([{
+          user_id: user.id,
+          session_token_hash: tokenHash,
+          device_category: category,
+          device_model: deviceMeta.deviceModel || (isMobile ? 'Mobile Client' : 'Workstation PC'),
+          os_name: deviceMeta.os || (userAgent.includes('Windows') ? 'Windows' : userAgent.includes('Mac') ? 'macOS' : userAgent.includes('Linux') ? 'Linux' : 'Unknown OS'),
+          os_version: deviceMeta.osVersion || '',
+          browser_name: deviceMeta.browser || (userAgent.includes('Chrome') ? 'Chrome' : userAgent.includes('Firefox') ? 'Firefox' : userAgent.includes('Safari') ? 'Safari' : 'Web Browser'),
+          browser_version: deviceMeta.browserVersion || '',
+          ip_address: clientIp,
+          country: country || null,
+          city: city || null,
+          is_current: true,
+          last_active_at: new Date().toISOString(),
+        }]);
+    } catch (sessionErr) {
+      console.warn('[ProjectHive] Non-fatal: Could not record session in user_sessions:', sessionErr.message);
+    }
+
     console.log('[ProjectHive] ✅ User logged in:', user.email, '| role:', user.role, '| device:', deviceMeta.deviceModel || 'Unknown', '| ip:', clientIp);
 
     setAuthCookies(res, accessToken, refreshToken);
@@ -399,6 +428,14 @@ export async function logout(req, res, next) {
     const userId = req.user.id;
 
     if (refreshToken) {
+      const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+      try {
+        await supabaseAdmin
+          .from('user_sessions')
+          .update({ revoked_at: new Date().toISOString() })
+          .eq('session_token_hash', tokenHash);
+      } catch (_) {}
+
       const { data: user } = await supabaseAdmin
         .from('users')
         .select('refresh_tokens')

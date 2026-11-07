@@ -66,33 +66,10 @@ export default function SettingsPage() {
   const [mentionPings, setMentionPings] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Active Sessions State
-  const [sessions, setSessions] = useState([
-    {
-      id: 'session_curr',
-      device: typeof navigator !== 'undefined' ? (navigator.userAgent.includes('Windows') ? 'Windows PC (Desktop)' : navigator.userAgent.includes('Mac') ? 'macOS (Desktop)' : 'Mobile Device') : 'Current Device',
-      browser: typeof navigator !== 'undefined' ? (navigator.userAgent.includes('Chrome') ? 'Google Chrome' : navigator.userAgent.includes('Firefox') ? 'Mozilla Firefox' : navigator.userAgent.includes('Safari') ? 'Apple Safari' : 'Web Browser') : 'Browser',
-      ip: '192.168.1.*** (Active Session)',
-      lastActive: 'Active now',
-      isCurrent: true,
-    },
-    {
-      id: 'session_2',
-      device: 'MacBook Pro 16" (macOS Sonoma)',
-      browser: 'Chrome 128.0',
-      ip: '172.56.21.***',
-      lastActive: '2 hours ago',
-      isCurrent: false,
-    },
-    {
-      id: 'session_3',
-      device: 'iPhone 15 Pro (iOS 17)',
-      browser: 'Mobile Safari',
-      ip: '10.0.4.***',
-      lastActive: 'Yesterday at 8:42 PM',
-      isCurrent: false,
-    },
-  ]);
+  // Active Sessions & Location Privacy State
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loadingSessions, setLoadingSessions] = useState(false);
+  const [locationPrivacy, setLocationPrivacy] = useState<'private' | 'campus' | 'city'>('campus');
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -126,8 +103,29 @@ export default function SettingsPage() {
       if (userSettings.directMessageAlerts !== undefined) setDirectMessageAlerts(Boolean(userSettings.directMessageAlerts));
       if (userSettings.mentionPings !== undefined) setMentionPings(Boolean(userSettings.mentionPings));
       if (userSettings.lookingForSquads !== undefined) setLookingForSquads(Boolean(userSettings.lookingForSquads));
+      if (userSettings.locationPrivacy) setLocationPrivacy(userSettings.locationPrivacy);
     }
   }, [user]);
+
+  const fetchSessions = async () => {
+    try {
+      setLoadingSessions(true);
+      const res = await api.users.getSessions();
+      if (res && res.sessions) {
+        setSessions(res.sessions);
+      }
+    } catch (err) {
+      console.warn('Could not load user sessions:', err);
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'sessions') {
+      fetchSessions();
+    }
+  }, [activeTab]);
 
   const handleUpdateSetting = async (key: string, value: any) => {
     if (key === 'emailNotifications') setEmailNotifications(value);
@@ -237,9 +235,24 @@ export default function SettingsPage() {
     }
   };
 
+  const handleRevokeSession = async (sessionId: string) => {
+    try {
+      await api.users.revokeSession(sessionId);
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      showToast('Device session revoked');
+    } catch {
+      showToast('Failed to revoke session');
+    }
+  };
+
   const handleRevokeOtherSessions = async () => {
-    setSessions((prev) => prev.filter((s) => s.isCurrent));
-    showToast('Logged out of all other active sessions');
+    try {
+      await api.users.revokeOtherSessions();
+      setSessions((prev) => prev.filter((s) => s.is_current || s.isCurrent));
+      showToast('Logged out of all other active sessions');
+    } catch {
+      showToast('Failed to revoke other sessions');
+    }
   };
 
   // Export User Data (GDPR / Data Portability)
@@ -483,6 +496,43 @@ export default function SettingsPage() {
                 className="w-5 h-5 accent-emerald-500 rounded cursor-pointer shrink-0 ml-4"
               />
             </label>
+
+            {/* Location Intelligence Privacy */}
+            <div className="p-4 bg-muted/40 rounded-2xl border border-border/50 space-y-3">
+              <div className="space-y-0.5">
+                <span className="font-semibold text-sm flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary" /> Campus & Geographical Privacy
+                </span>
+                <span className="text-xs text-muted-foreground block">
+                  Choose the granularity of your location visible to potential teammates and project partners
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                {[
+                  { id: 'campus', title: '🎓 Campus Only', desc: 'Visible only to verified peers at your university' },
+                  { id: 'city', title: '🌍 City-Wide', desc: 'Discoverable by students across your metropolitan area' },
+                  { id: 'private', title: '🔒 Private', desc: 'Completely hide location from search and discovery' },
+                ].map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => {
+                      setLocationPrivacy(opt.id as any);
+                      handleUpdateSetting('locationPrivacy', opt.id);
+                    }}
+                    className={cn(
+                      'p-3 rounded-xl border text-left transition-all tap-press cursor-pointer',
+                      locationPrivacy === opt.id
+                        ? 'border-primary bg-primary/10 text-foreground font-semibold shadow-xs'
+                        : 'border-border/60 bg-card hover:bg-muted/50 text-muted-foreground'
+                    )}
+                  >
+                    <div className="text-xs font-bold text-foreground mb-1">{opt.title}</div>
+                    <div className="text-[10px] leading-tight text-muted-foreground">{opt.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Data Portability (Download My Data) */}
@@ -600,51 +650,68 @@ export default function SettingsPage() {
             )}
           </div>
 
-          <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
-            {sessions.map((sess) => (
-              <div key={sess.id} className="p-4 flex items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
-                <div className="flex items-center gap-3.5">
-                  <div className={cn(
-                    'w-10 h-10 rounded-xl flex items-center justify-center border',
-                    sess.isCurrent ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-muted/70 border-border text-muted-foreground'
-                  )}>
-                    {sess.device.includes('iPhone') || sess.device.includes('Mobile') ? (
-                      <Smartphone className="w-5 h-5" />
-                    ) : (
-                      <Monitor className="w-5 h-5" />
+          {loadingSessions ? (
+            <div className="py-12 text-center text-muted-foreground space-y-2">
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs">Querying authenticated hardware sessions...</p>
+            </div>
+          ) : sessions.length === 0 ? (
+            <div className="py-8 text-center text-muted-foreground text-xs">
+              No other active sessions detected.
+            </div>
+          ) : (
+            <div className="divide-y divide-border/50 border border-border/60 rounded-2xl overflow-hidden bg-card">
+              {sessions.map((sess) => {
+                const deviceName = sess.device_model || sess.device || 'Active Device';
+                const browserName = sess.browser_name ? `${sess.browser_name} (${sess.os_name || 'OS'})` : (sess.browser || 'Browser');
+                const ipDisplay = sess.ip_address || sess.ip || '127.0.0.1';
+                const locDisplay = sess.city ? ` · ${sess.city}, ${sess.country || ''}` : '';
+                const isCurr = Boolean(sess.is_current || sess.isCurrent);
+                const isMobile = (sess.device_category === 'mobile') || deviceName.includes('iPhone') || deviceName.includes('Mobile');
+
+                return (
+                  <div key={sess.id} className="p-4 flex items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
+                    <div className="flex items-center gap-3.5">
+                      <div className={cn(
+                        'w-10 h-10 rounded-xl flex items-center justify-center border',
+                        isCurr ? 'bg-primary/10 border-primary/30 text-primary' : 'bg-muted/70 border-border text-muted-foreground'
+                      )}>
+                        {isMobile ? (
+                          <Smartphone className="w-5 h-5" />
+                        ) : (
+                          <Monitor className="w-5 h-5" />
+                        )}
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-foreground">{deviceName}</span>
+                          {isCurr && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                              Current Device
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          {browserName} · IP: {ipDisplay}{locDisplay}
+                        </p>
+                      </div>
+                    </div>
+
+                    {!isCurr && (
+                      <button
+                        type="button"
+                        onClick={() => handleRevokeSession(sess.id)}
+                        className="text-xs text-muted-foreground hover:text-destructive font-medium px-2.5 py-1 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer"
+                      >
+                        Revoke
+                      </button>
                     )}
                   </div>
-
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-sm text-foreground">{sess.device}</span>
-                      {sess.isCurrent && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-                          Current Device
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      {sess.browser} · IP: {sess.ip} · {sess.lastActive}
-                    </p>
-                  </div>
-                </div>
-
-                {!sess.isCurrent && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSessions((prev) => prev.filter((s) => s.id !== sess.id));
-                      showToast('Device session revoked');
-                    }}
-                    className="text-xs text-muted-foreground hover:text-destructive font-medium px-2.5 py-1 rounded-lg hover:bg-destructive/10 transition-colors cursor-pointer"
-                  >
-                    Revoke
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 

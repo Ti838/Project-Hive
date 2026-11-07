@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -19,7 +19,13 @@ import {
   Trash2,
   Flame,
   Award,
-  Clock
+  Clock,
+  Laptop,
+  Globe,
+  Smartphone,
+  Monitor,
+  MapPin,
+  LogOut
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { User, UserStrike } from '@/types';
@@ -38,6 +44,9 @@ export default function AdminUsersPage() {
 
   // Selected User for Actions / Modals
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [inspectingUser, setInspectingUser] = useState<any | null>(null);
+  const [inspectingSessions, setInspectingSessions] = useState<any[]>([]);
+  const [loadingUserSessions, setLoadingUserSessions] = useState(false);
   const [strikesModalUser, setStrikesModalUser] = useState<User | null>(null);
   const [userStrikes, setUserStrikes] = useState<UserStrike[]>([]);
   const [loadingStrikes, setLoadingStrikes] = useState(false);
@@ -103,6 +112,29 @@ export default function AdminUsersPage() {
       console.error('Failed to load strikes', err);
     } finally {
       setLoadingStrikes(false);
+    }
+  };
+
+  const handleInspectUser = async (u: any) => {
+    setInspectingUser(u);
+    setLoadingUserSessions(true);
+    try {
+      const res = await api.admin.getUserSessions(u.id);
+      setInspectingSessions(res?.sessions || []);
+    } catch {
+      setInspectingSessions([]);
+    } finally {
+      setLoadingUserSessions(false);
+    }
+  };
+
+  const handleAdminRevokeSession = async (sessionId: string) => {
+    if (!inspectingUser) return;
+    try {
+      await api.admin.revokeUserSession(inspectingUser.id, sessionId);
+      setInspectingSessions((prev) => prev.filter((s) => s.id !== sessionId));
+    } catch (err) {
+      alert('Failed to revoke session');
     }
   };
 
@@ -332,6 +364,16 @@ export default function AdminUsersPage() {
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {/* Inspect Profile & Device Telemetry */}
+                        <button
+                          onClick={() => handleInspectUser(u)}
+                          className="px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                          title="Inspect Devices & Sessions"
+                        >
+                          <Laptop className="w-3.5 h-3.5" />
+                          <span>Inspect</span>
+                        </button>
+
                         {/* Issue Strike / Ledger */}
                         <button
                           onClick={() => openStrikesModal(u)}
@@ -558,6 +600,165 @@ export default function AdminUsersPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ─── User Deep-Inspection & Session Drawer ─────────────────────────── */}
+      {inspectingUser && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+          <div className="w-full max-w-lg bg-[#0b0e14] border-l border-foreground/10 h-full overflow-y-auto p-6 space-y-6 shadow-2xl">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-foreground/10">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center font-bold text-sm">
+                  {inspectingUser.first_name?.[0] || 'U'}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-1.5">
+                    <span>{inspectingUser.first_name} {inspectingUser.last_name}</span>
+                    {inspectingUser.is_verified && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                  </h3>
+                  <p className="text-xs text-slate-400 font-mono">{inspectingUser.email}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setInspectingUser(null)}
+                className="w-8 h-8 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Profile Overview Card */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-foreground/5 space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Academic & Institutional Status</h4>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">University</span>
+                  <span className="text-white font-semibold">{inspectingUser.university || 'General Campus'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Department / Major</span>
+                  <span className="text-white font-semibold">{inspectingUser.major || 'Computer Science'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Security Role</span>
+                  <span className="text-amber-400 font-mono font-bold uppercase">{inspectingUser.role || 'student'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Account Status</span>
+                  <span className={inspectingUser.is_banned ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+                    {inspectingUser.is_banned ? 'BANNED' : 'ACTIVE'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Location & Network Identity */}
+            <div className="p-4 rounded-2xl bg-white/[0.02] border border-foreground/5 space-y-3">
+              <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-sky-400" /> Geographical & Network Attribution
+              </h4>
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Last Seen IP</span>
+                  <span className="text-white font-mono">{inspectingUser.lastLoginIp || inspectingUser.last_login_ip || '127.0.0.1'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Location Region</span>
+                  <span className="text-white">
+                    {inspectingUser.lastLoginCity || inspectingUser.last_login_city || 'Campus'}, {inspectingUser.lastLoginCountry || inspectingUser.last_login_country || 'Network'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Primary OS</span>
+                  <span className="text-white font-mono">{inspectingUser.lastLoginOs || inspectingUser.last_login_os || 'Desktop OS'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px]">Primary Browser</span>
+                  <span className="text-white font-mono">{inspectingUser.lastLoginBrowser || inspectingUser.last_login_browser || 'Web Browser'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Multi-Device Active Sessions */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                  <Laptop className="w-3.5 h-3.5 text-amber-400" /> Active Authenticated Sessions
+                </h4>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                  {inspectingSessions.length} Devices
+                </span>
+              </div>
+
+              {loadingUserSessions ? (
+                <div className="py-8 text-center text-slate-400 text-xs">
+                  <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2 text-amber-400" />
+                  Querying session tokens...
+                </div>
+              ) : inspectingSessions.length === 0 ? (
+                <div className="p-4 rounded-xl bg-white/[0.01] border border-foreground/5 text-center text-xs text-slate-400">
+                  No active session tokens found in registry.
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {inspectingSessions.map((s) => (
+                    <div key={s.id} className="p-3.5 rounded-xl bg-white/[0.02] border border-foreground/5 flex items-center justify-between gap-3 text-xs">
+                      <div className="space-y-0.5 min-w-0">
+                        <div className="font-bold text-white truncate flex items-center gap-1.5">
+                          <span>{s.device_model || 'Device'}</span>
+                          <span className="text-[10px] font-mono text-slate-400">({s.os_name || 'OS'} · {s.browser_name || 'Browser'})</span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 font-mono">
+                          IP: {s.ip_address} {s.city ? `· ${s.city}, ${s.country}` : ''}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => handleAdminRevokeSession(s.id)}
+                        className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold shrink-0 transition-colors cursor-pointer"
+                        title="Administratively terminate session token"
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Quick Disciplinary Actions */}
+            <div className="pt-4 border-t border-foreground/10 flex items-center gap-3">
+              <button
+                onClick={() => {
+                  const u = inspectingUser;
+                  setInspectingUser(null);
+                  openStrikesModal(u);
+                }}
+                className="flex-1 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+                <span>Issue Infraction Strike</span>
+              </button>
+              <button
+                onClick={() => {
+                  const u = inspectingUser;
+                  setInspectingUser(null);
+                  handleToggleBan(u);
+                }}
+                className={cn(
+                  'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer',
+                  inspectingUser.is_banned
+                    ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border-emerald-500/30'
+                    : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border-rose-500/30'
+                )}
+              >
+                <Ban className="w-3.5 h-3.5" />
+                <span>{inspectingUser.is_banned ? 'Unban Account' : 'Ban Account'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

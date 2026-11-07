@@ -11,6 +11,7 @@ import {
   getModerationQueue, resolveReport,
   getUserStrikes, issueStrike,
   getAuditLogs, getAdminHealth, getClientTelemetry,
+  getDeviceStats, getUserSessionsAdmin, revokeSessionAdmin,
 } from '../controllers/admin.controller.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
@@ -23,9 +24,12 @@ router.use(adminAuthMiddleware);
 router.get('/stats',                    getStats);
 router.get('/health',                   getAdminHealth);
 router.get('/client-telemetry',         getClientTelemetry);
+router.get('/devices',                  getDeviceStats);
 
 // ── User Directory & Disciplinary Sanctions ────────────
 router.get('/users',                    getUsers);
+router.get('/users/:id/sessions',       getUserSessionsAdmin);
+router.delete('/users/:id/sessions/:sessionId', revokeSessionAdmin);
 router.patch('/users/:id/ban',          banUser);
 router.patch('/users/:id/role',         changeRole);
 router.delete('/users/:id',             deleteUser);

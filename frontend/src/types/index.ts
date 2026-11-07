@@ -20,6 +20,12 @@ export interface User {
   university?: string;
   department?: string;
   major?: string;
+  city?: string;
+  country?: string;
+  location_city?: string;
+  location_country?: string;
+  location_lat?: number;
+  location_lng?: number;
   student_id?: string;
   year_of_study?: number;
   yearOfStudy?: number;
@@ -608,6 +614,24 @@ export interface AdminAuditLog {
   created_at: string;
 }
 
+export interface UserSession {
+  id: string;
+  user_id?: string;
+  device_category: 'desktop' | 'mobile' | 'tablet';
+  device_model: string;
+  os_name: string;
+  os_version?: string;
+  browser_name: string;
+  browser_version?: string;
+  ip_address: string;
+  country?: string;
+  city?: string;
+  is_current?: boolean;
+  last_active_at: string;
+  created_at: string;
+  revoked_at?: string | null;
+}
+
 export interface SystemFlags {
   maintenanceMode: boolean;
   registrationEnabled: boolean;
@@ -634,6 +658,7 @@ export interface AdminHealth {
   database: { status: string; latencyMs: number };
   sockets: { activeConnections: number };
   server: { uptime: number; memoryUsage: NodeJS.MemoryUsage };
+  services?: Array<{ name: string; status: string; ping?: string; ok?: boolean }>;
 }
 
 
