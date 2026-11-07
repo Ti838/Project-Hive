@@ -9,6 +9,7 @@ import { connectDB } from './config/db.js';
 import { initializeGemini } from './config/gemini.js';
 import { socketAuthMiddleware } from './middleware/socketAuth.js';
 import { supabaseAdmin } from './config/supabase.js';
+import { shutdownManager } from './utils/shutdownManager.js';
 import {
   setIo,
   registerUserSocket,
@@ -92,8 +93,11 @@ async function startServer() {
       console.warn('[ProjectHive] AI init failed (non-fatal):', err.message);
     }
 
-    // HTTP server
+    // HTTP server with enterprise timeout protections against socket exhaustion
     const server = http.createServer(app);
+    server.requestTimeout = 30000;    // 30s per request
+    server.headersTimeout = 35000;    // 35s headers timeout
+    server.keepAliveTimeout = 65000;  // 65s keep-alive (safely exceeds reverse proxy timeouts)
 
     // Allowed CORS origins
     const allowedOrigins = [
@@ -122,14 +126,26 @@ async function startServer() {
       transports: ['websocket', 'polling'],
       pingTimeout: 60000,
       pingInterval: 25000,
+      maxHttpBufferSize: 1e6, // 1MB event payload limit to prevent event-loop choking
     });
+
+    // Register with graceful shutdown manager
+    shutdownManager.registerServers(server, io);
 
     if (process.env.REDIS_URL) {
       try {
-        const pubClient = new Redis(process.env.REDIS_URL);
+        const pubClient = new Redis(process.env.REDIS_URL, {
+          retryStrategy: (times) => Math.min(times * 100, 3000),
+          maxRetriesPerRequest: 2,
+          enableOfflineQueue: false,
+        });
         const subClient = pubClient.duplicate();
+
+        pubClient.on('error', (err) => console.warn('[ProjectHive] ⚠️ Redis Pub client error:', err.message));
+        subClient.on('error', (err) => console.warn('[ProjectHive] ⚠️ Redis Sub client error:', err.message));
+
         io.adapter(createAdapter(pubClient, subClient));
-        console.log('[ProjectHive] 🚀 Upstash Redis Socket.IO adapter enabled');
+        console.log('[ProjectHive] 🚀 Redis Socket.IO adapter enabled for multi-instance scaling');
       } catch (err) {
         console.error('[ProjectHive] ⚠️ Failed to initialize Redis Socket.IO adapter:', err.message);
       }
@@ -207,13 +223,9 @@ async function startServer() {
       }
     });
 
-    // Graceful shutdown
-    const shutdown = () => {
-      console.log('\n[ProjectHive] Shutting down gracefully...');
-      server.close(() => process.exit(0));
-    };
-    process.on('SIGINT',  shutdown);
-    process.on('SIGTERM', shutdown);
+    // Graceful shutdown managed centrally by ShutdownManager
+    process.on('SIGINT',  () => shutdownManager.initiateShutdown('SIGINT'));
+    process.on('SIGTERM', () => shutdownManager.initiateShutdown('SIGTERM'));
 
   } catch (error) {
     console.error('[ProjectHive] ❌ Failed to start:', error);

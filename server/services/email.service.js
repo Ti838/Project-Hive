@@ -7,6 +7,16 @@
  * 4. Fallback Console Logger (Local dev without credentials)
  */
 import nodemailer from 'nodemailer';
+import { queueService } from './queue.service.js';
+
+// Register background queue processor for transactional emails
+queueService.registerHandler('send_email', async (jobData) => {
+  return await sendEmail(jobData);
+});
+
+export function queueEmail(emailData) {
+  return queueService.enqueue('send_email', emailData, { maxAttempts: 3, timeoutMs: 12000 });
+}
 
 const FRONTEND_URL = process.env.NODE_ENV === 'production'
   ? (process.env.FRONTEND_URL_PROD || process.env.FRONTEND_URL || 'https://projecthive-bd.vercel.app')
@@ -277,7 +287,8 @@ export async function sendVerificationEmail(email, firstName, token) {
     </div>
   `;
 
-  return sendEmail({
+  // Asynchronously queue to prevent blocking user HTTP registration response
+  queueEmail({
     to: email,
     toName: firstName,
     subject: 'Verify Your ProjectHive Account',
@@ -288,6 +299,8 @@ export async function sendVerificationEmail(email, firstName, token) {
       content,
     }),
   });
+
+  return { ok: true, queued: true };
 }
 
 // ─── 2. Welcome Email ────────────────────────────────────────────────────────
@@ -363,7 +376,8 @@ export async function sendWelcomeEmail(email, firstName) {
     </table>
   `;
 
-  return sendEmail({
+  // Asynchronously queue welcome email
+  queueEmail({
     to: email,
     toName: firstName,
     subject: '🎉 Welcome to ProjectHive!',
@@ -374,6 +388,8 @@ export async function sendWelcomeEmail(email, firstName) {
       content,
     }),
   });
+
+  return { ok: true, queued: true };
 }
 
 // ─── 3. Password Reset Email ─────────────────────────────────────────────────
@@ -425,7 +441,8 @@ export async function sendPasswordResetEmail(email, firstName, token) {
     </div>
   `;
 
-  return sendEmail({
+  // Asynchronously queue to prevent blocking user HTTP password recovery response
+  queueEmail({
     to: email,
     toName: firstName,
     subject: 'Reset Your ProjectHive Password',
@@ -436,4 +453,6 @@ export async function sendPasswordResetEmail(email, firstName, token) {
       content,
     }),
   });
+
+  return { ok: true, queued: true };
 }

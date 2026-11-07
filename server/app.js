@@ -33,6 +33,9 @@ import callsRoutes from './routes/calls.routes.js';
 import githubRoutes from './routes/github.routes.js';
 import supportRoutes from './routes/support.routes.js';
 import { keySigner } from './services/crypto/keySigner.service.js';
+import { globalLimiter, authLimiter, aiLimiter, uploadLimiter } from './middleware/rateLimiter.js';
+import { shutdownManager } from './utils/shutdownManager.js';
+import { cacheService } from './services/cache.service.js';
 
 const app = express();
 
@@ -177,39 +180,59 @@ app.use(express.urlencoded({ limit: '15mb', extended: true }));
 // XSS sanitization — strip dangerous HTML/scripts from all inputs
 app.use(sanitizeInputMiddleware);
 
-// Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'),
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100'),
-  message: 'Too many requests, please try again later.',
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use('/api/', limiter);
-
-// Stricter rate limiter for auth endpoints (brute-force protection)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,                   // 20 attempts per window
-  message: 'Too many authentication attempts. Please try again in 15 minutes.',
-  standardHeaders: true,
-  legacyHeaders: false,
-  skipSuccessfulRequests: true,
-});
+// ─── 4. HIGH-CONCURRENCY RATE LIMITING & OVERLOAD DEFENSE ────────────────────
+app.use('/api/', globalLimiter);
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 app.use('/api/auth/forgot-password', authLimiter);
 app.use('/api/admin/auth/login', authLimiter);
+app.use('/api/ai', aiLimiter);
 
-// Health check (both paths for keep-alive compatibility)
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
-});
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'projecthive-backend', timestamp: new Date() });
+// ─── 5. HEALTH, READINESS & OBSERVABILITY PROBES ──────────────────────────────
+// Fast liveness probe (instant response for Docker/Kubernetes/Render)
+app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date() }));
+app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'projecthive-backend', timestamp: new Date() }));
+app.get('/api/health/live', (req, res) => {
+  const liveness = shutdownManager.getLiveness();
+  res.status(liveness.status === 'alive' ? 200 : 503).json(liveness);
 });
 
-// Database & Subsystem Health Check
+// Comprehensive readiness probe with cached DB check (15s cache avoids probe DB storms)
+let cachedDbCheck = null;
+let lastDbCheckTime = 0;
+
+app.get('/api/health/ready', async (req, res) => {
+  const now = Date.now();
+  if (!cachedDbCheck || now - lastDbCheckTime > 15000) {
+    const start = Date.now();
+    try {
+      const { supabaseAdmin } = await import('./config/supabase.js');
+      const { error } = await supabaseAdmin.from('users').select('id', { head: true, count: 'exact' }).limit(1);
+      cachedDbCheck = {
+        ok: !error,
+        latencyMs: Date.now() - start,
+        error: error ? error.message : null,
+      };
+    } catch (e) {
+      cachedDbCheck = { ok: false, latencyMs: Date.now() - start, error: e.message };
+    }
+    lastDbCheckTime = now;
+  }
+
+  const readiness = shutdownManager.getReadiness(cachedDbCheck);
+  res.status(readiness.status === 'ready' ? 200 : 503).json(readiness);
+});
+
+// System telemetry & metrics endpoint for observability
+app.get('/api/health/metrics', (req, res) => {
+  res.json({
+    liveness: shutdownManager.getLiveness(),
+    cacheStats: cacheService.getStats(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Database & Subsystem Deep Diagnostic Check
 app.get('/api/health/db', async (req, res) => {
   const startTime = Date.now();
   try {
@@ -259,35 +282,38 @@ app.get('/api/health/db', async (req, res) => {
   }
 });
 
-// Public stats — for homepage & dashboard (no auth required)
+// Public stats — cached for 60 seconds (prevents 4 DB scans per homepage visit)
 app.get('/api/stats', async (req, res) => {
   try {
-    const { supabaseAdmin } = await import('./config/supabase.js');
-    const [
-      { count: users },
-      { count: teams },
-      { count: projects },
-    ] = await Promise.all([
-      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
-      supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
-    ]);
+    const stats = await cacheService.remember('stats:public', 60, async () => {
+      const { supabaseAdmin } = await import('./config/supabase.js');
+      const [
+        { count: users },
+        { count: teams },
+        { count: projects },
+      ] = await Promise.all([
+        supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
+        supabaseAdmin.from('teams').select('*', { count: 'exact', head: true }),
+        supabaseAdmin.from('projects').select('*', { count: 'exact', head: true }),
+      ]);
 
-    // Count distinct universities
-    const { data: uniData } = await supabaseAdmin
-      .from('users')
-      .select('university')
-      .not('university', 'is', null)
-      .neq('university', '');
-    const universities = new Set((uniData || []).map(u => u.university?.trim().toLowerCase()).filter(Boolean)).size;
+      const { data: uniData } = await supabaseAdmin
+        .from('users')
+        .select('university')
+        .not('university', 'is', null)
+        .neq('university', '');
+      const universities = new Set((uniData || []).map(u => u.university?.trim().toLowerCase()).filter(Boolean)).size;
 
-    res.json({
-      ok: true,
-      users: users || 0,
-      teams: teams || 0,
-      projects: projects || 0,
-      universities: universities || 0,
+      return {
+        ok: true,
+        users: users || 0,
+        teams: teams || 0,
+        projects: projects || 0,
+        universities: universities || 0,
+      };
     });
+
+    res.json(stats);
   } catch (err) {
     console.error('[Stats API] Error:', err);
     res.json({ ok: true, users: 0, teams: 0, projects: 0, universities: 0 });

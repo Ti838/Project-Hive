@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { cacheService } from '../services/cache.service.js';
 
 function sanitizeSearch(input) {
   if (!input || typeof input !== 'string') return '';
@@ -34,6 +35,9 @@ export async function submitProject(req, res, next) {
     const { data: u } = await supabaseAdmin.from('users').select('projects_posted').eq('id', userId).single();
     await supabaseAdmin.from('users').update({ projects_posted: (u?.projects_posted || 0) + 1 }).eq('id', userId);
 
+    // Invalidate public project caches
+    cacheService.delPattern('projects:*');
+
     res.status(201).json({ message: 'Project submitted successfully', project });
   } catch (err) { next(err); }
 }
@@ -41,6 +45,14 @@ export async function submitProject(req, res, next) {
 export async function getProjects(req, res, next) {
   try {
     const { skip = 0, limit = 20, search, sortBy = 'newest', category } = req.query;
+
+    // Fast-path: Check Redis/Memory cache for unauthenticated public listing
+    const isPublicQuery = !req.user && !search;
+    const cacheKey = `projects:public:${skip}:${limit}:${sortBy}:${category || 'all'}`;
+    if (isPublicQuery) {
+      const cached = await cacheService.get(cacheKey);
+      if (cached) return res.json(cached);
+    }
 
     let q = supabaseAdmin
       .from('projects')
@@ -90,10 +102,16 @@ export async function getProjects(req, res, next) {
       };
     });
 
-    res.json({
+    const responsePayload = {
       projects: projectsWithLike,
       pagination: { total: count || 0, skip: parseInt(skip), limit: parseInt(limit), hasMore: parseInt(skip) + parseInt(limit) < (count || 0) },
-    });
+    };
+
+    if (isPublicQuery) {
+      await cacheService.set(cacheKey, responsePayload, 60); // Cache for 60s
+    }
+
+    res.json(responsePayload);
   } catch (err) { next(err); }
 }
 
@@ -149,6 +167,7 @@ export async function updateProject(req, res, next) {
 
     const { data: project, error } = await supabaseAdmin.from('projects').update(updates).eq('id', id).select('*, owner:owner_id(id, first_name, last_name, avatar, avatar_color)').single();
     if (error) throw error;
+    cacheService.delPattern('projects:*');
     res.json({ message: 'Project updated', project });
   } catch (err) { next(err); }
 }
@@ -160,6 +179,7 @@ export async function deleteProject(req, res, next) {
     if (!proj) return res.status(404).json({ error: 'Project not found' });
     if (proj.owner_id !== req.user.id) return res.status(403).json({ error: 'Only creator can delete' });
     await supabaseAdmin.from('projects').delete().eq('id', id);
+    cacheService.delPattern('projects:*');
     res.json({ message: 'Project deleted successfully' });
   } catch (err) { next(err); }
 }
@@ -170,6 +190,8 @@ export async function likeProject(req, res, next) {
     const userId = req.user.id;
 
     const { data: existing } = await supabaseAdmin.from('project_likes').select('id').eq('project_id', id).eq('user_id', userId).maybeSingle();
+
+    cacheService.delPattern('projects:*');
 
     if (existing) {
       await supabaseAdmin.from('project_likes').delete().eq('id', existing.id);

@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
+import { cacheService } from './cache.service.js';
 
 let _io = null;
 export function setIo(io) {
@@ -31,6 +32,12 @@ export async function registerUserSocket(socket) {
     try {
       await supabaseAdmin.from('users').update({ online_status: 'online', last_seen: now }).eq('id', socket.userId);
     } catch (_) { /* non-fatal */ }
+
+    // Distributed Redis presence sync
+    if (cacheService.isRedisReady && cacheService.redisClient) {
+      cacheService.redisClient.sadd('online_users', socket.userId).catch(() => {});
+    }
+
     if (_io) {
       _io.emit('status:update', { userId: socket.userId, status: 'online', lastSeen: now });
       _io.emit('user:status_changed', { userId: socket.userId, status: 'available', onlineStatus: 'online' });
@@ -56,6 +63,12 @@ export async function unregisterUserSocket(socket) {
       try {
         await supabaseAdmin.from('users').update({ online_status: 'offline', last_seen: now }).eq('id', userId);
       } catch (_) { /* non-fatal */ }
+
+      // Remove from distributed Redis presence
+      if (cacheService.isRedisReady && cacheService.redisClient) {
+        cacheService.redisClient.srem('online_users', userId).catch(() => {});
+      }
+
       if (_io) {
         _io.emit('status:update', { userId, status: 'offline', lastSeen: now });
         _io.emit('user:status_changed', { userId, status: 'offline', onlineStatus: 'offline' });
@@ -106,6 +119,21 @@ export async function handleSendMessage(socket, io, data) {
     const roomId = data.roomId || data.teamId;
     const { content, type, reply_to, reply_to_content, reply_to_sender, media_url, voice_url, voice_duration } = data;
     if (!content || !roomId) return socket.emit('error', { message: 'Missing content or roomId' });
+
+    // Safety: Per-socket burst rate limiting (max 10 messages per 2 seconds)
+    const nowTs = Date.now();
+    if (!socket.msgRateLimit || nowTs > socket.msgRateLimit.resetAt) {
+      socket.msgRateLimit = { count: 0, resetAt: nowTs + 2000 };
+    }
+    socket.msgRateLimit.count++;
+    if (socket.msgRateLimit.count > 10) {
+      return socket.emit('error', { message: 'Message rate limit exceeded. Please wait 2 seconds.' });
+    }
+
+    // Safety: Payload size constraint
+    if (typeof content === 'string' && content.length > 50000) {
+      return socket.emit('error', { message: 'Message exceeds maximum allowed length of 50,000 characters.' });
+    }
 
     // Insert payload
     const insertData = {
