@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // â”€â”€â”€ Native-Grade Topbar & Command Search Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { useEffect, useState, useRef } from 'react';
@@ -10,10 +10,12 @@ import {
   User, Settings, Bookmark, LogOut, ShieldCheck,
   X, CheckCheck, Sparkles, MessageSquare, Users, FolderKanban, Rss, LayoutDashboard,
   Loader2, ArrowRight, Star, Building2, GraduationCap,
+  Volume2, VolumeX,
 } from 'lucide-react';
 import { useAuthStore, useUIStore, useSocketStore } from '@/lib/store';
 import { useTheme } from '@/context/ThemeContext';
 import { useSocket } from '@/hooks/useSocket';
+import { soundEngine } from '@/lib/soundEngine';
 import { api } from '@/lib/api';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/UserAvatar';
@@ -41,7 +43,15 @@ export function Topbar() {
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { theme, resolvedTheme, setTheme } = useTheme();
-  const { unreadNotifications, setUnreadNotifications, incrementUnread, toggleMobileMenu } = useUIStore();
+  const {
+    unreadNotifications,
+    setUnreadNotifications,
+    incrementUnread,
+    toggleMobileMenu,
+    soundEnabled,
+    setSoundEnabled,
+    soundPack,
+  } = useUIStore();
   const isConnected = useSocketStore((s) => s.isConnected);
 
   const [isMac, setIsMac] = useState(false);
@@ -422,13 +432,42 @@ export function Topbar() {
                         </span>
                       )}
                     </div>
-                    <Link
-                      href="/notifications"
-                      onClick={() => setNotifOpen(false)}
-                      className="text-xs text-primary hover:underline font-medium"
-                    >
-                      View all
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      {/* Live Audio Chime Quick Control */}
+                      <div className="flex items-center bg-muted/60 hover:bg-muted rounded-lg p-0.5 border border-border/50 text-[11px]">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = !soundEnabled;
+                            setSoundEnabled(next);
+                            if (next) soundEngine?.test('notification');
+                          }}
+                          className={cn(
+                            "p-1 rounded-md transition-colors cursor-pointer",
+                            soundEnabled ? "text-primary hover:bg-primary/10" : "text-muted-foreground hover:bg-muted"
+                          )}
+                          title={soundEnabled ? `Live Chimes Active (${soundPack}) • Click to Mute` : 'Live Chimes Muted • Click to Unmute'}
+                        >
+                          {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => soundEngine?.test('notification')}
+                          className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground text-[10px] font-medium transition-colors cursor-pointer"
+                          title="Preview notification chime"
+                        >
+                          Test 🔔
+                        </button>
+                      </div>
+
+                      <Link
+                        href="/notifications"
+                        onClick={() => setNotifOpen(false)}
+                        className="text-xs text-primary hover:underline font-medium"
+                      >
+                        View all
+                      </Link>
+                    </div>
                   </div>
 
                   <div className="max-h-72 overflow-y-auto divide-y divide-border/40">

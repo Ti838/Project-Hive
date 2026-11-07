@@ -130,6 +130,9 @@ interface UIState {
   unreadNotifications: number;
   hiveAiEnabled: boolean;
   copilotOpen: boolean;
+  soundEnabled: boolean;
+  soundVolume: number;
+  soundPack: 'hive' | 'discord' | 'minimal';
   toggleSidebar: () => void;
   setSidebarCollapsed: (v: boolean) => void;
   setSidebarWidth: (w: number) => void;
@@ -141,6 +144,9 @@ interface UIState {
   setHiveAiEnabled: (v: boolean) => void;
   setCopilotOpen: (v: boolean) => void;
   toggleCopilot: () => void;
+  setSoundEnabled: (v: boolean) => void;
+  setSoundVolume: (v: number) => void;
+  setSoundPack: (pack: 'hive' | 'discord' | 'minimal') => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -152,6 +158,9 @@ export const useUIStore = create<UIState>()(
       unreadNotifications: 0,
       hiveAiEnabled: true,
       copilotOpen: false,
+      soundEnabled: true,
+      soundVolume: 0.75,
+      soundPack: 'hive',
       toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
       setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
       setSidebarWidth: (sidebarWidth) => set({ sidebarWidth: Math.min(380, Math.max(200, sidebarWidth)) }),
@@ -163,6 +172,30 @@ export const useUIStore = create<UIState>()(
       setHiveAiEnabled: (hiveAiEnabled) => set({ hiveAiEnabled }),
       setCopilotOpen: (copilotOpen) => set({ copilotOpen }),
       toggleCopilot: () => set((s) => ({ copilotOpen: !s.copilotOpen })),
+      setSoundEnabled: (soundEnabled) => {
+        set({ soundEnabled });
+        if (typeof window !== 'undefined') {
+          import('@/lib/soundEngine').then(({ soundEngine }) => {
+            soundEngine?.setEnabled(soundEnabled);
+          });
+        }
+      },
+      setSoundVolume: (soundVolume) => {
+        set({ soundVolume });
+        if (typeof window !== 'undefined') {
+          import('@/lib/soundEngine').then(({ soundEngine }) => {
+            soundEngine?.setVolume(soundVolume);
+          });
+        }
+      },
+      setSoundPack: (soundPack) => {
+        set({ soundPack });
+        if (typeof window !== 'undefined') {
+          import('@/lib/soundEngine').then(({ soundEngine }) => {
+            soundEngine?.setPack(soundPack);
+          });
+        }
+      },
     }),
     {
       name: 'ph-ui-store',
@@ -171,6 +204,9 @@ export const useUIStore = create<UIState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         sidebarWidth: state.sidebarWidth,
         hiveAiEnabled: state.hiveAiEnabled,
+        soundEnabled: state.soundEnabled,
+        soundVolume: state.soundVolume,
+        soundPack: state.soundPack,
       }),
     }
   )

@@ -10,6 +10,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { MobileNav } from '@/components/layout/MobileNav';
 import { useSocket } from '@/hooks/useSocket';
+import { useNotificationSounds } from '@/hooks/useNotificationSounds';
 import { CallManager } from '@/components/calling/CallManager';
 import { HiveAICopilotDrawer } from '@/components/ai/HiveAICopilotDrawer';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   // Initialise socket connection for authenticated users
   useSocket();
+
+  // Initialise live notification chimes (Discord/Facebook procedural sound engine)
+  useNotificationSounds();
 
   // Revalidate user on mount without demoting admin role
   useEffect(() => {

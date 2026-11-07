@@ -5,12 +5,14 @@ import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bell, CheckCheck, MessageSquare, UserPlus, Users, Trophy,
-  Heart, Sparkles, Check, X, ShieldAlert, Layers, Inbox
+  Heart, Sparkles, Check, X, ShieldAlert, Layers, Inbox,
+  Volume2, VolumeX,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useUIStore } from '@/lib/store';
 import { useSocket } from '@/hooks/useSocket';
 import { timeAgo, cn } from '@/lib/utils';
+import { soundEngine } from '@/lib/soundEngine';
 import type { Notification } from '@/types';
 
 type NotificationCategory = 'all' | 'requests' | 'interactions' | 'system';
@@ -20,7 +22,14 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<NotificationCategory>('all');
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const { setUnreadNotifications, decrementUnread, incrementUnread } = useUIStore();
+  const {
+    setUnreadNotifications,
+    decrementUnread,
+    incrementUnread,
+    soundEnabled,
+    setSoundEnabled,
+    soundPack,
+  } = useUIStore();
 
   // Socket listener for real-time notifications
   useSocket({
@@ -140,14 +149,40 @@ export default function NotificationsPage() {
           </p>
         </div>
 
-        {unreadCount > 0 && (
-          <button
-            onClick={markAllRead}
-            className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline bg-primary/10 hover:bg-primary/15 px-3 py-1.5 rounded-xl transition-all self-start sm:self-auto cursor-pointer"
-          >
-            <CheckCheck className="w-4 h-4" /> Mark all {unreadCount} read
-          </button>
-        )}
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          {/* Live Audio Chime Status & Instant Test */}
+          <div className="flex items-center bg-muted/40 border border-border/60 rounded-xl px-2 py-1 gap-1.5 text-xs shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                const next = !soundEnabled;
+                setSoundEnabled(next);
+                if (next) soundEngine?.test('notification');
+              }}
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              title={soundEnabled ? `Live Audio Active (${soundPack}) • Click to Mute` : 'Live Audio Muted • Click to Unmute'}
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-primary" /> : <VolumeX className="w-4 h-4 text-muted-foreground" />}
+            </button>
+            <button
+              type="button"
+              onClick={() => soundEngine?.test('notification')}
+              className="px-2 py-0.5 rounded-lg bg-background hover:bg-muted text-muted-foreground hover:text-foreground font-medium text-[11px] shadow-2xs border border-border/40 transition-colors cursor-pointer"
+              title="Preview notification chime"
+            >
+              Test Sound 🔔
+            </button>
+          </div>
+
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline bg-primary/10 hover:bg-primary/15 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+            >
+              <CheckCheck className="w-4 h-4" /> Mark all {unreadCount} read
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Category Filter Chips */}
