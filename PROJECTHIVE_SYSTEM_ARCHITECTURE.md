@@ -116,3 +116,4 @@ graph TD
 - **Session Token Hashing:** User session tokens are hashed via SHA-256 before storage in `user_sessions`.
 - **Circuit Breaker:** Fails fast after 5 consecutive external API timeouts to prevent thread starvation.
 - **Multi-Level Cache:** Redis distributed cache with transparent in-memory LRU fallback.
+

@@ -36,3 +36,4 @@
 - **Task P1.4:** API contracts and Socket.IO real-time event schemas standardized (`PROJECTHIVE_API_CONTRACTS.md`).
 - **Task P1.5:** Multi-tier RBAC permission matrix verified across 6 system roles (`PROJECTHIVE_ROLE_PERMISSION_MATRIX.md`).
 - **Task P10.1 (Current):** Database query hardening: replacing non-defensive `.single()` calls with `.maybeSingle()` in `server/controllers/auth.controller.js` to prevent unhandled database coercion exceptions.
+

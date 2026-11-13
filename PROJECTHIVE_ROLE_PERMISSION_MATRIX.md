@@ -49,3 +49,4 @@
 - **Frontend Navigation Guard:** Route middleware (`authMiddleware.tsx`, `adminGuard.tsx`) blocks unauthorized client navigation.
 - **Backend API Gateway Guard:** Express middleware (`authMiddleware.js`, `adminMiddleware.js`) validates JWT claims and compares against active `user_sessions`.
 - **Database Row Level Security:** Supabase PostgreSQL RLS policies enforce isolation directly at the database engine level.
+

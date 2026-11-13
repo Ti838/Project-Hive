@@ -27,3 +27,4 @@
 - **Bot Defense:** Cloudflare Turnstile bot verification challenges integrated on registration and admin authentication.
 - **Circuit Breakers:** External API integrations (Groq, Gemini, Brevo, LiveKit) wrapped in circuit breakers with automatic 5-failure trip thresholds, preventing thread starvation.
 - **CORS & Headers:** Strict origin headers restricting API access to verified frontend domains (`projecthive-bd.vercel.app`).
+

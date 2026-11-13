@@ -92,3 +92,4 @@ ProjectHive reverse-engineers the interaction patterns, information architecture
 | **Video Meetings** | LiveKit & Google Meet | Embedded WebRTC room with dynamic adaptive bitrate, screen share, and floating ambient PiP widget. | Implemented in `CallManager.tsx` & `MinimizedCallWidget.tsx` powered by LiveKit Cloud SFU. |
 | **HiveMind AI Copilot** | Groq & Gemini | Sub-second prompt-to-blueprint generation, cascading fallback, voice dictation. | Implemented in `/generator` with Groq Llama 3.3 70B, Google Gemini 2.5 Flash, and Web Speech API. |
 | **Admin Command Center** | GitHub Org & Discord Admin | Live telemetry, user deep-inspection drawer, remote device termination, content moderation queue. | Implemented in `/admin/dashboard` & `/admin/users` with authentic database-driven metrics. |
+

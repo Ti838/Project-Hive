@@ -60,3 +60,4 @@ Following Android Adaptive Layout & Modern Web standards:
 - Transition durations: `150ms - 200ms ease-out` for hover states and button presses.
 - Modal / Drawer transitions: `250ms - 300ms cubic-bezier(0.16, 1, 0.3, 1)` for smooth slide-outs.
 - Zero layout shift: Fixed aspect ratios on image containers and skeleton loaders.
+

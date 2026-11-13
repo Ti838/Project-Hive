@@ -83,3 +83,4 @@
 | `/api/admin/reports/:id` | `PUT` | Admin | Action content report (`status: "action_taken" \| "dismissed"`). |
 | `/api/admin/support/tickets` | `GET` | Admin | Manage student support tickets with resolution notes. |
 | `/api/admin/audit-logs` | `GET` | Admin | Immutable security audit logs with actor IP tracking. |
+

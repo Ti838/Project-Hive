@@ -50,3 +50,4 @@ Status: Clean Compilation (0 errors, 0 warnings across all 39 routes)
 ## 3. Real-Time WebSocket & Media SFU Smoke Tests
 - **Socket.IO Event Dual-Dispatch:** Verified instantaneous message arrival, typing indicators, and delivery receipts (`sent` → `delivered` → `read`).
 - **LiveKit Cloud SFU Handshake:** KeySigner HMAC token generation verified; room join and audio/video track negotiation functioning without fallback drops.
+

@@ -131,3 +131,4 @@ Running the backend test runner (`npm --prefix server test`):
 1. **Database Query Defense:** In `auth.controller.js`, several queries used `.single()` where `.maybeSingle()` or `.limit(1)` is technically safer to prevent exceptions if duplicate or zero rows are returned.
 2. **Real-World Reference Alignment:** Align UI micro-interactions directly with the 47 benchmark products documented in `PROJECTHIVE_REA_REFERENCE_MATRIX.md`.
 3. **Multi-Agent Coordination:** Enforce strict agent ownership across all 11 subsequent phases.
+

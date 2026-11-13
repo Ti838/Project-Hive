@@ -78,3 +78,4 @@ erDiagram
   - `idx_tasks_project_status` on `tasks(project_id, status)`
   - `idx_messages_conversation_created` on `messages(conversation_id, created_at DESC)`
   - `idx_projects_views_count` on `projects(views_count)`
+
