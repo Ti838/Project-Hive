@@ -77,7 +77,7 @@ export default function AdminTeamsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* â”€â”€â”€ Header & Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Header & Search ──────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -120,7 +120,7 @@ export default function AdminTeamsPage() {
         </form>
       </div>
 
-      {/* â”€â”€â”€ Squads Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Squads Grid ──────────────────────────────────────────────── */}
       {loading ? (
         <div className="py-20 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5">
           <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-400" />

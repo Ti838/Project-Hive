@@ -120,7 +120,7 @@ export default function AdminModerationPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* â”€â”€â”€ Header & Queue Filter Suite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Header & Queue Filter Suite ──────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -183,7 +183,7 @@ export default function AdminModerationPage() {
         </div>
       )}
 
-      {/* â”€â”€â”€ Reports Grid / Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Reports Grid / Cards ─────────────────────────────────────── */}
       <div className="space-y-4">
         {loading ? (
           <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5">
@@ -309,7 +309,7 @@ export default function AdminModerationPage() {
         )}
       </div>
 
-      {/* â”€â”€â”€ Resolution Action Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Resolution Action Modal ───────────────────────────────────── */}
       <ReportResolutionModal
         report={activeReport}
         onClose={() => setActiveReport(null)}

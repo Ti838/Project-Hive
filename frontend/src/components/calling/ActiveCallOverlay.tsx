@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive — Active Call Overlay (Studio-Grade LiveKit SFU) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive — Active Call Overlay (Studio-Grade LiveKit SFU) ─────────────
 
 import { useState } from 'react';
 import {
@@ -80,7 +80,7 @@ export function ActiveCallOverlay({
 
   return (
     <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 select-none animate-in fade-in duration-200 overflow-hidden">
-      {/* â”€â”€â”€ Top Control Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Top Control Bar ──────────────────────────────────────────────── */}
       <div className="w-full flex items-center justify-between pb-3 border-b border-foreground/10 shrink-0 z-30">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold shadow-xs">
@@ -141,7 +141,7 @@ export function ActiveCallOverlay({
         </div>
       </div>
 
-      {/* â”€â”€â”€ Network Warning Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Network Warning Banner ───────────────────────────────────────── */}
       {networkQuality === 'reconnecting' && (
         <div className="my-2 bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs px-4 py-2 rounded-xl flex items-center justify-center gap-2 shadow-sm animate-pulse shrink-0">
           <WifiOff className="w-4 h-4" />
@@ -149,7 +149,7 @@ export function ActiveCallOverlay({
         </div>
       )}
 
-      {/* â”€â”€â”€ Main Viewport (with bottom padding for floating dock) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Main Viewport (with bottom padding for floating dock) ─────────── */}
       <div className="flex-1 w-full my-2 sm:my-3 relative flex items-center justify-center overflow-hidden rounded-2xl sm:rounded-3xl pb-20 sm:pb-24">
         {isWhiteboardOpen ? (
           /* Whiteboard Mode */
@@ -205,7 +205,7 @@ export function ActiveCallOverlay({
         )}
       </div>
 
-      {/* â”€â”€â”€ Floating Frosted-Glass Pill Control Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Floating Frosted-Glass Pill Control Dock ─────────────────────── */}
       <div className="fixed bottom-5 sm:bottom-6 inset-x-0 mx-auto w-fit z-40 px-3 sm:px-5 py-2 sm:py-2.5 surface-floating rounded-full border border-foreground/10 shadow-2xl flex items-center gap-2 sm:gap-3.5 backdrop-blur-2xl pb-[max(0.5rem,env(safe-area-inset-bottom,8px))]">
         {/* Mic Toggle */}
         <button

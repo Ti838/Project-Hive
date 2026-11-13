@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive — Outgoing Call Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive — Outgoing Call Modal ────────────────────────────────────────
 
 import { PhoneOff, Video, Phone } from 'lucide-react';
 import { useCallStore } from '@/lib/callStore';

@@ -51,7 +51,7 @@ export function ThreadedComments({
     fetchComments();
   }, [fetchComments]);
 
-  // â”€â”€ Real-Time Socket Listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Real-Time Socket Listener ───────────────────────────────────────────────
   useSocket({
     onPostComment: (data) => {
       if (data.postId !== postId) return;
@@ -221,14 +221,14 @@ export function ThreadedComments({
             )}
           </div>
 
-          {/* â”€â”€ Nested Replies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Nested Replies ────────────────────────────────────────────── */}
           {c.replies && c.replies.length > 0 && (
             <div className="mt-1 ml-2 sm:ml-4 pl-3 border-l-2 border-primary/20 dark:border-foreground/10 space-y-2">
               {c.replies.map((reply) => renderCommentNode(reply, true))}
             </div>
           )}
 
-          {/* â”€â”€ Inline Reply Input Box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+          {/* ── Inline Reply Input Box ────────────────────────────────────── */}
           {replyingToId === c.id && (
             <div className="mt-2.5 ml-2 sm:ml-4 pl-3 border-l-2 border-primary/40 flex gap-2 items-center">
               <CornerDownRight className="w-3.5 h-3.5 text-muted-foreground shrink-0" />

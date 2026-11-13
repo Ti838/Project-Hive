@@ -1,5 +1,5 @@
 'use client';
-// â”€â”€â”€ ProjectHive Studio Profile Page (Facebook & LinkedIn Grade) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive Studio Profile Page (Facebook & LinkedIn Grade) ────────────────
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,7 +22,7 @@ import { UserAvatar } from '@/components/ui/UserAvatar';
 import { UserProfileHoverCard } from '@/components/ui/UserProfileHoverCard';
 import type { User, RelationshipState } from '@/types';
 
-// â”€â”€â”€ Validation schema â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Validation schema ─────────────────────────────────────────────────────────
 const profileSchema = z.object({
   first_name:    z.string().min(1, 'First name required'),
   last_name:     z.string().min(1, 'Last name required'),
@@ -36,7 +36,7 @@ const profileSchema = z.object({
 });
 type ProfileForm = z.infer<typeof profileSchema>;
 
-// â”€â”€â”€ Skill Tag Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Skill Tag Editor ──────────────────────────────────────────────────────────
 import { SkillEditor, ProfileSkeleton } from './ProfileHelpers';
 import { ProfileEditForm } from './ProfileEditForm';
 import {
@@ -95,7 +95,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
     setTimeout(() => setToastMsg(null), 3200);
   };
 
-  // â”€â”€â”€ Real-time Socket Event Listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Real-time Socket Event Listener ─────────────────────────────────────────
   useSocket({
     onRelationshipUpdate: (data) => {
       if (!activeUser || !currentUser) return;
@@ -114,7 +114,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
     resolver: zodResolver(profileSchema) as any,
   });
 
-  // â”€â”€â”€ Load Profile Data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Load Profile Data ───────────────────────────────────────────────────────
   const loadProfile = useCallback(() => {
     if (isOwnProfile) {
       if (currentUser) {
@@ -181,7 +181,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
     }
   }, [activeTab, activeUser?.id, isOwnProfile, friendsList.length, projectsList.length]);
 
-  // â”€â”€â”€ Image Upload Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Image Upload Handlers ───────────────────────────────────────────────────
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -264,7 +264,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
     reader.readAsDataURL(file);
   };
 
-  // â”€â”€â”€ Skill Endorsements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Skill Endorsements ──────────────────────────────────────────────────────
   const handleEndorseSkill = async (skillName: string) => {
     if (!profileUser?.id || isOwnProfile) return;
     const currentCount = endorsedSkills[skillName] ?? 0;
@@ -295,7 +295,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
     }
   };
 
-  // â”€â”€â”€ Friendship Action Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Friendship Action Handlers ──────────────────────────────────────────────
   const handleSendFriendRequest = async () => {
     if (!profileUser?.id || actionLoading) return;
     setActionLoading(true);
@@ -410,7 +410,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
     }
   };
 
-  // â”€â”€â”€ Profile Form Submission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ─── Profile Form Submission ─────────────────────────────────────────────────
   const onSubmit: SubmitHandler<ProfileForm> = async (data) => {
     setSaving(true);
     const updateData: Partial<User> = {
@@ -517,7 +517,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
         </div>
       )}
 
-      {/* â”€â”€â”€ Hero Cover & Studio Avatar Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Hero Cover & Studio Avatar Dock ─────────────────────────────────── */}
       <div className="relative rounded-3xl overflow-hidden border border-foreground/10 dark:border-foreground/5 bg-card shadow-xl">
         {/* Cover Banner */}
         <div
@@ -583,7 +583,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
               )}
             </div>
 
-            {/* â”€â”€â”€ Context-Aware Dynamic Action Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ─── Context-Aware Dynamic Action Dock ─────────────────────────── */}
             <div className="flex items-center gap-2.5 flex-wrap self-start sm:self-end pt-2 sm:pt-0">
               {isOwnProfile ? (
                 <button
@@ -759,7 +759,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
               </p>
             )}
 
-            {/* â”€â”€â”€ Social Proof: Mutual Friends Pill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+            {/* ─── Social Proof: Mutual Friends Pill ──────────────────────────── */}
             {!isOwnProfile && mutualCount > 0 && (
               <div className="pt-2">
                 <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full surface-glass border border-foreground/10 text-xs text-muted-foreground shadow-xs">
@@ -828,7 +828,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
           </div>
         </div>
 
-        {/* â”€â”€â”€ Profile Navigation Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ─── Profile Navigation Tabs ────────────────────────────────────────── */}
         <div className="flex items-center gap-2 px-5 sm:px-7 border-t border-foreground/10 dark:border-foreground/5 bg-muted/20 overflow-x-auto py-2">
           {[
             { id: 'overview',  label: 'Overview',              icon: BookOpen },
@@ -857,7 +857,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Edit Profile Form (Expanded on Toggle) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Edit Profile Form (Expanded on Toggle) ─────────────────────────── */}
       {editing && isOwnProfile && (
         <ProfileEditForm
           register={register as any}
@@ -871,7 +871,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
         />
       )}
 
-      {/* â”€â”€â”€ TAB CONTENT PANELS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── TAB CONTENT PANELS ──────────────────────────────────────────────── */}
 
       {/* TAB 1: OVERVIEW */}
       {activeTab === 'overview' && (
@@ -913,7 +913,7 @@ export function ProfileView({ paramsId }: { paramsId?: string }) {
         />
       )}
 
-      {/* â”€â”€â”€ Floating Confirmation Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Floating Confirmation Toast ────────────────────────────────────── */}
       <AnimatePresence>
         {toastMsg && (
           <motion.div

@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive Sidebar & Resizable Workspace Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive Sidebar & Resizable Workspace Drawer ──────────────────────────
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
@@ -132,7 +132,7 @@ export function Sidebar() {
 
   return (
     <>
-      {/* â”€â”€â”€ Mobile Drawer Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Mobile Drawer Overlay ────────────────────────────────────────── */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -231,7 +231,7 @@ export function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* â”€â”€â”€ Desktop Resizable Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Desktop Resizable Sidebar ───────────────────────────────────── */}
       <motion.aside
         ref={sidebarRef}
         initial={false}

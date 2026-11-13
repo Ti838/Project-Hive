@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive Social Feed (Facebook & LinkedIn Grade Experience) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive Social Feed (Facebook & LinkedIn Grade Experience) ───────────
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -23,7 +23,7 @@ import { RichPostContent } from '@/components/feed/RichPostContent';
 import { ReactionListModal } from '@/components/feed/ReactionListModal';
 import type { Post, ReactionType } from '@/types';
 
-// â”€â”€â”€ Post Card Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Post Card Component ───────────────────────────────────────────────────────
 import { PostCard } from '@/components/feed/PostCard';
 import { PostComposerTrigger, PostCardSkeleton } from '@/components/feed/PostComposerTrigger';
 
@@ -42,7 +42,7 @@ export default function FeedPage() {
   const [composerOpen, setComposerOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
 
-  // â”€â”€ Stories Reel State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Stories Reel State ──────────────────────────────────────────────────────
   const [storyGroups, setStoryGroups] = useState<Array<{
     author: any;
     stories: Array<{ id: string; mediaUrl: string; mediaType: string; caption?: string; createdAt: string; hasViewed: boolean }>;
@@ -140,7 +140,7 @@ export default function FeedPage() {
     fetchPosts(1);
   }, [fetchPosts]);
 
-  // â”€â”€ Real-Time Socket.IO Synchronization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Real-Time Socket.IO Synchronization ─────────────────────────────────────
   useSocket({
     onPostNew: (data) => {
       if (data.post) {
@@ -327,7 +327,7 @@ export default function FeedPage() {
 
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto space-y-5">
-      {/* â”€â”€â”€ Campus Stories Reel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Campus Stories Reel ────────────────────────────────────────────── */}
       <div className="surface-glass border border-foreground/10 rounded-3xl p-4 shadow-xl">
         <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-1">
           {/* Add Story Button for Current User */}
@@ -400,10 +400,10 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Studio Post Composer Trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Studio Post Composer Trigger ───────────────────────────────────── */}
       <PostComposerTrigger onOpen={() => setComposerOpen(true)} />
 
-      {/* â”€â”€â”€ Feed Filter Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Feed Filter Bar ─────────────────────────────────────────────── */}
       <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
         {[
           { id: 'all', label: 'All Posts' },
@@ -488,7 +488,7 @@ export default function FeedPage() {
         )}
       </div>
 
-      {/* â”€â”€â”€ Rich Modal Post Composer & Post Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Rich Modal Post Composer & Post Editor ───────────────────────────── */}
       <PostComposerModal
         isOpen={composerOpen || Boolean(editingPost)}
         editPost={editingPost}
@@ -504,7 +504,7 @@ export default function FeedPage() {
         }
       />
 
-      {/* â”€â”€â”€ Full-Screen Campus Story Viewer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Full-Screen Campus Story Viewer ────────────────────────────────── */}
       <AnimatePresence>
         {activeStoryGroup && (
           <motion.div

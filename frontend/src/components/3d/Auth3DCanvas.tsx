@@ -285,3 +285,4 @@ export function Auth3DCanvas({ mode, className }: Auth3DCanvasProps) {
     />
   );
 }
+

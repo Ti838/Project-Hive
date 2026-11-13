@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Hive AI Capabilities Selector & Modal Command Picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Hive AI Capabilities Selector & Modal Command Picker ───────────────────
 // Minimal, glassmorphism mode selector with categorized matrix & instant switching
 
 import { useState } from 'react';

@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ ProjectHive — Studio-Grade Video Tile â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive — Studio-Grade Video Tile ────────────────────────────────────
 
 import { useEffect, useRef, useCallback } from 'react';
 import { MicOff, Wifi, WifiOff } from 'lucide-react';

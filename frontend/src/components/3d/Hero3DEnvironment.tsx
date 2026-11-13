@@ -287,3 +287,4 @@ export function Hero3DEnvironment({ className, onLoaded }: Hero3DEnvironmentProp
     />
   );
 }
+

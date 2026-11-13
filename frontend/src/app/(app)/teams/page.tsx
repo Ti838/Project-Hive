@@ -1,6 +1,6 @@
 'use client';
 
-// â”€â”€â”€ Squads & Campus Communities Hub â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Squads & Campus Communities Hub ──────────────────────────────────────────
 
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -190,7 +190,7 @@ export default function TeamsHubPage() {
 
   return (
     <div className="min-h-screen pb-20 space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* â”€â”€â”€ Hero Header & Creation CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Hero Header & Creation CTA ────────────────────────────────────── */}
       <div className="pt-2 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-2">
@@ -218,7 +218,7 @@ export default function TeamsHubPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Three-Tier Segmented Hub Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Three-Tier Segmented Hub Navigation ────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border/60 pb-4">
         <div className="inline-flex p-1.5 rounded-2xl bg-muted/50 border border-border/80 backdrop-blur-md self-start">
           <button
@@ -274,7 +274,7 @@ export default function TeamsHubPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Search & Category Pill Strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Search & Category Pill Strip ─────────────────────────────────── */}
       <div className="space-y-4">
         {/* Search Bar */}
         <div className="relative">
@@ -324,7 +324,7 @@ export default function TeamsHubPage() {
         )}
       </div>
 
-      {/* â”€â”€â”€ Studio Grid Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Studio Grid Display ─────────────────────────────────────────── */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -414,7 +414,7 @@ export default function TeamsHubPage() {
                 transition={{ duration: 0.2 }}
                 className="surface-glass rounded-3xl border border-foreground/10 dark:border-foreground/5 hover:border-primary/40 hover:shadow-xl transition-all flex flex-col justify-between overflow-hidden bg-card/70 backdrop-blur-md group"
               >
-                {/* â”€â”€â”€ Top Banner & Avatar Header â”€â”€â”€ */}
+                {/* ─── Top Banner & Avatar Header ─── */}
                 <div>
                   <div className="h-28 relative bg-linear-to-r from-primary/30 via-indigo-500/20 to-purple-500/20 overflow-hidden">
                     {team.banner_url ? (
@@ -465,7 +465,7 @@ export default function TeamsHubPage() {
                     </div>
                   </div>
 
-                  {/* â”€â”€â”€ Body Details â”€â”€â”€ */}
+                  {/* ─── Body Details ─── */}
                   <div className="p-5 pt-6 space-y-3.5">
                     <div>
                       <div className="flex items-center gap-2">
@@ -520,7 +520,7 @@ export default function TeamsHubPage() {
                   </div>
                 </div>
 
-                {/* â”€â”€â”€ Footer: Stacked Members & Action CTA â”€â”€â”€ */}
+                {/* ─── Footer: Stacked Members & Action CTA ─── */}
                 <div className="p-5 pt-3 border-t border-border/50 flex items-center justify-between gap-3 bg-muted/20">
                   {/* Stacked Members Preview */}
                   <div className="flex items-center gap-2">
@@ -587,7 +587,7 @@ export default function TeamsHubPage() {
         </div>
       )}
 
-      {/* â”€â”€â”€ Interactive Join Pitch Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Interactive Join Pitch Modal ─────────────────────────────────── */}
       <JoinRequestModal
         team={selectedTeamForJoin}
         isOpen={isJoinModalOpen}

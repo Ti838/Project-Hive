@@ -1,5 +1,5 @@
 'use client';
-// â”€â”€â”€ Dashboard Page (Studio-Grade Metric-Driven Architecture) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Dashboard Page (Studio-Grade Metric-Driven Architecture) ───────────────────
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -16,7 +16,7 @@ import type { Stats, Post, Team } from '@/types';
 import { useLocationIntelligence } from '@/hooks/useLocationIntelligence';
 import { LocationConsentModal } from '@/components/location/LocationConsentModal';
 
-// â”€â”€â”€ Studio-Grade Stat Card with Micro-Sparkline & Trend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Studio-Grade Stat Card with Micro-Sparkline & Trend ───────────────────────
 function StatCard({
   label,
   value,
@@ -67,7 +67,7 @@ function StatCard({
   );
 }
 
-// â”€â”€â”€ Quick Action Pill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Quick Action Pill ─────────────────────────────────────────────────────────
 function QuickAction({
   href,
   icon: Icon,
@@ -152,7 +152,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-8">
-      {/* â”€â”€â”€ Refined Obsidian Hero Welcome Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Refined Obsidian Hero Welcome Banner ────────────────────────── */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -213,7 +213,7 @@ export default function DashboardPage() {
         </div>
       </motion.div>
 
-      {/* â”€â”€â”€ Network Error Alert â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Network Error Alert ────────────────────────────────────────── */}
       {error && (
         <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-destructive shadow-sm">
           <div className="flex items-center gap-3 text-sm">
@@ -229,7 +229,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* â”€â”€â”€ Studio Metric Cards with Micro-Sparklines â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Studio Metric Cards with Micro-Sparklines ──────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
@@ -282,7 +282,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* â”€â”€â”€ Quick Shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Quick Shortcuts ────────────────────────────────────────────── */}
       <div className="space-y-3.5">
         <div className="flex items-center gap-2">
           <Activity className="w-4 h-4 text-primary" />
@@ -314,7 +314,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Active Squads & Highlights Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Active Squads & Highlights Grid ────────────────────────────── */}
       <div className="grid lg:grid-cols-12 gap-6">
         {/* Left: Active Squads */}
         <div className="lg:col-span-5 surface-glass rounded-3xl p-5 sm:p-6 border border-foreground/10 shadow-xl flex flex-col gap-4">
@@ -346,7 +346,7 @@ export default function DashboardPage() {
               <p className="text-sm font-semibold text-foreground">You haven&apos;t joined a squad yet</p>
               <p className="text-xs text-muted-foreground mt-1">Join an existing squad or create your own</p>
               <Link href="/teams" className="text-xs text-primary font-bold mt-3 inline-block hover:underline">
-                Explore recruiting teams â†’
+                Explore recruiting teams →
               </Link>
             </div>
           ) : (
@@ -418,7 +418,7 @@ export default function DashboardPage() {
               <Compass className="w-10 h-10 mx-auto mb-2 opacity-30 text-primary" />
               <p className="text-sm font-semibold text-foreground">No recent activity yet</p>
               <Link href="/feed" className="text-xs text-primary font-bold mt-2 inline-block hover:underline">
-                Be the first to share an update â†’
+                Be the first to share an update →
               </Link>
             </div>
           ) : (

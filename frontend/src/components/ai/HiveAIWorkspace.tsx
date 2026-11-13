@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Hive AI Workspace Component (Studio-Grade Intelligence Canvas) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Hive AI Workspace Component (Studio-Grade Intelligence Canvas) ─────────────
 // Features full-width responsive canvas, live artifact split-pane & unified mode selector
 
 import { useState, useRef, useEffect } from 'react';
@@ -147,7 +147,7 @@ export function HiveAIWorkspace({
       'flex flex-col h-full w-full min-h-0 surface-overlay overflow-hidden',
       className
     )}>
-      {/* â”€â”€ Top Header with Interactive Mode Trigger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Top Header with Interactive Mode Trigger ─────────────────── */}
       <HiveAIHeader
         activeCapability={capability}
         onSelectCapability={handleSelectCapability}
@@ -155,11 +155,11 @@ export function HiveAIWorkspace({
         onClearSession={messages.length > 0 ? handleClear : undefined}
       />
 
-      {/* â”€â”€ Workspace Body (Full-Width Studio Canvas + Right Split-Pane) â”€â”€ */}
+      {/* ── Workspace Body (Full-Width Studio Canvas + Right Split-Pane) ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden relative">
         <HiveAIContextRail context={context} />
 
-        {/* â”€â”€ Responsive Viewport Switcher Controls (when artifacts exist) â”€â”€â”€â”€ */}
+        {/* ── Responsive Viewport Switcher Controls (when artifacts exist) ──── */}
         {artifacts.length > 0 && (
           <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b border-border/60 text-xs shrink-0">
             {/* Mobile Tab Switcher */}
@@ -210,7 +210,7 @@ export function HiveAIWorkspace({
           </div>
         )}
 
-        {/* â”€â”€ Main Workspace Body (Responsive Split-Pane) â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Main Workspace Body (Responsive Split-Pane) ───────── */}
         <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden relative">
           {/* Main Column: Chat Thread & Floating Composer */}
           <div

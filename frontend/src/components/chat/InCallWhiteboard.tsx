@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ In-Call Collaborative Whiteboard (HTML5 Canvas Engine) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── In-Call Collaborative Whiteboard (HTML5 Canvas Engine) ─────────────────────
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import {
@@ -54,7 +54,7 @@ export function InCallWhiteboard({
   const historyRef = useRef<ImageData[]>([]);
   const startPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
-  // â”€â”€ Resize canvas to fill container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Resize canvas to fill container ──────────────────────────────────────────
   const syncCanvasSize = useCallback(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -122,7 +122,7 @@ export function InCallWhiteboard({
     onEmitClear?.();
   };
 
-  // â”€â”€ Commit inline text directly onto Canvas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Commit inline text directly onto Canvas ─────────────────────────────────
   const commitText = () => {
     if (!textPos || !inlineText.trim()) {
       setTextPos(null);
@@ -157,7 +157,7 @@ export function InCallWhiteboard({
     setInlineText('');
   };
 
-  // â”€â”€ Remote Draw Listener â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Remote Draw Listener ───────────────────────────────────────────────────
   useEffect(() => {
     if (!remoteDrawEvent) return;
     const canvas = canvasRef.current;
@@ -197,7 +197,7 @@ export function InCallWhiteboard({
     }
   }, [remoteClearEvent]);
 
-  // â”€â”€ Mouse & Touch Drawing Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Mouse & Touch Drawing Handlers ──────────────────────────────────────────
   const getCoords = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
@@ -317,7 +317,7 @@ export function InCallWhiteboard({
     }
   };
 
-  // â”€â”€ Export Canvas to PNG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Export Canvas to PNG ────────────────────────────────────────────────────
   const exportPNG = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -331,7 +331,7 @@ export function InCallWhiteboard({
 
   return (
     <div className="relative w-full h-full flex flex-col bg-neutral-950 text-white select-none rounded-2xl overflow-hidden border border-border/40">
-      {/* â”€â”€â”€ Top Whiteboard Toolbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Top Whiteboard Toolbar ──────────────────────────────────────── */}
       <div className="h-12 bg-neutral-900/90 backdrop-blur-md border-b border-border/40 px-3 flex items-center justify-between gap-2 shrink-0 z-20">
         {/* Tool selector */}
         <div className="flex items-center gap-1 bg-background/40 p-1 rounded-xl">
@@ -421,7 +421,7 @@ export function InCallWhiteboard({
         </div>
       </div>
 
-      {/* â”€â”€â”€ Canvas Workspace â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Canvas Workspace ────────────────────────────────────────────── */}
       <div ref={containerRef} className="relative flex-1 w-full h-full cursor-crosshair overflow-hidden">
         <canvas
           ref={canvasRef}
@@ -434,7 +434,7 @@ export function InCallWhiteboard({
           className="absolute inset-0 w-full h-full block"
         />
 
-        {/* â”€â”€ Click-to-Type Live Textarea Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Click-to-Type Live Textarea Overlay ─────────────────────────── */}
         {textPos && (
           <div
             className="absolute z-30 flex flex-col gap-1 p-1 bg-neutral-900/95 border border-primary/50 rounded-xl shadow-2xl"
@@ -475,7 +475,7 @@ export function InCallWhiteboard({
           </div>
         )}
 
-        {/* â”€â”€ Sticky Notes Layer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ── Sticky Notes Layer ─────────────────────────────────────────── */}
         {stickyNotes.map((note) => (
           <div
             key={note.id}

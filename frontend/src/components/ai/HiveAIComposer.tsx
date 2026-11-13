@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Hive AI Composer Component (Google Gemini & Raycast Floating Studio) â”€â”€â”€â”€â”€â”€â”€
+// ─── Hive AI Composer Component (Google Gemini & Raycast Floating Studio) ───────
 // Central prompt composer with voice waveform dictation & screenshot paste
 
 import { useState, useRef, useEffect } from 'react';
@@ -247,7 +247,7 @@ export function HiveAIComposer({
           {/* Right: Circular Tactile Send Button */}
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground hidden md:inline select-none">
-              Shift + â†µ for newline
+              Shift + ←µ for newline
             </span>
 
             <button

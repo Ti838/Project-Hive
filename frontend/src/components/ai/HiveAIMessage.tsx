@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Hive AI Message Component (Obsidian Code Blocks & Refined Typography) â”€â”€â”€â”€â”€â”€â”€
+// ─── Hive AI Message Component (Obsidian Code Blocks & Refined Typography) ───────
 
 import { useState } from 'react';
 import { Copy, Check, Volume2, VolumeX, Sparkles, User as UserIcon } from 'lucide-react';

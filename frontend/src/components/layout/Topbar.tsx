@@ -1,5 +1,5 @@
 'use client';
-// â”€â”€â”€ Native-Grade Topbar & Command Search Navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Native-Grade Topbar & Command Search Navigation ─────────────────────────
 
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
@@ -236,7 +236,7 @@ export function Topbar() {
   return (
     <>
       <header className="h-14 shrink-0 sticky top-0 z-30 flex items-center justify-between px-3.5 sm:px-5 surface-overlay transition-colors">
-        {/* â”€â”€â”€ Left Section: Mobile Back / Hamburger & Command Trigger â”€â”€â”€â”€â”€â”€ */}
+        {/* ─── Left Section: Mobile Back / Hamburger & Command Trigger ────── */}
         <div className="flex items-center gap-3 min-w-0">
           {/* Dynamic Mobile Back vs Drawer Toggle */}
           {isChild ? (
@@ -292,7 +292,7 @@ export function Topbar() {
           </button>
         </div>
 
-        {/* â”€â”€â”€ Right Section: Socket Status, Theme, Notifications & Profile â”€â”€ */}
+        {/* ─── Right Section: Socket Status, Theme, Notifications & Profile ── */}
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           {/* Real-time Socket Indicator Dot */}
           <div
@@ -528,7 +528,7 @@ export function Topbar() {
         </div>
       </header>
 
-      {/* â”€â”€â”€ Command-Grade Raycast Search Modal Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Command-Grade Raycast Search Modal Overlay ──────────────────── */}
       {/* Command-Grade Raycast Search Modal Overlay */}
       <CommandPaletteModal
         isOpen={commandOpen}

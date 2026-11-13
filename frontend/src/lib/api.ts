@@ -20,7 +20,7 @@ export function getBaseUrl(): string {
   return DEFAULT_API_URL.replace(/\/+$/, '');
 }
 
-// â”€â”€â”€ Token helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Token helpers ─────────────────────────────────────────────────────────────
 
 export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null;
@@ -49,7 +49,7 @@ export function setStoredUser(user: User): void {
   localStorage.setItem('user_data', JSON.stringify(user));
 }
 
-// â”€â”€â”€ Token refresh with Mutex / Lock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Token refresh with Mutex / Lock ──────────────────────────────────────────
 let activeRefreshPromise: Promise<string> | null = null;
 
 async function refreshAccessToken(): Promise<string> {
@@ -113,7 +113,7 @@ async function refreshAccessToken(): Promise<string> {
 
 import { getCachedDeviceTelemetry } from '@/lib/deviceTelemetry';
 
-// â”€â”€â”€ Core fetch wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Core fetch wrapper ────────────────────────────────────────────────────────
 
 type ApiResult<T> = T & { ok: boolean; status: number; error?: string };
 
@@ -204,7 +204,7 @@ async function request<T = unknown>(
   }
 }
 
-// â”€â”€â”€ API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── API ───────────────────────────────────────────────────────────────────────
 
 export const api = {
 

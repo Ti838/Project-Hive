@@ -172,7 +172,7 @@ export function MediaMosaic({ mediaUrls, className }: MediaMosaicProps) {
         )}
       </div>
 
-      {/* â”€â”€ Fullscreen Lightbox Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Fullscreen Lightbox Modal ────────────────────────────────────── */}
       <AnimatePresence>
         {lightboxIdx !== null && (
           <motion.div

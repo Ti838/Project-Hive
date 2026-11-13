@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Hive AI Contextual Intelligence Drawer (Global Copilot) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Hive AI Contextual Intelligence Drawer (Global Copilot) ─────────────────
 // Activated via contextual triggers or Ctrl+J. Frosted slide-over drawer with quick shortcuts.
 
 import { useState, useRef, useEffect } from 'react';

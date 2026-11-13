@@ -74,3 +74,4 @@ The ProjectHive Super Administrator Command Center remains strictly isolated:
 - **Routes:** `/admin/login`, `/admin/dashboard`, `/admin/users`, `/admin/teams`, `/admin/support`, `/admin/security`, `/admin/audit`, `/admin/system`.
 - **RBAC:** Live PostgreSQL role cross-checks (`server/middleware/adminAuth.js`) ensure no regular student user can access administrative endpoints.
 - **Client Security:** Desktop gating and separate session tokens prevent mixing student and administrator state.
+

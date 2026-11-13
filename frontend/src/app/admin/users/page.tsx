@@ -210,7 +210,7 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* â”€â”€â”€ Header & Search Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Header & Search Controls ──────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -279,7 +279,7 @@ export default function AdminUsersPage() {
         </form>
       </div>
 
-      {/* â”€â”€â”€ User Table Matrix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── User Table Matrix ─────────────────────────────────────────── */}
       <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -451,7 +451,7 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Strike Ledger & Infraction Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Strike Ledger & Infraction Modal ──────────────────────────── */}
       {strikesModalUser && (
         <UserStrikesModal
           user={strikesModalUser}

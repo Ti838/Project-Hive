@@ -90,7 +90,7 @@ export default function AdminSystemPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* â”€â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Header ───────────────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -129,7 +129,7 @@ export default function AdminSystemPage() {
         </div>
       )}
 
-      {/* â”€â”€â”€ Runtime Feature Flags Matrix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Runtime Feature Flags Matrix ──────────────────────────────── */}
       <div className="space-y-4">
         <h2 className="text-sm font-bold tracking-tight text-slate-200">
           Runtime Feature Flags & Access Gates
@@ -295,7 +295,7 @@ export default function AdminSystemPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Detailed System & Runtime Telemetry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Detailed System & Runtime Telemetry ────────────────────────── */}
       <div className="p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5 space-y-4">
         <h2 className="text-sm font-bold tracking-tight text-slate-200 flex items-center gap-2">
           <Activity className="w-4 h-4 text-cyan-400" />

@@ -97,7 +97,7 @@ export default function AdminAuditPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* â”€â”€â”€ Header & Search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Header & Search ──────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -159,7 +159,7 @@ export default function AdminAuditPage() {
         </form>
       </div>
 
-      {/* â”€â”€â”€ Audit Log Table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Audit Log Table ──────────────────────────────────────────── */}
       <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -275,7 +275,7 @@ export default function AdminAuditPage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ JSON Details Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── JSON Details Drawer ──────────────────────────────────────── */}
       {/* JSON Details Drawer */}
       <AuditLogDrawer
         log={selectedLog}

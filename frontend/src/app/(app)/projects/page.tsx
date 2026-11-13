@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Project Showcase with ProductHunt-Grade Upvotes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Project Showcase with ProductHunt-Grade Upvotes ──────────────────────────
 
 import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,5 +1,5 @@
 'use client';
-// â”€â”€â”€ ProjectHive — Minimized Call PiP Widget â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── ProjectHive — Minimized Call PiP Widget ──────────────────────────────────
 
 import { useRef, useEffect, useCallback } from 'react';
 import { Maximize2, Mic, MicOff, PhoneOff } from 'lucide-react';

@@ -1,5 +1,5 @@
 'use client';
-// â”€â”€â”€ Settings Page with Real Persistence, Active Sessions & Privacy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Settings Page with Real Persistence, Active Sessions & Privacy ─────────────
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';

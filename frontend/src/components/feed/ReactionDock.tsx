@@ -1,6 +1,6 @@
 ﻿'use client';
 
-// â”€â”€â”€ Facebook & LinkedIn-Grade Jitter-Free Reaction Dock â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Facebook & LinkedIn-Grade Jitter-Free Reaction Dock ──────────────────────
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -159,7 +159,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
       onMouseEnter={openFlyout}
       onMouseLeave={closeFlyout}
     >
-      {/* â”€â”€ Facebook Floating Reaction Dock (Seamless Hover Bridge) â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Facebook Floating Reaction Dock (Seamless Hover Bridge) ──────── */}
       <AnimatePresence>
         {showFlyout && (
           <div className="absolute left-0 bottom-full pb-2.5 z-50 pointer-events-auto">
@@ -214,7 +214,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
         )}
       </AnimatePresence>
 
-      {/* â”€â”€ Trigger Button (Facebook Like / Reaction Button) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Trigger Button (Facebook Like / Reaction Button) ──────────────── */}
       <button
         type="button"
         onTouchStart={handleTouchStart}
@@ -246,7 +246,7 @@ export function ReactionDock({ currentReaction, onReact, className }: ReactionDo
   );
 }
 
-// â”€â”€ Stacked Miniature Reaction Indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Stacked Miniature Reaction Indicator ──────────────────────────────────────
 interface StackedReactionBadgeProps {
   reactionCounts?: Record<string, number>;
   total?: number;

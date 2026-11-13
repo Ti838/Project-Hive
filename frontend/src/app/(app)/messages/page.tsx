@@ -1,5 +1,5 @@
 ﻿'use client';
-// â”€â”€â”€ Messages Page (Telegram / Messenger / WhatsApp Studio Grade) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Messages Page (Telegram / Messenger / WhatsApp Studio Grade) ──────────────
 
 import { useEffect, useState, useRef, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';

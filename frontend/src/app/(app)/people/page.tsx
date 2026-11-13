@@ -1,6 +1,6 @@
 ﻿'use client';
 
-// â”€â”€â”€ Student Discovery Directory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Student Discovery Directory ──────────────────────────────────────────────
 
 import { useEffect, useState, useCallback, useTransition } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -322,7 +322,7 @@ export default function PeoplePage() {
 
   return (
     <div className="min-h-screen pb-16 space-y-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* â”€â”€â”€ Hero Header & Search Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Hero Header & Search Bar ────────────────────────────────────────── */}
       <div className="pt-2 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -372,7 +372,7 @@ export default function PeoplePage() {
           )}
         </div>
 
-        {/* â”€â”€â”€ Faceted Filter Suite â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ─── Faceted Filter Suite ────────────────────────────────────────── */}
         <div className="bg-card/70 border border-foreground/10 dark:border-foreground/5 rounded-3xl p-4 sm:p-5 shadow-xs backdrop-blur-md space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
             <div className="flex items-center gap-2 text-xs font-bold text-foreground">
@@ -496,7 +496,7 @@ export default function PeoplePage() {
         </div>
       </div>
 
-      {/* â”€â”€â”€ Recommended Peers Shelf â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Recommended Peers Shelf ────────────────────────────────────────── */}
       {recommended.length > 0 && !hasActiveFilters && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
@@ -593,7 +593,7 @@ export default function PeoplePage() {
         </section>
       )}
 
-      {/* â”€â”€â”€ Main Directory Grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ─── Main Directory Grid ────────────────────────────────────────── */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-extrabold text-foreground tracking-tight">
@@ -652,7 +652,7 @@ export default function PeoplePage() {
           </div>
         )}
 
-        {/* â”€â”€â”€ Pagination Controls â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ─── Pagination Controls ────────────────────────────────────────── */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 pt-6">
             <button
