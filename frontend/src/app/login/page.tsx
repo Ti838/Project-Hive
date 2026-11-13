@@ -16,6 +16,7 @@ import { useAuthStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import { getExactDeviceDetails } from '@/lib/deviceFingerprint';
 import { Button, Input, Badge } from '@/components/ui';
+import { Auth3DCanvas } from '@/components/3d';
 
 const loginSchema = z.object({
   email:    z.string().email('Please enter a valid email address'),
@@ -127,35 +128,46 @@ export default function LoginPage() {
       <div className="flex-1 flex w-full max-w-6xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8 py-6 sm:py-12">
         <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-[#0d1117]/90 border border-white/[0.1] rounded-3xl p-5 sm:p-8 shadow-2xl backdrop-blur-2xl">
 
-          {/* Left Feature Branding (Desktop) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-amber-500/15 via-amber-500/5 to-transparent border border-amber-500/20 min-h-[580px]">
-            <div className="space-y-6">
-              <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center p-3 shadow-inner">
-                <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+          {/* Left Feature Branding with Interactive 3D Canvas (Desktop) */}
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-amber-500/10 via-[#0a0e17] to-[#07090e] border border-amber-500/20 min-h-[640px] relative overflow-hidden shadow-2xl">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center p-2.5 shadow-inner">
+                  <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
+                </div>
+                <Badge variant="amber" size="sm" dot>STUDENT WORKSPACE</Badge>
+              </div>
+
+              {/* Interactive 3D Key of Knowledge Canvas */}
+              <div className="relative w-full h-[220px] rounded-2xl overflow-hidden bg-black/50 border border-amber-500/25 shadow-inner flex items-center justify-center">
+                <Auth3DCanvas mode="signin" className="w-full h-full" />
+                <div className="absolute bottom-2 left-3 z-10 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-amber-400 flex items-center gap-1.5 shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                  <span>3D Security Core • Orbit with pointer</span>
+                </div>
               </div>
 
               <div>
-                <Badge variant="amber" size="sm" dot className="mb-3">STUDENT WORKSPACE PLATFORM</Badge>
-                <h1 className="text-3xl font-black tracking-tight leading-tight text-white">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight leading-tight text-white">
                   Welcome Back to ProjectHive
                 </h1>
-                <p className="text-sm text-slate-400 mt-2 leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed">
                   Log in to your workspace to collaborate with your team, join live calls, and build projects.
                 </p>
               </div>
 
-              <div className="space-y-3 pt-2">
+              <div className="space-y-2.5 pt-1">
                 {[
                   { icon: Users, text: 'Real-time squad matching & team channels' },
                   { icon: Video, text: 'Instant HD WebRTC video calls & whiteboard' },
                   { icon: Sparkles, text: 'HiveMind AI Assistant & Project Architect' },
                   { icon: ShieldCheck, text: 'Secure student authentication & Zero-Trust RLS' },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs font-medium text-slate-200">
+                  <div key={idx} className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-xs font-medium text-slate-200">
                     <div className="p-1.5 rounded-lg bg-amber-500/15 text-amber-400 shrink-0">
-                      <item.icon className="w-4 h-4" />
+                      <item.icon className="w-3.5 h-3.5" />
                     </div>
-                    <span>{item.text}</span>
+                    <span className="truncate">{item.text}</span>
                   </div>
                 ))}
               </div>

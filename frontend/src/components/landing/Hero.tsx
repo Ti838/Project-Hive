@@ -17,6 +17,7 @@ import {
   Play, 
   ExternalLink 
 } from 'lucide-react';
+import { Hero3DEnvironment } from '@/components/3d/Hero3DEnvironment';
 import { Hive3DScene } from '@/components/3d/Hive3DScene';
 
 export function Hero() {
@@ -209,11 +210,11 @@ export function Hero() {
               
               {/* Tab 0: 3D WebGL Collaboration Mesh Core */}
               {activeTab === '3d' && (
-                <div className="relative w-full h-full min-h-[340px] sm:min-h-[380px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#0b0e14] via-[#07090e] to-black flex items-center justify-center border border-primary/20 shadow-inner">
-                  <Hive3DScene />
-                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/60 text-[11px] sm:text-xs font-mono text-primary flex items-center gap-2 shadow-xs">
+                <div className="relative w-full h-full min-h-[360px] sm:min-h-[420px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#0b0e14] via-[#07090e] to-black flex items-center justify-center border border-amber-500/20 shadow-inner">
+                  <Hero3DEnvironment className="w-full h-full" />
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/60 text-[11px] sm:text-xs font-mono text-amber-400 flex items-center gap-2 shadow-xs">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
-                    <span>WebGL 3D Core • Orbit with mouse</span>
+                    <span>WebGL 3D Core • Inertia Parallax Orbit</span>
                   </div>
                 </div>
               )}

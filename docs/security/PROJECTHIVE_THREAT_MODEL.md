@@ -39,3 +39,4 @@
 - **Defensive Barrier:**
   1. `adminAuthMiddleware.js` queries `users` table live on every single administrative request.
   2. If `role !== 'admin'` or `is_banned === true`, request is denied with HTTP 403 regardless of token expiry.
+

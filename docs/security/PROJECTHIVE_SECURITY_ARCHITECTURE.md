@@ -103,3 +103,4 @@ Implemented in `frontend/src/app/admin/security/page.tsx`:
    - Instant termination of all active sessions across the entire system.
    - Mandatory operational justification (8+ chars) recorded immutably in `admin_audit_logs`.
    - Real-time WebSocket emergency alert dispatched to all connected clients.
+

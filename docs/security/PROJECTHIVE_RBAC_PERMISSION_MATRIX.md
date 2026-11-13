@@ -37,3 +37,4 @@
 | `admin.audit_logs.read` | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `admin.roles.assign` | ❌ | ❌ | ❌ | ❌ | ✅ |
 | `security.break_glass` | ❌ | ❌ | ❌ | ❌ | ✅ |
+
