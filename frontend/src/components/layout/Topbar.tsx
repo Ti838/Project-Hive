@@ -19,6 +19,8 @@ import { soundEngine } from '@/lib/soundEngine';
 import { api } from '@/lib/api';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { CommandPaletteModal } from './CommandPaletteModal';
+import { NotificationsPopover } from './NotificationsPopover';
 import type { Notification, User as UserType, Team as TeamType, Project as ProjectType } from '@/types';
 
 function getPageMeta(pathname: string): { title: string; isChild: boolean } {
@@ -414,100 +416,20 @@ export function Topbar() {
             </button>
 
             {/* Notification Dropdown Popover */}
-            <AnimatePresence>
-              {notifOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                  transition={{ duration: 0.15, ease: 'easeOut' }}
-                  className="absolute right-0 top-full mt-2 w-80 sm:w-88 surface-floating rounded-2xl border border-border/70 shadow-2xl z-50 overflow-hidden"
-                >
-                  <div className="flex items-center justify-between p-3.5 border-b border-border/60">
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm">Notifications</span>
-                      {unreadNotifications > 0 && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-primary/20 text-primary">
-                          {unreadNotifications} new
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {/* Live Audio Chime Quick Control */}
-                      <div className="flex items-center bg-muted/60 hover:bg-muted rounded-lg p-0.5 border border-border/50 text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const next = !soundEnabled;
-                            setSoundEnabled(next);
-                            if (next) soundEngine?.test('notification');
-                          }}
-                          className={cn(
-                            "p-1 rounded-md transition-colors cursor-pointer",
-                            soundEnabled ? "text-primary hover:bg-primary/10" : "text-muted-foreground hover:bg-muted"
-                          )}
-                          title={soundEnabled ? `Live Chimes Active (${soundPack}) • Click to Mute` : 'Live Chimes Muted • Click to Unmute'}
-                        >
-                          {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => soundEngine?.test('notification')}
-                          className="px-1.5 py-0.5 text-muted-foreground hover:text-foreground text-[10px] font-medium transition-colors cursor-pointer"
-                          title="Preview notification chime"
-                        >
-                          Test 🔔
-                        </button>
-                      </div>
-
-                      <Link
-                        href="/notifications"
-                        onClick={() => setNotifOpen(false)}
-                        className="text-xs text-primary hover:underline font-medium"
-                      >
-                        View all
-                      </Link>
-                    </div>
-                  </div>
-
-                  <div className="max-h-72 overflow-y-auto divide-y divide-border/40">
-                    {recentNotifs.length === 0 ? (
-                      <div className="py-8 text-center text-xs text-muted-foreground">
-                        <CheckCheck className="w-6 h-6 mx-auto mb-1.5 text-muted-foreground/60" />
-                        No new notifications
-                      </div>
-                    ) : (
-                      recentNotifs.map((n) => (
-                        <Link
-                          key={n.id}
-                          href="/notifications"
-                          onClick={() => setNotifOpen(false)}
-                          className={cn(
-                            'block p-3 hover:bg-muted/60 transition-colors text-left tap-press',
-                            !n.is_read && 'bg-primary/5'
-                          )}
-                        >
-                          <p className="text-xs font-medium text-foreground line-clamp-2">{n.title ? `${n.title}: ${n.message}` : n.message}</p>
-                          <span className="text-[10px] text-muted-foreground mt-1 block">
-                            {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </Link>
-                      ))
-                    )}
-                  </div>
-
-                  <div className="p-2 border-t border-border/60 bg-muted/30 text-center">
-                    <Link
-                      href="/notifications"
-                      onClick={() => setNotifOpen(false)}
-                      className="text-xs font-semibold text-foreground/80 hover:text-foreground tap-press inline-block py-1"
-                    >
-                      Open Notification Center â†’
-                    </Link>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <NotificationsPopover
+              isOpen={notifOpen}
+              onClose={() => setNotifOpen(false)}
+              unreadNotifications={unreadNotifications}
+              recentNotifs={recentNotifs}
+              soundEnabled={soundEnabled}
+              soundPack={soundPack}
+              onToggleSound={() => {
+                const next = !soundEnabled;
+                setSoundEnabled(next);
+                if (next) soundEngine?.test('notification');
+              }}
+              onTestSound={() => soundEngine?.test('notification')}
+            />
           </div>
 
           {/* Profile Dropdown Container */}
@@ -607,255 +529,20 @@ export function Topbar() {
       </header>
 
       {/* â”€â”€â”€ Command-Grade Raycast Search Modal Overlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-      <AnimatePresence>
-        {commandOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] sm:pt-[15vh] px-4">
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setCommandOpen(false)}
-              className="fixed inset-0 bg-background/70 backdrop-blur-md"
-            />
-
-            {/* Modal Dialog */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: -10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: -10 }}
-              transition={{ duration: 0.16, ease: 'easeOut' }}
-              className="relative w-full max-w-xl surface-floating rounded-2xl border border-border/70 shadow-2xl overflow-hidden z-10"
-            >
-              {/* Search Bar Input */}
-              <form onSubmit={handleCommandSearch} className="flex items-center border-b border-border/60 px-4 h-14">
-                <Search className="w-4 h-4 text-muted-foreground mr-3 shrink-0" />
-                <input
-                  ref={cmdInputRef}
-                  type="text"
-                  value={cmdQuery}
-                  onChange={(e) => setCmdQuery(e.target.value)}
-                  placeholder="Search students, teams, showcase, or jump to route..."
-                  className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-                />
-                {cmdQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setCmdQuery('')}
-                    className="p-1 text-muted-foreground hover:text-foreground rounded-lg tap-press mr-2"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-                <kbd className="px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground bg-muted border border-border/60 rounded-md">
-                  ESC
-                </kbd>
-              </form>
-
-              {/* Suggestions / Results */}
-              <div className="p-2 max-h-96 overflow-y-auto space-y-2">
-                {cmdQuery.trim() ? (
-                  <>
-                    {/* Live Search Status Indicator */}
-                    {searchLoading && (
-                      <div className="flex items-center gap-2 px-3 py-2 text-xs text-muted-foreground animate-pulse">
-                        <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
-                        <span>Searching students, squads, and projects…</span>
-                      </div>
-                    )}
-
-                    {/* Quick Direct Search Actions */}
-                    <div className="space-y-1">
-                      <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
-                        Quick Jump
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleCommandSelect(`/people?search=${encodeURIComponent(cmdQuery.trim())}`)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <Users className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className="truncate">Search students directory for &ldquo;{cmdQuery}&rdquo;</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground shrink-0 font-mono">â†µ Enter</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleCommandSelect(`/teams?search=${encodeURIComponent(cmdQuery.trim())}`)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <Building2 className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className="truncate">Search squads & hubs for &ldquo;{cmdQuery}&rdquo;</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground shrink-0">Jump</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleCommandSelect(`/showcase?search=${encodeURIComponent(cmdQuery.trim())}`)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-primary/10 hover:text-primary transition-colors text-left tap-press cursor-pointer"
-                      >
-                        <div className="flex items-center gap-2.5 truncate">
-                          <FolderKanban className="w-3.5 h-3.5 text-primary shrink-0" />
-                          <span className="truncate">Search showcase for &ldquo;{cmdQuery}&rdquo;</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground shrink-0">Jump</span>
-                      </button>
-                    </div>
-
-                    {/* Live Matching Students & Peers */}
-                    {liveUsers.length > 0 && (
-                      <div className="space-y-1 pt-1 border-t border-border/40">
-                        <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
-                          <GraduationCap className="w-3 h-3 text-primary" /> Students & Peers ({liveUsers.length})
-                        </div>
-                        {liveUsers.map((u) => {
-                          const uName = displayName(u);
-                          return (
-                            <button
-                              key={u.id}
-                              type="button"
-                              onClick={() => handleCommandSelect(`/profile/${u.id}`)}
-                              className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-accent/70 transition-colors text-left tap-press cursor-pointer group"
-                            >
-                              <div className="flex items-center gap-2.5 min-w-0">
-                                <UserAvatar user={u} size="xs" />
-                                <div className="min-w-0">
-                                  <div className="flex items-center gap-1.5 font-semibold text-foreground group-hover:text-primary transition-colors">
-                                    <span className="truncate">{uName}</span>
-                                    {u.is_verified && (
-                                      <span className="text-primary text-[10px]">âœ“</span>
-                                    )}
-                                  </div>
-                                  <p className="text-[10px] text-muted-foreground truncate">
-                                    {u.university || u.major || u.email}
-                                  </p>
-                                </div>
-                              </div>
-                              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-
-                    {/* Live Matching Teams / Squads */}
-                    {liveTeams.length > 0 && (
-                      <div className="space-y-1 pt-1 border-t border-border/40">
-                        <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
-                          <Users className="w-3 h-3 text-primary" /> Squads & Hubs ({liveTeams.length})
-                        </div>
-                        {liveTeams.map((t) => (
-                          <button
-                            key={t.id}
-                            type="button"
-                            onClick={() => handleCommandSelect(`/teams`)}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-accent/70 transition-colors text-left tap-press cursor-pointer group"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
-                                {t.name?.charAt(0)?.toUpperCase() || 'T'}
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                                  {t.name}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground truncate">
-                                  {t.category || (t.type === 'community' ? 'Community Hub' : 'Project Squad')} • {t.member_count ?? t.members?.length ?? 1} members
-                                </p>
-                              </div>
-                            </div>
-                            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Live Matching Showcase Projects */}
-                    {liveProjects.length > 0 && (
-                      <div className="space-y-1 pt-1 border-t border-border/40">
-                        <div className="px-3 py-1 text-[10px] font-bold text-muted-foreground tracking-wider uppercase flex items-center gap-1.5">
-                          <FolderKanban className="w-3 h-3 text-primary" /> Showcase Projects ({liveProjects.length})
-                        </div>
-                        {liveProjects.map((p) => (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => handleCommandSelect(`/showcase`)}
-                            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs hover:bg-accent/70 transition-colors text-left tap-press cursor-pointer group"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold text-xs shrink-0">
-                                <Star className="w-3.5 h-3.5 fill-amber-500/30" />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                                  {p.title}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground truncate">
-                                  {p.category || 'Innovation'} • {p.upvotes ?? p.upvote_count ?? p.likes ?? 0} upvotes
-                                </p>
-                              </div>
-                            </div>
-                            <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/50 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0" />
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {!searchLoading && liveUsers.length === 0 && liveTeams.length === 0 && liveProjects.length === 0 && (
-                      <div className="py-4 text-center text-xs text-muted-foreground">
-                        No direct live records found. Click a quick jump option above or press Enter to search.
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <div className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground tracking-wider uppercase">
-                      Quick Navigate
-                    </div>
-                    {[
-                      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-                      { href: '/feed', label: 'Feed & Campus Updates', icon: Rss },
-                      { href: '/messages', label: 'Real-time Chat & Direct Messages', icon: MessageSquare },
-                      { href: '/people', label: 'Students & Peer Discovery', icon: Users },
-                      { href: '/teams', label: 'Teams & Project Squads', icon: Building2 },
-                      { href: '/showcase', label: 'Project Showcase', icon: FolderKanban },
-                      { href: '/generator', label: 'Hive AI Studio', icon: Sparkles },
-                    ].map(({ href, label, icon: Icon }) => (
-                      <button
-                        key={href}
-                        type="button"
-                        onClick={() => handleCommandSelect(href)}
-                        className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-foreground hover:bg-accent/80 transition-colors text-left tap-press cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon className="w-4 h-4 text-muted-foreground" />
-                          <span>{label}</span>
-                        </div>
-                        <span className="text-[10px] text-muted-foreground">{href}</span>
-                      </button>
-                    ))}
-                  </>
-                )}
-              </div>
-
-              {/* Footer status */}
-              <div className="px-4 py-2 border-t border-border/60 bg-muted/20 flex items-center justify-between text-[11px] text-muted-foreground">
-                <span>Navigation & Search</span>
-                <span className="flex items-center gap-1.5">
-                  <kbd className="px-1.5 py-0.5 rounded bg-muted border border-border/60 text-[10px] font-mono">â†µ</kbd>
-                  to select
-                </span>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      {/* Command-Grade Raycast Search Modal Overlay */}
+      <CommandPaletteModal
+        isOpen={commandOpen}
+        onClose={() => setCommandOpen(false)}
+        cmdQuery={cmdQuery}
+        setCmdQuery={setCmdQuery}
+        searchLoading={searchLoading}
+        liveUsers={liveUsers}
+        liveTeams={liveTeams}
+        liveProjects={liveProjects}
+        onSelect={handleCommandSelect}
+        cmdInputRef={cmdInputRef}
+        onSearch={handleCommandSearch}
+      />
     </>
   );
 }
-
