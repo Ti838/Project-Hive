@@ -27,7 +27,8 @@ import {
   Bell,
   Volume2,
   VolumeX,
-  X
+  X,
+  Menu
 } from 'lucide-react';
 import { DesktopGate } from '@/components/admin/DesktopGate';
 import { useAuthStore, useUIStore } from '@/lib/store';
@@ -64,6 +65,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [detectedIp, setDetectedIp] = useState<string>('Resolving...');
   const [liveAlert, setLiveAlert] = useState<{ title: string; message: string; timestamp: string } | null>(null);
   const [unreadSupportCount, setUnreadSupportCount] = useState<number>(0);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
 
   const socketRef = useSocket({
     onNotification: (notif: any) => {
@@ -220,8 +226,126 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <DesktopGate>
       <div className="min-h-screen flex bg-[#07090e] text-slate-100 font-sans selection:bg-amber-500/30">
-        {/* â”€â”€â”€ Cybernetic Admin Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
-        <aside className="w-64 shrink-0 bg-[#0b0e14] border-r border-foreground/5 flex flex-col justify-between sticky top-0 h-screen z-40">
+        {/* ─── Mobile Slide-Over Drawer Overlay ─── */}
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden flex">
+            <div
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <div className="relative w-72 max-w-[85vw] bg-[#0b0e14] border-r border-amber-500/30 flex flex-col justify-between h-full z-10 shadow-2xl">
+              <div>
+                {/* Mobile Drawer Top Brand */}
+                <div className="p-4 border-b border-foreground/10 bg-slate-950/60 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
+                      <Shield className="w-4 h-4 text-amber-400" />
+                    </div>
+                    <div>
+                      <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
+                        PROJECT<span className="text-amber-400">HIVE</span>
+                      </h1>
+                      <p className="text-[9px] font-mono tracking-widest text-amber-400 uppercase">
+                        SEC-LEVEL 4 • MOBILE
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-white/[0.05]"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Mobile Nav Links */}
+                <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
+                  <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">
+                    Command Modules
+                  </div>
+                  {navItems.map((item) => {
+                    const isActive = item.exact
+                      ? pathname === item.href
+                      : pathname.startsWith(item.href);
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={cn(
+                          'flex items-center justify-between px-3 py-3 rounded-xl text-xs font-semibold transition-all group min-h-[44px]',
+                          isActive
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                            : 'text-slate-300 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                        )}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon
+                            className={cn(
+                              'w-4 h-4 transition-colors',
+                              isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-400'
+                            )}
+                          />
+                          <span>{item.name}</span>
+                          {item.href === '/admin/support' && unreadSupportCount > 0 && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-black animate-pulse">
+                              {unreadSupportCount}
+                            </span>
+                          )}
+                        </div>
+                        {isActive && (
+                          <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                        )}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
+
+              {/* Mobile Drawer Bottom User Card */}
+              <div className="p-3 border-t border-foreground/10 bg-slate-950/50 space-y-2">
+                <Link
+                  href="/feed"
+                  target="_blank"
+                  className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/[0.04] border border-foreground/10 text-xs text-slate-300"
+                >
+                  <span className="flex items-center gap-2">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Launch Student Shell</span>
+                  </span>
+                  <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
+                    OPEN
+                  </span>
+                </Link>
+                <div className="p-2.5 rounded-xl bg-white/[0.04] border border-foreground/10 flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-black text-xs shrink-0">
+                      {user?.first_name?.[0] || 'A'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold text-white truncate">
+                        {user?.first_name} {user?.last_name}
+                      </p>
+                      <p className="text-[10px] font-mono text-amber-400 truncate">
+                        SUPER_ADMIN
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ─── Desktop Cybernetic Admin Sidebar (Hidden on mobile) ─── */}
+        <aside className="hidden lg:flex w-64 shrink-0 bg-[#0b0e14] border-r border-foreground/5 flex-col justify-between sticky top-0 h-screen z-40">
           <div>
             {/* Top Brand Header */}
             <div className="p-4 border-b border-foreground/5 bg-slate-950/40">
@@ -343,18 +467,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         </aside>
 
-        {/* â”€â”€â”€ Main Content Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+        {/* ─── Main Content Container ─── */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Monospace Telemetry Header */}
-          <header className="h-12 bg-[#090d13]/90 backdrop-blur-md border-b border-foreground/5 px-6 flex items-center justify-between sticky top-0 z-30 font-mono text-[11px] text-slate-400">
-            {/* Left Telemetry Indicators */}
-            <div className="flex items-center gap-4 lg:gap-6 min-w-0 overflow-hidden">
+          <header className="min-h-12 py-2 lg:py-0 bg-[#090d13]/90 backdrop-blur-md border-b border-foreground/5 px-4 lg:px-6 flex flex-wrap items-center justify-between sticky top-0 z-30 font-mono text-[11px] text-slate-400 gap-2">
+            {/* Left Telemetry Indicators & Mobile Menu Button */}
+            <div className="flex items-center gap-2 lg:gap-6 min-w-0 overflow-hidden">
+              {/* Mobile Hamburger Toggle */}
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-slate-300 hover:text-white"
+                aria-label="Open Admin Navigation"
+              >
+                <Menu className="w-4 h-4 text-amber-400" />
+              </button>
+
               {/* Real Client IP Badge */}
               <div className="flex items-center gap-1.5 shrink-0">
                 <Radio className="w-3.5 h-3.5 text-emerald-400" />
-                <span>IP:</span>
+                <span className="hidden sm:inline">IP:</span>
                 <span className="text-emerald-400 font-bold">{detectedIp}</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+                <span className="hidden sm:inline text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
                   SECURE_NODE
                 </span>
               </div>

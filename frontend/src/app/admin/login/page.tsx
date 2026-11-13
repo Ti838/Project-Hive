@@ -1,5 +1,5 @@
 'use client';
-// ─── Admin Login Portal ────────────────────────────────────────────────────────
+// ─── ProjectHive — Secure Admin Login Console (Universal Responsive) ───────────
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -7,15 +7,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ShieldCheck, Eye, EyeOff, Loader2, ArrowLeft, Smartphone } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff, ArrowLeft, Mail, Lock, AlertCircle, Shield } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
-
 import { getExactDeviceDetails } from '@/lib/deviceFingerprint';
+import { Button, Input, Badge } from '@/components/ui';
 
 const schema = z.object({
-  email: z.string().email('Valid admin email is required'),
+  email: z.string().email('Valid administrator email is required'),
   password: z.string().min(1, 'Admin password is required'),
 });
 type Form = z.infer<typeof schema>;
@@ -61,116 +60,107 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-background text-foreground">
-      {/* ─── Mobile Device Restriction Screen (Phone Block) ─────────────────── */}
-      <div className="md:hidden flex-1 flex flex-col items-center justify-center p-6 text-center bg-background">
-        <div className="w-16 h-16 rounded-2xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center mb-4 shadow-inner">
-          <Smartphone className="w-8 h-8" />
-        </div>
-        <h2 className="text-xl font-bold tracking-tight mb-2">Desktop Workstation Required</h2>
-        <p className="text-sm text-muted-foreground max-w-xs mb-6 leading-relaxed">
-          For institutional security compliance, the Admin Console cannot be accessed on mobile phones. Please log in from an authorized desktop workstation.
-        </p>
+    <div className="min-h-screen w-full flex flex-col bg-[#07090e] text-slate-100 selection:bg-amber-500/30">
+      {/* Top Header */}
+      <header className="w-full px-4 sm:px-8 py-4 border-b border-white/[0.08] bg-[#07090e]/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
         <Link
           href="/"
-          className="px-5 py-2.5 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] px-3 py-1.5 rounded-xl transition-all group"
         >
-          Return to ProjectHive
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+          <span>Back to Home</span>
         </Link>
-      </div>
-
-      {/* ─── Desktop Admin Portal ────────────────────────────────────────── */}
-      <div className="hidden md:flex flex-col flex-1">
-        {/* Top Header */}
-        <header className="w-full px-8 py-4 border-b border-border/60 bg-background/80 backdrop-blur-md flex items-center justify-between sticky top-0 z-50">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/60 px-3 py-1.5 rounded-xl transition-all group"
-          >
-            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-            <span>Back to Home</span>
-          </Link>
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-              <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-            </div>
-            <span className="font-extrabold text-base tracking-tight">ProjectHive</span>
-          </Link>
-        </header>
-
-        <div className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-md space-y-6 bg-card border border-border rounded-3xl p-8 shadow-2xl my-auto">
-          <Link href="/login" className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-4 h-4" /> Back to user sign in
-          </Link>
-
-        <div className="text-center space-y-2">
-          <div className="w-14 h-14 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-            <ShieldCheck className="w-8 h-8" />
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
+            <Shield className="w-4 h-4 text-amber-400" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Admin Console</h1>
-          <p className="text-xs text-muted-foreground">Authorized University Administrators & Moderators Only</p>
-        </div>
+          <span className="font-extrabold text-base tracking-tight text-white">
+            PROJECT<span className="text-amber-400">HIVE</span> <span className="text-xs text-amber-400/80 font-mono">ROOT</span>
+          </span>
+        </Link>
+      </header>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Admin Email</label>
-            <input
+      {/* Main Admin Login Form — Universal for Mobile & Desktop */}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div className="w-full max-w-md space-y-6 bg-[#0d1117]/95 border border-white/[0.1] rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-2xl">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-amber-400 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" /> Back to user login
+            </Link>
+            <Badge variant="amber" size="sm" dot>SEC-OPS LEVEL 4</Badge>
+          </div>
+
+          <div className="text-center space-y-2">
+            <div className="w-14 h-14 bg-amber-500/15 border border-amber-500/30 text-amber-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+              <ShieldCheck className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight text-white">Institutional Console</h1>
+            <p className="text-xs text-slate-400">Authorized University Administrators & Moderators Only</p>
+          </div>
+
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <Input
               {...register('email')}
+              label="Admin Email"
               type="email"
               placeholder="admin@projecthive.edu"
-              className={cn(
-                'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 border focus:outline-none focus:border-amber-500 transition-colors',
-                errors.email ? 'border-destructive' : 'border-transparent'
-              )}
+              error={errors.email?.message}
+              leftIcon={<Mail className="w-4 h-4 text-slate-400" />}
+              autoCapitalize="none"
+              autoComplete="email"
+              spellCheck={false}
             />
-            {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-          </div>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Password</label>
-            <div className="relative">
-              <input
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 select-none">
+                Password
+              </label>
+              <Input
                 {...register('password')}
                 type={showPassword ? 'text' : 'password'}
                 placeholder="••••••••"
-                className={cn(
-                  'w-full h-12 text-base sm:text-sm bg-muted rounded-xl px-4 pr-12 border focus:outline-none focus:border-amber-500 transition-colors',
-                  errors.password ? 'border-destructive' : 'border-transparent'
-                )}
+                autoComplete="current-password"
+                error={errors.password?.message}
+                leftIcon={<Lock className="w-4 h-4 text-slate-400" />}
+                rightIcon={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="p-1 hover:text-white transition-colors cursor-pointer"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                }
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-muted-foreground hover:text-foreground touch-target flex items-center justify-center"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
             </div>
-            {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+
+            {serverError && (
+              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-medium flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+                <p>{serverError}</p>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              variant="glow"
+              size="lg"
+              isLoading={isSubmitting}
+              className="w-full mt-2"
+            >
+              {isSubmitting ? 'Authenticating Terminal…' : 'Access Admin Console'}
+            </Button>
+          </form>
+
+          <div className="pt-4 border-t border-white/[0.08] text-center text-[11px] text-slate-500 font-mono">
+            <span>MUTUAL TLS / SHA-256 SESSION HASHING VERIFIED</span>
           </div>
-
-          {serverError && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm">
-              {serverError}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full h-12 min-h-[44px] flex items-center justify-center gap-2 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600 disabled:opacity-50 tap-press transition-colors shadow-sm"
-          >
-            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-            {isSubmitting ? 'Verifying Credentials…' : 'Enter Admin Console'}
-          </button>
-        </form>
-      </div>
-      </div>
+        </div>
       </div>
     </div>
   );
 }
-
-
