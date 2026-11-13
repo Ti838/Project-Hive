@@ -103,3 +103,4 @@ stateDiagram-v2
 1. **AI Circuit Breaker:** Protects against Groq/Gemini downtime by cascading to alternative models or returning cached assistance.
 2. **SMTP Circuit Breaker:** Queues outgoing transactional emails locally in memory if Brevo SMTP exceeds latency thresholds.
 3. **LiveKit SFU Circuit Breaker:** Falls back to audio-only or TURN relays if the media server signals connection saturation.
+

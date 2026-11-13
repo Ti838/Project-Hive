@@ -82,3 +82,4 @@ function generateLiveKitToken(roomName, participantIdentity, participantName) {
 If students experience connection timeouts on restricted university firewalls or mobile cellular networks:
 1. **STUN Resolution:** Standard Google STUN (`stun:stun.l.google.com:19302`) resolves public IP and UDP port mappings.
 2. **TURN Fallback:** If symmetric NAT blocks direct UDP transmission, LiveKit routes encrypted traffic through TLS TURN relay over TCP port 443.
+

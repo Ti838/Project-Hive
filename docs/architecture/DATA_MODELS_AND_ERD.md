@@ -183,3 +183,4 @@ CREATE INDEX idx_tasks_assignee_id ON tasks(assignee_id);
 CREATE INDEX idx_messages_channel_created ON messages(channel_id, created_at DESC);
 CREATE INDEX idx_notifications_recipient ON notifications(recipient_id, is_read);
 ```
+

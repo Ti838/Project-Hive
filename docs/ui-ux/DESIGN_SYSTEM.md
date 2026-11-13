@@ -72,3 +72,4 @@ flowchart TD
 
 3. **Cloud Database Synchronization:**
    - Authenticated student selections are saved directly to PostgreSQL (`api.users.updateSettings({ theme })`), maintaining consistency across all authorized devices.
+

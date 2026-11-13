@@ -120,3 +120,4 @@ Signals real-time creation of a student support or moderation inquiry.
   "user_id": "uuid"
 }
 ```
+

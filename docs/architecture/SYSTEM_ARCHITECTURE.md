@@ -392,3 +392,4 @@ erDiagram
 - **Media Latency:** Sub-200ms end-to-end WebRTC video latency across cross-regional networks via LiveKit Cloud SFU.
 - **AI Response Latency:** Sub-800ms Time-to-First-Token (TTFT) via Groq Llama-3.3 70B with automated circuit-breaker fallback to Gemini 2.5 Flash.
 - **Database Query Latency:** Indexed PostgreSQL queries resolve in under 15ms with connection pooling enabled.
+

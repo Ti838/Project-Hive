@@ -122,3 +122,4 @@ flowchart TD
 
 3. **CORS & Cookies:**
    - Ensure backend `CLIENT_URL` is set to the production frontend domain (e.g. `https://projecthive.app`).
+
