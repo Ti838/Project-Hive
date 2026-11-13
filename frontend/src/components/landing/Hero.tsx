@@ -17,9 +17,10 @@ import {
   Play, 
   ExternalLink 
 } from 'lucide-react';
+import { Hive3DScene } from '@/components/3d/Hive3DScene';
 
 export function Hero() {
-  const [activeTab, setActiveTab] = useState<'squad' | 'calling' | 'chat'>('squad');
+  const [activeTab, setActiveTab] = useState<'3d' | 'squad' | 'calling' | 'chat'>('3d');
 
   return (
     <section className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-hidden pt-28 pb-20 px-4 sm:px-6 lg:px-8">
@@ -119,6 +120,18 @@ export function Hero() {
             {/* Interactive Preview Mode Tabs */}
             <div className="flex items-center bg-background/80 border border-border/60 rounded-lg p-0.5 text-[11px] sm:text-xs font-medium shrink-0">
               <button
+                onClick={() => setActiveTab('3d')}
+                className={`px-2 sm:px-3 py-1 rounded-md transition-all flex items-center gap-1 ${
+                  activeTab === '3d' 
+                    ? 'bg-primary text-primary-foreground shadow-sm' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Sparkles className="w-3 h-3 text-amber-400" />
+                <span className="hidden md:inline">3D Mesh</span>
+                <span className="md:hidden">3D</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('squad')}
                 className={`px-2 sm:px-3 py-1 rounded-md transition-all ${
                   activeTab === 'squad' 
@@ -194,6 +207,17 @@ export function Hero() {
             {/* Central Interactive Content Area */}
             <div className="col-span-12 md:col-span-9 p-4 sm:p-6 flex flex-col justify-between bg-card/40">
               
+              {/* Tab 0: 3D WebGL Collaboration Mesh Core */}
+              {activeTab === '3d' && (
+                <div className="relative w-full h-full min-h-[340px] sm:min-h-[380px] rounded-2xl overflow-hidden bg-gradient-to-b from-[#0b0e14] via-[#07090e] to-black flex items-center justify-center border border-primary/20 shadow-inner">
+                  <Hive3DScene />
+                  <div className="absolute top-3 left-3 sm:top-4 sm:left-4 z-10 bg-background/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-border/60 text-[11px] sm:text-xs font-mono text-primary flex items-center gap-2 shadow-xs">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                    <span>WebGL 3D Core • Orbit with mouse</span>
+                  </div>
+                </div>
+              )}
+
               {/* Tab 1: Squad Roster Preview */}
               {activeTab === 'squad' && (
                 <div className="space-y-4">
