@@ -21,6 +21,7 @@ import { cn } from '@/lib/utils';
 export const ADMIN_NAV_ITEMS = [
   { name: 'Overview / Telemetry', href: '/admin', icon: LayoutDashboard, exact: true },
   { name: 'User Directory & Strikes', href: '/admin/users', icon: Users },
+  { name: 'Security Operations', href: '/admin/security', icon: Shield },
   { name: 'Moderation Queue', href: '/admin/moderation', icon: ShieldAlert },
   { name: 'Squads & Hubs', href: '/admin/teams', icon: Layers },
   { name: 'Support & Helpline', href: '/admin/support', icon: MessageSquare },
@@ -164,3 +165,4 @@ export function AdminSidebar({
     </aside>
   );
 }
+

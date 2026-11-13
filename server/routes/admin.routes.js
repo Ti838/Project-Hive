@@ -12,6 +12,7 @@ import {
   getUserStrikes, issueStrike,
   getAuditLogs, getAdminHealth, getClientTelemetry,
   getDeviceStats, getUserSessionsAdmin, revokeSessionAdmin,
+  getSecurityPosture, triggerBreakGlass,
 } from '../controllers/admin.controller.js';
 import { supabaseAdmin } from '../config/supabase.js';
 
@@ -25,6 +26,8 @@ router.get('/stats',                    getStats);
 router.get('/health',                   getAdminHealth);
 router.get('/client-telemetry',         getClientTelemetry);
 router.get('/devices',                  getDeviceStats);
+router.get('/security/posture',         getSecurityPosture);
+router.post('/security/break-glass',    triggerBreakGlass);
 
 // ── User Directory & Disciplinary Sanctions ────────────
 router.get('/users',                    getUsers);
@@ -65,12 +68,15 @@ router.get('/audit-logs',               getAuditLogs);
 
 export default router;
 
-// DEV HELPER — POST /api/admin/promote-me (Strictly Development Only)
+// DEV HELPER — POST /api/admin/promote-me (Strictly Development & Gated)
 const devRouter = express.Router();
 devRouter.use(authMiddleware);
 devRouter.post('/promote-me', async (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ error: 'Administrative self-escalation is disabled in production' });
+  if (process.env.NODE_ENV === 'production' || process.env.ENABLE_DEV_PROMOTION !== 'true') {
+    return res.status(403).json({
+      error: 'Administrative self-escalation is permanently blocked on this deployment',
+      code: 'PRIVILEGE_ESCALATION_BLOCKED',
+    });
   }
   const { data: user, error } = await supabaseAdmin
     .from('users')

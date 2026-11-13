@@ -315,3 +315,4 @@ The ProjectHive architecture provides automated self-diagnostics:
 - **Database Probe:** `GET /api/health/db` checks live PostgreSQL connectivity and verifies the 4 Supabase storage buckets (`avatars`, `banners`, `attachments`, `recordings`).
 - **LiveKit Mesh:** Verified through token issue handshake on `/api/calling/token`.
 - **Socket.IO Real-Time:** Monitored via connection ping events on WebSocket upgrade.
+

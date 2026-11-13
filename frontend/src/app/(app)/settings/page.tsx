@@ -18,6 +18,7 @@ import { HiveAIIcon } from '@/components/ai/HiveAIIcon';
 import { cn } from '@/lib/utils';
 import { soundEngine, type SoundPack } from '@/lib/soundEngine';
 import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
+import { UserSecurityCenter } from '@/components/settings/UserSecurityCenter';
 
 type SettingsTab = 'profile' | 'privacy' | 'security' | 'sessions' | 'ai' | 'notifications' | 'appearance' | 'connected';
 
@@ -123,10 +124,25 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
-    if (activeTab === 'sessions') {
+    if (activeTab === 'sessions' || activeTab === 'security') {
       fetchSessions();
     }
   }, [activeTab]);
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id) return;
+    try {
+      const res = await api.users.deleteOwnAccount(user.id);
+      if (res.ok) {
+        showToast('Account permanently deleted');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1200);
+      }
+    } catch {
+      showToast('Failed to delete account');
+    }
+  };
 
   const handleUpdateSetting = async (key: string, value: any) => {
     if (key === 'emailNotifications') setEmailNotifications(value);
@@ -557,76 +573,19 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Tab 3: Security & Password */}
+      {/* Tab 3: Security & Zero-Trust Protection */}
       {activeTab === 'security' && (
-        <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 space-y-5 shadow-xs">
-          <h2 className="font-semibold text-base flex items-center gap-2">
-            <Lock className="w-4 h-4 text-primary" /> Change Password
-          </h2>
-
-          <form onSubmit={handleChangePassword} className="space-y-4 max-w-md">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Current Password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                className="w-full h-10 px-3.5 bg-muted/50 rounded-xl text-sm border border-transparent focus:border-primary focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">New Password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full h-10 px-3.5 bg-muted/50 rounded-xl text-sm border border-transparent focus:border-primary focus:outline-none"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Confirm New Password</label>
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full h-10 px-3.5 bg-muted/50 rounded-xl text-sm border border-transparent focus:border-primary focus:outline-none"
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 cursor-pointer"
-            >
-              {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-              {showPassword ? 'Hide passwords' : 'Show passwords'}
-            </button>
-
-            {passwordError && (
-              <p className="text-xs text-destructive flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4" /> {passwordError}
-              </p>
-            )}
-            {passwordSuccess && (
-              <p className="text-xs text-green-500 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4" /> {passwordSuccess}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={changingPassword}
-              className="px-6 py-2.5 bg-primary text-primary-foreground font-semibold rounded-xl text-sm hover:bg-primary/90 tap-press transition-all shadow-xs disabled:opacity-50 cursor-pointer"
-            >
-              {changingPassword ? 'Updating...' : 'Update Password'}
-            </button>
-          </form>
-        </div>
+        <UserSecurityCenter
+          user={user}
+          sessions={sessions}
+          loadingSessions={loadingSessions}
+          onRefreshSessions={fetchSessions}
+          onRevokeSession={handleRevokeSession}
+          onRevokeOtherSessions={handleRevokeOtherSessions}
+          onExportData={handleExportData}
+          exporting={exporting}
+          onDeleteAccount={handleDeleteAccount}
+        />
       )}
 
       {/* Tab 4: Active Sessions & Device Manager */}

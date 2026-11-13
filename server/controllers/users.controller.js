@@ -95,7 +95,7 @@ export async function getCurrentUser(req, res, next) {
     if (userId === 'admin') {
       const { data: dbUser } = await supabaseAdmin
         .from('users')
-        .select('*, skills(*)')
+        .select('*')
         .eq('email', userEmail || ADMIN_EMAIL)
         .maybeSingle();
 
@@ -127,7 +127,7 @@ export async function getCurrentUser(req, res, next) {
 
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('*, skills(*)')
+      .select('*')
       .eq('id', userId)
       .single();
 
@@ -200,7 +200,7 @@ export async function listUsers(req, res, next) {
         university, major, year_of_study, status, hours_per_week, github, linkedin,
         portfolio, role, is_verified, is_public, completion_percentage, online_status,
         last_seen, created_at,
-        skills(id, name, level, endorsements)
+        skills
       `, { count: 'exact' })
       .eq('is_verified', true)
       .eq('is_banned', false);
@@ -319,7 +319,7 @@ export async function getRecommendedUsers(req, res, next) {
     // 1. Fetch current user profile
     const { data: me, error: meErr } = await supabaseAdmin
       .from('users')
-      .select('id, university, major, skills(name)')
+      .select('id, university, major, skills')
       .eq('id', requesterId)
       .single();
 
@@ -335,7 +335,7 @@ export async function getRecommendedUsers(req, res, next) {
         university, major, year_of_study, status, hours_per_week, github, linkedin,
         portfolio, role, is_verified, is_public, completion_percentage, online_status,
         last_seen, created_at,
-        skills(id, name, level, endorsements)
+        skills
       `)
       .eq('is_verified', true)
       .eq('is_banned', false)
@@ -396,7 +396,7 @@ export async function getUserProfile(req, res, next) {
     const { id } = req.params;
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .select('*, skills(*)')
+      .select('*')
       .eq('id', id)
       .single();
 
@@ -582,7 +582,7 @@ export async function updateProfile(req, res, next) {
     // Calculate completion %
     const { data: existing } = await supabaseAdmin
       .from('users')
-      .select('*, skills(*)')
+      .select('*')
       .eq('id', userId)
       .single();
 
@@ -610,7 +610,7 @@ export async function updateProfile(req, res, next) {
       .from('users')
       .update(updates)
       .eq('id', userId)
-      .select('*, skills(*)')
+      .select('*')
       .single();
 
     if (error) throw error;
@@ -658,7 +658,7 @@ export async function updateSettings(req, res, next) {
       .from('users')
       .update({ settings: mergedSettings, updated_at: new Date().toISOString() })
       .eq('id', userId)
-      .select('*, skills(*)')
+      .select('*')
       .single();
 
     if (updateError) throw updateError;
@@ -693,7 +693,7 @@ export async function updateSkills(req, res, next) {
       await supabaseAdmin.from('skills').insert(skillRows);
     }
 
-    const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
+    const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', userId).single();
     res.json({ message: 'Skills updated', user: toClient(user) });
   } catch (err) { next(err); }
 }
@@ -710,7 +710,7 @@ export async function addSkill(req, res, next) {
     if (existing) return res.status(400).json({ error: 'Skill already added' });
 
     await supabaseAdmin.from('skills').insert({ user_id: userId, name, level });
-    const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
+    const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', userId).single();
     res.json({ message: 'Skill added', user: toClient(user) });
   } catch (err) { next(err); }
 }
@@ -722,7 +722,7 @@ export async function removeSkill(req, res, next) {
     const { skillName } = req.body;
 
     await supabaseAdmin.from('skills').delete().eq('user_id', userId).eq('name', skillName);
-    const { data: user } = await supabaseAdmin.from('users').select('*, skills(*)').eq('id', userId).single();
+    const { data: user } = await supabaseAdmin.from('users').select('*').eq('id', userId).single();
     res.json({ message: 'Skill removed', user: toClient(user) });
   } catch (err) { next(err); }
 }

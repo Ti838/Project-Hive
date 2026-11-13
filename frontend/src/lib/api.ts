@@ -307,8 +307,12 @@ export const api = {
       request<{ users: Array<User & { reason?: string }> }>('/users/recommended'),
     endorseSkill: (userId: string, skillId: string) =>
       request<{ endorsed: boolean; endorsements: number }>(`/users/${userId}/skills/${skillId}/endorse`, { method: 'POST' }),
-    changePassword: (data: { currentPassword?: string; newPassword?: string }) =>
-      request<{ message: string }>('/users/me/password', { method: 'PATCH', body: JSON.stringify(data) }),
+    changePassword: (arg1: string | { currentPassword?: string; newPassword?: string }, arg2?: string) => {
+      const body = typeof arg1 === 'string' ? { currentPassword: arg1, newPassword: arg2 } : arg1;
+      return request<{ message: string }>('/users/me/password', { method: 'PATCH', body: JSON.stringify(body) });
+    },
+    deleteOwnAccount: (id: string) =>
+      request<{ ok: boolean; message: string }>(`/users/${id}`, { method: 'DELETE' }),
     updateSettings: (settings: Partial<import('@/types').UserSettings>) =>
       request<{ message: string; settings: import('@/types').UserSettings; user: User }>('/users/me/settings', {
         method: 'PATCH',
@@ -653,6 +657,43 @@ export const api = {
       request<AdminStats>('/admin/stats'),
     getHealth: () =>
       request<AdminHealth>('/admin/health'),
+    getSecurityPosture: () =>
+      request<{
+        score: number;
+        postureStatus: string;
+        kpis: {
+          totalUsers: number;
+          verifiedUsers: number;
+          unverifiedUsers: number;
+          bannedUsers: number;
+          adminCount: number;
+          activeSessionsCount: number;
+          pendingReportsCount: number;
+        };
+        flags: Record<string, boolean>;
+        admins: Array<{
+          id: string;
+          email: string;
+          name: string;
+          role: string;
+          isVerified: boolean;
+          isBanned: boolean;
+          createdAt: string;
+          avatar?: string;
+          avatarColor?: string;
+        }>;
+        recentAuditLogs: any[];
+        timestamp: string;
+      }>('/admin/security/posture'),
+    triggerBreakGlass: (reason: string) =>
+      request<{ ok: boolean; message: string; timestamp: string }>('/admin/security/break-glass', {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+    getUserSessionsAdmin: (userId: string) =>
+      request<{ sessions: any[] }>(`/admin/users/${userId}/sessions`),
+    revokeSessionAdmin: (userId: string, sessionId: string) =>
+      request<{ message: string }>(`/admin/users/${userId}/sessions/${sessionId}`, { method: 'DELETE' }),
     getClientTelemetry: () =>
       request<{
         ip: string;

@@ -1062,5 +1062,124 @@ export async function revokeSessionAdmin(req, res, next) {
   }
 }
 
+// ── GET /api/admin/security/posture ──────────────────────────────────────────
+export async function getSecurityPosture(req, res, next) {
+  try {
+    const [
+      { count: totalUsers },
+      { count: verifiedUsers },
+      { count: bannedUsers },
+      { count: adminCount },
+      { data: admins },
+      { count: activeSessionsCount },
+      { count: pendingReportsCount },
+      { data: recentAuditLogs },
+    ] = await Promise.all([
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }),
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('is_verified', true),
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).eq('is_banned', true),
+      supabaseAdmin.from('users').select('*', { count: 'exact', head: true }).in('role', ['admin', 'super_admin', 'moderator']),
+      supabaseAdmin.from('users').select('id, email, first_name, last_name, role, is_banned, is_verified, created_at, avatar, avatar_color').in('role', ['admin', 'super_admin', 'moderator']),
+      supabaseAdmin.from('user_sessions').select('*', { count: 'exact', head: true }).is('revoked_at', null).then(r => r, () => ({ count: 1 })),
+      supabaseAdmin.from('content_reports').select('*', { count: 'exact', head: true }).eq('status', 'pending').then(r => r, () => ({ count: 0 })),
+      supabaseAdmin.from('admin_audit_logs').select('*').order('created_at', { ascending: false }).limit(10).then(r => r, () => ({ data: [] })),
+    ]);
+
+    const flags = getFlags();
+
+    // Compute zero-trust security posture score (0 - 100)
+    let score = 85;
+    if (flags.emailVerification) score += 5;
+    if (flags.rateLimitStrict) score += 5;
+    if (bannedUsers > 0) score -= Math.min(10, bannedUsers * 2);
+    if (pendingReportsCount > 5) score -= 5;
+    score = Math.max(50, Math.min(100, score));
+
+    res.json({
+      score,
+      postureStatus: score >= 90 ? 'OPTIMAL' : score >= 75 ? 'GUARDED' : 'ELEVATED RISK',
+      kpis: {
+        totalUsers: totalUsers || 0,
+        verifiedUsers: verifiedUsers || 0,
+        unverifiedUsers: Math.max(0, (totalUsers || 0) - (verifiedUsers || 0)),
+        bannedUsers: bannedUsers || 0,
+        adminCount: adminCount || 0,
+        activeSessionsCount: activeSessionsCount || 0,
+        pendingReportsCount: pendingReportsCount || 0,
+      },
+      flags,
+      admins: (admins || []).map(a => ({
+        id: a.id,
+        email: a.email,
+        name: `${a.first_name || ''} ${a.last_name || ''}`.trim(),
+        role: a.role,
+        isVerified: a.is_verified,
+        isBanned: a.is_banned,
+        createdAt: a.created_at,
+        avatar: a.avatar,
+        avatarColor: a.avatar_color,
+      })),
+      recentAuditLogs: recentAuditLogs || [],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// ── POST /api/admin/security/break-glass ──────────────────────────────────────
+export async function triggerBreakGlass(req, res, next) {
+  try {
+    const { reason } = req.body;
+    if (!reason || reason.trim().length < 8) {
+      return res.status(400).json({ error: 'A justified operational reason (minimum 8 characters) is required for break-glass protocol' });
+    }
+
+    const adminId = req.user.id;
+    const adminEmail = req.user.email;
+
+    // Revoke all non-current sessions in database
+    await supabaseAdmin
+      .from('user_sessions')
+      .update({ revoked_at: new Date().toISOString() })
+      .is('revoked_at', null);
+
+    // Record immutable audit entry
+    await logAdminAction({
+      adminId,
+      email: adminEmail,
+      action: 'SECURITY_BREAK_GLASS_ACTIVATED',
+      targetType: 'system_sessions',
+      targetId: 'all_sessions',
+      details: {
+        reason: reason.trim(),
+        invokedBy: adminEmail,
+        timestamp: new Date().toISOString(),
+        severity: 'CRITICAL',
+      },
+      req,
+    });
+
+    // Broadcast emergency notification to socket clients
+    const io = getIo();
+    if (io) {
+      io.emit('system:emergency_alert', {
+        type: 'BREAK_GLASS_REVOCATION',
+        message: 'A security break-glass protocol was executed. Please re-authenticate your session.',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    res.json({
+      ok: true,
+      message: 'Break-glass protocol executed successfully. All active sessions have been terminated.',
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 
 
