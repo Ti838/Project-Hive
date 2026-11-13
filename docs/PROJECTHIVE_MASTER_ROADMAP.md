@@ -62,3 +62,4 @@
 - [x] `/admin/support` — Real-time ticket queue, staff internal notes, status workflows.
 - [x] `/admin/system` — Maintenance mode toggle, registration kill-switch, edge cache purges.
 - [x] `/admin/audit` — Immutable PostgreSQL audit logs with JSON inspection drawer.
+

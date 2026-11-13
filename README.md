@@ -22,19 +22,38 @@
 ---
 
 ## 📑 Table of Contents
-1. [Executive Overview](#-executive-overview)
-2. [Live Deployments & Infrastructure](#-live-deployments--infrastructure)
-3. [Master System Architecture](#-master-system-architecture)
-4. [Database Entity-Relationship Architecture (16 Tables)](#-database-entity-relationship-architecture-16-tables)
-5. [Zero-Trust Security & Row Level Security (RLS) Flow](#-zero-trust-security--row-level-security-rls-flow)
-6. [LiveKit WebRTC Call State Machine](#-livekit-webrtc-call-state-machine)
-7. [Cascading Multimodal AI Engine](#-cascading-multimodal-ai-engine)
-8. [Two-Way Helpline & Support Management](#-two-way-helpline--support-management)
-9. [Frontend Application Map (39 Routes)](#-frontend-application-map-39-routes)
-10. [Backend REST & WebSocket API Reference](#-backend-rest--websocket-api-reference)
-11. [Quickstart & Local Environment Setup](#-quickstart--local-environment-setup)
-12. [Verification & Health Auditing](#-verification--health-auditing)
-13. [License](#-license)
+1. [Documentation Portal & Architecture Specs (`docs/`)](#-documentation-portal--technical-specifications)
+2. [Executive Overview](#-executive-overview)
+3. [Live Deployments & Infrastructure](#-live-deployments--infrastructure)
+4. [Master System Architecture](#-master-system-architecture)
+5. [Database Entity-Relationship Architecture (16 Tables)](#-database-entity-relationship-architecture-16-tables)
+6. [Zero-Trust Security & Row Level Security (RLS) Flow](#-zero-trust-security--row-level-security-rls-flow)
+7. [LiveKit WebRTC Call State Machine](#-livekit-webrtc-call-state-machine)
+8. [Cascading Multimodal AI Engine](#-cascading-multimodal-ai-engine)
+9. [Two-Way Helpline & Support Management](#-two-way-helpline--support-management)
+10. [Frontend Application Map (39 Routes)](#-frontend-application-map-39-routes)
+11. [Backend REST & WebSocket API Reference](#-backend-rest--websocket-api-reference)
+12. [Quickstart & Local Environment Setup](#-quickstart--local-environment-setup)
+13. [Verification & Health Auditing](#-verification--health-auditing)
+14. [License](#-license)
+
+---
+
+## 📚 Documentation Portal & Technical Specifications
+
+Detailed engineering blueprints, API references, security threat models, and setup guides are maintained in the [`docs/`](./docs/README.md) directory:
+
+| Section | Focus Area | Master Document |
+| :--- | :--- | :--- |
+| 🏛️ **Architecture** | Master Topology, 3D WebGL, SFU Calling & Sequence Diagrams | [docs/architecture/SYSTEM_ARCHITECTURE.md](./docs/architecture/SYSTEM_ARCHITECTURE.md) |
+| 🗄️ **Database** | PostgreSQL Schemas, RLS Policies, ERD & Indexing | [docs/architecture/DATA_MODELS_AND_ERD.md](./docs/architecture/DATA_MODELS_AND_ERD.md) |
+| 🛡️ **Security** | Defense-in-Depth, Admin Isolation, RBAC & Audit Report | [docs/security/SECURITY_ARCHITECTURE.md](./docs/security/SECURITY_ARCHITECTURE.md) |
+| 🔌 **REST API** | Endpoint Contracts, JSON Envelope & Error Codes | [docs/api/API_REFERENCE.md](./docs/api/API_REFERENCE.md) |
+| ⚡ **WebSockets** | Socket.IO Events, Room Lifecycle & Signaling Protocol | [docs/api/WEBSOCKET_EVENTS.md](./docs/api/WEBSOCKET_EVENTS.md) |
+| 🚀 **Deployment** | Vercel, Render, Supabase & Cloudflare Setup | [docs/setup/DEPLOYMENT_AND_SETUP.md](./docs/setup/DEPLOYMENT_AND_SETUP.md) |
+| 🎙️ **LiveKit SFU** | Managed WebRTC Calling, Dynacast & NAT Traversal | [docs/setup/LIVEKIT_SFU_GUIDE.md](./docs/setup/LIVEKIT_SFU_GUIDE.md) |
+| 🎨 **Design System**| Obsidian Slate & Amber Tokens, 3D Physics & Auto-Sync | [docs/ui-ux/DESIGN_SYSTEM.md](./docs/ui-ux/DESIGN_SYSTEM.md) |
+| 🎓 **Academic** | University Presentation Dossier & Defense Scripts | [docs/academic/SYSTEM_ANALYSIS_LAB_MANUAL.md](./docs/academic/SYSTEM_ANALYSIS_LAB_MANUAL.md) |
 
 ---
 
