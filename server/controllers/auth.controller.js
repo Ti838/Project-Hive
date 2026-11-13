@@ -41,7 +41,7 @@ export async function register(req, res, next) {
       .from('users')
       .select('id, first_name, email, is_verified')
       .eq('email', email.toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (existing) {
       if (existing.is_verified) {
@@ -147,7 +147,7 @@ export async function verifyEmail(req, res, next) {
       .from('users')
       .select('id, email, first_name, email_verification_expires, is_verified')
       .eq('email_verification_token', token)
-      .single();
+      .maybeSingle();
 
     if (error || !user) {
       return res.status(400).json({ error: 'Invalid or expired verification link.' });
@@ -195,7 +195,7 @@ export async function resendVerification(req, res, next) {
       .from('users')
       .select('id, first_name, is_verified')
       .eq('email', email.toLowerCase())
-      .single();
+      .maybeSingle();
 
     // Always respond success to prevent email enumeration
     if (!user || user.is_verified) {
@@ -236,7 +236,7 @@ export async function login(req, res, next) {
       .from('users')
       .select('*')
       .eq('email', email.toLowerCase())
-      .single();
+      .maybeSingle();
 
     if (error || !user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
