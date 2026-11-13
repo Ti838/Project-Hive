@@ -1,38 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { Shield } from 'lucide-react';
 import {
-  LayoutDashboard,
-  Users,
-  ShieldAlert,
-  Layers,
-  Sliders,
-  ScrollText,
-  MessageSquare,
-  LogOut,
-  ExternalLink,
-  Shield,
-  Activity,
-  Server,
-  Database,
-  Radio,
-  Clock,
-  ChevronRight,
-  AlertTriangle,
-  RefreshCw,
-  Cpu,
-  Laptop,
-  Bell,
-  Volume2,
-  VolumeX,
-  X,
-  Menu
-} from 'lucide-react';
-import { DesktopGate } from '@/components/admin/DesktopGate';
+  DesktopGate,
+  AdminSidebar,
+  AdminMobileDrawer,
+  AdminHeader,
+} from '@/components/admin';
 import { useAuthStore, useUIStore } from '@/lib/store';
-import { cn } from '@/lib/utils';
 import { api } from '@/lib/api';
 import { getExactDeviceTelemetry, DeviceTelemetry } from '@/lib/deviceTelemetry';
 import { useSocket } from '@/hooks/useSocket';
@@ -42,16 +19,6 @@ interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
-const navItems = [
-  { name: 'Overview / Telemetry', href: '/admin', icon: LayoutDashboard, exact: true },
-  { name: 'User Directory & Strikes', href: '/admin/users', icon: Users },
-  { name: 'Moderation Queue', href: '/admin/moderation', icon: ShieldAlert },
-  { name: 'Squads & Hubs', href: '/admin/teams', icon: Layers },
-  { name: 'Support & Helpline', href: '/admin/support', icon: MessageSquare },
-  { name: 'System Flags & Health', href: '/admin/system', icon: Sliders },
-  { name: 'Audit Ledger', href: '/admin/audit', icon: ScrollText },
-];
-
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -60,7 +27,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [activeSockets, setActiveSockets] = useState<number | null>(null);
   const [dbLatency, setDbLatency] = useState<number | null>(null);
-  const [cpuUsage, setCpuUsage] = useState<number | null>(null);
   const [telemetry, setTelemetry] = useState<DeviceTelemetry | null>(null);
   const [detectedIp, setDetectedIp] = useState<string>('Resolving...');
   const [liveAlert, setLiveAlert] = useState<{ title: string; message: string; timestamp: string } | null>(null);
@@ -185,7 +151,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       } catch (err) {
         setDbLatency(null);
         setActiveSockets(null);
-        setCpuUsage(null);
       }
     };
     fetchHealth();
@@ -226,353 +191,45 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   return (
     <DesktopGate>
       <div className="min-h-screen flex bg-[#07090e] text-slate-100 font-sans selection:bg-amber-500/30">
-        {/* ─── Mobile Slide-Over Drawer Overlay ─── */}
-        {isMobileMenuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden flex">
-            <div
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
-              onClick={() => setIsMobileMenuOpen(false)}
-            />
-            <div className="relative w-72 max-w-[85vw] bg-[#0b0e14] border-r border-amber-500/30 flex flex-col justify-between h-full z-10 shadow-2xl">
-              <div>
-                {/* Mobile Drawer Top Brand */}
-                <div className="p-4 border-b border-foreground/10 bg-slate-950/60 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
-                      <Shield className="w-4 h-4 text-amber-400" />
-                    </div>
-                    <div>
-                      <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-                        PROJECT<span className="text-amber-400">HIVE</span>
-                      </h1>
-                      <p className="text-[9px] font-mono tracking-widest text-amber-400 uppercase">
-                        SEC-LEVEL 4 • MOBILE
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-white/[0.05]"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
+        {/* Mobile Slide-Over Drawer */}
+        <AdminMobileDrawer
+          isOpen={isMobileMenuOpen}
+          onClose={() => setIsMobileMenuOpen(false)}
+          pathname={pathname}
+          user={user}
+          unreadSupportCount={unreadSupportCount}
+          onSignOut={handleSignOut}
+        />
 
-                {/* Mobile Nav Links */}
-                <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
-                  <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">
-                    Command Modules
-                  </div>
-                  {navItems.map((item) => {
-                    const isActive = item.exact
-                      ? pathname === item.href
-                      : pathname.startsWith(item.href);
-                    const Icon = item.icon;
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={cn(
-                          'flex items-center justify-between px-3 py-3 rounded-xl text-xs font-semibold transition-all group min-h-[44px]',
-                          isActive
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                            : 'text-slate-300 hover:text-white hover:bg-white/[0.06] border border-transparent'
-                        )}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Icon
-                            className={cn(
-                              'w-4 h-4 transition-colors',
-                              isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-400'
-                            )}
-                          />
-                          <span>{item.name}</span>
-                          {item.href === '/admin/support' && unreadSupportCount > 0 && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-black animate-pulse">
-                              {unreadSupportCount}
-                            </span>
-                          )}
-                        </div>
-                        {isActive && (
-                          <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
-                        )}
-                      </Link>
-                    );
-                  })}
-                </nav>
-              </div>
+        {/* Desktop Cybernetic Admin Sidebar */}
+        <AdminSidebar
+          pathname={pathname}
+          user={user}
+          unreadSupportCount={unreadSupportCount}
+          onSignOut={handleSignOut}
+        />
 
-              {/* Mobile Drawer Bottom User Card */}
-              <div className="p-3 border-t border-foreground/10 bg-slate-950/50 space-y-2">
-                <Link
-                  href="/feed"
-                  target="_blank"
-                  className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/[0.04] border border-foreground/10 text-xs text-slate-300"
-                >
-                  <span className="flex items-center gap-2">
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Launch Student Shell</span>
-                  </span>
-                  <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
-                    OPEN
-                  </span>
-                </Link>
-                <div className="p-2.5 rounded-xl bg-white/[0.04] border border-foreground/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-black text-xs shrink-0">
-                      {user?.first_name?.[0] || 'A'}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-white truncate">
-                        {user?.first_name} {user?.last_name}
-                      </p>
-                      <p className="text-[10px] font-mono text-amber-400 truncate">
-                        SUPER_ADMIN
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleSignOut}
-                    className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg"
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ─── Desktop Cybernetic Admin Sidebar (Hidden on mobile) ─── */}
-        <aside className="hidden lg:flex w-64 shrink-0 bg-[#0b0e14] border-r border-foreground/5 flex-col justify-between sticky top-0 h-screen z-40">
-          <div>
-            {/* Top Brand Header */}
-            <div className="p-4 border-b border-foreground/5 bg-slate-950/40">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
-                    <Shield className="w-4 h-4 text-amber-400" />
-                  </div>
-                  <div>
-                    <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-                      PROJECT<span className="text-amber-400">HIVE</span>
-                    </h1>
-                    <p className="text-[10px] font-mono tracking-widest text-slate-400 uppercase">
-                      SEC-LEVEL 4
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status Pulse Bar */}
-              <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                  </span>
-                  <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
-                    SYSTEM NORMAL / ONLINE
-                  </span>
-                </div>
-                <Radio className="w-3 h-3 text-emerald-400/70" />
-              </div>
-            </div>
-
-            {/* Navigation Menu */}
-            <nav className="p-3 space-y-1">
-              <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">
-                Command Modules
-              </div>
-              {navItems.map((item) => {
-                const isActive = item.exact
-                  ? pathname === item.href
-                  : pathname.startsWith(item.href);
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all group',
-                      isActive
-                        ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-sm shadow-amber-500/5'
-                        : 'text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent'
-                    )}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Icon
-                        className={cn(
-                          'w-4 h-4 transition-colors',
-                          isActive ? 'text-amber-400' : 'text-slate-300 group-hover:text-amber-400'
-                        )}
-                      />
-                      <span>{item.name}</span>
-                      {item.href === '/admin/support' && unreadSupportCount > 0 && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-500 text-black animate-pulse">
-                          {unreadSupportCount}
-                        </span>
-                      )}
-                    </div>
-                    {isActive && (
-                      <ChevronRight className="w-3.5 h-3.5 text-amber-400 opacity-75" />
-                    )}
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-
-          {/* Bottom Profile & Institutional Controls */}
-          <div className="p-3 border-t border-foreground/5 bg-slate-950/30 space-y-2">
-            {/* Quick Student App Link */}
-            <Link
-              href="/feed"
-              target="_blank"
-              className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.06] border border-foreground/5 text-[11px] font-medium text-slate-300 hover:text-slate-200 transition-colors"
-            >
-              <span className="flex items-center gap-1.5">
-                <ExternalLink className="w-3.5 h-3.5 text-slate-300" />
-                <span>Launch Student Shell</span>
-              </span>
-              <span className="text-[9px] font-mono text-slate-400 bg-foreground/5 px-1.5 py-0.5 rounded">
-                NEW TAB
-              </span>
-            </Link>
-
-            {/* Admin Profile Card */}
-            <div className="p-2.5 rounded-xl bg-white/[0.03] border border-foreground/5 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-black text-xs shrink-0">
-                  {user?.first_name?.[0] || 'A'}
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate">
-                    {user?.first_name} {user?.last_name}
-                  </p>
-                  <p className="text-[10px] font-mono text-amber-400/90 truncate">
-                    SUPER_ADMIN
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleSignOut}
-                title="Terminate Admin Session"
-                className="p-1.5 text-slate-300 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </aside>
-
-        {/* ─── Main Content Container ─── */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {/* Top Monospace Telemetry Header */}
-          <header className="min-h-12 py-2 lg:py-0 bg-[#090d13]/90 backdrop-blur-md border-b border-foreground/5 px-4 lg:px-6 flex flex-wrap items-center justify-between sticky top-0 z-30 font-mono text-[11px] text-slate-400 gap-2">
-            {/* Left Telemetry Indicators & Mobile Menu Button */}
-            <div className="flex items-center gap-2 lg:gap-6 min-w-0 overflow-hidden">
-              {/* Mobile Hamburger Toggle */}
-              <button
-                type="button"
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-slate-300 hover:text-white"
-                aria-label="Open Admin Navigation"
-              >
-                <Menu className="w-4 h-4 text-amber-400" />
-              </button>
+          <AdminHeader
+            onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+            detectedIp={detectedIp}
+            telemetry={telemetry}
+            dbLatency={dbLatency}
+            currentTime={currentTime}
+            soundEnabled={soundEnabled}
+            onToggleSound={() => {
+              const next = !soundEnabled;
+              setSoundEnabled(next);
+              if (next) soundEngine?.test('notification');
+            }}
+            onTestSound={() => soundEngine?.test('notification')}
+            liveAlert={liveAlert}
+            onDismissAlert={() => setLiveAlert(null)}
+          />
 
-              {/* Real Client IP Badge */}
-              <div className="flex items-center gap-1.5 shrink-0">
-                <Radio className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">IP:</span>
-                <span className="text-emerald-400 font-bold">{detectedIp}</span>
-                <span className="hidden sm:inline text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-                  SECURE_NODE
-                </span>
-              </div>
-
-              {/* Hardware & GPU Chipset Badge */}
-              <div className="hidden md:flex items-center gap-1.5 min-w-0 truncate">
-                <Laptop className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                <span className="shrink-0">HARDWARE:</span>
-                <span className="text-slate-200 font-bold truncate">
-                  {telemetry?.deviceModel || telemetry?.osName || 'Personal Workstation'}
-                </span>
-                <span className="text-slate-600 shrink-0">|</span>
-                <span className="text-cyan-400 font-medium truncate">
-                  {telemetry?.gpuRenderer || 'WebGL Probing...'}
-                </span>
-              </div>
-
-              {/* Database Node Latency */}
-              <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
-                <Database className="w-3.5 h-3.5 text-emerald-400" />
-                <span>DB:</span>
-                <span className="text-emerald-400 font-bold">{dbLatency !== null ? `${dbLatency}ms` : 'Connecting...'}</span>
-              </div>
-            </div>
-
-            {/* Right Telemetry Clock & Clearance */}
-            <div className="flex items-center gap-3 shrink-0">
-              {/* Admin Audio Chime Toggle */}
-              <div className="flex items-center bg-white/[0.04] border border-white/10 rounded-lg p-0.5 text-[10px]">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = !soundEnabled;
-                    setSoundEnabled(next);
-                    if (next) soundEngine?.test('notification');
-                  }}
-                  className={cn(
-                    "p-1 rounded transition-colors cursor-pointer",
-                    soundEnabled ? "text-amber-400 hover:bg-amber-500/10" : "text-slate-500 hover:bg-white/5"
-                  )}
-                  title={soundEnabled ? 'Admin Chimes: ACTIVE • Click to Mute' : 'Admin Chimes: MUTED • Click to Enable'}
-                >
-                  {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => soundEngine?.test('notification')}
-                  className="px-1.5 py-0.5 text-slate-400 hover:text-white font-medium transition-colors cursor-pointer"
-                  title="Test chime"
-                >
-                  Test 🔔
-                </button>
-              </div>
-
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <Clock className="w-3.5 h-3.5" />
-                <span>{currentTime || 'SYNCHRONIZING...'}</span>
-              </div>
-              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold">
-                ROOT AUTH
-              </span>
-            </div>
-          </header>
-
-          {/* Live Alert Toast Banner */}
-          {liveAlert && (
-            <div className="bg-amber-500/15 border-b border-amber-500/30 px-6 py-2 flex items-center justify-between text-xs text-amber-200 animate-in fade-in slide-in-from-top-1 duration-200">
-              <div className="flex items-center gap-2">
-                <Bell className="w-4 h-4 text-amber-400 animate-bounce" />
-                <span className="font-bold text-amber-300">[{liveAlert.title}]</span>
-                <span>{liveAlert.message}</span>
-                <span className="text-[10px] text-amber-400/60 font-mono ml-2">{liveAlert.timestamp}</span>
-              </div>
-              <button
-                onClick={() => setLiveAlert(null)}
-                className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors cursor-pointer"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-
-          {/* Sub-Route Page Body */}
-          <main className="flex-1 p-6 lg:p-8 overflow-y-auto bg-[#07090e]">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 space-y-6">
             {children}
           </main>
         </div>
@@ -580,4 +237,3 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     </DesktopGate>
   );
 }
-
