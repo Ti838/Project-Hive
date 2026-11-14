@@ -50,10 +50,10 @@ export function AdminMobileDrawer({
               </div>
               <div>
                 <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-                  PROJECT<span className="text-amber-400">HIVE</span>
+                  Project<span className="text-amber-400">Hive</span>
                 </h1>
                 <p className="text-[9px] font-mono tracking-widest text-slate-400 uppercase">
-                  SEC-LEVEL 4 • MOBILE
+                  Admin Console
                 </p>
               </div>
             </div>

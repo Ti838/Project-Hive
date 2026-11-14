@@ -15,17 +15,13 @@ import {
   Flame, 
   Rocket, 
   Play, 
-  ExternalLink,
-  Copy,
-  Check,
-  Terminal 
+  ExternalLink 
 } from 'lucide-react';
 import { Hero3DEnvironment } from '@/components/3d/Hero3DEnvironment';
 import { Hive3DScene } from '@/components/3d/Hive3DScene';
 
 export function Hero() {
   const [activeTab, setActiveTab] = useState<'3d' | 'squad' | 'calling' | 'chat'>('3d');
-  const [copiedCli, setCopiedCli] = useState(false);
 
   return (
     <section className="relative min-h-screen w-full flex flex-col items-center justify-start overflow-hidden pt-28 pb-20 px-4 sm:px-6 lg:px-8">
@@ -88,25 +84,6 @@ export function Hero() {
             <Users className="w-4 h-4 text-primary" />
             <span>Explore Squads</span>
           </Link>
-        </div>
-
-        {/* ── Developer Quick-Start CLI Strip (GitHub Signature) ──────── */}
-        <div className="mt-6 inline-flex items-center gap-2 sm:gap-3 px-3.5 py-1.5 rounded-xl bg-card/80 border border-border/70 font-mono text-xs text-muted-foreground backdrop-blur-md shadow-xs hover:border-primary/40 transition-all max-w-full overflow-hidden">
-          <Terminal className="w-3.5 h-3.5 text-primary shrink-0" />
-          <span className="text-foreground/90 truncate">$ git clone hive://capstone-2026/autonomous-drone</span>
-          <button 
-            onClick={() => { 
-              if (typeof navigator !== 'undefined' && navigator.clipboard) {
-                navigator.clipboard.writeText('git clone hive://capstone-2026/autonomous-drone');
-              }
-              setCopiedCli(true); 
-              setTimeout(() => setCopiedCli(false), 2000); 
-            }}
-            className="p-1 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all shrink-0 cursor-pointer"
-            title="Copy clone command"
-          >
-            {copiedCli ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-          </button>
         </div>
 
         {/* Trust & Social Proof Micro-Bar */}

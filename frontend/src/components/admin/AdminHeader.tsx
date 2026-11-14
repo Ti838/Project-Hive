@@ -3,14 +3,15 @@
 import React from 'react';
 import {
   Menu,
-  Radio,
-  Laptop,
   Database,
   Clock,
   Volume2,
   VolumeX,
   Bell,
   X,
+  Shield,
+  Activity,
+  CheckCircle2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { DeviceTelemetry } from '@/lib/deviceTelemetry';
@@ -42,118 +43,88 @@ export function AdminHeader({
 }: AdminHeaderProps) {
   return (
     <>
-      <header className="min-h-12 py-2 lg:py-0 bg-[#090d13]/90 backdrop-blur-md border-b border-foreground/5 px-4 lg:px-6 flex flex-wrap items-center justify-between sticky top-0 z-30 font-mono text-[11px] text-slate-400 gap-2 select-none">
-        {/* Left Telemetry Indicators & Mobile Menu Button */}
-        <div className="flex items-center gap-2 lg:gap-6 min-w-0 overflow-hidden">
-          {/* Mobile Hamburger Toggle */}
+      <header className="h-14 bg-[#090d16]/95 backdrop-blur-md border-b border-white/[0.08] px-4 lg:px-6 flex items-center justify-between sticky top-0 z-30 select-none">
+        {/* Left: Mobile Toggle & System Status Badge */}
+        <div className="flex items-center gap-3 lg:gap-4 min-w-0">
           <button
             type="button"
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-1.5 rounded-lg bg-white/[0.05] border border-white/10 text-slate-300 hover:text-white cursor-pointer"
+            className="lg:hidden p-2 rounded-xl bg-white/[0.05] border border-white/10 text-slate-300 hover:text-white cursor-pointer"
             aria-label="Open Admin Navigation"
           >
             <Menu className="w-4 h-4 text-amber-400" />
           </button>
 
-          {/* Real Client IP Badge */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <Radio className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">IP:</span>
-            <span className="text-emerald-400 font-bold">{detectedIp}</span>
-            <span className="hidden sm:inline text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-              SECURE_NODE
-            </span>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-semibold text-slate-200 tracking-tight">System Operational</span>
           </div>
 
-          {/* Hardware & GPU Chipset Badge */}
-          <div className="hidden md:flex items-center gap-1.5 min-w-0 truncate">
-            <Laptop className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span className="shrink-0">HARDWARE:</span>
-            <span className="text-slate-200 font-bold truncate">
-              {telemetry?.deviceModel || telemetry?.osName || 'Personal Workstation'}
-            </span>
-            <span className="text-slate-600 shrink-0">|</span>
-            <span className="text-cyan-400 font-medium truncate">
-              {telemetry?.gpuRenderer || 'WebGL Probing...'}
-            </span>
-          </div>
-
-          {/* Database Node Latency */}
-          <div className="hidden 2xl:flex items-center gap-1.5 shrink-0">
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span>DB:</span>
-            <span className="text-emerald-400 font-bold">
-              {dbLatency !== null ? `${dbLatency}ms` : 'Connecting...'}
+          {/* Database Latency Badge */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-[11px] font-mono text-slate-400">
+            <Database className="w-3 h-3 text-emerald-400" />
+            <span>Database:</span>
+            <span className="text-emerald-400 font-semibold">
+              {dbLatency !== null ? `${dbLatency}ms` : 'Connected'}
             </span>
           </div>
         </div>
 
-        {/* Right Telemetry Clock & Clearance */}
+        {/* Right: Audio Chimes, Live UTC Clock & Clearance Badge */}
         <div className="flex items-center gap-3 shrink-0">
-          {/* Admin Audio Chime Toggle */}
-          <div className="flex items-center bg-white/[0.04] border border-white/10 rounded-lg p-0.5 text-[10px]">
-            <button
-              type="button"
-              onClick={onToggleSound}
-              className={cn(
-                'p-1 rounded transition-colors cursor-pointer',
-                soundEnabled
-                  ? 'text-amber-400 hover:bg-amber-500/10'
-                  : 'text-slate-500 hover:bg-white/5'
-              )}
-              title={
-                soundEnabled
-                  ? 'Admin Chimes: ACTIVE • Click to Mute'
-                  : 'Admin Chimes: MUTED • Click to Enable'
-              }
-            >
-              {soundEnabled ? (
-                <Volume2 className="w-3.5 h-3.5" />
-              ) : (
-                <VolumeX className="w-3.5 h-3.5" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={onTestSound}
-              className="px-1.5 py-0.5 text-slate-400 hover:text-white font-medium transition-colors cursor-pointer"
-              title="Test chime"
-            >
-              Test 🔔
-            </button>
+          {/* Sound Toggle */}
+          <button
+            type="button"
+            onClick={onToggleSound}
+            className={cn(
+              'p-2 rounded-xl border transition-colors cursor-pointer flex items-center gap-1.5 text-xs',
+              soundEnabled
+                ? 'bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20'
+                : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:text-white hover:bg-white/[0.08]'
+            )}
+            title={soundEnabled ? 'Alert chimes enabled' : 'Alert chimes muted'}
+          >
+            {soundEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+          </button>
+
+          {/* Live UTC Clock */}
+          <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs font-mono text-slate-300">
+            <Clock className="w-3.5 h-3.5 text-slate-400" />
+            <span>{currentTime || 'UTC'}</span>
           </div>
 
-          <div className="flex items-center gap-1.5 text-slate-400">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{currentTime || 'SYNCHRONIZING...'}</span>
+          {/* Admin Role Pill */}
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs font-semibold text-amber-400">
+            <Shield className="w-3.5 h-3.5" />
+            <span>Administrator</span>
           </div>
-          <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold">
-            ROOT AUTH
-          </span>
         </div>
       </header>
 
-      {/* Live Alert Toast Banner */}
+      {/* Floating Alert Notification Toast */}
       {liveAlert && (
-        <div className="bg-amber-500/15 border-b border-amber-500/30 px-6 py-2 flex items-center justify-between text-xs text-amber-200 animate-in fade-in slide-in-from-top-1 duration-200 select-none">
-          <div className="flex items-center gap-2">
-            <Bell className="w-4 h-4 text-amber-400 animate-bounce" />
-            <span className="font-bold text-amber-300">[{liveAlert.title}]</span>
-            <span>{liveAlert.message}</span>
-            <span className="text-[10px] text-amber-400/60 font-mono ml-2">
-              {liveAlert.timestamp}
-            </span>
+        <div className="fixed top-16 right-4 z-50 max-w-sm w-full bg-[#121826] border border-amber-500/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+                <Bell className="w-4 h-4 animate-bounce" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-white truncate">{liveAlert.title}</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{liveAlert.message}</p>
+                <span className="text-[10px] font-mono text-slate-500 mt-1 block">{liveAlert.timestamp}</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onDismissAlert}
+              className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
-          <button
-            onClick={onDismissAlert}
-            className="p-1 hover:bg-amber-500/20 rounded text-amber-300 transition-colors cursor-pointer"
-            title="Dismiss Alert"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
         </div>
       )}
     </>
   );
 }
-

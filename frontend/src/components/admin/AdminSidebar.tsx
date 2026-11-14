@@ -15,18 +15,19 @@ import {
   Shield,
   Radio,
   ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const ADMIN_NAV_ITEMS = [
-  { name: 'Overview / Telemetry', href: '/admin', icon: LayoutDashboard, exact: true },
-  { name: 'User Directory & Strikes', href: '/admin/users', icon: Users },
-  { name: 'Security Operations', href: '/admin/security', icon: Shield },
-  { name: 'Moderation Queue', href: '/admin/moderation', icon: ShieldAlert },
-  { name: 'Squads & Hubs', href: '/admin/teams', icon: Layers },
-  { name: 'Support & Helpline', href: '/admin/support', icon: MessageSquare },
-  { name: 'System Flags & Health', href: '/admin/system', icon: Sliders },
-  { name: 'Audit Ledger', href: '/admin/audit', icon: ScrollText },
+  { name: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, exact: true },
+  { name: 'User Management', href: '/admin/users', icon: Users },
+  { name: 'Security & Access', href: '/admin/security', icon: Shield },
+  { name: 'Content Moderation', href: '/admin/moderation', icon: ShieldAlert },
+  { name: 'Squads & Teams', href: '/admin/teams', icon: Layers },
+  { name: 'Support Tickets', href: '/admin/support', icon: MessageSquare },
+  { name: 'System Settings', href: '/admin/system', icon: Sliders },
+  { name: 'Audit Logs', href: '/admin/audit', icon: ScrollText },
 ];
 
 interface AdminSidebarProps {
@@ -43,78 +44,75 @@ export function AdminSidebar({
   onSignOut,
 }: AdminSidebarProps) {
   return (
-    <aside className="hidden lg:flex w-64 shrink-0 bg-[#0b0e14] border-r border-foreground/5 flex-col justify-between sticky top-0 h-screen z-40 select-none">
+    <aside className="hidden lg:flex w-64 shrink-0 bg-[#090d16] border-r border-white/[0.08] flex-col justify-between sticky top-0 h-screen z-40 select-none">
       <div>
         {/* Top Brand Header */}
-        <div className="p-4 border-b border-foreground/5 bg-slate-950/40">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
-                <Shield className="w-4 h-4 text-amber-400" />
-              </div>
-              <div>
-                <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-                  PROJECT<span className="text-amber-400">HIVE</span>
-                </h1>
-                <p className="text-[10px] font-mono tracking-widest text-slate-400 uppercase">
-                  SEC-LEVEL 4
-                </p>
-              </div>
+        <div className="p-4 border-b border-white/[0.08]">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
+              <Shield className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
+                Project<span className="text-amber-400">Hive</span>
+              </h1>
+              <p className="text-[10px] font-mono tracking-widest text-slate-400 uppercase">
+                Admin Console
+              </p>
             </div>
           </div>
 
-          {/* Status Pulse Bar */}
+          {/* Status Bar */}
           <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
-                SYSTEM NORMAL / ONLINE
+                Services Active
               </span>
             </div>
             <Radio className="w-3 h-3 text-emerald-400/70" />
           </div>
         </div>
 
-        {/* Navigation Menu */}
+        {/* Navigation Items */}
         <nav className="p-3 space-y-1">
-          <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">
-            Command Modules
-          </div>
           {ADMIN_NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
             const isActive = item.exact
               ? pathname === item.href
               : pathname.startsWith(item.href);
-            const Icon = item.icon;
+
+            const isSupport = item.href === '/admin/support';
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-semibold transition-all group',
+                  'flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group cursor-pointer',
                   isActive
-                    ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30 shadow-sm shadow-amber-500/5'
-                    : 'text-slate-300 hover:text-white hover:bg-white/[0.04] border border-transparent'
+                    ? 'bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30 shadow-xs'
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
                 )}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <Icon
                     className={cn(
-                      'w-4 h-4 transition-colors',
-                      isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-400'
+                      'w-4 h-4 shrink-0 transition-transform group-hover:scale-110',
+                      isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-white'
                     )}
                   />
-                  <span>{item.name}</span>
-                  {item.href === '/admin/support' && unreadSupportCount > 0 && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-black animate-pulse">
-                      {unreadSupportCount}
-                    </span>
-                  )}
+                  <span className="truncate">{item.name}</span>
                 </div>
+
+                {isSupport && unreadSupportCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500 text-slate-950 animate-pulse">
+                    {unreadSupportCount}
+                  </span>
+                )}
+
                 {isActive && (
-                  <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
+                  <ChevronRight className="w-3.5 h-3.5 text-amber-400/60" />
                 )}
               </Link>
             );
@@ -122,47 +120,45 @@ export function AdminSidebar({
         </nav>
       </div>
 
-      {/* Bottom User Profile Card & Student Shell Link */}
-      <div className="p-3 border-t border-foreground/5 bg-slate-950/40 space-y-2">
-        <Link
-          href="/feed"
-          target="_blank"
-          className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-foreground/5 text-xs text-slate-300 transition-colors"
-        >
-          <span className="flex items-center gap-2">
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-            <span>Launch Student Shell</span>
-          </span>
-          <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
-            OPEN
-          </span>
-        </Link>
-
-        <div className="p-2.5 rounded-xl bg-white/[0.03] border border-foreground/5 flex items-center justify-between">
+      {/* Bottom User Profile Card & Sign Out */}
+      <div className="p-3 border-t border-white/[0.08] bg-[#070a10]">
+        <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] mb-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center justify-center font-black text-xs shrink-0 shadow-inner">
-              {user?.first_name?.[0] || 'A'}
+            <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 font-bold text-xs flex items-center justify-center shrink-0 border border-amber-500/30">
+              {user?.full_name ? user.full_name[0].toUpperCase() : 'A'}
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">
-                {user?.first_name} {user?.last_name}
-              </p>
-              <p className="text-[10px] font-mono text-amber-400/90 truncate">
-                SUPER_ADMIN
-              </p>
+              <div className="text-xs font-bold text-white truncate">
+                {user?.full_name || 'Administrator'}
+              </div>
+              <div className="text-[10px] font-mono text-slate-400 truncate">
+                {user?.email || 'admin@projecthive.app'}
+              </div>
             </div>
           </div>
+          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
+            ADMIN
+          </span>
+        </div>
 
-          <button
-            onClick={onSignOut}
-            className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
-            title="Terminate Admin Session"
+        <div className="grid grid-cols-2 gap-2">
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-[11px] font-medium text-slate-400 hover:text-white transition-colors"
           >
-            <LogOut className="w-4 h-4" />
+            <ExternalLink className="w-3 h-3" />
+            <span>Student App</span>
+          </Link>
+          <button
+            type="button"
+            onClick={onSignOut}
+            className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-[11px] font-medium text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3 h-3" />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>
     </aside>
   );
 }
-
