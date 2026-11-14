@@ -367,8 +367,16 @@ export default function LoginPage() {
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
       <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border flex items-center justify-center gap-2">
-        <img src="/bita-logo.png" alt="BITA" className="w-4 h-4 object-contain inline-block rounded-xs" />
-        <span>&copy; {new Date().getFullYear()} ProjectHive. A flagship product of <a href="https://github.com/bita-studio" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">BITA</a>.</span>
+        <a
+          href="https://bita-studio.vercel.app/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity"
+          title="BITA — Building Ideas. Engineering the Future."
+        >
+          <img src="/bita-logo.png" alt="BITA" className="w-4 h-4 object-contain inline-block rounded-xs" />
+        </a>
+        <span>&copy; {new Date().getFullYear()} ProjectHive. A flagship product of <a href="https://bita-studio.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">BITA</a>.</span>
       </footer>
     </div>
   );

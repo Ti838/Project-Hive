@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description: 'Discover teammates, collaborate on projects, and showcase your work in real-time. A flagship product of BITA.',
   manifest: '/manifest.json',
   applicationName: 'ProjectHive',
-  authors: [{ name: 'BITA', url: 'https://github.com/bita-studio' }],
+  authors: [{ name: 'BITA', url: 'https://bita-studio.vercel.app/' }],
   creator: 'BITA',
   publisher: 'BITA',
   appleWebApp: {

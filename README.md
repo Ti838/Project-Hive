@@ -1,18 +1,20 @@
 <p align="center">
   <img src="frontend/public/logo.png" width="130" alt="ProjectHive Logo" />
   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="frontend/public/bita-logo.png" width="90" alt="BITA Logo" />
+  <a href="https://bita-studio.vercel.app/" target="_blank">
+    <img src="frontend/public/bita-logo.png" width="90" alt="BITA Logo" />
+  </a>
 </p>
 
 <h1 align="center">ProjectHive 🐝</h1>
 
 <p align="center">
-  <strong>A Flagship Product of BITA</strong><br />
+  <strong>A Flagship Product of <a href="https://bita-studio.vercel.app/" target="_blank">BITA</a></strong><br />
   <em>The Next-Generation University Project Incubation, Teammate Discovery & Real-Time Collaboration Ecosystem</em>
 </p>
 
 <p align="center">
-  <a href="https://github.com/bita-studio"><img src="https://img.shields.io/badge/Organization-BITA-0066FF?style=for-the-badge&logo=github&logoColor=white" alt="BITA Organization" /></a>
+  <a href="https://bita-studio.vercel.app/"><img src="https://img.shields.io/badge/Organization-BITA-0066FF?style=for-the-badge&logo=vercel&logoColor=white" alt="BITA Official Website" /></a>
   <a href="https://projecthive-bd.vercel.app"><img src="https://img.shields.io/badge/Frontend-Next.js%2016%20App%20Router-black?style=for-the-badge&logo=nextdotjs" alt="Next.js 16" /></a>
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react" alt="React 19" /></a>
   <a href="https://projecthive-backend.onrender.com"><img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-46E3B7?style=for-the-badge&logo=node.js" alt="Node.js Express" /></a>
