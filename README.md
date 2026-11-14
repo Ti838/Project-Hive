@@ -6,7 +6,7 @@
   </a>
 </p>
 
-<h1 align="center">ProjectHive 🐝</h1>
+<h1 align="center">ProjectHive </h1>
 
 <p align="center">
   <strong>A Flagship Product of <a href="https://bita-studio.vercel.app/" target="_blank">BITA</a></strong><br />
