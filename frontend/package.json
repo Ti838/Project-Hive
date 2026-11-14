@@ -1,7 +1,9 @@
 {
   "name": "frontend",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
+  "description": "ProjectHive — The University Collaboration Mesh by BITA",
+  "author": "BITA",
   "scripts": {
     "dev": "next dev",
     "build": "next build --webpack",

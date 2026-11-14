@@ -11,7 +11,7 @@ out/
 dist/
 build/
 # ─── Legacy MPA Frontend & Root Artifacts (Replaced by frontend/) ─────
-public/
+/public/
 build-vercel.js
 SUMMARY.txt
 /next-env.d.ts

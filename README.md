@@ -1,21 +1,25 @@
 <p align="center">
-  <img src="frontend/public/logo.png" width="160" alt="ProjectHive Logo" />
+  <img src="frontend/public/logo.png" width="130" alt="ProjectHive Logo" />
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="frontend/public/bita-logo.png" width="90" alt="BITA Logo" />
 </p>
 
 <h1 align="center">ProjectHive 🐝</h1>
 
 <p align="center">
-  <strong>The Next-Generation University Project Incubation, Teammate Discovery & Real-Time Collaboration Ecosystem</strong>
+  <strong>A Flagship Product of BITA</strong><br />
+  <em>The Next-Generation University Project Incubation, Teammate Discovery & Real-Time Collaboration Ecosystem</em>
 </p>
 
 <p align="center">
+  <a href="https://github.com/bita-studio"><img src="https://img.shields.io/badge/Organization-BITA-0066FF?style=for-the-badge&logo=github&logoColor=white" alt="BITA Organization" /></a>
   <a href="https://projecthive-bd.vercel.app"><img src="https://img.shields.io/badge/Frontend-Next.js%2016%20App%20Router-black?style=for-the-badge&logo=nextdotjs" alt="Next.js 16" /></a>
   <a href="https://react.dev"><img src="https://img.shields.io/badge/React-19.0-61DAFB?style=for-the-badge&logo=react" alt="React 19" /></a>
-  <a href="https://projecthive-backend.onrender.com"><img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express%205-46E3B7?style=for-the-badge&logo=node.js" alt="Node.js Express" /></a>
+  <a href="https://projecthive-backend.onrender.com"><img src="https://img.shields.io/badge/Backend-Node.js%20%2B%20Express-46E3B7?style=for-the-badge&logo=node.js" alt="Node.js Express" /></a>
   <a href="https://supabase.com"><img src="https://img.shields.io/badge/Database-Supabase%20PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase" alt="Supabase PostgreSQL" /></a>
   <a href="https://socket.io"><img src="https://img.shields.io/badge/Realtime-Socket.IO%204.x-010101?style=for-the-badge&logo=socketdotio" alt="Socket.IO" /></a>
   <a href="https://livekit.io"><img src="https://img.shields.io/badge/SFU%20Calling-LiveKit%20Cloud-2088FF?style=for-the-badge&logo=webrtc" alt="LiveKit Cloud SFU" /></a>
-  <a href="https://groq.com"><img src="https://img.shields.io/badge/AI%20Engine-Groq%20%2B%20Gemini%20%2B%20OpenRouter-F55036?style=for-the-badge&logo=openai" alt="Cascading AI" /></a>
+  <a href="https://groq.com"><img src="https://img.shields.io/badge/AI%20Engine-Groq%20%2B%20Gemini-F55036?style=for-the-badge&logo=openai" alt="Cascading AI" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge" alt="MIT License" /></a>
 </p>
 

@@ -22,14 +22,17 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'ProjectHive - Student Collaboration Platform',
-  description: 'Discover teammates, collaborate on projects, and showcase your work in real-time.',
+  title: 'ProjectHive — The University Collaboration Mesh by BITA',
+  description: 'Discover teammates, collaborate on projects, and showcase your work in real-time. A flagship product of BITA.',
   manifest: '/manifest.json',
   applicationName: 'ProjectHive',
+  authors: [{ name: 'BITA', url: 'https://github.com/bita-studio' }],
+  creator: 'BITA',
+  publisher: 'BITA',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'ProjectHive',
+    title: 'ProjectHive by BITA',
   },
   formatDetection: {
     telephone: false,

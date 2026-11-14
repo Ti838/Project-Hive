@@ -366,8 +366,9 @@ export default function LoginPage() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
-      <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border">
-        &copy; {new Date().getFullYear()} ProjectHive. The University Incubation Mesh.
+      <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border flex items-center justify-center gap-2">
+        <img src="/bita-logo.png" alt="BITA" className="w-4 h-4 object-contain inline-block rounded-xs" />
+        <span>&copy; {new Date().getFullYear()} ProjectHive. A flagship product of <a href="https://github.com/bita-studio" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">BITA</a>.</span>
       </footer>
     </div>
   );

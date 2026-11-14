@@ -72,11 +72,19 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} ProjectHive. Designed and engineered for developer collaboration.</p>
+          <div className="flex items-center gap-2.5">
+            <div className="w-5 h-5 rounded-md overflow-hidden bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0">
+              <img src="/bita-logo.png" alt="BITA" className="w-full h-full object-contain" />
+            </div>
+            <p>
+              &copy; {new Date().getFullYear()} ProjectHive. A flagship product engineered by <a href="https://github.com/bita-studio" target="_blank" rel="noopener noreferrer" className="font-bold text-foreground hover:text-primary transition-colors">BITA</a>.
+            </p>
+          </div>
           
           <div className="flex items-center gap-6">
             <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+            <a href="https://github.com/bita-studio" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors font-semibold text-primary">BITA GitHub</a>
             <Link href="/login" className="hover:text-foreground transition-colors">Sign In</Link>
           </div>
         </div>
