@@ -25,53 +25,53 @@ export function UserInspectionDrawer({
   handleToggleBan,
 }: UserInspectionDrawerProps) {
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
-      <div className="w-full max-w-lg bg-[#0b0e14] border-l border-foreground/10 h-full overflow-y-auto p-6 space-y-6 shadow-2xl">
+    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
+      <div className="w-full max-w-lg bg-card border-l border-border h-full overflow-y-auto p-6 space-y-6 shadow-2xl text-foreground">
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-foreground/10">
+        <div className="flex items-center justify-between pb-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center font-bold text-sm">
+            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-sm">
               {user.first_name?.[0] || 'U'}
             </div>
             <div>
-              <h3 className="text-base font-bold text-white flex items-center gap-1.5">
+              <h3 className="text-base font-bold text-foreground flex items-center gap-1.5">
                 <span>
                   {user.first_name} {user.last_name}
                 </span>
-                {user.is_verified && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                {user.is_verified && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
               </h3>
-              <p className="text-xs text-slate-400 font-mono">{user.email}</p>
+              <p className="text-xs text-muted-foreground font-mono">{user.email}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-400 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Profile Overview Card */}
-        <div className="p-4 rounded-2xl bg-white/[0.02] border border-foreground/5 space-y-3">
-          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">
+        <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-3">
+          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
             Academic & Institutional Status
           </h4>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block text-[10px]">University</span>
-              <span className="text-white font-semibold">{user.university || 'General Campus'}</span>
+              <span className="text-muted-foreground block text-[10px]">University</span>
+              <span className="text-foreground font-semibold">{user.university || 'General Campus'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">Department / Major</span>
-              <span className="text-white font-semibold">{user.major || 'Computer Science'}</span>
+              <span className="text-muted-foreground block text-[10px]">Department / Major</span>
+              <span className="text-foreground font-semibold">{user.major || 'Computer Science'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">Security Role</span>
-              <span className="text-amber-400 font-mono font-bold uppercase">{user.role || 'student'}</span>
+              <span className="text-muted-foreground block text-[10px]">Security Role</span>
+              <span className="text-primary font-mono font-bold uppercase">{user.role || 'student'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">Account Status</span>
-              <span className={user.is_banned ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}>
+              <span className="text-muted-foreground block text-[10px]">Account Status</span>
+              <span className={user.is_banned ? 'text-rose-500 font-bold' : 'text-emerald-500 font-bold'}>
                 {user.is_banned ? 'BANNED' : 'ACTIVE'}
               </span>
             </div>
@@ -79,29 +79,29 @@ export function UserInspectionDrawer({
         </div>
 
         {/* Location & Network Identity */}
-        <div className="p-4 rounded-2xl bg-white/[0.02] border border-foreground/5 space-y-3">
-          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-sky-400" /> Geographical & Network Attribution
+        <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-3">
+          <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-primary" /> Geographical & Network Attribution
           </h4>
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <span className="text-slate-400 block text-[10px]">Last Seen IP</span>
-              <span className="text-white font-mono">{user.lastLoginIp || user.last_login_ip || '127.0.0.1'}</span>
+              <span className="text-muted-foreground block text-[10px]">Last Seen IP</span>
+              <span className="text-foreground font-mono">{user.lastLoginIp || user.last_login_ip || '127.0.0.1'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">Location Region</span>
-              <span className="text-white">
+              <span className="text-muted-foreground block text-[10px]">Location Region</span>
+              <span className="text-foreground">
                 {user.lastLoginCity || user.last_login_city || 'Campus'},{' '}
                 {user.lastLoginCountry || user.last_login_country || 'Network'}
               </span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">Primary OS</span>
-              <span className="text-white font-mono">{user.lastLoginOs || user.last_login_os || 'Desktop OS'}</span>
+              <span className="text-muted-foreground block text-[10px]">Primary OS</span>
+              <span className="text-foreground font-mono">{user.lastLoginOs || user.last_login_os || 'Desktop OS'}</span>
             </div>
             <div>
-              <span className="text-slate-400 block text-[10px]">Primary Browser</span>
-              <span className="text-white font-mono">
+              <span className="text-muted-foreground block text-[10px]">Primary Browser</span>
+              <span className="text-foreground font-mono">
                 {user.lastLoginBrowser || user.last_login_browser || 'Web Browser'}
               </span>
             </div>
@@ -111,21 +111,21 @@ export function UserInspectionDrawer({
         {/* Multi-Device Active Sessions */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Laptop className="w-3.5 h-3.5 text-amber-400" /> Active Authenticated Sessions
+            <h4 className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+              <Laptop className="w-3.5 h-3.5 text-primary" /> Active Authenticated Sessions
             </h4>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
               {inspectingSessions.length} Devices
             </span>
           </div>
 
           {loadingUserSessions ? (
-            <div className="py-8 text-center text-slate-400 text-xs">
-              <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2 text-amber-400" />
+            <div className="py-8 text-center text-muted-foreground text-xs">
+              <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2 text-primary" />
               Querying session tokens...
             </div>
           ) : inspectingSessions.length === 0 ? (
-            <div className="p-4 rounded-xl bg-white/[0.01] border border-foreground/5 text-center text-xs text-slate-400">
+            <div className="p-4 rounded-xl bg-muted/20 border border-border text-center text-xs text-muted-foreground">
               No active session tokens found in registry.
             </div>
           ) : (
@@ -133,23 +133,23 @@ export function UserInspectionDrawer({
               {inspectingSessions.map((s) => (
                 <div
                   key={s.id}
-                  className="p-3.5 rounded-xl bg-white/[0.02] border border-foreground/5 flex items-center justify-between gap-3 text-xs"
+                  className="p-3.5 rounded-xl bg-card border border-border flex items-center justify-between gap-3 text-xs shadow-xs"
                 >
                   <div className="space-y-0.5 min-w-0">
-                    <div className="font-bold text-white truncate flex items-center gap-1.5">
+                    <div className="font-bold text-foreground truncate flex items-center gap-1.5">
                       <span>{s.device_model || 'Device'}</span>
-                      <span className="text-[10px] font-mono text-slate-400">
+                      <span className="text-[10px] font-mono text-muted-foreground">
                         ({s.os_name || 'OS'} · {s.browser_name || 'Browser'})
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 font-mono">
+                    <p className="text-[11px] text-muted-foreground font-mono">
                       IP: {s.ip_address} {s.city ? `· ${s.city}, ${s.country}` : ''}
                     </p>
                   </div>
 
                   <button
                     onClick={() => handleAdminRevokeSession(s.id)}
-                    className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold shrink-0 transition-colors cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 border border-rose-500/20 text-xs font-semibold shrink-0 transition-colors cursor-pointer"
                     title="Administratively terminate session token"
                   >
                     Revoke
@@ -161,17 +161,17 @@ export function UserInspectionDrawer({
         </div>
 
         {/* Quick Disciplinary Actions */}
-        <div className="pt-4 border-t border-foreground/10 flex items-center gap-3">
+        <div className="pt-4 border-t border-border flex items-center gap-3">
           <button
             onClick={() => {
               const u = user;
               onClose();
               onOpenStrikesModal(u);
             }}
-            className="flex-1 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Issue Infraction Strike</span>
+            <span>Issue Strike</span>
           </button>
           <button
             onClick={() => {
@@ -182,16 +182,15 @@ export function UserInspectionDrawer({
             className={cn(
               'flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer',
               user.is_banned
-                ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border-emerald-500/30'
-                : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 border-rose-500/30'
+                ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                : 'bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 border-rose-500/30'
             )}
           >
             <Ban className="w-3.5 h-3.5" />
-            <span>{user.is_banned ? 'Unban Account' : 'Ban Account'}</span>
+            <span>{user.is_banned ? 'Unban User' : 'Ban User'}</span>
           </button>
         </div>
       </div>
     </div>
   );
 }
-

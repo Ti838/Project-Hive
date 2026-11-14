@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // ─── ProjectHive Sidebar & Resizable Workspace Drawer ──────────────────────────
 
 import { useEffect, useState, useRef, useCallback } from 'react';
@@ -172,7 +172,7 @@ export function Sidebar() {
               {user?.role === 'admin' && (
                 <div className="px-3 pt-3">
                   <Link
-                    href="/admin/dashboard"
+                    href="/admin"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/25 shadow-xs transition-colors"
                   >
@@ -308,7 +308,7 @@ export function Sidebar() {
         {user?.role === 'admin' && (
           <div className="p-2 border-b border-border/60 relative group">
             <Link
-              href="/admin/dashboard"
+              href="/admin"
               className={cn(
                 'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 transition-all tap-press',
                 sidebarCollapsed && 'justify-center px-0'

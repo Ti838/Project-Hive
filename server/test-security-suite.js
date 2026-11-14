@@ -4,13 +4,44 @@
  */
 
 import 'dotenv/config';
-import test from 'node:test';
+import test, { before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import bcryptjs from 'bcryptjs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { supabaseAdmin } from './config/supabase.js';
 import { generateAccessToken, verifyAccessToken } from './utils/jwt.utils.js';
+import app from './app.js';
+
+let testServer;
+let baseUrl = 'http://127.0.0.1:5000';
+
+before(async () => {
+  try {
+    const res = await fetch('http://127.0.0.1:5000/');
+    if (res.ok) {
+      return; // Server is already running
+    }
+  } catch (_e) {
+    // Port 5000 is not running; spin up test server on random free port
+    await new Promise((resolve) => {
+      testServer = app.listen(0, '127.0.0.1', () => {
+        const port = testServer.address().port;
+        baseUrl = `http://127.0.0.1:${port}`;
+        resolve();
+      });
+    });
+  }
+});
+
+after(async () => {
+  if (testServer) {
+    if (typeof testServer.closeAllConnections === 'function') {
+      testServer.closeAllConnections();
+    }
+    await new Promise((resolve) => testServer.close(resolve));
+  }
+});
 
 test('Security Suite — 1. Cryptographic Password Hashing (Bcrypt 12 Salt Rounds)', async () => {
   const password = 'StrongPassword!2026';
@@ -64,7 +95,7 @@ test('Security Suite — 3. Privilege Escalation Defense (Non-admin blocked from
   };
   const studentToken = generateAccessToken(studentPayload.id, studentPayload.email, studentPayload.role);
 
-  const res = await fetch('http://localhost:5000/api/admin/security/posture', {
+  const res = await fetch(`${baseUrl}/api/admin/security/posture`, {
     headers: {
       'Authorization': `Bearer ${studentToken}`,
     },
@@ -76,7 +107,7 @@ test('Security Suite — 3. Privilege Escalation Defense (Non-admin blocked from
 });
 
 test('Security Suite — 4. Unauthenticated Access Blocked on Protected Endpoints', async () => {
-  const res = await fetch('http://localhost:5000/api/users/me');
+  const res = await fetch(`${baseUrl}/api/users/me`);
   assert.equal(res.status, 401, 'Request without Authorization header must return HTTP 401');
 });
 
@@ -90,7 +121,7 @@ test('Security Suite — 5. IDOR & Data Isolation Safeguard', async () => {
   const attackerToken = generateAccessToken(attackerPayload.id, attackerPayload.email, attackerPayload.role);
 
   // Attacker attempts to delete victim's account
-  const res = await fetch(`http://localhost:5000/api/users/${victimId}`, {
+  const res = await fetch(`${baseUrl}/api/users/${victimId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${attackerToken}`,
@@ -103,7 +134,7 @@ test('Security Suite — 5. IDOR & Data Isolation Safeguard', async () => {
 test('Security Suite — 6. SQL & Filter Parameter Injection Resistance', async () => {
   // Attempt filter manipulation on search
   const maliciousSearch = "'; DROP TABLE users; --";
-  const res = await fetch(`http://localhost:5000/api/users/search?q=${encodeURIComponent(maliciousSearch)}`);
+  const res = await fetch(`${baseUrl}/api/users/search?q=${encodeURIComponent(maliciousSearch)}`);
   
   // Endpoint should safely return 200 without executing injection
   assert.equal(res.status, 200, 'Search input with SQL injection payload must be safely handled');

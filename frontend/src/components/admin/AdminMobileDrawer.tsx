@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   Shield,
   X,
-  ChevronRight,
   ExternalLink,
   LogOut,
 } from 'lucide-react';
@@ -35,40 +34,40 @@ export function AdminMobileDrawer({
     <div className="fixed inset-0 z-50 lg:hidden flex">
       {/* Backdrop blur overlay */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity"
+        className="fixed inset-0 bg-background/80 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Slide-out drawer menu */}
-      <div className="relative w-72 max-w-[85vw] bg-[#0b0e14] border-r border-amber-500/20 h-full flex flex-col justify-between z-10 shadow-2xl animate-in slide-in-from-left duration-200">
-        <div>
+      <div className="relative w-72 max-w-[85vw] bg-card border-r border-border h-full flex flex-col justify-between z-10 shadow-2xl animate-in slide-in-from-left duration-200">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Drawer Header */}
-          <div className="p-4 border-b border-foreground/10 flex items-center justify-between bg-slate-950/60">
+          <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30 shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
-                <Shield className="w-4 h-4 text-amber-400" />
+              <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-xs">
+                <Shield className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-                  Project<span className="text-amber-400">Hive</span>
+                <h1 className="text-sm font-black tracking-tight text-foreground flex items-center gap-1">
+                  Project<span className="text-primary">Hive</span>
                 </h1>
-                <p className="text-[9px] font-mono tracking-widest text-slate-400 uppercase">
+                <p className="text-[9px] font-mono tracking-widest text-muted-foreground uppercase">
                   Admin Console
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-white rounded-lg bg-white/[0.05]"
+              className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg bg-muted cursor-pointer"
               title="Close Menu"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Mobile Nav Links */}
-          <nav className="p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-220px)]">
-            <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">
+          <nav className="p-3 space-y-1 overflow-y-auto flex-1">
+            <div className="px-3 py-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-muted-foreground">
               Command Modules
             </div>
             {ADMIN_NAV_ITEMS.map((item) => {
@@ -84,73 +83,72 @@ export function AdminMobileDrawer({
                   className={cn(
                     'flex items-center justify-between px-3 py-3 rounded-xl text-xs font-semibold transition-all group min-h-[44px]',
                     isActive
-                      ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                      : 'text-slate-300 hover:text-white hover:bg-white/[0.06] border border-transparent'
+                      ? 'bg-primary/15 text-primary border border-primary/30 shadow-xs'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent'
                   )}
                 >
                   <div className="flex items-center gap-3">
                     <Icon
                       className={cn(
                         'w-4 h-4 transition-colors',
-                        isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-400'
+                        isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-primary'
                       )}
                     />
                     <span>{item.name}</span>
                     {item.href === '/admin/support' && unreadSupportCount > 0 && (
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-black animate-pulse">
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500 text-slate-950 animate-pulse">
                         {unreadSupportCount}
                       </span>
                     )}
                   </div>
-                  {isActive && (
-                    <ChevronRight className="w-3.5 h-3.5 text-amber-400" />
-                  )}
                 </Link>
               );
             })}
           </nav>
-        </div>
 
-        {/* Mobile Drawer Bottom User Card */}
-        <div className="p-3 border-t border-foreground/10 bg-slate-950/50 space-y-2">
-          <Link
-            href="/feed"
-            target="_blank"
-            className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-white/[0.04] border border-foreground/10 text-xs text-slate-300"
-          >
-            <span className="flex items-center gap-2">
-              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-              <span>Launch Student Shell</span>
-            </span>
-            <span className="text-[9px] font-mono text-slate-400 bg-white/5 px-1.5 py-0.5 rounded">
-              OPEN
-            </span>
-          </Link>
-          <div className="p-2.5 rounded-xl bg-white/[0.04] border border-foreground/10 flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 flex items-center justify-center font-black text-xs shrink-0">
-                {user?.first_name?.[0] || 'A'}
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate">
-                  {user?.first_name} {user?.last_name}
-                </p>
-                <p className="text-[10px] font-mono text-amber-400 truncate">
-                  SUPER_ADMIN
-                </p>
+          {/* Drawer Footer */}
+          <div className="p-3 border-t border-border shrink-0 space-y-2 bg-muted/20">
+            <div className="p-2.5 rounded-xl bg-card border border-border flex items-center justify-between">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                  {user?.first_name?.[0] || 'A'}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {user?.first_name} {user?.last_name}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground truncate font-mono">
+                    Super Administrator
+                  </p>
+                </div>
               </div>
             </div>
-            <button
-              onClick={onSignOut}
-              className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg cursor-pointer"
-              title="Sign Out"
-            >
-              <LogOut className="w-4 h-4" />
-            </button>
+
+            <div className="flex items-center gap-1.5 pt-1">
+              <Link
+                href="/dashboard"
+                onClick={onClose}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer border border-border"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span>Student App</span>
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onSignOut();
+                }}
+                className="flex items-center justify-center p-2 rounded-lg text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border border-rose-500/20"
+                title="Sign Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

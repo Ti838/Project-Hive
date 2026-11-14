@@ -69,7 +69,7 @@ class CacheService {
 
   startMemoryCleaner() {
     // Purge expired memory entries every 60 seconds to prevent unbounded memory growth
-    setInterval(() => {
+    const timer = setInterval(() => {
       const now = Date.now();
       for (const [key, item] of this.memoryStore.entries()) {
         if (item.expiresAt && item.expiresAt < now) {
@@ -77,6 +77,7 @@ class CacheService {
         }
       }
     }, 60000);
+    if (timer.unref) timer.unref();
   }
 
   async get(key) {

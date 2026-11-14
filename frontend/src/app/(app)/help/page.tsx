@@ -38,12 +38,6 @@ export default function HelpCenterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  useEffect(() => {
-    if (activeTab === 'tickets') {
-      fetchUserTickets();
-    }
-  }, [activeTab]);
-
   const fetchUserTickets = async () => {
     setIsLoading(true);
     try {
@@ -57,6 +51,12 @@ export default function HelpCenterPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (activeTab === 'tickets') {
+      fetchUserTickets();
+    }
+  }, [activeTab]);
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -7,24 +7,24 @@ import {
   Users,
   ShieldAlert,
   Layers,
+  FolderKanban,
   Sliders,
   ScrollText,
   MessageSquare,
   LogOut,
-  ExternalLink,
   Shield,
   Radio,
-  ChevronRight,
-  Sparkles,
+  ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const ADMIN_NAV_ITEMS = [
   { name: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, exact: true },
   { name: 'User Management', href: '/admin/users', icon: Users },
-  { name: 'Security & Access', href: '/admin/security', icon: Shield },
-  { name: 'Content Moderation', href: '/admin/moderation', icon: ShieldAlert },
   { name: 'Squads & Teams', href: '/admin/teams', icon: Layers },
+  { name: 'Projects Showcase', href: '/admin/projects', icon: FolderKanban },
+  { name: 'Content Moderation', href: '/admin/moderation', icon: ShieldAlert },
+  { name: 'Security & Access', href: '/admin/security', icon: Shield },
   { name: 'Support Tickets', href: '/admin/support', icon: MessageSquare },
   { name: 'System Settings', href: '/admin/system', icon: Sliders },
   { name: 'Audit Logs', href: '/admin/audit', icon: ScrollText },
@@ -44,38 +44,38 @@ export function AdminSidebar({
   onSignOut,
 }: AdminSidebarProps) {
   return (
-    <aside className="hidden lg:flex w-64 shrink-0 bg-[#090d16] border-r border-white/[0.08] flex-col justify-between sticky top-0 h-screen z-40 select-none">
-      <div>
+    <aside className="hidden lg:flex w-64 shrink-0 bg-card border-r border-border flex-col justify-between sticky top-0 h-screen z-40 select-none transition-colors">
+      <div className="flex flex-col h-full overflow-hidden">
         {/* Top Brand Header */}
-        <div className="p-4 border-b border-white/[0.08]">
+        <div className="p-4 border-b border-border shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
-              <Shield className="w-5 h-5 text-amber-400" />
+            <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-xs">
+              <Shield className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-                Project<span className="text-amber-400">Hive</span>
+              <h1 className="text-sm font-black tracking-tight text-foreground flex items-center gap-1">
+                Project<span className="text-primary">Hive</span>
               </h1>
-              <p className="text-[10px] font-mono tracking-widest text-slate-400 uppercase">
+              <p className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">
                 Admin Console
               </p>
             </div>
           </div>
 
-          {/* Status Bar */}
+          {/* Operational Status Indicator */}
           <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] font-mono font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
                 Services Active
               </span>
             </div>
-            <Radio className="w-3 h-3 text-emerald-400/70" />
+            <Radio className="w-3 h-3 text-emerald-500/70" />
           </div>
         </div>
 
-        {/* Navigation Items */}
-        <nav className="p-3 space-y-1">
+        {/* Navigation Items (Scrollable if needed) */}
+        <nav className="p-3 space-y-1 overflow-y-auto flex-1">
           {ADMIN_NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = item.exact
@@ -91,72 +91,68 @@ export function AdminSidebar({
                 className={cn(
                   'flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all group cursor-pointer',
                   isActive
-                    ? 'bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30 shadow-xs'
-                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04]'
+                    ? 'bg-primary/15 text-primary font-bold border border-primary/30 shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                 )}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <Icon
                     className={cn(
                       'w-4 h-4 shrink-0 transition-transform group-hover:scale-110',
-                      isActive ? 'text-amber-400' : 'text-slate-400 group-hover:text-white'
+                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'
                     )}
                   />
                   <span className="truncate">{item.name}</span>
                 </div>
 
                 {isSupport && unreadSupportCount > 0 && (
-                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500 text-slate-950 animate-pulse">
+                  <span className="px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500 text-slate-950 animate-pulse shrink-0">
                     {unreadSupportCount}
                   </span>
-                )}
-
-                {isActive && (
-                  <ChevronRight className="w-3.5 h-3.5 text-amber-400/60" />
                 )}
               </Link>
             );
           })}
         </nav>
-      </div>
 
-      {/* Bottom User Profile Card & Sign Out */}
-      <div className="p-3 border-t border-white/[0.08] bg-[#070a10]">
-        <div className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] border border-white/[0.06] mb-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 font-bold text-xs flex items-center justify-center shrink-0 border border-amber-500/30">
-              {user?.full_name ? user.full_name[0].toUpperCase() : 'A'}
-            </div>
-            <div className="min-w-0">
-              <div className="text-xs font-bold text-white truncate">
-                {user?.full_name || 'Administrator'}
+        {/* Bottom User Clearance & Portal Exit */}
+        <div className="p-3 border-t border-border shrink-0 space-y-2 bg-muted/20">
+          <div className="p-2.5 rounded-xl bg-card border border-border flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                {user?.first_name?.[0] || 'A'}
               </div>
-              <div className="text-[10px] font-mono text-slate-400 truncate">
-                {user?.email || 'admin@projecthive.app'}
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">
+                  {user?.first_name} {user?.last_name}
+                </p>
+                <p className="text-[10px] text-muted-foreground truncate font-mono">
+                  Super Administrator
+                </p>
               </div>
             </div>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" title="Active clearance" />
           </div>
-          <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 shrink-0">
-            ADMIN
-          </span>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <Link
-            href="/"
-            className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] text-[11px] font-medium text-slate-400 hover:text-white transition-colors"
-          >
-            <ExternalLink className="w-3 h-3" />
-            <span>Student App</span>
-          </Link>
-          <button
-            type="button"
-            onClick={onSignOut}
-            className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-[11px] font-medium text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
-          >
-            <LogOut className="w-3 h-3" />
-            <span>Sign Out</span>
-          </button>
+          <div className="flex items-center gap-1.5 pt-1">
+            <Link
+              href="/dashboard"
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer border border-border"
+              title="Return to Student Portal"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Student App</span>
+            </Link>
+
+            <button
+              type="button"
+              onClick={onSignOut}
+              className="flex items-center justify-center p-2 rounded-lg text-rose-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer border border-rose-500/20"
+              title="Terminate Admin Session"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </aside>

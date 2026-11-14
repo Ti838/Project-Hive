@@ -501,7 +501,7 @@ export function Topbar() {
 
                     {user?.role === 'admin' && (
                       <Link
-                        href="/admin/dashboard"
+                        href="/admin"
                         onClick={() => setProfileOpen(false)}
                         className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-500 hover:bg-amber-500/10 transition-colors tap-press"
                       >

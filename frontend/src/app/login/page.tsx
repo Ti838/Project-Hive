@@ -131,48 +131,48 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#07090e] text-slate-100 flex flex-col justify-between selection:bg-amber-500/20">
+    <div className="min-h-screen w-full bg-background text-foreground flex flex-col justify-between selection:bg-primary/20">
       {/* ── Top Header Bar ─────────────────────────────────────────── */}
-      <header className="w-full px-4 sm:px-8 py-4 border-b border-white/[0.08] bg-[#090d16]/80 backdrop-blur-md flex items-center justify-between">
+      <header className="w-full px-4 sm:px-8 py-4 border-b border-border bg-card/80 backdrop-blur-md flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-slate-400 hover:text-white hover:bg-white/[0.06] px-3 py-1.5 rounded-xl transition-all group"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-muted-foreground hover:text-foreground hover:bg-muted px-3 py-1.5 rounded-xl transition-all group"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
         </Link>
 
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center p-1.5 shadow-inner">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center p-1.5 shadow-inner">
             <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
           </div>
-          <span className="font-extrabold text-base tracking-tight text-white">
-            Project<span className="text-amber-400">Hive</span>
+          <span className="font-extrabold text-base tracking-tight text-foreground">
+            Project<span className="text-primary">Hive</span>
           </span>
         </Link>
       </header>
 
       {/* ── Main Login Layout ────────────────────────────────────────── */}
       <main className="flex-1 flex w-full max-w-5xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8 my-6">
-        <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-[#0d1117] border border-white/[0.1] rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-2xl">
+        <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-2xl">
           
           {/* Left Brand Panel (Desktop Only) */}
-          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-amber-500/10 via-[#0a0e17] to-[#07090e] border border-amber-500/20 relative overflow-hidden">
+          <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-card to-background border border-primary/20 relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center p-2.5 shadow-inner">
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center p-2.5 shadow-inner">
                   <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   Live Incubation Mesh
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight leading-tight">
                 Welcome back to your workspace.
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+              <p className="text-xs sm:text-sm text-muted-foreground mt-2 leading-relaxed">
                 Collaborate with your squad, join LiveKit 4K video rooms, and scaffold your capstone with HiveMind AI.
               </p>
 
@@ -184,30 +184,30 @@ export default function LoginPage() {
                   { icon: Sparkles, title: 'HiveMind AI Copilot', desc: 'Groq & Gemini Flash sprint assistance' },
                   { icon: ShieldCheck, title: 'Zero-Trust Security', desc: 'PostgreSQL Row-Level Security isolation' },
                 ].map((item, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                    <div className="p-2 rounded-lg bg-amber-500/15 text-amber-400 shrink-0 mt-0.5">
+                  <div key={idx} className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 border border-border/80">
+                    <div className="p-2 rounded-lg bg-primary/15 text-primary shrink-0 mt-0.5">
                       <item.icon className="w-4 h-4" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-white">{item.title}</div>
-                      <div className="text-[11px] text-slate-400">{item.desc}</div>
+                      <div className="text-xs font-bold text-foreground">{item.title}</div>
+                      <div className="text-[11px] text-muted-foreground">{item.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="pt-6 border-t border-white/[0.08] text-xs text-slate-400 flex items-center justify-between">
+            <div className="pt-6 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
               <span>Verified student network</span>
-              <span className="text-amber-400 font-semibold">ProjectHive 2.0</span>
+              <span className="text-primary font-semibold">ProjectHive 2.0</span>
             </div>
           </div>
 
           {/* Right Form Container */}
           <div className="lg:col-span-7 flex flex-col justify-center px-2 sm:px-6 py-2 max-w-lg mx-auto w-full">
             <div className="mb-6">
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Student Sign In</h1>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1.5 leading-relaxed">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Student Sign In</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
                 Enter your university or personal email to access your squads and projects.
               </p>
             </div>
@@ -217,10 +217,10 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleSignIn}
               disabled={isGoogleLoading}
-              className="w-full h-11 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-sm mb-5 cursor-pointer disabled:opacity-60"
+              className="w-full h-11 rounded-xl bg-muted/60 hover:bg-muted text-foreground border border-border font-bold text-xs sm:text-sm flex items-center justify-center gap-2.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-xs mb-5 cursor-pointer disabled:opacity-60"
             >
               {isGoogleLoading ? (
-                <span className="w-4 h-4 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                <span className="w-4 h-4 border-2 border-foreground border-t-transparent rounded-full animate-spin" />
               ) : (
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -234,16 +234,16 @@ export default function LoginPage() {
 
             {/* Divider */}
             <div className="relative flex items-center justify-center mb-5">
-              <div className="w-full border-t border-white/[0.08]" />
-              <span className="absolute px-3 bg-[#0d1117] text-[11px] font-medium text-slate-500 uppercase tracking-wider">
+              <div className="w-full border-t border-border" />
+              <span className="absolute px-3 bg-card text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
                 or sign in with email
               </span>
             </div>
 
             {/* Error Notification */}
             {serverError && (
-              <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-2.5 text-xs text-rose-300 animate-in fade-in">
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+              <div className="mb-4 p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 flex items-start gap-2.5 text-xs text-destructive animate-in fade-in">
+                <AlertCircle className="w-4 h-4 shrink-0 text-destructive mt-0.5" />
                 <span className="leading-relaxed">{serverError}</span>
               </div>
             )}
@@ -251,18 +251,18 @@ export default function LoginPage() {
             {/* Unverified Email Resend Notice */}
             {requiresVerification && (
               <div className="mb-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-                <p className="text-xs text-amber-200">
-                  Verification email sent to <strong className="text-white">{unverifiedEmail}</strong>.
+                <p className="text-xs text-amber-500 dark:text-amber-200">
+                  Verification email sent to <strong className="text-foreground">{unverifiedEmail}</strong>.
                 </p>
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={isResending || resendCooldown > 0}
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition-colors cursor-pointer disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {isResending ? 'Sending...' : resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email'}
                 </button>
-                {resendMsg && <p className="text-[11px] text-amber-300 mt-1">{resendMsg}</p>}
+                {resendMsg && <p className="text-[11px] text-amber-500 dark:text-amber-300 mt-1">{resendMsg}</p>}
               </div>
             )}
 
@@ -270,68 +270,68 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Email Address</label>
+                  <label className="text-xs font-semibold text-foreground">Email Address</label>
                   {detectedUniversity && (
-                    <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="text-[10px] font-semibold text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full flex items-center gap-1">
                       <GraduationCap className="w-3 h-3" />
                       {detectedUniversity}
                     </span>
                   )}
                 </div>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                   <input
                     type="email"
                     placeholder="student@university.ac.bd"
                     {...register('email')}
-                    className={`w-full h-11 pl-10 pr-4 bg-white/[0.04] border ${
-                      errors.email ? 'border-rose-500/70' : 'border-white/[0.1] focus:border-amber-500/60'
-                    } rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all font-sans`}
+                    className={`w-full h-11 pl-10 pr-4 bg-muted/40 border ${
+                      errors.email ? 'border-destructive' : 'border-input focus:border-primary'
+                    } rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans`}
                   />
                 </div>
-                {errors.email && <p className="mt-1 text-xs text-rose-400">{errors.email.message}</p>}
+                {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email.message}</p>}
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-semibold text-slate-300">Password</label>
+                  <label className="text-xs font-semibold text-foreground">Password</label>
                   <Link
                     href="/forgot-password"
-                    className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                    className="text-xs text-primary hover:text-primary/80 transition-colors"
                   >
                     Forgot password?
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••••••"
                     {...register('password')}
-                    className={`w-full h-11 pl-10 pr-10 bg-white/[0.04] border ${
-                      errors.password ? 'border-rose-500/70' : 'border-white/[0.1] focus:border-amber-500/60'
-                    } rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition-all font-sans`}
+                    className={`w-full h-11 pl-10 pr-10 bg-muted/40 border ${
+                      errors.password ? 'border-destructive' : 'border-input focus:border-primary'
+                    } rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all font-sans`}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-0.5 cursor-pointer"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground p-0.5 cursor-pointer"
                     tabIndex={-1}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {errors.password && <p className="mt-1 text-xs text-rose-400">{errors.password.message}</p>}
+                {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password.message}</p>}
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-11 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
+                className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 shadow-lg shadow-primary/20 cursor-pointer glow-primary"
               >
                 {isSubmitting ? (
                   <>
-                    <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
+                    <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
                     <span>Signing in...</span>
                   </>
                 ) : (
@@ -345,16 +345,16 @@ export default function LoginPage() {
 
             {/* Bottom Links */}
             <div className="mt-6 text-center space-y-3">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link href="/register" className="font-semibold text-amber-400 hover:text-amber-300 underline underline-offset-4">
+                <Link href="/register" className="font-semibold text-primary hover:underline underline-offset-4">
                   Create Account
                 </Link>
               </p>
               <div>
                 <Link
                   href="/admin/login"
-                  className="text-[11px] text-slate-500 hover:text-slate-300 transition-colors"
+                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Institutional Administrator? Sign In Here &rarr;
                 </Link>
@@ -366,7 +366,7 @@ export default function LoginPage() {
       </main>
 
       {/* ── Footer ─────────────────────────────────────────────────── */}
-      <footer className="w-full py-4 text-center text-xs text-slate-500 border-t border-white/[0.06]">
+      <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border">
         &copy; {new Date().getFullYear()} ProjectHive. The University Incubation Mesh.
       </footer>
     </div>

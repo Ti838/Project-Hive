@@ -70,12 +70,13 @@ function checkLimit(key, max) {
   rateLimitMap.set(key, record);
   return true;
 }
-setInterval(() => {
+const rateLimitCleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [k, v] of rateLimitMap) {
     if (now - v.start > 3600000) rateLimitMap.delete(k);
   }
 }, 30 * 60 * 1000);
+if (rateLimitCleanupTimer.unref) rateLimitCleanupTimer.unref();
 
 /**
  * Robust fetch wrapper with strict abort timeout to enforce circuit breaking

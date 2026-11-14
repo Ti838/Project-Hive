@@ -4,33 +4,25 @@ import React, { useState, useEffect } from 'react';
 import {
   Users,
   Search,
-  Filter,
   Shield,
   ShieldAlert,
   ShieldCheck,
   Ban,
   AlertTriangle,
   RefreshCw,
-  MoreVertical,
   ChevronLeft,
   ChevronRight,
   X,
   CheckCircle2,
   Trash2,
-  Flame,
   Award,
-  Clock,
-  Laptop,
-  Globe,
-  Smartphone,
-  Monitor,
-  MapPin,
-  LogOut
+  MoreVertical,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { User, UserStrike } from '@/types';
 import { UserStrikesModal } from '@/components/admin/UserStrikesModal';
 import { UserInspectionDrawer } from '@/components/admin/UserInspectionDrawer';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cn } from '@/lib/utils';
 
 export default function AdminUsersPage() {
@@ -45,7 +37,6 @@ export default function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
 
   // Selected User for Actions / Modals
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [inspectingUser, setInspectingUser] = useState<any | null>(null);
   const [inspectingSessions, setInspectingSessions] = useState<any[]>([]);
   const [loadingUserSessions, setLoadingUserSessions] = useState(false);
@@ -58,6 +49,14 @@ export default function AdminUsersPage() {
   const [strikeSeverity, setStrikeSeverity] = useState<'warning' | 'temporary_suspension' | 'permanent_ban'>('warning');
   const [submittingStrike, setSubmittingStrike] = useState(false);
   const [actionFeedback, setActionFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
+  // Confirmation Dialog State
+  const [confirmDialog, setConfirmDialog] = useState<{
+    type: 'ban' | 'role' | 'delete';
+    user: User;
+    newRole?: string;
+  } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   // Debounce search input (300ms)
   useEffect(() => {
@@ -135,8 +134,8 @@ export default function AdminUsersPage() {
     try {
       await api.admin.revokeUserSession(inspectingUser.id, sessionId);
       setInspectingSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    } catch (err) {
-      alert('Failed to revoke session');
+    } catch {
+      console.error('Failed to revoke session');
     }
   };
 
@@ -156,7 +155,6 @@ export default function AdminUsersPage() {
           : `Strike issued successfully (Total strikes: ${res.totalStrikes}).`,
       });
       setStrikeReason('');
-      // Reload strikes & users
       const strikeData = await api.admin.getUserStrikes(strikesModalUser.id);
       if (strikeData?.strikes) setUserStrikes(strikeData.strikes);
       fetchUsers();
@@ -170,39 +168,28 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleToggleBan = async (u: User) => {
-    const isBanning = !u.is_banned;
-    const confirmMsg = isBanning
-      ? `Are you sure you want to permanently ban ${u.first_name} ${u.last_name}?`
-      : `Restore platform access for ${u.first_name} ${u.last_name}?`;
-
-    if (!window.confirm(confirmMsg)) return;
-
+  const handleExecuteConfirm = async () => {
+    if (!confirmDialog) return;
+    setActionLoading(true);
     try {
-      await api.admin.banUser(u.id, isBanning, isBanning ? 'Administrative ban via User Matrix' : undefined);
+      if (confirmDialog.type === 'ban') {
+        const isBanning = !confirmDialog.user.is_banned;
+        await api.admin.banUser(
+          confirmDialog.user.id,
+          isBanning,
+          isBanning ? 'Administrative ban via User Matrix' : undefined
+        );
+      } else if (confirmDialog.type === 'role' && confirmDialog.newRole) {
+        await api.admin.changeRole(confirmDialog.user.id, confirmDialog.newRole);
+      } else if (confirmDialog.type === 'delete') {
+        await api.admin.deleteUser(confirmDialog.user.id);
+      }
+      setConfirmDialog(null);
       fetchUsers();
     } catch (err) {
-      console.error('Failed to update ban status', err);
-    }
-  };
-
-  const handleChangeRole = async (u: User, newRole: string) => {
-    if (!window.confirm(`Change ${u.first_name}'s role to ${newRole.toUpperCase()}?`)) return;
-    try {
-      await api.admin.changeRole(u.id, newRole);
-      fetchUsers();
-    } catch (err) {
-      console.error('Failed to change role', err);
-    }
-  };
-
-  const handleDeleteUser = async (u: User) => {
-    if (!window.confirm(`CAUTION: Permanently delete ${u.first_name} ${u.last_name}? This action is irreversible.`)) return;
-    try {
-      await api.admin.deleteUser(u.id);
-      fetchUsers();
-    } catch (err) {
-      console.error('Failed to delete user', err);
+      console.error('Operation failed', err);
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -211,32 +198,32 @@ export default function AdminUsersPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ─── Header & Search Controls ──────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400" />
-            User Directory & Strike Ledger
+          <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Users className="w-5 h-5 text-primary" />
+            User Directory & Access Control
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Total of {total} registered campus builders. Manage role assignments, investigate strikes, and enforce bans.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Total of {total} registered students and staff. Manage roles, review strikes, and inspect telemetry.
           </p>
         </div>
 
-        <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2 w-full md:w-auto">
+        <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search by name, email, major..."
+              placeholder="Search name, email, major..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900/90 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground cursor-pointer"
                 title="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -250,7 +237,7 @@ export default function AdminUsersPage() {
               setRoleFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-xl bg-slate-900/90 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-background border border-input text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="">All Roles</option>
             <option value="student">Students</option>
@@ -263,7 +250,7 @@ export default function AdminUsersPage() {
               setStatusFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-xl bg-slate-900/90 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-background border border-input text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
             <option value="">All Statuses</option>
             <option value="active">Active</option>
@@ -272,7 +259,7 @@ export default function AdminUsersPage() {
 
           <button
             type="submit"
-            className="h-9 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shrink-0"
+            className="h-9 px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs transition-colors shrink-0 shadow-xs cursor-pointer"
           >
             Filter
           </button>
@@ -280,58 +267,58 @@ export default function AdminUsersPage() {
       </div>
 
       {/* ─── User Table Matrix ─────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 overflow-hidden">
+      <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-foreground/5 bg-white/[0.02] text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-border bg-muted/40 text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
                 <th className="py-3.5 px-4 font-semibold">User Identity</th>
                 <th className="py-3.5 px-4 font-semibold">University & Major</th>
                 <th className="py-3.5 px-4 font-semibold">Role</th>
                 <th className="py-3.5 px-4 font-semibold">Status</th>
-                <th className="py-3.5 px-4 font-semibold text-right">Disciplinary Actions</th>
+                <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+            <tbody className="divide-y divide-border text-xs">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
-                    <p className="font-mono text-xs">Querying Supabase Authority Records...</p>
+                  <td colSpan={5} className="py-12 text-center text-muted-foreground">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                    <p className="font-mono text-xs">Querying Authority Records...</p>
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-slate-400">
-                    <Users className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <p className="font-medium text-xs">No users matching search filters</p>
+                  <td colSpan={5} className="py-12 text-center text-muted-foreground">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-muted-foreground" />
+                    <p className="font-semibold text-foreground text-xs">No users matching search filters</p>
                   </td>
                 </tr>
               ) : (
                 users.map((u) => (
-                  <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr key={u.id} className="hover:bg-muted/40 transition-colors">
                     {/* User Identity */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                           {u.first_name?.[0] || 'U'}
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-white truncate flex items-center gap-1.5">
+                          <p className="font-bold text-foreground truncate flex items-center gap-1.5">
                             <span>{u.first_name} {u.last_name}</span>
                             {u.is_verified && (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 inline shrink-0" />
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 inline shrink-0" />
                             )}
                           </p>
-                          <p className="text-[11px] text-slate-400 truncate">{u.email}</p>
+                          <p className="text-[11px] text-muted-foreground truncate font-mono">{u.email}</p>
                         </div>
                       </div>
                     </td>
 
                     {/* University & Major */}
                     <td className="py-3.5 px-4">
-                      <p className="text-slate-200 truncate">{u.university || 'General Campus'}</p>
-                      <p className="text-[11px] text-slate-400 truncate">{u.major || 'Computer Science'}</p>
+                      <p className="text-foreground truncate">{u.university || 'General Campus'}</p>
+                      <p className="text-[11px] text-muted-foreground truncate">{u.major || 'Computer Science'}</p>
                     </td>
 
                     {/* Role Badge */}
@@ -340,8 +327,8 @@ export default function AdminUsersPage() {
                         className={cn(
                           'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider',
                           u.role === 'admin'
-                            ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                            : 'bg-foreground/5 text-slate-300 border border-foreground/10'
+                            ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                            : 'bg-muted text-muted-foreground border border-border'
                         )}
                       >
                         {u.role || 'student'}
@@ -350,71 +337,68 @@ export default function AdminUsersPage() {
 
                     {/* Status Badge */}
                     <td className="py-3.5 px-4">
-                      {u.is_banned ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                          <Ban className="w-3 h-3" />
-                          BANNED
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                          ACTIVE
-                        </span>
-                      )}
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider',
+                          u.is_banned
+                            ? 'bg-rose-500/15 text-rose-500 border border-rose-500/30'
+                            : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30'
+                        )}
+                      >
+                        {u.is_banned ? 'Banned' : 'Active'}
+                      </span>
                     </td>
 
                     {/* Actions */}
                     <td className="py-3.5 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {/* Inspect Profile & Device Telemetry */}
+                      <div className="flex items-center justify-end gap-1.5">
                         <button
+                          type="button"
                           onClick={() => handleInspectUser(u)}
-                          className="px-2.5 py-1.5 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                          title="Inspect Devices & Sessions"
+                          className="px-2.5 py-1 rounded-lg border border-border bg-card hover:bg-muted text-foreground text-[11px] font-medium transition-colors cursor-pointer"
+                          title="Inspect telemetry & sessions"
                         >
-                          <Laptop className="w-3.5 h-3.5" />
-                          <span>Inspect</span>
+                          Inspect
                         </button>
 
-                        {/* Issue Strike / Ledger */}
                         <button
+                          type="button"
                           onClick={() => openStrikesModal(u)}
-                          className="px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                          title="Manage Infractions & Strikes"
+                          className="px-2 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-semibold transition-colors cursor-pointer"
+                          title="View strikes & infractions"
                         >
-                          <ShieldAlert className="w-3.5 h-3.5" />
-                          <span>Strikes</span>
+                          Strikes
                         </button>
 
-                        {/* Ban / Unban */}
                         <button
-                          onClick={() => handleToggleBan(u)}
+                          type="button"
+                          onClick={() =>
+                            setConfirmDialog({
+                              type: 'ban',
+                              user: u,
+                            })
+                          }
                           className={cn(
-                            'px-2.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors border',
+                            'p-1.5 rounded-lg border text-xs transition-colors cursor-pointer',
                             u.is_banned
-                              ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                              : 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30'
+                              ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'
+                              : 'border-rose-500/30 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20'
                           )}
-                          title={u.is_banned ? 'Restore User' : 'Ban User'}
+                          title={u.is_banned ? 'Restore platform access' : 'Ban user account'}
                         >
                           <Ban className="w-3.5 h-3.5" />
-                          <span>{u.is_banned ? 'Unban' : 'Ban'}</span>
                         </button>
 
-                        {/* Role Change */}
                         <button
-                          onClick={() => handleChangeRole(u, u.role === 'admin' ? 'student' : 'admin')}
-                          className="px-2.5 py-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-slate-300 border border-foreground/10 text-xs font-semibold transition-colors"
-                          title="Toggle Admin Privilege"
-                        >
-                          {u.role === 'admin' ? 'Demote' : 'Promote'}
-                        </button>
-
-                        {/* Delete User */}
-                        <button
-                          onClick={() => handleDeleteUser(u)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
-                          title="Delete Account"
+                          type="button"
+                          onClick={() =>
+                            setConfirmDialog({
+                              type: 'delete',
+                              user: u,
+                            })
+                          }
+                          className="p-1.5 rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                          title="Permanently delete user"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -427,23 +411,28 @@ export default function AdminUsersPage() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
-        <div className="p-4 border-t border-foreground/5 flex items-center justify-between text-xs text-slate-400">
+        {/* ─── Pagination Footer ────────────────────────────────────────── */}
+        <div className="flex items-center justify-between p-4 border-t border-border bg-muted/20 text-xs text-muted-foreground">
           <span>
-            Showing Page <strong className="text-white">{page}</strong> of <strong className="text-white">{totalPages}</strong>
+            Showing {users.length} of {total} registered users
           </span>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              disabled={page <= 1 || loading}
+              className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
+            <span className="font-mono text-foreground font-semibold px-2">
+              Page {page} of {totalPages}
+            </span>
             <button
+              type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              disabled={page >= totalPages || loading}
+              className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -451,7 +440,24 @@ export default function AdminUsersPage() {
         </div>
       </div>
 
-      {/* ─── Strike Ledger & Infraction Modal ──────────────────────────── */}
+      {/* ─── Modals & Drawers ───────────────────────────────────────────── */}
+      {inspectingUser && (
+        <UserInspectionDrawer
+          user={inspectingUser}
+          onClose={() => setInspectingUser(null)}
+          inspectingSessions={inspectingSessions}
+          loadingUserSessions={loadingUserSessions}
+          handleAdminRevokeSession={handleAdminRevokeSession}
+          onOpenStrikesModal={openStrikesModal}
+          handleToggleBan={(u) =>
+            setConfirmDialog({
+              type: 'ban',
+              user: u,
+            })
+          }
+        />
+      )}
+
       {strikesModalUser && (
         <UserStrikesModal
           user={strikesModalUser}
@@ -468,19 +474,42 @@ export default function AdminUsersPage() {
         />
       )}
 
-      {/* ─── User Deep-Inspection & Session Drawer ─────────────────────────── */}
-      {inspectingUser && (
-        <UserInspectionDrawer
-          user={inspectingUser}
-          onClose={() => setInspectingUser(null)}
-          inspectingSessions={inspectingSessions}
-          loadingUserSessions={loadingUserSessions}
-          handleAdminRevokeSession={handleAdminRevokeSession}
-          onOpenStrikesModal={openStrikesModal}
-          handleToggleBan={handleToggleBan}
-        />
-      )}
+      {/* ─── Accessible Confirmation Dialog ─────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={Boolean(confirmDialog)}
+        onClose={() => setConfirmDialog(null)}
+        onConfirm={handleExecuteConfirm}
+        title={
+          confirmDialog?.type === 'ban'
+            ? confirmDialog.user.is_banned
+              ? 'Restore Platform Access'
+              : 'Ban User Account'
+            : confirmDialog?.type === 'delete'
+            ? 'Delete User Account'
+            : 'Change User Role'
+        }
+        description={
+          confirmDialog?.type === 'ban'
+            ? confirmDialog.user.is_banned
+              ? `Are you sure you want to restore platform access for ${confirmDialog.user.first_name} ${confirmDialog.user.last_name}?`
+              : `Are you sure you want to suspend and ban ${confirmDialog.user.first_name} ${confirmDialog.user.last_name}? They will immediately lose platform access.`
+            : confirmDialog?.type === 'delete'
+            ? `WARNING: This action is irreversible. All profile data, team associations, and messages for ${confirmDialog?.user.first_name} ${confirmDialog?.user.last_name} will be permanently purged.`
+            : `Update security role for ${confirmDialog?.user.first_name} to ${confirmDialog?.newRole?.toUpperCase()}?`
+        }
+        confirmText={
+          confirmDialog?.type === 'delete'
+            ? 'Delete User'
+            : confirmDialog?.type === 'ban'
+            ? confirmDialog.user.is_banned
+              ? 'Restore Access'
+              : 'Ban Account'
+            : 'Update Role'
+        }
+        variant={confirmDialog?.type === 'delete' ? 'danger' : 'warning'}
+        requiredMatchText={confirmDialog?.type === 'delete' ? 'DELETE' : undefined}
+        isLoading={actionLoading}
+      />
     </div>
   );
 }
-

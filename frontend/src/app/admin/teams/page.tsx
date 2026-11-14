@@ -5,33 +5,39 @@ import {
   Layers,
   Search,
   Users,
-  Shield,
   Trash2,
-  Lock,
-  Globe,
   RefreshCw,
-  Award,
   ExternalLink,
+  ChevronLeft,
   ChevronRight,
-  AlertTriangle,
   X,
+  Shield,
+  CheckCircle2,
 } from 'lucide-react';
+import Link from 'next/link';
 import { api } from '@/lib/api';
 import { Team } from '@/types';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { cn } from '@/lib/utils';
 
 export default function AdminTeamsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [limit] = useState(15);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Deletion state
+  const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Debounce search input (300ms)
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search.trim());
+      setPage(1);
     }, 300);
     return () => clearTimeout(timer);
   }, [search]);
@@ -39,7 +45,12 @@ export default function AdminTeamsPage() {
   const fetchTeams = async () => {
     try {
       setLoading(true);
-      const res = await api.admin.getTeams({ search: debouncedSearch || undefined });
+      const offset = (page - 1) * limit;
+      const res = await api.admin.getTeams({
+        search: debouncedSearch || undefined,
+        limit,
+        offset,
+      });
       if (res && res.teams) {
         setTeams(res.teams);
         setTotal(res.total || res.teams.length);
@@ -53,58 +64,54 @@ export default function AdminTeamsPage() {
 
   useEffect(() => {
     fetchTeams();
-  }, [debouncedSearch]);
+  }, [page, debouncedSearch]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setDebouncedSearch(search.trim());
-  };
-
-  const handleDeleteTeam = async (t: Team) => {
-    if (!window.confirm(`CAUTION: Permanently disband and delete squad "${t.name}"? All squad chats, roles, and member links will be wiped.`)) {
-      return;
-    }
+  const handleConfirmDeleteTeam = async () => {
+    if (!teamToDelete) return;
     try {
-      setDeletingId(t.id);
-      await api.admin.deleteTeam(t.id);
-      fetchTeams();
+      setIsDeleting(true);
+      await api.admin.deleteTeam(teamToDelete.id);
+      setTeams((prev) => prev.filter((t) => t.id !== teamToDelete.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+      setTeamToDelete(null);
     } catch (err) {
       console.error('Failed to delete squad', err);
     } finally {
-      setDeletingId(null);
+      setIsDeleting(false);
     }
   };
 
+  const totalPages = Math.ceil(total / limit) || 1;
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header & Search ──────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
+      {/* ─── Header & Controls ─────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Layers className="w-5 h-5 text-purple-400" />
-            Squad Oversight & Campus Hubs
+          <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Layers className="w-5 h-5 text-primary" />
+            Squad Roster & Team Governance
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Total of {total} campus collaboration squads & student communities. Audit membership and enforce campus team standards.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Total of {total} campus collaboration squads. Oversee membership capacity, leadership roles, and disband squads.
           </p>
         </div>
 
-        <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-3 w-full md:w-auto">
           <div className="relative flex-1 md:w-72">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search squads by name, tag, or topic..."
+              placeholder="Search squads by name, tags..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-purple-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
-                title="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -112,106 +119,171 @@ export default function AdminTeamsPage() {
           </div>
 
           <button
-            type="submit"
-            className="h-9 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition-colors shrink-0 cursor-pointer"
+            type="button"
+            onClick={fetchTeams}
+            className="h-9 px-3 rounded-xl border border-input bg-card hover:bg-muted text-foreground text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
+            title="Refresh list"
           >
-            Search
+            <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
-        </form>
+        </div>
       </div>
 
-      {/* ─── Squads Grid ──────────────────────────────────────────────── */}
-      {loading ? (
-        <div className="py-20 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5">
-          <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-purple-400" />
-          <p className="font-mono text-xs">Querying Campus Squad Nodes...</p>
+      {/* ─── Teams Data Table ───────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-border bg-muted/40 text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
+                <th className="py-3.5 px-4 font-semibold">Squad Identity</th>
+                <th className="py-3.5 px-4 font-semibold">Leadership</th>
+                <th className="py-3.5 px-4 font-semibold">Members</th>
+                <th className="py-3.5 px-4 font-semibold">Status</th>
+                <th className="py-3.5 px-4 font-semibold">Created Date</th>
+                <th className="py-3.5 px-4 font-semibold text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border text-xs">
+              {loading ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                    <p className="font-mono text-xs">Loading Squad Roster...</p>
+                  </td>
+                </tr>
+              ) : teams.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                    <Layers className="w-8 h-8 mx-auto mb-2 opacity-40 text-muted-foreground" />
+                    <p className="font-semibold text-foreground text-xs">No squads found</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Try adjusting your search query</p>
+                  </td>
+                </tr>
+              ) : (
+                teams.map((t) => (
+                  <tr key={t.id} className="hover:bg-muted/40 transition-colors">
+                    {/* Squad Identity */}
+                    <td className="py-3.5 px-4 max-w-xs">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs text-white shrink-0 shadow-xs"
+                          style={{ backgroundColor: t.avatar_color || '#f59e0b' }}
+                        >
+                          {t.name?.[0] || 'T'}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-foreground truncate">{t.name}</p>
+                          <p className="text-[11px] text-muted-foreground line-clamp-1">
+                            {t.description || 'No description provided'}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Leader */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-foreground font-medium truncate">
+                          {(t as any).leader?.first_name
+                            ? `${(t as any).leader.first_name} ${(t as any).leader.last_name || ''}`
+                            : t.leader_id
+                            ? 'Squad Lead'
+                            : 'Assigned Lead'}
+                        </span>
+                      </div>
+                    </td>
+
+                    {/* Members & Capacity */}
+                    <td className="py-3.5 px-4">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-muted border border-border text-[11px] font-mono text-foreground">
+                        <Users className="w-3 h-3 text-muted-foreground" />
+                        <span>{t.member_count ?? 1} / {t.max_members || 5}</span>
+                      </div>
+                    </td>
+
+                    {/* Status */}
+                    <td className="py-3.5 px-4">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        {t.status || 'Active'}
+                      </span>
+                    </td>
+
+                    {/* Created Date */}
+                    <td className="py-3.5 px-4 text-muted-foreground font-mono text-[11px]">
+                      {t.created_at ? new Date(t.created_at).toLocaleDateString() : 'N/A'}
+                    </td>
+
+                    {/* Actions */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Link
+                          href={`/teams`}
+                          className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                          title="Open Squad in Workspace"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </Link>
+
+                        <button
+                          type="button"
+                          onClick={() => setTeamToDelete(t)}
+                          className="p-1.5 rounded-lg border border-rose-500/20 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 transition-colors cursor-pointer"
+                          title="Disband squad"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      ) : teams.length === 0 ? (
-        <div className="py-16 text-center text-slate-400 rounded-2xl bg-[#0b0e14] border border-foreground/5 space-y-2">
-          <Layers className="w-10 h-10 mx-auto text-purple-400/40" />
-          <h3 className="text-sm font-bold text-white">No Squads Found</h3>
-          <p className="text-xs text-slate-400">Try adjusting your search criteria or create a new squad.</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {teams.map((t) => (
-            <div
-              key={t.id}
-              className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 hover:border-purple-500/30 transition-all flex flex-col justify-between group space-y-4"
+
+        {/* ─── Pagination Footer ────────────────────────────────────────── */}
+        <div className="flex items-center justify-between p-4 border-t border-border bg-muted/20 text-xs text-muted-foreground">
+          <span>
+            Showing {teams.length} of {total} registered squads
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1 || loading}
+              className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold text-sm shrink-0">
-                      {t.name?.[0] || 'S'}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="text-sm font-bold text-white truncate group-hover:text-purple-300 transition-colors">
-                        {t.name}
-                      </h3>
-                      <p className="text-[10px] font-mono text-slate-400">
-                        {t.type === 'community' ? 'Campus Community' : 'Hackathon Squad'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <span
-                    className={cn(
-                      'px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider border shrink-0',
-                      t.privacy === 'private'
-                        ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                        : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                    )}
-                  >
-                    {t.privacy || 'public'}
-                  </span>
-                </div>
-
-                <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
-                  {t.description || 'No description provided by team leader.'}
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-3 border-t border-foreground/5">
-                <div className="flex items-center justify-between text-xs text-slate-400">
-                  <span className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-purple-400" />
-                    <strong className="text-slate-200">{t.member_count ?? (t as any).membersCount ?? 1}</strong> members
-                  </span>
-
-                  {t.open_roles && (Array.isArray(t.open_roles) ? t.open_roles.length > 0 : Number(t.open_roles) > 0) && (
-                    <span className="px-2 py-0.5 rounded bg-foreground/5 text-[10px] text-slate-300">
-                      {Array.isArray(t.open_roles) ? t.open_roles.length : t.open_roles} Open Roles
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between gap-2 pt-1">
-                  <a
-                    href={`/teams/${t.id}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-semibold text-purple-400 hover:text-purple-300 flex items-center gap-1 transition-colors"
-                  >
-                    <span>View Hub</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-
-                  <button
-                    onClick={() => handleDeleteTeam(t)}
-                    disabled={deletingId === t.id}
-                    className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Disband</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="font-mono text-foreground font-semibold px-2">
+              Page {page} of {totalPages}
+            </span>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages || loading}
+              className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* ─── Disband Confirmation Dialog ─────────────────────────────────── */}
+      <ConfirmDialog
+        isOpen={Boolean(teamToDelete)}
+        onClose={() => setTeamToDelete(null)}
+        onConfirm={handleConfirmDeleteTeam}
+        title="Disband Campus Squad"
+        description={`WARNING: Disbanding "${teamToDelete?.name}" will dissolve all member rosters, purge squad channels, and remove its team workspace permanently.`}
+        confirmText="Disband Squad"
+        variant="danger"
+        requiredMatchText="DISBAND"
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
-

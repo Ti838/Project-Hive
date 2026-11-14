@@ -161,7 +161,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (isLoginPage) {
     return (
       <DesktopGate>
-        <div className="min-h-screen bg-[#07090e] text-slate-100">{children}</div>
+        <div className="min-h-screen bg-background text-foreground">{children}</div>
       </DesktopGate>
     );
   }
@@ -169,12 +169,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   if (isLoading || !isAuthenticated || user?.role !== 'admin') {
     return (
       <DesktopGate>
-        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#07090e] text-slate-200">
+        <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background text-foreground">
           <div className="flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 animate-pulse">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/30 flex items-center justify-center text-primary animate-pulse">
               <Shield className="w-6 h-6" />
             </div>
-            <p className="font-mono text-xs tracking-widest text-slate-400 uppercase">
+            <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">
               Verifying Cryptographic Workstation Authority...
             </p>
           </div>
@@ -190,7 +190,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <DesktopGate>
-      <div className="min-h-screen flex bg-[#07090e] text-slate-100 font-sans selection:bg-amber-500/30">
+      <div className="min-h-screen flex bg-background text-foreground font-sans selection:bg-primary/20">
         {/* Mobile Slide-Over Drawer */}
         <AdminMobileDrawer
           isOpen={isMobileMenuOpen}

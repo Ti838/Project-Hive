@@ -29,32 +29,32 @@ export function ReportResolutionModal({
   if (!report) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-[#0e131b] border border-foreground/10 rounded-2xl p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between border-b border-foreground/10 pb-3">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 shadow-2xl space-y-5 text-foreground animate-in zoom-in-95 duration-150">
+        <div className="flex items-center justify-between border-b border-border pb-3">
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-amber-400" />
-            <h3 className="text-sm font-bold text-white">Resolve Content Violation</h3>
+            <ShieldAlert className="w-5 h-5 text-primary" />
+            <h3 className="text-sm font-bold text-foreground">Resolve Content Violation</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white transition-colors"
+            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
             title="Close modal"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="space-y-3 text-xs text-slate-300">
+        <div className="space-y-3 text-xs text-muted-foreground">
           <p>
-            Violating Entity: <strong className="text-white uppercase">{report.target_type}</strong> (ID: {report.target_id})
+            Violating Entity: <strong className="text-foreground uppercase">{report.target_type}</strong> (ID: {report.target_id})
           </p>
           <p>
-            Report Reason: <strong className="text-amber-400">{report.reason}</strong>
+            Report Reason: <strong className="text-primary">{report.reason}</strong>
           </p>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+            <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
               Resolution Notes (Recorded in Audit Ledger)
             </label>
             <textarea
@@ -62,39 +62,41 @@ export function ReportResolutionModal({
               placeholder="Describe disciplinary action or reason for resolution..."
               value={resolutionNotes}
               onChange={(e) => onNotesChange(e.target.value)}
-              className="w-full p-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full p-3 rounded-xl bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
             />
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-foreground/10">
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-border flex-wrap">
           <button
+            type="button"
             onClick={onClose}
-            className="px-3.5 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-300 text-xs font-semibold transition-colors"
+            className="px-3.5 py-2 rounded-xl border border-input bg-background hover:bg-muted text-foreground text-xs font-semibold transition-colors cursor-pointer"
           >
             Cancel
           </button>
 
           <button
+            type="button"
             onClick={() => onSubmit(report, 'resolved', 'delete_content', resolutionNotes)}
             disabled={submitting}
-            className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50 shadow-xs cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Delete Content &amp; Resolve</span>
+            <span>Delete &amp; Resolve</span>
           </button>
 
           <button
+            type="button"
             onClick={() => onSubmit(report, 'resolved', 'resolve_only', resolutionNotes)}
             disabled={submitting}
-            className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            className="px-3.5 py-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50 shadow-xs cursor-pointer"
           >
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Resolve Without Deletion</span>
+            <span>Resolve Only</span>
           </button>
         </div>
       </div>
     </div>
   );
 }
-

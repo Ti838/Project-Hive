@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import {
   ScrollText,
   Search,
-  Filter,
   RefreshCw,
   Clock,
   User,
@@ -66,12 +65,6 @@ export default function AdminAuditPage() {
     fetchLogs();
   }, [page, actionFilter, debouncedSearch]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setDebouncedSearch(search.trim());
-    setPage(1);
-  };
-
   const handleCopyJson = () => {
     if (!selectedLog) return;
     navigator.clipboard.writeText(JSON.stringify(selectedLog, null, 2));
@@ -82,48 +75,48 @@ export default function AdminAuditPage() {
   const totalPages = Math.ceil(total / limit) || 1;
 
   const getActionBadgeColor = (action: string) => {
-    const a = action.toUpperCase();
-    if (a.includes('BAN') || a.includes('DELETE') || a.includes('STRIKE')) {
-      return 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+    const a = action.toLowerCase();
+    if (a.includes('ban') || a.includes('delete') || a.includes('break_glass') || a.includes('purge')) {
+      return 'bg-rose-500/15 text-rose-500 border-rose-500/30';
     }
-    if (a.includes('RESOLVE') || a.includes('FEATURE') || a.includes('VERIFY')) {
-      return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30';
+    if (a.includes('strike') || a.includes('flag') || a.includes('role')) {
+      return 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30';
     }
-    if (a.includes('FLAG') || a.includes('UPDATE') || a.includes('ROLE')) {
-      return 'bg-amber-500/15 text-amber-300 border-amber-500/30';
+    if (a.includes('feature') || a.includes('resolve') || a.includes('promote')) {
+      return 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
     }
-    return 'bg-indigo-500/15 text-indigo-300 border-indigo-500/30';
+    return 'bg-blue-500/15 text-blue-500 border-blue-500/30';
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header & Search ──────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
+      {/* ─── Header & Search Controls ──────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <ScrollText className="w-5 h-5 text-amber-400" />
-            Immutable Audit Ledger
+          <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+            <ScrollText className="w-5 h-5 text-primary" />
+            Immutable Audit Trail & Ledger
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Forensic cryptographic event stream recording all administrative actions, ban sanctions, and flag alterations.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Total of {total} append-only administrative records with cryptographic actor identities and JSON inspection.
           </p>
         </div>
 
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
           <div className="relative flex-1 md:w-64">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
-              placeholder="Search by action, reason, IP..."
+              placeholder="Search action, target UUID, IP..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-400 focus:outline-none focus:border-amber-500 transition-colors"
+              className="w-full h-9 pl-9 pr-8 rounded-xl bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground cursor-pointer"
                 title="Clear search"
               >
                 <X className="w-3.5 h-3.5" />
@@ -137,111 +130,117 @@ export default function AdminAuditPage() {
               setActionFilter(e.target.value);
               setPage(1);
             }}
-            className="h-9 px-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-slate-200 focus:outline-none focus:border-amber-500"
+            className="h-9 px-3 rounded-xl bg-background border border-input text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
           >
-            <option value="">All Actions</option>
-            <option value="BAN_USER">BAN_USER</option>
-            <option value="UNBAN_USER">UNBAN_USER</option>
-            <option value="ISSUE_STRIKE">ISSUE_STRIKE</option>
-            <option value="RESOLVE_REPORT">RESOLVE_REPORT</option>
-            <option value="DELETE_POST">DELETE_POST</option>
-            <option value="DELETE_TEAM">DELETE_TEAM</option>
-            <option value="UPDATE_SYSTEM_FLAGS">UPDATE_SYSTEM_FLAGS</option>
-            <option value="CHANGE_ROLE">CHANGE_ROLE</option>
+            <option value="">All Operations</option>
+            <option value="user.banned">user.banned</option>
+            <option value="user.unbanned">user.unbanned</option>
+            <option value="user.strike_issued">user.strike_issued</option>
+            <option value="user.role_changed">user.role_changed</option>
+            <option value="user.deleted">user.deleted</option>
+            <option value="team.disbanded">team.disbanded</option>
+            <option value="project.featured">project.featured</option>
+            <option value="flags.updated">flags.updated</option>
+            <option value="security.break_glass">security.break_glass</option>
           </select>
 
           <button
-            type="submit"
-            className="h-9 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-colors shrink-0"
+            type="button"
+            onClick={fetchLogs}
+            className="h-9 px-3 rounded-xl border border-input bg-card hover:bg-muted text-foreground text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer shrink-0"
+            title="Refresh logs"
           >
-            Filter
+            <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
+            <span className="hidden sm:inline">Refresh</span>
           </button>
-        </form>
+        </div>
       </div>
 
-      {/* ─── Audit Log Table ──────────────────────────────────────────── */}
-      <div className="rounded-2xl bg-[#0b0e14] border border-foreground/5 overflow-hidden">
+      {/* ─── Audit Log Table Matrix ────────────────────────────────────── */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-foreground/5 bg-white/[0.02] text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                <th className="py-3.5 px-4 font-semibold">Timestamp</th>
-                <th className="py-3.5 px-4 font-semibold">Admin Identity</th>
-                <th className="py-3.5 px-4 font-semibold">Action Performed</th>
+              <tr className="border-b border-border bg-muted/40 text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
+                <th className="py-3.5 px-4 font-semibold">Timestamp (UTC)</th>
+                <th className="py-3.5 px-4 font-semibold">Administrator</th>
+                <th className="py-3.5 px-4 font-semibold">Action / Operation</th>
                 <th className="py-3.5 px-4 font-semibold">Target Entity</th>
-                <th className="py-3.5 px-4 font-semibold">IP Forensics</th>
-                <th className="py-3.5 px-4 font-semibold text-right">Payload</th>
+                <th className="py-3.5 px-4 font-semibold">IP Origin</th>
+                <th className="py-3.5 px-4 font-semibold text-right">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+            <tbody className="divide-y divide-border text-foreground">
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-amber-400" />
-                    <p className="font-mono text-xs">Querying Audit Ledger...</p>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-primary" />
+                    <p className="font-mono text-xs">Loading Audit Ledger Entries...</p>
                   </td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <ScrollText className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <p className="font-medium text-xs">No audit events found</p>
+                  <td colSpan={6} className="py-12 text-center text-muted-foreground">
+                    <ScrollText className="w-8 h-8 mx-auto mb-2 opacity-40 text-muted-foreground" />
+                    <p className="font-semibold text-foreground text-xs">No audit logs found</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Try widening your search filter</p>
                   </td>
                 </tr>
               ) : (
                 logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
+                  <tr key={log.id} className="hover:bg-muted/40 transition-colors">
                     {/* Timestamp */}
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-400">
-                      {new Date(log.created_at).toLocaleString([], {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        second: '2-digit',
-                      })}
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-muted-foreground whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>{new Date(log.created_at).toLocaleString()}</span>
+                      </div>
                     </td>
 
                     {/* Admin Identity */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-md bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold text-[10px]">
+                        <div className="w-6 h-6 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-[10px]">
                           {log.admin?.first_name?.[0] || 'A'}
                         </div>
-                        <span className="font-semibold text-white">
-                          {log.admin?.first_name ? `${log.admin.first_name} ${log.admin.last_name || ''}` : 'Super Admin'}
+                        <span className="font-bold text-foreground">
+                          {log.admin ? `${log.admin.first_name} ${log.admin.last_name || ''}` : 'System Task'}
                         </span>
                       </div>
                     </td>
 
-                    {/* Action */}
+                    {/* Action Badge */}
                     <td className="py-3.5 px-4">
-                      <span className={cn('px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase border', getActionBadgeColor(log.action))}>
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border uppercase tracking-wider',
+                          getActionBadgeColor(log.action)
+                        )}
+                      >
                         {log.action}
                       </span>
                     </td>
 
-                    {/* Target Entity */}
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-300">
-                      {log.target_type ? `${log.target_type}: ` : ''}
-                      <span className="text-slate-400 truncate max-w-[120px] inline-block align-bottom">
-                        {log.target_id || 'N/A'}
-                      </span>
+                    {/* Target */}
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-foreground">
+                      <span className="text-muted-foreground">{log.target_type}:</span>{' '}
+                      <span className="font-semibold">{log.target_id || 'Global'}</span>
                     </td>
 
-                    {/* IP Forensics */}
-                    <td className="py-3.5 px-4 font-mono text-[11px] text-slate-400">
+                    {/* IP Address */}
+                    <td className="py-3.5 px-4 font-mono text-[11px] text-muted-foreground">
                       {log.ip_address || '127.0.0.1'}
                     </td>
 
-                    {/* Payload JSON Inspector */}
+                    {/* Action */}
                     <td className="py-3.5 px-4 text-right">
                       <button
                         onClick={() => setSelectedLog(log)}
-                        className="px-2.5 py-1 rounded-lg bg-foreground/5 hover:bg-foreground/10 text-slate-300 hover:text-white text-xs font-mono flex items-center gap-1.5 ml-auto transition-colors"
+                        className="px-2.5 py-1 rounded-lg border border-input bg-card hover:bg-muted text-foreground text-[11px] font-mono font-medium transition-colors flex items-center gap-1.5 ml-auto cursor-pointer"
+                        title="View Raw JSON Payload"
                       >
-                        <Code className="w-3.5 h-3.5 text-amber-400" />
-                        <span>Inspect JSON</span>
+                        <Code className="w-3 h-3 text-primary" />
+                        <span>JSON</span>
                       </button>
                     </td>
                   </tr>
@@ -251,23 +250,28 @@ export default function AdminAuditPage() {
           </table>
         </div>
 
-        {/* Pagination Footer */}
-        <div className="p-4 border-t border-foreground/5 flex items-center justify-between text-xs text-slate-400">
+        {/* ─── Pagination Footer ────────────────────────────────────────── */}
+        <div className="flex items-center justify-between p-4 border-t border-border bg-muted/20 text-xs text-muted-foreground">
           <span>
-            Showing Page <strong className="text-white">{page}</strong> of <strong className="text-white">{totalPages}</strong> ({total} total entries)
+            Showing {logs.length} of {total} audit records
           </span>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              disabled={page <= 1 || loading}
+              className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
+            <span className="font-mono text-foreground font-semibold px-2">
+              Page {page} of {totalPages}
+            </span>
             <button
+              type="button"
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-1.5 rounded-lg bg-foreground/5 hover:bg-foreground/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-slate-200"
+              disabled={page >= totalPages || loading}
+              className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -275,8 +279,7 @@ export default function AdminAuditPage() {
         </div>
       </div>
 
-      {/* ─── JSON Details Drawer ──────────────────────────────────────── */}
-      {/* JSON Details Drawer */}
+      {/* ─── JSON Drawer Modal ─────────────────────────────────────────── */}
       <AuditLogDrawer
         log={selectedLog}
         onClose={() => setSelectedLog(null)}
@@ -286,4 +289,3 @@ export default function AdminAuditPage() {
     </div>
   );
 }
-

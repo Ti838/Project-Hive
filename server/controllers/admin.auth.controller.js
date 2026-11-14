@@ -24,12 +24,13 @@ function checkAdminLoginRate(ip) {
 }
 
 // Cleanup stale entries every 30 minutes
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [k, v] of loginAttempts) {
     if (now - v.firstAttempt > LOCKOUT_MS) loginAttempts.delete(k);
   }
 }, 30 * 60 * 1000);
+if (cleanupTimer.unref) cleanupTimer.unref();
 
 export async function adminLogin(req, res) {
   try {

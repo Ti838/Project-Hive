@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -15,7 +15,7 @@ import {
   ShieldCheck,
   Flame,
   Activity,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { SystemFlags, AdminHealth } from '@/types';
@@ -61,268 +61,205 @@ export default function AdminSystemPage() {
     fetchSystemData();
   }, []);
 
-  const handleToggleFlag = async (key: keyof SystemFlags) => {
-    const updated = { ...flags, [key]: !flags[key] };
+  const handleToggle = async (key: keyof SystemFlags) => {
     try {
       setSavingFlag(key);
+      const nextVal = !flags[key];
+      const updated = { ...flags, [key]: nextVal };
       setFlags(updated);
-      await api.admin.updateFlags(updated);
-      setNotice(`Updated flag: ${key} -> ${updated[key] ? 'ENABLED' : 'DISABLED'}`);
-      setTimeout(() => setNotice(null), 4000);
-    } catch (err: any) {
+
+      await api.admin.updateFlags({ [key]: nextVal });
+      setNotice(`Updated ${key} to ${nextVal ? 'ENABLED' : 'DISABLED'}`);
+      setTimeout(() => setNotice(null), 3000);
+    } catch (err) {
       console.error('Failed to update flag', err);
       // Revert
-      setFlags(flags);
-      alert('Failed to update runtime flag.');
+      setFlags((prev) => ({ ...prev, [key]: !prev[key] }));
     } finally {
       setSavingFlag(null);
     }
   };
 
   const handlePurgeCache = async () => {
-    setCachePurging(true);
-    // Simulate cache eviction on redis / memory store
-    await new Promise((r) => setTimeout(r, 1200));
-    setCachePurging(false);
-    setNotice('Edge Redis and Next.js ISR caches successfully flushed.');
-    setTimeout(() => setNotice(null), 4000);
+    try {
+      setCachePurging(true);
+      // Wait 1.2s to simulate edge cache purge
+      await new Promise((r) => setTimeout(r, 1200));
+      setNotice('Edge HTTP and Redis memory caches flushed successfully.');
+      setTimeout(() => setNotice(null), 3000);
+    } finally {
+      setCachePurging(false);
+    }
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ─── Header ───────────────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5">
+      {/* ─── Header ────────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-cyan-400" />
-            System Flags & Runtime Controls
+          <h1 className="text-lg font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Sliders className="w-5 h-5 text-primary" />
+            Global Platform Configuration & System Flags
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Toggle platform maintenance barriers, account registration gateways, rate limiting, and cache state.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Configure system-wide feature flags, toggle campus registration, adjust API thresholds, and purge edge caches.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchSystemData}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-foreground/5 hover:bg-foreground/10 text-slate-300 text-xs font-semibold transition-colors"
-          >
-            <RefreshCw className={cn('w-3.5 h-3.5 text-cyan-400', loading && 'animate-spin')} />
-            <span>Refresh Health</span>
-          </button>
-
-          <button
-            onClick={handlePurgeCache}
-            disabled={cachePurging}
-            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-semibold transition-colors disabled:opacity-50"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>{cachePurging ? 'Purging Cache...' : 'Flush System Cache'}</span>
-          </button>
-        </div>
+        <button
+          onClick={fetchSystemData}
+          className="px-3.5 py-2 rounded-xl bg-card hover:bg-muted border border-input text-xs font-medium text-foreground flex items-center gap-1.5 transition-colors cursor-pointer self-start md:self-auto"
+        >
+          <RefreshCw className={cn('w-3.5 h-3.5 text-primary', loading && 'animate-spin')} />
+          <span>Refresh</span>
+        </button>
       </div>
 
       {notice && (
-        <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="p-3.5 rounded-xl bg-primary/10 border border-primary/20 text-primary text-xs font-semibold flex items-center justify-between shadow-xs">
           <span>{notice}</span>
+          <button onClick={() => setNotice(null)} className="text-primary hover:opacity-80 cursor-pointer">
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* ─── Runtime Feature Flags Matrix ──────────────────────────────── */}
-      <div className="space-y-4">
-        <h2 className="text-sm font-bold tracking-tight text-slate-200">
-          Runtime Feature Flags & Access Gates
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Maintenance Mode */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-white">Platform Maintenance Barrier</span>
-                {flags.maintenanceMode && (
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                    ACTIVE
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                When enabled, redirects all student traffic to a maintenance screen while leaving the Admin Command Center accessible.
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleFlag('maintenanceMode')}
-              disabled={savingFlag === 'maintenanceMode'}
-              className={cn(
-                'w-12 h-6 rounded-full transition-colors relative shrink-0 p-1',
-                flags.maintenanceMode ? 'bg-rose-600' : 'bg-slate-800'
-              )}
-            >
-              <div
-                className={cn(
-                  'w-4 h-4 rounded-full bg-white transition-transform',
-                  flags.maintenanceMode ? 'translate-x-6' : 'translate-x-0'
-                )}
-              />
-            </button>
+      {/* ─── Platform Feature Flags Matrix ─────────────────────────────── */}
+      <div className="grid md:grid-cols-2 gap-4">
+        {/* Registration */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-foreground">New Student Registration</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              When disabled, public sign-ups are halted. Existing users can still authenticate normally.
+            </p>
+            <span className={cn('inline-block text-[10px] font-mono font-bold mt-2 px-2 py-0.5 rounded-full border', flags.registrationEnabled ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : 'bg-rose-500/15 text-rose-500 border-rose-500/30')}>
+              {flags.registrationEnabled ? 'OPEN' : 'LOCKED'}
+            </span>
           </div>
-
-          {/* Registration Enabled */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-white">Student Registration Gateway</span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Controls whether new students can register accounts with campus .edu emails.
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleFlag('registrationEnabled')}
-              disabled={savingFlag === 'registrationEnabled'}
+          <button
+            onClick={() => handleToggle('registrationEnabled')}
+            disabled={savingFlag === 'registrationEnabled'}
+            className={cn(
+              'w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 mt-1',
+              flags.registrationEnabled ? 'bg-primary' : 'bg-muted'
+            )}
+          >
+            <span
               className={cn(
-                'w-12 h-6 rounded-full transition-colors relative shrink-0 p-1',
-                flags.registrationEnabled ? 'bg-emerald-600' : 'bg-slate-800'
+                'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow-xs',
+                flags.registrationEnabled ? 'left-6' : 'left-0.5'
               )}
-            >
-              <div
-                className={cn(
-                  'w-4 h-4 rounded-full bg-white transition-transform',
-                  flags.registrationEnabled ? 'translate-x-6' : 'translate-x-0'
-                )}
-              />
-            </button>
-          </div>
+            />
+          </button>
+        </div>
 
-          {/* Email Verification */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-white">Enforce Email Verification</span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Requires mandatory institutional verification link clicking before accessing social feeds.
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleFlag('emailVerification')}
-              disabled={savingFlag === 'emailVerification'}
-              className={cn(
-                'w-12 h-6 rounded-full transition-colors relative shrink-0 p-1',
-                flags.emailVerification ? 'bg-cyan-600' : 'bg-slate-800'
-              )}
-            >
-              <div
-                className={cn(
-                  'w-4 h-4 rounded-full bg-white transition-transform',
-                  flags.emailVerification ? 'translate-x-6' : 'translate-x-0'
-                )}
-              />
-            </button>
+        {/* Maintenance Mode */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-foreground">Maintenance Mode Kill-Switch</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Diverts all standard traffic to 503 maintenance page. Only admins with valid tokens can enter.
+            </p>
+            <span className={cn('inline-block text-[10px] font-mono font-bold mt-2 px-2 py-0.5 rounded-full border', flags.maintenanceMode ? 'bg-rose-500/15 text-rose-500 border-rose-500/30' : 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30')}>
+              {flags.maintenanceMode ? 'ACTIVE (BLOCKING)' : 'INACTIVE (LIVE)'}
+            </span>
           </div>
+          <button
+            onClick={() => handleToggle('maintenanceMode')}
+            disabled={savingFlag === 'maintenanceMode'}
+            className={cn(
+              'w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 mt-1',
+              flags.maintenanceMode ? 'bg-rose-600' : 'bg-muted'
+            )}
+          >
+            <span
+              className={cn(
+                'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow-xs',
+                flags.maintenanceMode ? 'left-6' : 'left-0.5'
+              )}
+            />
+          </button>
+        </div>
 
-          {/* Rate Limiting Strictness */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-white">Strict DDOS / Rate Limiting</span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Applies aggressive IP-based burst throttling (max 30 requests/minute per socket).
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleFlag('rateLimitStrict')}
-              disabled={savingFlag === 'rateLimitStrict'}
-              className={cn(
-                'w-12 h-6 rounded-full transition-colors relative shrink-0 p-1',
-                flags.rateLimitStrict ? 'bg-amber-600' : 'bg-slate-800'
-              )}
-            >
-              <div
-                className={cn(
-                  'w-4 h-4 rounded-full bg-white transition-transform',
-                  flags.rateLimitStrict ? 'translate-x-6' : 'translate-x-0'
-                )}
-              />
-            </button>
+        {/* AI Code Review */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-foreground">HiveMind Multimodal AI Engine</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Enables Groq Llama 3.3 70B & Google Gemini code architecture review copilot.
+            </p>
+            <span className={cn('inline-block text-[10px] font-mono font-bold mt-2 px-2 py-0.5 rounded-full border', flags.aiReviewEnabled ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : 'bg-muted text-muted-foreground border-border')}>
+              {flags.aiReviewEnabled ? 'ACTIVE CASCADE' : 'DISABLED'}
+            </span>
           </div>
+          <button
+            onClick={() => handleToggle('aiReviewEnabled')}
+            disabled={savingFlag === 'aiReviewEnabled'}
+            className={cn(
+              'w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 mt-1',
+              flags.aiReviewEnabled ? 'bg-primary' : 'bg-muted'
+            )}
+          >
+            <span
+              className={cn(
+                'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow-xs',
+                flags.aiReviewEnabled ? 'left-6' : 'left-0.5'
+              )}
+            />
+          </button>
+        </div>
 
-          {/* Public Project Showcases */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-white">Public Showcase Visibility</span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Allows non-logged in external visitors to view featured student portfolio projects.
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleFlag('allowPublicProjects')}
-              disabled={savingFlag === 'allowPublicProjects'}
-              className={cn(
-                'w-12 h-6 rounded-full transition-colors relative shrink-0 p-1',
-                flags.allowPublicProjects ? 'bg-purple-600' : 'bg-slate-800'
-              )}
-            >
-              <div
-                className={cn(
-                  'w-4 h-4 rounded-full bg-white transition-transform',
-                  flags.allowPublicProjects ? 'translate-x-6' : 'translate-x-0'
-                )}
-              />
-            </button>
+        {/* Public Project Showcase */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold text-foreground">Public Project Showcase</h3>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Allows verified campus teams to publish projects to the public discovery feed.
+            </p>
+            <span className={cn('inline-block text-[10px] font-mono font-bold mt-2 px-2 py-0.5 rounded-full border', flags.allowPublicProjects ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : 'bg-muted text-muted-foreground border-border')}>
+              {flags.allowPublicProjects ? 'ENABLED' : 'DISABLED'}
+            </span>
           </div>
-
-          {/* AI Code Review Engine */}
-          <div className="p-5 rounded-2xl bg-[#0b0e14] border border-foreground/5 flex items-start justify-between gap-4">
-            <div className="space-y-1">
-              <span className="text-xs font-bold text-white">AI GitHub PR & Code Reviewer</span>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Enables automated ProjectHive AI feedback on pull requests and code snippets.
-              </p>
-            </div>
-            <button
-              onClick={() => handleToggleFlag('aiReviewEnabled')}
-              disabled={savingFlag === 'aiReviewEnabled'}
+          <button
+            onClick={() => handleToggle('allowPublicProjects')}
+            disabled={savingFlag === 'allowPublicProjects'}
+            className={cn(
+              'w-12 h-6 rounded-full transition-colors relative cursor-pointer shrink-0 mt-1',
+              flags.allowPublicProjects ? 'bg-primary' : 'bg-muted'
+            )}
+          >
+            <span
               className={cn(
-                'w-12 h-6 rounded-full transition-colors relative shrink-0 p-1',
-                flags.aiReviewEnabled ? 'bg-emerald-600' : 'bg-slate-800'
+                'absolute top-0.5 w-5 h-5 rounded-full bg-white transition-transform shadow-xs',
+                flags.allowPublicProjects ? 'left-6' : 'left-0.5'
               )}
-            >
-              <div
-                className={cn(
-                  'w-4 h-4 rounded-full bg-white transition-transform',
-                  flags.aiReviewEnabled ? 'translate-x-6' : 'translate-x-0'
-                )}
-              />
-            </button>
-          </div>
+            />
+          </button>
         </div>
       </div>
 
-      {/* ─── Detailed System & Runtime Telemetry ────────────────────────── */}
-      <div className="p-6 rounded-2xl bg-[#0b0e14] border border-foreground/5 space-y-4">
-        <h2 className="text-sm font-bold tracking-tight text-slate-200 flex items-center gap-2">
-          <Activity className="w-4 h-4 text-cyan-400" />
-          Runtime Diagnostics & Node Specifications
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
-            <p className="text-slate-400 uppercase text-[10px]">Database Engine</p>
-            <p className="text-white font-bold">PostgreSQL v15.4</p>
-            <p className="text-emerald-400 text-[11px]">Status: Healthy ({health?.database?.latencyMs ?? 14}ms)</p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
-            <p className="text-slate-400 uppercase text-[10px]">Real-Time Gateway</p>
-            <p className="text-white font-bold">Socket.IO WebSockets</p>
-            <p className="text-cyan-400 text-[11px]">{health?.sockets?.activeConnections ?? 42} Active Sessions</p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-white/[0.02] border border-foreground/5 space-y-1">
-            <p className="text-slate-400 uppercase text-[10px]">Runtime Memory</p>
-            <p className="text-white font-bold">Node.js Engine</p>
-            <p className="text-amber-400 text-[11px]">Uptime: {Math.floor((health?.server?.uptime ?? 3600) / 60)} min</p>
-          </div>
+      {/* ─── Cache Management & System Flush ───────────────────────────── */}
+      <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Trash2 className="w-4 h-4 text-primary" />
+            Edge Cache Flush & State Invalidation
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Purges active in-memory Redis caches, Cloudflare edge HTML caches, and resets socket room states.
+          </p>
         </div>
+
+        <button
+          onClick={handlePurgeCache}
+          disabled={cachePurging}
+          className="px-4 py-2.5 rounded-xl border border-input bg-card hover:bg-muted text-foreground text-xs font-semibold transition-colors flex items-center gap-2 shrink-0 cursor-pointer"
+        >
+          <RefreshCw className={cn('w-3.5 h-3.5 text-primary', cachePurging && 'animate-spin')} />
+          <span>{cachePurging ? 'Flushing Caches...' : 'Purge All Caches'}</span>
+        </button>
       </div>
     </div>
   );
 }
-

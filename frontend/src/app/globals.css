@@ -31,43 +31,43 @@
   --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 3.9%;
-  --primary: 263.4 85% 60%;
-  --primary-foreground: 210 20% 98%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 24 10% 10%;
   --secondary: 240 4.8% 95.9%;
   --secondary-foreground: 240 5.9% 10%;
   --muted: 240 4.8% 95.9%;
   --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
-  --accent-foreground: 240 5.9% 10%;
+  --accent: 38 92% 95%;
+  --accent-foreground: 38 92% 35%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
-  --ring: 263.4 85% 60%;
+  --ring: 38 92% 50%;
   --radius: 0.85rem;
 }
 
-/* ─── Modernized Obsidian/Zinc Dark Mode Palette ─────────────────────── */
+/* ─── Modernized Obsidian/Slate Dark Mode Palette ─────────────────────── */
 .dark {
-  --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
-  --card: 240 10% 5.5%;
-  --card-foreground: 0 0% 98%;
-  --popover: 240 10% 5.5%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 263.4 85% 62%;
-  --primary-foreground: 210 20% 98%;
-  --secondary: 240 5.9% 10%;
-  --secondary-foreground: 0 0% 98%;
-  --muted: 240 5.9% 10%;
-  --muted-foreground: 240 5% 64.9%;
-  --accent: 240 5.9% 12%;
-  --accent-foreground: 0 0% 98%;
+  --background: 224 33% 4%;
+  --foreground: 210 20% 98%;
+  --card: 216 28% 7%;
+  --card-foreground: 210 20% 98%;
+  --popover: 216 28% 7%;
+  --popover-foreground: 210 20% 98%;
+  --primary: 38 92% 50%;
+  --primary-foreground: 24 10% 10%;
+  --secondary: 216 20% 12%;
+  --secondary-foreground: 210 20% 98%;
+  --muted: 216 20% 12%;
+  --muted-foreground: 216 15% 65%;
+  --accent: 38 92% 50% / 0.15;
+  --accent-foreground: 38 92% 60%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 6% 14%;
-  --input: 240 6% 14%;
-  --ring: 263.4 85% 62%;
+  --border: 216 20% 14%;
+  --input: 216 20% 14%;
+  --ring: 38 92% 50%;
 }
 
 /* -------------------------------------------------------------------------- */

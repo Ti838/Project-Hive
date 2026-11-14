@@ -30,6 +30,7 @@ export const globalLimiter = rateLimit({
   max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '300', 10),
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
   handler: standardHandler('General API rate limit exceeded. Please try again shortly.', 60),
 });
 
@@ -41,6 +42,7 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skipSuccessfulRequests: true,
+  validate: { trustProxy: false },
   handler: standardHandler('Too many failed authentication attempts. Please try again in 15 minutes.', 900),
 });
 
@@ -51,6 +53,7 @@ export const aiLimiter = rateLimit({
   max: 30,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
   handler: standardHandler('HiveMind AI generation rate limit reached. Please wait 30 seconds before submitting new prompts.', 30),
 });
 
@@ -61,6 +64,7 @@ export const uploadLimiter = rateLimit({
   max: 15,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { trustProxy: false },
   handler: standardHandler('Upload rate limit reached. Please wait a few minutes before uploading more media.', 300),
 });
 

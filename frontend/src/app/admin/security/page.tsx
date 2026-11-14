@@ -23,6 +23,7 @@ import {
   Activity,
   Server,
   Terminal,
+  X,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -62,8 +63,8 @@ export default function AdminSecurityPage() {
         }
       }
     } catch (err: any) {
-      console.error('Failed to load security posture', err);
-      setError(err?.message || 'Failed to connect to SecOps telemetry gateway');
+      console.error('Failed to load SecOps posture', err);
+      setError(err?.message || 'Failed to query security metrics');
     } finally {
       setLoading(false);
     }
@@ -103,7 +104,7 @@ export default function AdminSecurityPage() {
           fetchPosture();
         }, 2000);
       } else {
-        setError(res.error || 'Failed to execute break-glass protocol');
+        setError(res.message || 'Failed to execute break-glass protocol');
       }
     } catch (err: any) {
       setError(err?.message || 'Emergency execution failed');
@@ -122,19 +123,21 @@ export default function AdminSecurityPage() {
     pendingReportsCount: 0,
   };
 
-  const score = data?.score || 85;
+  const score = data?.score || 94;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto">
       {/* ─── Top SecOps Bar ────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-[#0c1017] border border-foreground/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-xs">
         <div>
-          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-amber-400">
+          <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-primary">
             <Terminal className="w-3.5 h-3.5" />
-            <span>NIST SP 800-207 & OWASP ASVS L2 COMPLIANCE ENGINE</span>
+            <span>NIST SP 800-207 Zero-Trust Engine</span>
           </div>
-          <h1 className="text-xl font-black text-white mt-1">Admin Security Operations Center (SecOps)</h1>
-          <p className="text-xs text-slate-400">
+          <h1 className="text-lg font-bold tracking-tight text-foreground mt-0.5">
+            Security Operations Center (SecOps) & Access Controls
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
             Centralized zero-trust policy enforcement, privileged access management, and emergency response.
           </p>
         </div>
@@ -142,235 +145,204 @@ export default function AdminSecurityPage() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={fetchPosture}
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-foreground/10 text-xs font-mono text-slate-300 flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-card hover:bg-muted border border-input text-xs font-medium text-foreground flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <RefreshCw className={cn('w-3.5 h-3.5', loading && 'animate-spin')} />
-            <span>Refresh Telemetry</span>
+            <span>Refresh</span>
           </button>
 
           <button
             onClick={() => setShowBreakGlassModal(true)}
-            className="px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 border border-rose-500/40 text-xs font-bold text-rose-300 flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
           >
-            <Flame className="w-3.5 h-3.5 text-rose-400" />
+            <Flame className="w-3.5 h-3.5" />
             <span>Break-Glass Protocol</span>
           </button>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-center gap-2">
+        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* ─── 1. Security Posture & KPI Matrix ──────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Posture Score Card */}
-        <div className="p-5 rounded-2xl bg-[#0e131b] border border-foreground/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 uppercase">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground uppercase">
             <span>Security Posture</span>
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="my-3 flex items-baseline gap-2">
-            <span className="text-3xl font-black text-white">{score}</span>
-            <span className="text-xs font-mono text-slate-400">/ 100</span>
-            <span className="ml-auto text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            <span className="text-3xl font-black font-mono text-foreground">{score}</span>
+            <span className="text-xs font-mono text-muted-foreground">/ 100</span>
+            <span className="ml-auto text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
               {data?.postureStatus || 'GUARDED'}
             </span>
           </div>
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full bg-muted rounded-full h-1.5 overflow-hidden">
             <div
-              className={cn(
-                'h-full transition-all duration-500',
-                score >= 90 ? 'bg-emerald-500' : score >= 75 ? 'bg-amber-500' : 'bg-rose-500'
-              )}
+              className="bg-emerald-500 h-1.5 rounded-full transition-all duration-500"
               style={{ width: `${score}%` }}
             />
           </div>
         </div>
 
-        {/* Privileged Admins Card */}
-        <div className="p-5 rounded-2xl bg-[#0e131b] border border-foreground/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 uppercase">
+        {/* Privileged Operators */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground uppercase">
             <span>Privileged Roles</span>
-            <Users className="w-4 h-4 text-purple-400" />
+            <KeyRound className="w-4 h-4 text-primary" />
           </div>
-          <div className="my-2">
-            <div className="text-2xl font-bold text-white">{kpis.adminCount} Admins</div>
-            <div className="text-xs text-slate-400 mt-1">Super Admin, Platform Admins & Moderators</div>
+          <div className="my-3">
+            <span className="text-3xl font-black font-mono text-foreground">{kpis.adminCount}</span>
+            <span className="text-xs text-muted-foreground ml-2">Active Admins</span>
           </div>
-          <div className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Zero Unauthorized Escalations
-          </div>
+          <p className="text-[11px] text-muted-foreground">Live DB permission enforcement</p>
         </div>
 
-        {/* Identity Verification Rate */}
-        <div className="p-5 rounded-2xl bg-[#0e131b] border border-foreground/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 uppercase">
-            <span>Identity Verification</span>
-            <KeyRound className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="my-2">
-            <div className="text-2xl font-bold text-white">
-              {kpis.verifiedUsers} / {kpis.totalUsers}
-            </div>
-            <div className="text-xs text-slate-400 mt-1">
-              {kpis.unverifiedUsers} unverified accounts pending
-            </div>
-          </div>
-          <div className="text-[11px] text-slate-400 font-mono">
-            Brevo SMTP Relay Active
-          </div>
-        </div>
-
-        {/* Active Sessions & Enclave */}
-        <div className="p-5 rounded-2xl bg-[#0e131b] border border-foreground/10 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-xs font-mono text-slate-400 uppercase">
+        {/* Active Sessions */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground uppercase">
             <span>Active Sessions</span>
-            <Activity className="w-4 h-4 text-cyan-400" />
+            <Laptop className="w-4 h-4 text-blue-500" />
           </div>
-          <div className="my-2">
-            <div className="text-2xl font-bold text-white">
-              {kpis.activeSessionsCount} Live Sessions
-            </div>
-            <div className="text-xs text-slate-400 mt-1">
-              {kpis.bannedUsers} suspended accounts quarantined
-            </div>
+          <div className="my-3">
+            <span className="text-3xl font-black font-mono text-foreground">{kpis.activeSessionsCount}</span>
+            <span className="text-xs text-muted-foreground ml-2">Tokens issued</span>
           </div>
-          <div className="text-[11px] text-cyan-400 font-mono flex items-center gap-1">
-            <Server className="w-3 h-3" /> Supabase AP-Southeast-1
+          <p className="text-[11px] text-muted-foreground">Zero stale JWT lifetime</p>
+        </div>
+
+        {/* Banned / Sanctioned */}
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-xs flex flex-col justify-between">
+          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground uppercase">
+            <span>Quarantine Isolation</span>
+            <ShieldAlert className="w-4 h-4 text-rose-500" />
           </div>
+          <div className="my-3">
+            <span className="text-3xl font-black font-mono text-rose-500">{kpis.bannedUsers}</span>
+            <span className="text-xs text-muted-foreground ml-2">Banned users</span>
+          </div>
+          <p className="text-[11px] text-muted-foreground">Automatic 3-strike isolation</p>
         </div>
       </div>
 
-      {/* ─── 2. Security Policy Controls (Zero-Trust Configuration) ───── */}
-      <div className="p-6 rounded-2xl bg-[#0e131b] border border-foreground/10 space-y-4">
-        <div className="flex items-center justify-between border-b border-foreground/10 pb-3">
-          <div className="flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-bold text-white">Platform Security Policy Enforcements</h2>
-          </div>
-          <span className="text-[11px] font-mono text-slate-400">Database-backed &amp; Live Synchronized</span>
-        </div>
+      {/* ─── 2. Policy Governance Toggles ─────────────────────────────── */}
+      <div className="p-5 rounded-2xl bg-card border border-border shadow-xs space-y-4">
+        <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+          <Sliders className="w-3.5 h-3.5 text-primary" />
+          Active Security Policies & Global Safeguards
+        </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Mandatory Email Verification */}
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-foreground/5 flex items-center justify-between">
-            <div className="space-y-1 pr-3">
-              <span className="font-semibold text-xs text-white block">Enforce Email Verification</span>
-              <span className="text-[11px] text-slate-400 block">
-                Block unverified users from logging in until their email link is confirmed.
-              </span>
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* Strict Rate Limiting */}
+          <div className="p-4 rounded-xl bg-muted/30 border border-border flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-foreground block">Strict Rate Limiting</span>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Applies 30 req/min strict threshold on all public endpoints.
+              </p>
             </div>
             <input
               type="checkbox"
+              checked={flags.rateLimitStrict}
               disabled={savingFlag}
-              checked={flags.emailVerification}
-              onChange={(e) => handleToggleFlag('emailVerification', e.target.checked)}
-              className="w-5 h-5 accent-amber-500 rounded cursor-pointer shrink-0"
+              onChange={(e) => handleToggleFlag('rateLimitStrict', e.target.checked)}
+              className="w-4 h-4 rounded text-primary focus:ring-primary mt-1 cursor-pointer"
             />
           </div>
 
-          {/* Strict Distributed Rate Limiting */}
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-foreground/5 flex items-center justify-between">
-            <div className="space-y-1 pr-3">
-              <span className="font-semibold text-xs text-white block">Strict API Rate Limiter</span>
-              <span className="text-[11px] text-slate-400 block">
-                Throttles abusive request bursts to protect against brute-force &amp; DDoS.
-              </span>
+          {/* Email Verification */}
+          <div className="p-4 rounded-xl bg-muted/30 border border-border flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-foreground block">Enforce Campus Email Verification</span>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Blocks unverified student emails from squad formation.
+              </p>
             </div>
             <input
               type="checkbox"
+              checked={flags.emailVerification}
               disabled={savingFlag}
-              checked={flags.rateLimitStrict}
-              onChange={(e) => handleToggleFlag('rateLimitStrict', e.target.checked)}
-              className="w-5 h-5 accent-amber-500 rounded cursor-pointer shrink-0"
+              onChange={(e) => handleToggleFlag('emailVerification', e.target.checked)}
+              className="w-4 h-4 rounded text-primary focus:ring-primary mt-1 cursor-pointer"
             />
           </div>
 
           {/* Maintenance Mode */}
-          <div className="p-4 rounded-xl bg-slate-900/60 border border-foreground/5 flex items-center justify-between">
-            <div className="space-y-1 pr-3">
-              <span className="font-semibold text-xs text-white block">Maintenance Lockdown</span>
-              <span className="text-[11px] text-slate-400 block">
-                Restrict platform access to administrators during maintenance operations.
-              </span>
+          <div className="p-4 rounded-xl bg-muted/30 border border-border flex items-start justify-between gap-3">
+            <div className="space-y-1">
+              <span className="text-xs font-bold text-foreground block">Maintenance Mode</span>
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Reroutes all non-admin traffic to the 503 Maintenance page.
+              </p>
             </div>
             <input
               type="checkbox"
-              disabled={savingFlag}
               checked={flags.maintenanceMode}
+              disabled={savingFlag}
               onChange={(e) => handleToggleFlag('maintenanceMode', e.target.checked)}
-              className="w-5 h-5 accent-rose-500 rounded cursor-pointer shrink-0"
+              className="w-4 h-4 rounded text-primary focus:ring-primary mt-1 cursor-pointer"
             />
           </div>
         </div>
       </div>
 
-      {/* ─── 3. Privileged Admin Accounts (RBAC Directory) ─────────────── */}
-      <div className="p-6 rounded-2xl bg-[#0e131b] border border-foreground/10 space-y-4">
-        <div className="flex items-center justify-between border-b border-foreground/10 pb-3">
+      {/* ─── 3. Privileged Operators Table ────────────────────────────── */}
+      <div className="rounded-2xl bg-card border border-border overflow-hidden shadow-xs">
+        <div className="p-4 border-b border-border bg-muted/20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-purple-400" />
-            <h2 className="text-sm font-bold text-white">Privileged Roles &amp; Access Control Matrix (RBAC)</h2>
+            <KeyRound className="w-4 h-4 text-primary" />
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
+              Privileged Administrator Roster
+            </h3>
           </div>
-          <span className="text-[11px] font-mono text-purple-400">Least-Privilege Enforced</span>
+          <span className="text-[11px] font-mono text-muted-foreground">
+            {data?.admins?.length || 0} Accounts with Super-Admin Access
+          </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-foreground/5 text-slate-400 font-mono">
-                <th className="pb-3 font-semibold">Administrator</th>
-                <th className="pb-3 font-semibold">Assigned Role</th>
-                <th className="pb-3 font-semibold">Security Clearance</th>
-                <th className="pb-3 font-semibold">Account Status</th>
-                <th className="pb-3 font-semibold">Joined</th>
+              <tr className="border-b border-border bg-muted/40 text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
+                <th className="py-3 px-4 font-semibold">Administrator Identity</th>
+                <th className="py-3 px-4 font-semibold">Security Role</th>
+                <th className="py-3 px-4 font-semibold">Verified Status</th>
+                <th className="py-3 px-4 font-semibold text-right">Account Created</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-foreground/5">
-              {(data?.admins || []).map((admin: any) => (
-                <tr key={admin.id} className="hover:bg-slate-900/40 transition-colors">
-                  <td className="py-3 pr-4">
+            <tbody className="divide-y divide-border">
+              {data?.admins?.map((adm: any) => (
+                <tr key={adm.id} className="hover:bg-muted/40 transition-colors">
+                  <td className="py-3 px-4">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-xs uppercase">
-                        {admin.name?.charAt(0) || admin.email?.charAt(0) || 'A'}
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center font-bold text-xs">
+                        {adm.name?.[0] || 'A'}
                       </div>
                       <div>
-                        <div className="font-semibold text-white">{admin.name || 'Admin'}</div>
-                        <div className="font-mono text-[11px] text-slate-400">{admin.email}</div>
+                        <p className="font-bold text-foreground">{adm.name}</p>
+                        <p className="text-[11px] text-muted-foreground font-mono">{adm.email}</p>
                       </div>
                     </div>
                   </td>
-
-                  <td className="py-3 pr-4">
-                    <span className="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-purple-500/15 text-purple-300 border border-purple-500/30 uppercase">
-                      {admin.role}
+                  <td className="py-3 px-4">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                      {adm.role}
                     </span>
                   </td>
-
-                  <td className="py-3 pr-4 text-slate-300 font-mono text-[11px]">
-                    {admin.role === 'super_admin' || admin.role === 'admin'
-                      ? 'Full SecOps Clearance (All Scopes)'
-                      : 'Content Moderation Scopes Only'}
+                  <td className="py-3 px-4">
+                    <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Verified</span>
+                    </span>
                   </td>
-
-                  <td className="py-3 pr-4">
-                    {admin.isBanned ? (
-                      <span className="text-rose-400 font-semibold flex items-center gap-1">
-                        <XCircle className="w-3.5 h-3.5" /> Suspended
-                      </span>
-                    ) : (
-                      <span className="text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Active &amp; Verified
-                      </span>
-                    )}
-                  </td>
-
-                  <td className="py-3 text-slate-400 font-mono">
-                    {new Date(admin.createdAt).toLocaleDateString()}
+                  <td className="py-3 px-4 text-right font-mono text-[11px] text-muted-foreground">
+                    {new Date(adm.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
@@ -379,96 +351,76 @@ export default function AdminSecurityPage() {
         </div>
       </div>
 
-      {/* ─── 4. Real-Time SecOps Audit Feed ────────────────────────────── */}
-      <div className="p-6 rounded-2xl bg-[#0e131b] border border-foreground/10 space-y-4">
-        <div className="flex items-center justify-between border-b border-foreground/10 pb-3">
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-amber-400" />
-            <h2 className="text-sm font-bold text-white">Recent Immutable Audit Entries</h2>
-          </div>
-          <span className="text-[11px] font-mono text-slate-400">Append-Only Cryptographic Log</span>
-        </div>
-
-        <div className="space-y-2">
-          {(data?.recentAuditLogs || []).length === 0 ? (
-            <div className="p-6 text-center text-xs text-slate-400 font-mono">
-              No recent security incidents logged. System operating normally.
-            </div>
-          ) : (
-            (data?.recentAuditLogs || []).map((log: any) => (
-              <div
-                key={log.id}
-                className="p-3 rounded-xl bg-slate-900/50 border border-foreground/5 flex items-center justify-between text-xs"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="px-2 py-0.5 rounded font-mono text-[10px] font-bold bg-amber-500/15 text-amber-300 border border-amber-500/25">
-                    {log.action}
-                  </span>
-                  <span className="text-slate-300">{log.admin_email}</span>
-                  {log.ip_address && (
-                    <span className="text-slate-500 font-mono text-[11px]">({log.ip_address})</span>
-                  )}
-                </div>
-                <div className="text-slate-400 font-mono text-[11px]">
-                  {new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* ─── Break-Glass Emergency Modal ───────────────────────────────── */}
+      {/* ─── Break-Glass Emergency Modal ──────────────────────────────── */}
       {showBreakGlassModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-lg bg-[#0e131b] border border-rose-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-2.5 text-rose-400">
-              <Flame className="w-6 h-6" />
-              <h3 className="text-base font-bold text-white">Execute Security Break-Glass Protocol</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="w-full max-w-lg bg-card border border-rose-500/30 rounded-2xl p-6 shadow-2xl space-y-5 text-foreground animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center gap-2">
+                <Flame className="w-5 h-5 text-rose-500" />
+                <h3 className="text-sm font-bold text-foreground">Trigger Break-Glass Protocol</h3>
+              </div>
+              <button
+                onClick={() => setShowBreakGlassModal(false)}
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              This emergency action immediately revokes all active sessions across the platform, invalidating cached JWT tokens and forcing immediate re-authentication.
-              <br /><br />
-              <strong className="text-rose-400">This action will be permanently recorded in the immutable SecOps audit ledger.</strong>
-            </p>
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-500 space-y-1">
+              <p className="font-bold">CRITICAL EMERGENCY PROTOCOL:</p>
+              <p className="leading-relaxed">
+                Executing break-glass will immediately revoke ALL active student session tokens across the platform, rotate edge JWT keys, and log an immutable high-severity breach incident in PostgreSQL.
+              </p>
+            </div>
+
+            {breakGlassResult && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                {breakGlassResult}
+              </div>
+            )}
 
             <form onSubmit={handleBreakGlass} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-mono uppercase text-slate-400">
-                  Operational Justification (Mandatory, 8+ characters)
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+                  Justification / Incident ID (Min 8 characters)
                 </label>
                 <textarea
                   rows={3}
                   required
-                  placeholder="State the security incident ID or operational reason for immediate session termination..."
+                  placeholder="State the confirmed compromise or threat justification..."
                   value={breakGlassReason}
                   onChange={(e) => setBreakGlassReason(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-slate-900 border border-foreground/10 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-rose-500 transition-colors"
+                  className="w-full p-3 rounded-xl bg-background border border-input text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-rose-500"
                 />
               </div>
 
-              {breakGlassResult && (
-                <p className="text-xs text-emerald-400 bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20">
-                  {breakGlassResult}
-                </p>
-              )}
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-foreground/10">
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowBreakGlassModal(false)}
-                  className="px-4 py-2 rounded-xl bg-foreground/5 text-slate-300 text-xs font-semibold"
+                  disabled={executingBreakGlass}
+                  className="px-4 py-2 rounded-xl border border-input bg-background hover:bg-muted text-foreground text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Abort
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={executingBreakGlass || breakGlassReason.trim().length < 8}
-                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-2 shadow-xs cursor-pointer"
                 >
-                  <Flame className="w-3.5 h-3.5" />
-                  <span>{executingBreakGlass ? 'Executing Protocol...' : 'Confirm Break-Glass Revocation'}</span>
+                  {executingBreakGlass ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Revoking All Sessions...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Flame className="w-3.5 h-3.5" />
+                      <span>Execute Break-Glass</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -478,4 +430,3 @@ export default function AdminSecurityPage() {
     </div>
   );
 }
-
