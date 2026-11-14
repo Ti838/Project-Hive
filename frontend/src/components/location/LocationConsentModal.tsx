@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { MapPin, Shield, Check, X, Building, Navigation } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 interface LocationConsentModalProps {
   isOpen: boolean;
@@ -59,7 +60,7 @@ export function LocationConsentModal({
                 Enable Campus & Location Intelligence?
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                ProjectHive uses your location to connect you with fellow engineers at your university and highlight squads recruiting nearby.
+                {BRAND_CONFIG.name} uses your location to connect you with fellow engineers at your university and highlight squads recruiting nearby.
               </p>
             </div>
 

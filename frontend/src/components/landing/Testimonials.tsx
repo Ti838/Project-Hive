@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 import { Layers, UserCheck, Users, Video, Trophy, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const LIFECYCLE_STAGES = [
@@ -75,7 +76,7 @@ export function Testimonials() {
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground max-w-3xl leading-tight">
             How University Squads Build on{' '}
             <span className="bg-gradient-to-r from-primary via-indigo-400 to-accent bg-clip-text text-transparent">
-              ProjectHive
+              {BRAND_CONFIG.name}
             </span>
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl">

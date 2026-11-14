@@ -16,6 +16,7 @@ import {
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { displayName, cn } from '@/lib/utils';
 import type { User, RelationshipState } from '@/types';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 interface StudentDirectoryCardProps {
   student: User;
@@ -171,7 +172,7 @@ export function StudentDirectoryCard({
                   Online now
                 </span>
               ) : (
-                'ProjectHive Member'
+                `${BRAND_CONFIG.name} Member`
               )}
             </span>
           )}

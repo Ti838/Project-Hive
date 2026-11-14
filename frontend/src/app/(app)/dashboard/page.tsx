@@ -15,53 +15,40 @@ import { displayName, timeAgo, getInitials, getAvatarColor, cn } from '@/lib/uti
 import type { Stats, Post, Team } from '@/types';
 import { useLocationIntelligence } from '@/hooks/useLocationIntelligence';
 import { LocationConsentModal } from '@/components/location/LocationConsentModal';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
-// ─── Studio-Grade Stat Card with Micro-Sparkline & Trend ───────────────────────
+// ─── Studio-Grade Metric Card (No Fake Data) ─────────────────────────────────
 function StatCard({
   label,
   value,
   icon: Icon,
   color,
-  trend,
-  progress = 75,
+  description,
 }: {
   label: string;
   value: number | string;
   icon: React.ElementType;
   color: string;
-  trend: string;
-  progress?: number;
+  description: string;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="surface-glass rounded-2xl p-5 sm:p-6 border border-foreground/10 dark:border-foreground/5 shadow-xl flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all duration-200"
+      className="surface-glass rounded-2xl p-5 border border-border/80 shadow-md flex flex-col justify-between relative overflow-hidden group hover:border-primary/40 transition-all duration-200"
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
-          <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground font-mono">{value}</p>
+        <div className="space-y-1">
+          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+          <p className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground font-mono">{value}</p>
         </div>
-        <div className={cn('p-3 rounded-2xl shrink-0 shadow-inner group-hover:scale-105 transition-transform', color)}>
-          <Icon className="w-5 h-5" />
+        <div className={cn('p-2.5 rounded-xl shrink-0 shadow-inner group-hover:scale-105 transition-transform', color)}>
+          <Icon className="w-4 h-4" />
         </div>
       </div>
 
-      {/* Trend Badge & Micro Progress Sparkline */}
-      <div className="mt-4 pt-3 border-t border-foreground/5 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-500 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-          <TrendingUp className="w-3 h-3" />
-          <span>{trend}</span>
-        </div>
-
-        {/* Micro progress line */}
-        <div className="flex-1 max-w-[70px] h-1.5 bg-muted/60 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-1000"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
+      <div className="mt-3 pt-2.5 border-t border-border/60">
+        <span className="text-[11px] text-muted-foreground font-medium">{description}</span>
       </div>
     </motion.div>
   );
@@ -161,7 +148,7 @@ export default function DashboardPage() {
         <div className="space-y-2.5 max-w-xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full surface-glass border border-foreground/10 text-primary text-xs font-bold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-primary" />
-            <span>ProjectHive Engineering Grid</span>
+            <span>{BRAND_CONFIG.name} Engineering Grid</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             Welcome back, <span className="text-primary">{user?.first_name ?? 'Student'}</span> 👋
@@ -247,36 +234,32 @@ export default function DashboardPage() {
         ) : (
           <>
             <StatCard
-              label="Active Students"
+              label="Student Developers"
               value={stats?.users ?? 0}
               icon={Users}
               color="bg-primary/10 text-primary border border-primary/20"
-              trend="+14% active"
-              progress={84}
+              description="Registered campus builders"
             />
             <StatCard
               label="Formed Squads"
               value={stats?.teams ?? 0}
               icon={UserCheck}
               color="bg-blue-500/10 text-blue-400 border border-blue-500/20"
-              trend="Collaborating"
-              progress={68}
+              description="Active collaborative teams"
             />
             <StatCard
               label="Showcase Projects"
               value={stats?.projects ?? 0}
               icon={FolderKanban}
               color="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-              trend="+9 shipped"
-              progress={92}
+              description="Verified software builds"
             />
             <StatCard
-              label="Universities"
+              label="Campuses"
               value={stats?.universities ?? 0}
               icon={GraduationCap}
               color="bg-amber-500/10 text-amber-400 border border-amber-500/20"
-              trend="Global Mesh"
-              progress={55}
+              description="Participating universities"
             />
           </>
         )}
@@ -354,7 +337,7 @@ export default function DashboardPage() {
               {myTeams.slice(0, 4).map((team) => (
                 <Link
                   key={team.id}
-                  href={`/teams`}
+                  href={`/teams/${team.id}`}
                   className="flex items-center gap-3.5 p-3.5 rounded-2xl border border-foreground/10 surface-glass hover:border-primary/40 tap-press transition-all group"
                 >
                   <div

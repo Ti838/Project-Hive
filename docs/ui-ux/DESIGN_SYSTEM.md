@@ -23,24 +23,20 @@ ProjectHive is built upon an intentional contrast between ultra-deep obsidian sl
 
 ---
 
-## 2. Interactive 3D WebGL Ecosystem
+## 2. Interactive Workspace & Dynamic Branding Architecture
 
-ProjectHive incorporates three custom WebGL components rendered via Three.js and `@react-three/fiber`:
+ProjectHive provides a unified, production-grade collaboration experience grounded in Linear, Slack, LiveKit, and Notion design principles:
 
-### 2.1 Hero 3D Environment (`Hero3DEnvironment.tsx`)
-- **Outer Shell:** Faceted Dodecahedron geodesic wireframe rendered with physical wireframe shading in Amber (`#f59e0b`).
-- **Inner Core:** Glowing Icosahedron crystalline core rendered in Indigo (`#6366f1`) with sinusoidal pulse animations.
-- **Orbital Squad Rings:** Three concentric Torus geometries representing active collaboration circles tilted along orbital planes.
-- **Constellation Cloud:** 260 randomized point particles simulating student talent nodes.
-- **Physics:** Inertia-damped pointer tracking responding dynamically to mouse and mobile gyroscope delta.
+### 2.1 Interactive 4-Mode Workspace Preview (`Hero.tsx`)
+- **Squad Hub:** Live capstone roster (BUET CSE 499 Autonomous Drone AI), active members, role tags, and an interactive recruitment modal.
+- **Sprint Kanban:** Live sprint task board with story points, priority badges, and toggleable checkboxes.
+- **LiveKit SFU Stage:** 4K WebRTC video stage with active-speaker glowing borders, audio meters, Gazebo simulation screen share, and call controls.
+- **HiveMind AI Copilot:** Technical PRD & Architecture Copilot with contextual action pills.
 
-### 2.2 Auth Gyroscopic Security Core (`Auth3DCanvas.tsx` / `mode='signin'`)
-- Dedicated to the `/login` desktop showcase.
-- Features a spinning faceted Octahedron enclosed within two concentric gimbal rings, symbolizing cryptographic workstation protection.
-
-### 2.3 Auth Neural Collaboration Mesh (`Auth3DCanvas.tsx` / `mode='signup'`)
-- Dedicated to the `/register` desktop showcase.
-- Features 9 student node spheres connected by dynamic line filaments with wave-like pulse intensity, representing collective squad formation.
+### 2.2 Centralized Brand Engine & Dynamic Logo Tokens (`brandConfig.ts` & `BrandLogo.tsx`)
+- Single source of truth for platform identity tokens: name, highlight, tagline, organization credits (`BITA`), and asset paths.
+- Reusable dynamic `<BrandLogo />` component supporting `full`, `mark`, `org`, and `badge` variants with automatic SVG fallbacks and sizing tokens (`xs` to `xl`).
+- 100% elimination of hardcoded logo paths or organization strings across all user and admin views.
 
 ---
 

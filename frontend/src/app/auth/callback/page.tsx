@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Loader2, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 function AuthCallbackContent() {
   const searchParams = useSearchParams();
@@ -102,7 +103,7 @@ function AuthCallbackContent() {
               return;
             } else {
               setStatus('error');
-              setErrorMessage(res.error || 'Failed to authenticate user with ProjectHive server.');
+              setErrorMessage(res.error || `Failed to authenticate user with ${BRAND_CONFIG.name} server.`);
               return;
             }
           }
@@ -156,7 +157,7 @@ function AuthCallbackContent() {
 
       <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
         {status === 'loading' && 'Please wait while we verify your credentials and initialize your session.'}
-        {status === 'success' && 'Welcome back! Redirecting you to your ProjectHive dashboard…'}
+        {status === 'success' && `Welcome back! Redirecting you to your ${BRAND_CONFIG.name} dashboard…`}
         {status === 'error' && (errorMessage || 'Could not complete sign-in. Please try again.')}
       </p>
 

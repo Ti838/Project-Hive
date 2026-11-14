@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { ChevronDown, HelpCircle, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 interface FAQItem {
   question: string;
@@ -10,41 +11,41 @@ interface FAQItem {
   category: string;
 }
 
-const FAQS: FAQItem[] = [
-  {
-    category: 'Squads & Teams',
-    question: 'How does ProjectHive match student teams for capstones and hackathons?',
-    answer: 'ProjectHive calculates a multi-dimensional compatibility score based on technical competencies (programming languages, frameworks), academic discipline, timezone availability, and target capstone tracks. You can filter candidates, inspect verified portfolios, and issue direct 1-click squad invitations.'
-  },
-  {
-    category: 'Cost & Access',
-    question: 'Is ProjectHive completely free for university students?',
-    answer: 'Yes! ProjectHive is 100% free for students, researchers, and university teams. All core workspace capabilities — including squad matchmaking, unlimited real-time chat, LiveKit WebRTC calls, Kanban sprint tracking, and project showcase publishing — are fully accessible at zero cost.'
-  },
-  {
-    category: 'Audio & Video',
-    question: 'What makes LiveKit WebRTC calling superior to Discord or Zoom for team projects?',
-    answer: 'Unlike generic conferencing apps, ProjectHive integrates LiveKit SFU natively into your squad room. There are no external meeting links or expired invites. You get zero-latency 4K screen sharing with syntax-mode clarity, persistent spatial audio rooms, and automatic link to your project sprint board.'
-  },
-  {
-    category: 'AI Assistant',
-    question: 'How does the HiveMind AI assistant help throughout a semester project?',
-    answer: 'HiveMind AI acts as a dedicated technical advisor. It can generate comprehensive project PRDs, design system architectures, recommend modern tech stacks based on your team skills, formulate milestone roadmaps, and even break down massive epics into actionable weekly sprint tasks.'
-  },
-  {
-    category: 'Showcase & Careers',
-    question: 'Can recruiters and industry mentors view our completed projects?',
-    answer: 'Absolutely. The ProjectHive Showcase acts as your verified public portfolio. When you mark a capstone as shipped, your live demo link, GitHub repository badge, tech stack breakdown, and team member credits become discoverable by industry sponsors, alumni mentors, and hiring managers.'
-  },
-  {
-    category: 'Privacy & Security',
-    question: 'How is student data, coursework code, and intellectual property secured?',
-    answer: 'ProjectHive enforces strict Row-Level Security (RLS) across all 16 Supabase PostgreSQL database tables. Squad channels, sprint boards, and confidential project repositories are inaccessible to non-team members. Furthermore, all communications are encrypted in transit and at rest.'
-  }
-];
-
 export function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+
+  const faqs = useMemo<FAQItem[]>(() => [
+    {
+      category: 'Squads & Teams',
+      question: `How does ${BRAND_CONFIG.name} match student teams for capstones and hackathons?`,
+      answer: `${BRAND_CONFIG.name} calculates a multi-dimensional compatibility score based on technical competencies (programming languages, frameworks), academic discipline, timezone availability, and target capstone tracks. You can filter candidates, inspect verified portfolios, and issue direct 1-click squad invitations.`
+    },
+    {
+      category: 'Cost & Access',
+      question: `Is ${BRAND_CONFIG.name} completely free for university students?`,
+      answer: `Yes! ${BRAND_CONFIG.name} is 100% free for students, researchers, and university teams. All core workspace capabilities — including squad matchmaking, unlimited real-time chat, LiveKit WebRTC calls, Kanban sprint tracking, and project showcase publishing — are fully accessible at zero cost.`
+    },
+    {
+      category: 'Audio & Video',
+      question: 'What makes LiveKit WebRTC calling superior to Discord or Zoom for team projects?',
+      answer: `Unlike generic conferencing apps, ${BRAND_CONFIG.name} integrates LiveKit SFU natively into your squad room. There are no external meeting links or expired invites. You get zero-latency 4K screen sharing with syntax-mode clarity, persistent spatial audio rooms, and automatic link to your project sprint board.`
+    },
+    {
+      category: 'AI Assistant',
+      question: 'How does the HiveMind AI assistant help throughout a semester project?',
+      answer: 'HiveMind AI acts as a dedicated technical advisor. It can generate comprehensive project PRDs, design system architectures, recommend modern tech stacks based on your team skills, formulate milestone roadmaps, and even break down massive epics into actionable weekly sprint tasks.'
+    },
+    {
+      category: 'Showcase & Careers',
+      question: 'Can recruiters and industry mentors view our completed projects?',
+      answer: `Absolutely. The ${BRAND_CONFIG.name} Showcase acts as your verified public portfolio. When you mark a capstone as shipped, your live demo link, GitHub repository badge, tech stack breakdown, and team member credits become discoverable by industry sponsors, alumni mentors, and hiring managers.`
+    },
+    {
+      category: 'Privacy & Security',
+      question: 'How is student data, coursework code, and intellectual property secured?',
+      answer: `${BRAND_CONFIG.name} enforces strict Row-Level Security (RLS) across all Supabase PostgreSQL database tables. Squad channels, sprint boards, and confidential project repositories are inaccessible to non-team members. Furthermore, all communications are encrypted in transit and at rest.`
+    }
+  ], []);
 
   const toggle = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
@@ -63,13 +64,13 @@ export function FAQ() {
             Frequently Asked Questions
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground">
-            Got questions about building on ProjectHive? We've got answers.
+            Got questions about building on {BRAND_CONFIG.name}? We&apos;ve got answers.
           </p>
         </div>
 
         {/* Accordion List */}
         <div className="space-y-4">
-          {FAQS.map((faq, idx) => {
+          {faqs.map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (
               <div

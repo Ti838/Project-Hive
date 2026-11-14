@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import { PrivacyContent } from '@/components/legal/PrivacyContent';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy - ProjectHive',
-  description: 'Privacy Policy detailing data collection, processing, and storage practices for ProjectHive.',
+  title: `Privacy Policy - ${BRAND_CONFIG.name}`,
+  description: `Privacy Policy detailing data collection, processing, and storage practices for ${BRAND_CONFIG.name}.`,
 };
 
 export default function PrivacyPage() {
@@ -20,12 +21,7 @@ export default function PrivacyPage() {
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
         </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       {/* Main Privacy Content */}
@@ -44,7 +40,7 @@ export default function PrivacyPage() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} ProjectHive. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {BRAND_CONFIG.name}. All rights reserved.</span>
           <Link href="/terms" className="hover:text-foreground underline">Terms of Service</Link>
         </div>
       </main>

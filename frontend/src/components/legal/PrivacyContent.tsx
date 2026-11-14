@@ -1,4 +1,5 @@
 import React from 'react';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 export function PrivacyContent() {
   return (
@@ -6,7 +7,7 @@ export function PrivacyContent() {
       <section className="space-y-2">
         <h3 className="text-base font-bold text-foreground">1. Information We Collect</h3>
         <p>
-          ProjectHive collects information necessary to deliver authentic team formation and collaboration features:
+          {BRAND_CONFIG.name} collects information necessary to deliver authentic team formation and collaboration features:
         </p>
         <ul className="list-disc pl-5 space-y-1">
           <li><strong>Account Credentials:</strong> First name, last name, email address, password hash (salted using bcrypt with cost factor 12).</li>
@@ -40,7 +41,7 @@ export function PrivacyContent() {
       <section className="space-y-2">
         <h3 className="text-base font-bold text-foreground">4. Cookies and Session Management</h3>
         <p>
-          ProjectHive uses secure session tokens and local storage strictly for maintaining user authentication state across browser refreshes. We do not use third-party tracking or advertising cookies.
+          {BRAND_CONFIG.name} uses secure session tokens and local storage strictly for maintaining user authentication state across browser refreshes. We do not use third-party tracking or advertising cookies.
         </p>
       </section>
 
@@ -54,7 +55,7 @@ export function PrivacyContent() {
       <section className="space-y-2">
         <h3 className="text-base font-bold text-foreground">6. Contacting Privacy Engineering</h3>
         <p>
-          If you have questions regarding this Privacy Policy or wish to request data export, contact our team at <code className="text-primary font-mono text-xs">privacy@projecthive.dev</code>.
+          If you have questions regarding this Privacy Policy or wish to request data export, contact our team through the official support center.
         </p>
       </section>
     </div>

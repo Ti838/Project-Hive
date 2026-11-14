@@ -19,6 +19,7 @@ import { soundEngine } from '@/lib/soundEngine';
 import { api } from '@/lib/api';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 import { CommandPaletteModal } from './CommandPaletteModal';
 import { NotificationsPopover } from './NotificationsPopover';
 import type { Notification, User as UserType, Team as TeamType, Project as ProjectType } from '@/types';
@@ -37,7 +38,7 @@ function getPageMeta(pathname: string): { title: string; isChild: boolean } {
   if (pathname === '/profile') return { title: 'Profile', isChild: false };
   if (pathname === '/showcase' || pathname === '/projects') return { title: 'Showcase', isChild: false };
   if (pathname === '/people' || pathname === '/friends') return { title: 'People', isChild: false };
-  return { title: 'ProjectHive', isChild: false };
+  return { title: BRAND_CONFIG.name, isChild: false };
 }
 
 export function Topbar() {
@@ -261,10 +262,7 @@ export function Topbar() {
           <div className="flex items-center gap-2 min-w-0">
             {!isChild ? (
               <div className="flex md:hidden items-center gap-2 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-xs">
-                  <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain rounded-md" />
-                </div>
-                <span className="font-extrabold text-base tracking-tight truncate">ProjectHive</span>
+                <BrandLogo variant="full" size="sm" linkTo="/dashboard" />
               </div>
             ) : (
               <h1 className="md:hidden font-bold text-base tracking-tight truncate text-foreground">

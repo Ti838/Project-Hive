@@ -7,6 +7,7 @@ import { Sparkles, ChevronDown, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType } from '@/types';
 import { CAPABILITY_ITEMS, HiveAICapabilitiesModal } from './HiveAICapabilities';
+import { HiveAIAvatar } from './HiveAIIcon';
 
 interface HiveAIHeaderProps {
   activeCapability: HiveAICapabilityType;
@@ -37,13 +38,7 @@ export function HiveAIHeader({
       )}>
         {/* Left: Hive AI Brand & 3 Primary Modes Switcher */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1.5 overflow-hidden">
-            <img
-              src="/logo.png"
-              alt="Hive AI"
-              className={cn("w-full h-full object-contain", isProcessing && "animate-pulse")}
-            />
-          </div>
+          <HiveAIAvatar size="md" className={cn(isProcessing && "animate-pulse")} />
 
           {/* 3 Primary Modes + More Dropdown */}
           {onSelectCapability ? (

@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 const CATEGORIES = [
   'Account & Security',
@@ -110,7 +111,7 @@ export default function HelpCenterPage() {
         <div>
           <div className="flex items-center gap-2 text-indigo-500 font-mono text-xs uppercase tracking-wider mb-1">
             <LifeBuoy className="w-4 h-4" />
-            <span>ProjectHive Support & Helpline</span>
+            <span>{BRAND_CONFIG.name} Support & Helpline</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">How can we assist you?</h1>
           <p className="text-muted-foreground text-sm mt-1">

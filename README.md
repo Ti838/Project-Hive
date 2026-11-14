@@ -37,7 +37,7 @@
 7. [LiveKit WebRTC Call State Machine](#-livekit-webrtc-call-state-machine)
 8. [Cascading Multimodal AI Engine](#-cascading-multimodal-ai-engine)
 9. [Two-Way Helpline & Support Management](#-two-way-helpline--support-management)
-10. [Frontend Application Map (39 Routes)](#-frontend-application-map-39-routes)
+10. [Frontend Application Map (41 Routes)](#-frontend-application-map-41-routes)
 11. [Backend REST & WebSocket API Reference](#-backend-rest--websocket-api-reference)
 12. [Quickstart & Local Environment Setup](#-quickstart--local-environment-setup)
 13. [Verification & Health Auditing](#-verification--health-auditing)
@@ -494,9 +494,9 @@ sequenceDiagram
 
 ---
 
-## 📱 Frontend Application Map (39 Routes)
+## 📱 Frontend Application Map (41 Routes)
 
-The Next.js 16 App Router application compiles into **39 optimized production routes** categorized into three primary zones:
+The Next.js 16 App Router application compiles into **41 optimized production routes** categorized into three primary zones:
 
 ```text
 frontend/src/app/
@@ -522,17 +522,21 @@ frontend/src/app/
 │       └── create/                 # Squad creation wizard
 │
 ├── admin/                          # Super Admin Control Center
+│   ├── /                           # Real-time SecOps overview, telemetry, latency & audit feed
 │   ├── login/                      # Dedicated administrative authentication terminal
-│   ├── dashboard/                  # Live system telemetry, node ping, server health metrics
+│   ├── dashboard/                  # Canonical redirect to admin command center
 │   ├── audit/                      # Terminal-style immutable audit trail viewer
 │   ├── moderation/                 # Content moderation (reported posts, attachment scans)
-│   ├── support/                    # Helpline administration, ticket queues, investigation
+│   ├── projects/                   # Platform project governance & repository inspection
+│   ├── security/                   # SecOps Posture Score, policy toggles & break-glass switch
+│   ├── support/                    # Helpline administration, ticket queues, staff notes
 │   ├── system/                     # Feature kill switches (maintenance mode, registration)
 │   ├── teams/                      # University-wide squad governance & dispute mediation
 │   └── users/                      # User management (disciplinary strikes, bans, role changes)
 │
 └── public/                         # Public & Authentication Landing Zone
-    ├── /                           # High-converting landing page with live statistics
+    ├── /                           # High-converting landing page with 4-stage workspace preview
+    ├── auth/callback/              # OAuth callback handler (Google & GitHub authentication)
     ├── login/                      # Student authentication (email/password, Google OAuth)
     ├── register/                   # Student registration & university credential intake
     ├── forgot-password/            # Password recovery dispatch

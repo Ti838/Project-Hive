@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, XCircle, Loader2, ArrowRight, MailCheck, ShieldCheck, Mail } from 'lucide-react';
 import { api } from '@/lib/api';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams();
@@ -39,7 +40,7 @@ function VerifyEmailContent() {
         setLoading(false);
         if (res.ok) {
           setSuccess(true);
-          setMessage(res.message || 'Email verified successfully! Welcome to ProjectHive.');
+          setMessage(res.message || `Email verified successfully! Welcome to ${BRAND_CONFIG.name}.`);
           setTimeout(() => {
             router.push('/login');
           }, 2800);
@@ -181,12 +182,7 @@ export default function VerifyEmailPage() {
           <ArrowRight className="w-4 h-4 rotate-180 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
         </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 import { 
   Users, 
   Video, 
@@ -55,7 +56,7 @@ export function BentoGrid() {
             Every tool required to take ideas from <span className="bg-gradient-to-r from-primary via-primary/80 to-accent bg-clip-text text-transparent">zero to shipped</span>.
           </h2>
           <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl">
-            Forget juggling five disconnected tabs. ProjectHive unifies squad recruitment, 4K WebRTC calling, persistent chat, and AI sprint scaffolding into one deterministic operating system.
+            Forget juggling five disconnected tabs. {BRAND_CONFIG.name} unifies squad recruitment, 4K WebRTC calling, persistent chat, and AI sprint scaffolding into one deterministic operating system.
           </p>
         </div>
 

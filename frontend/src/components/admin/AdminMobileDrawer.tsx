@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ADMIN_NAV_ITEMS } from './AdminSidebar';
+import { BrandLogo } from '@/components/brand';
 
 interface AdminMobileDrawerProps {
   isOpen: boolean;
@@ -43,19 +44,7 @@ export function AdminMobileDrawer({
         <div className="flex flex-col h-full overflow-hidden">
           {/* Drawer Header */}
           <div className="p-4 border-b border-border flex items-center justify-between bg-muted/30 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-xs">
-                <Shield className="w-4 h-4 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-sm font-black tracking-tight text-foreground flex items-center gap-1">
-                  Project<span className="text-primary">Hive</span>
-                </h1>
-                <p className="text-[9px] font-mono tracking-widest text-muted-foreground uppercase">
-                  Admin Console
-                </p>
-              </div>
-            </div>
+            <BrandLogo variant="full" size="sm" subtext="Admin Console" linkTo="/admin" onClick={onClose} />
             <button
               onClick={onClose}
               className="p-1.5 text-muted-foreground hover:text-foreground rounded-lg bg-muted cursor-pointer"

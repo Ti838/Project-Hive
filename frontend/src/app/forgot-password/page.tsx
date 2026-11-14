@@ -8,6 +8,7 @@ import { z } from 'zod';
 import Link from 'next/link';
 import { ArrowLeft, Loader2, MailCheck, Mail, ShieldCheck, AlertCircle } from 'lucide-react';
 import { api } from '@/lib/api';
+import { BrandLogo } from '@/components/brand';
 import { cn } from '@/lib/utils';
 
 const schema = z.object({
@@ -46,12 +47,7 @@ export default function ForgotPasswordPage() {
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Sign In</span>
         </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-8">

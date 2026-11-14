@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { displayName, timeAgo, cn } from '@/lib/utils';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 import { UserAvatar } from '@/components/ui/UserAvatar';
 import { UserProfileHoverCard } from '@/components/ui/UserProfileHoverCard';
 import { MediaMosaic } from './MediaMosaic';
@@ -70,7 +71,7 @@ export function PostCard({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `ProjectHive update by ${displayName(post.author ?? undefined)}`,
+          title: `${BRAND_CONFIG.name} update by ${displayName(post.author ?? undefined)}`,
           text: post.content.slice(0, 100),
           url: `${window.location.origin}/feed#post-${post.id}`,
         });

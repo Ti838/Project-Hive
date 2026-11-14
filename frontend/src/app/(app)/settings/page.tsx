@@ -19,6 +19,7 @@ import { cn } from '@/lib/utils';
 import { soundEngine, type SoundPack } from '@/lib/soundEngine';
 import { NotificationSoundSettings } from '@/components/settings/NotificationSoundSettings';
 import { UserSecurityCenter } from '@/components/settings/UserSecurityCenter';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 type SettingsTab = 'profile' | 'privacy' | 'security' | 'sessions' | 'ai' | 'notifications' | 'appearance' | 'connected';
 
@@ -287,8 +288,8 @@ export default function SettingsPage() {
 
       const exportBundle = {
         exportedAt: new Date().toISOString(),
-        platform: 'ProjectHive Collaboration Engine',
-        version: '2.0.0',
+        platform: `${BRAND_CONFIG.name} Collaboration Engine`,
+        version: BRAND_CONFIG.version,
         user: userRes.status === 'fulfilled' && userRes.value.ok ? userRes.value : user,
         authoredProjects: myProjects,
         settings: user?.settings || {},
@@ -298,7 +299,7 @@ export default function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `projecthive-data-${user?.id || 'export'}-${new Date().toISOString().slice(0, 10)}.json`;
+      a.download = `${BRAND_CONFIG.shortName.toLowerCase()}-data-${user?.id || 'export'}-${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -596,7 +597,7 @@ export default function SettingsPage() {
               <h2 className="font-semibold text-base flex items-center gap-2">
                 <Laptop className="w-4 h-4 text-primary" /> Active Login Sessions
               </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">Devices currently authenticated with your ProjectHive account</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Devices currently authenticated with your {BRAND_CONFIG.name} account</p>
             </div>
 
             {sessions.length > 1 && (
@@ -739,7 +740,7 @@ export default function SettingsPage() {
               {resolvedTheme === 'dark' ? <Moon className="w-4 h-4 text-primary" /> : <Sun className="w-4 h-4 text-amber-500" />} Theme & Display
             </h2>
             <p className="text-xs text-muted-foreground mt-1">
-              Customize how ProjectHive looks on your device. Choose light, dark, or sync automatically with your system settings.
+              Customize how {BRAND_CONFIG.name} looks on your device. Choose light, dark, or sync automatically with your system settings.
             </p>
           </div>
 

@@ -97,14 +97,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   // Check auth state for non-login pages
   useEffect(() => {
     if (isLoading || isLoginPage) return;
-    if (!isAuthenticated || user?.role !== 'admin') {
+    if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'super_admin')) {
       router.replace('/admin/login');
     }
   }, [isAuthenticated, user, isLoading, isLoginPage, router]);
 
   // Periodic telemetry and hardware probe
   useEffect(() => {
-    if (isLoginPage || !isAuthenticated || user?.role !== 'admin') return;
+    if (isLoginPage || !isAuthenticated || (user?.role !== 'admin' && user?.role !== 'super_admin')) return;
 
     // Probe unmasked hardware specs
     getExactDeviceTelemetry().then((t) => setTelemetry(t));
@@ -166,7 +166,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     );
   }
 
-  if (isLoading || !isAuthenticated || user?.role !== 'admin') {
+  if (isLoading || !isAuthenticated || (user?.role !== 'admin' && user?.role !== 'super_admin')) {
     return (
       <DesktopGate>
         <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background text-foreground">

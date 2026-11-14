@@ -17,6 +17,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { BrandLogo } from '@/components/brand';
 
 export const ADMIN_NAV_ITEMS = [
   { name: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, exact: true },
@@ -48,19 +49,7 @@ export function AdminSidebar({
       <div className="flex flex-col h-full overflow-hidden">
         {/* Top Brand Header */}
         <div className="p-4 border-b border-border shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-xs">
-              <Shield className="w-5 h-5 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-sm font-black tracking-tight text-foreground flex items-center gap-1">
-                Project<span className="text-primary">Hive</span>
-              </h1>
-              <p className="text-[10px] font-mono tracking-widest text-muted-foreground uppercase">
-                Admin Console
-              </p>
-            </div>
-          </div>
+          <BrandLogo variant="full" size="md" subtext="Admin Console" linkTo="/admin" />
 
           {/* Operational Status Indicator */}
           <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between">

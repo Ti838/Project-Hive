@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Scale, ShieldCheck, ExternalLink } from 'lucide-react';
 import { TermsContent } from './TermsContent';
 import { PrivacyContent } from './PrivacyContent';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 interface LegalModalProps {
   isOpen: boolean;
@@ -82,7 +83,7 @@ export function LegalModal({ isOpen, onClose, type }: LegalModalProps) {
                   {title}
                 </h2>
                 <p className="text-[11px] text-muted-foreground">
-                  Official ProjectHive Legal Framework • Version 2.0
+                  Official {BRAND_CONFIG.name} Legal Framework • Version {BRAND_CONFIG.version}
                 </p>
               </div>
             </div>

@@ -30,6 +30,7 @@ import { api } from '@/lib/api';
 import { cn, getInitials } from '@/lib/utils';
 import { BANGLADESH_UNIVERSITIES } from '@/lib/universities';
 import { LegalModal } from '@/components/legal/LegalModal';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 const registerSchema = z.object({
   first_name: z.string().min(2, 'First name must be at least 2 characters'),
@@ -214,19 +215,12 @@ export default function RegisterPage() {
           <span>Back to Home</span>
         </Link>
 
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center p-1.5 shadow-inner">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-foreground">
-            Project<span className="text-primary">Hive</span>
-          </span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       {/* ── Main Registration Layout ─────────────────────────────────── */}
       <main className="flex-1 flex w-full max-w-6xl mx-auto items-center justify-center p-4 sm:p-6 lg:p-8 my-6">
-        
+
         {/* Verification Pending Screen */}
         {verificationPending ? (
           <div className="w-full max-w-lg bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-2xl text-center space-y-6 animate-in fade-in zoom-in-95 duration-200">
@@ -279,20 +273,12 @@ export default function RegisterPage() {
         ) : (
           /* Main Sign Up Card Grid */
           <div className="w-full grid lg:grid-cols-12 gap-8 items-stretch bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-2xl backdrop-blur-2xl">
-            
+
             {/* Left Brand & Student Pass Preview Panel (Desktop Only) */}
             <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-card to-background border border-primary/20 relative overflow-hidden">
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center p-2 shadow-inner">
-                      <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-                    </div>
-                    <div>
-                      <span className="text-xs font-bold text-foreground block">ProjectHive Network</span>
-                      <span className="text-[10px] text-primary font-mono">CAMPUS MESH</span>
-                    </div>
-                  </div>
+                  <BrandLogo variant="full" size="sm" subtext="Campus Mesh" />
                   <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 text-xs font-semibold">
                     Free Student Tier
                   </span>
@@ -355,7 +341,7 @@ export default function RegisterPage() {
 
               <div className="pt-6 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
                 <span>Free forever for students</span>
-                <span className="text-primary font-semibold">ProjectHive 2.0</span>
+                <span className="text-primary font-semibold">{BRAND_CONFIG.name} {BRAND_CONFIG.version}</span>
               </div>
             </div>
 
@@ -364,7 +350,7 @@ export default function RegisterPage() {
               <div className="mb-6">
                 <h1 className="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight">Create Your Account</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 leading-relaxed">
-                  Join ProjectHive to find your squad, build your capstone, and ship your future.
+                  Join {BRAND_CONFIG.name} to find your squad, build your capstone, and ship your future.
                 </p>
               </div>
 
@@ -416,9 +402,8 @@ export default function RegisterPage() {
                         type="text"
                         placeholder="Rahim"
                         {...register('first_name')}
-                        className={`w-full h-10 pl-10 pr-3 bg-muted/40 border ${
-                          errors.first_name ? 'border-destructive' : 'border-input focus:border-primary'
-                        } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                        className={`w-full h-10 pl-10 pr-3 bg-muted/40 border ${errors.first_name ? 'border-destructive' : 'border-input focus:border-primary'
+                          } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                       />
                     </div>
                     {errors.first_name && <p className="mt-1 text-[11px] text-destructive">{errors.first_name.message}</p>}
@@ -430,9 +415,8 @@ export default function RegisterPage() {
                       type="text"
                       placeholder="Chowdhury"
                       {...register('last_name')}
-                      className={`w-full h-10 px-3 bg-muted/40 border ${
-                        errors.last_name ? 'border-destructive' : 'border-input focus:border-primary'
-                      } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                      className={`w-full h-10 px-3 bg-muted/40 border ${errors.last_name ? 'border-destructive' : 'border-input focus:border-primary'
+                        } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                     />
                     {errors.last_name && <p className="mt-1 text-[11px] text-destructive">{errors.last_name.message}</p>}
                   </div>
@@ -443,9 +427,8 @@ export default function RegisterPage() {
                   <label className="block text-xs font-semibold text-foreground mb-1">University / Institution</label>
                   <div
                     onClick={() => setIsUniDropdownOpen(!isUniDropdownOpen)}
-                    className={`w-full h-10 px-3 bg-muted/40 border ${
-                      errors.university ? 'border-destructive' : 'border-input hover:border-border'
-                    } rounded-xl flex items-center justify-between text-xs sm:text-sm text-foreground cursor-pointer transition-all`}
+                    className={`w-full h-10 px-3 bg-muted/40 border ${errors.university ? 'border-destructive' : 'border-input hover:border-border'
+                      } rounded-xl flex items-center justify-between text-xs sm:text-sm text-foreground cursor-pointer transition-all`}
                   >
                     <div className="flex items-center gap-2 truncate">
                       <School className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -504,9 +487,8 @@ export default function RegisterPage() {
                       type="email"
                       placeholder="student@university.ac.bd"
                       {...register('email')}
-                      className={`w-full h-10 pl-10 pr-3 bg-muted/40 border ${
-                        errors.email ? 'border-destructive' : 'border-input focus:border-primary'
-                      } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                      className={`w-full h-10 pl-10 pr-3 bg-muted/40 border ${errors.email ? 'border-destructive' : 'border-input focus:border-primary'
+                        } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                     />
                   </div>
                   {errors.email && <p className="mt-1 text-[11px] text-destructive">{errors.email.message}</p>}
@@ -522,9 +504,8 @@ export default function RegisterPage() {
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••••••"
                         {...register('password')}
-                        className={`w-full h-10 pl-10 pr-9 bg-muted/40 border ${
-                          errors.password ? 'border-destructive' : 'border-input focus:border-primary'
-                        } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                        className={`w-full h-10 pl-10 pr-9 bg-muted/40 border ${errors.password ? 'border-destructive' : 'border-input focus:border-primary'
+                          } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                       />
                       <button
                         type="button"
@@ -545,9 +526,8 @@ export default function RegisterPage() {
                         type={showConfirmPassword ? 'text' : 'password'}
                         placeholder="••••••••••••"
                         {...register('confirm_password')}
-                        className={`w-full h-10 pl-10 pr-9 bg-muted/40 border ${
-                          errors.confirm_password ? 'border-destructive' : 'border-input focus:border-primary'
-                        } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
+                        className={`w-full h-10 pl-10 pr-9 bg-muted/40 border ${errors.confirm_password ? 'border-destructive' : 'border-input focus:border-primary'
+                          } rounded-xl text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all`}
                       />
                       <button
                         type="button"
@@ -573,15 +553,14 @@ export default function RegisterPage() {
                       {[1, 2, 3, 4].map((step) => (
                         <div
                           key={step}
-                          className={`flex-1 rounded-full transition-all duration-300 ${
-                            passwordScore >= step
-                              ? passwordScore <= 2
-                                ? 'bg-destructive'
-                                : passwordScore === 3
+                          className={`flex-1 rounded-full transition-all duration-300 ${passwordScore >= step
+                            ? passwordScore <= 2
+                              ? 'bg-destructive'
+                              : passwordScore === 3
                                 ? 'bg-amber-500'
                                 : 'bg-emerald-500'
-                              : 'bg-muted'
-                          }`}
+                            : 'bg-muted'
+                            }`}
                         />
                       ))}
                     </div>
@@ -670,15 +649,15 @@ export default function RegisterPage() {
       {/* ── Footer ─────────────────────────────────────────────────── */}
       <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border flex items-center justify-center gap-2">
         <a
-          href="https://bita-studio.vercel.app/"
+          href={BRAND_CONFIG.organization.url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-          title="BITA — Building Ideas. Engineering the Future."
+          title={`${BRAND_CONFIG.organization.name} — ${BRAND_CONFIG.organization.tagline}`}
         >
-          <img src="/bita-logo.png" alt="BITA" className="w-4 h-4 object-contain inline-block rounded-xs" />
+          <BrandLogo variant="org" size="xs" />
         </a>
-        <span>&copy; {new Date().getFullYear()} ProjectHive. A flagship product of <a href="https://bita-studio.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">BITA</a>.</span>
+        <span>&copy; {new Date().getFullYear()} {BRAND_CONFIG.name}. A flagship product of <a href={BRAND_CONFIG.organization.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">{BRAND_CONFIG.organization.name}</a>.</span>
       </footer>
     </div>
   );

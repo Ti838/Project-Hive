@@ -1,10 +1,11 @@
-﻿'use client';
+'use client';
 // ─── ProjectHive — Incoming Call Modal ────────────────────────────────────────
 
 import { useEffect, useRef } from 'react';
 import { Phone, PhoneOff, Video, Users } from 'lucide-react';
 import { useCallStore } from '@/lib/callStore';
 import { getAvatarColor, getInitials, cn } from '@/lib/utils';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 export function IncomingCallModal({
   socketEmit,
@@ -64,7 +65,7 @@ export function IncomingCallModal({
 
   if (!incomingInvite) return null;
 
-  const callerName = incomingInvite.callerName || 'ProjectHive Member';
+  const callerName = incomingInvite.callerName || `${BRAND_CONFIG.name} Member`;
   const isGroup = !!incomingInvite.isGroup;
   const isVoiceOnly = !!incomingInvite.isVoiceOnly;
 

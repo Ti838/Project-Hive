@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowUpRight, Shield, Sparkles, Globe, Terminal, MessageSquare } from 'lucide-react';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 export function Footer() {
   return (
@@ -11,15 +12,10 @@ export function Footer() {
           
           {/* Brand & Mission column */}
           <div className="md:col-span-5 space-y-4">
-            <Link href="/" className="inline-flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/25 flex items-center justify-center p-2 shadow-2xs">
-                <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-              </div>
-              <span className="font-extrabold text-lg tracking-tight">ProjectHive</span>
-            </Link>
+            <BrandLogo variant="full" size="md" linkTo="/" />
             
             <p className="text-sm text-muted-foreground leading-relaxed max-w-sm">
-              The collaborative developer workspace for building projects in real time. Form high-impact teams, ideate with HiveMind AI, and showcase software builds to the world.
+              {BRAND_CONFIG.description}
             </p>
 
             <div className="pt-2 flex items-center gap-3 text-muted-foreground">
@@ -62,7 +58,7 @@ export function Footer() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
                 <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/admin/login" className="hover:text-foreground transition-colors inline-flex items-center gap-1">Admin Command <Shield className="w-3 h-3 text-primary" /></Link></li>
+                <li><Link href="/help" className="hover:text-foreground transition-colors">Help & Support</Link></li>
               </ul>
             </div>
 
@@ -74,23 +70,38 @@ export function Footer() {
         <div className="pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-2.5">
             <a
-              href="https://bita-studio.vercel.app/"
+              href={BRAND_CONFIG.organization.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-5 h-5 rounded-md overflow-hidden bg-primary/10 border border-primary/25 flex items-center justify-center shrink-0 hover:border-primary transition-colors"
-              title="BITA — Building Ideas. Engineering the Future."
+              className="inline-flex items-center gap-1.5 hover:opacity-85 transition-opacity"
+              title={`${BRAND_CONFIG.organization.name} — ${BRAND_CONFIG.organization.tagline}`}
             >
-              <img src="/bita-logo.png" alt="BITA" className="w-full h-full object-contain" />
+              <BrandLogo variant="org" size="xs" />
             </a>
             <p>
-              &copy; {new Date().getFullYear()} ProjectHive. A flagship product engineered by <a href="https://bita-studio.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-bold text-foreground hover:text-primary transition-colors">BITA</a>.
+              &copy; {new Date().getFullYear()} {BRAND_CONFIG.name}. A flagship product engineered by{' '}
+              <a
+                href={BRAND_CONFIG.organization.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-bold text-foreground hover:text-primary transition-colors"
+              >
+                {BRAND_CONFIG.organization.name}
+              </a>.
             </p>
           </div>
           
           <div className="flex items-center gap-6">
-            <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-            <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-            <a href="https://bita-studio.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors font-semibold text-primary">BITA Official</a>
+            <Link href={BRAND_CONFIG.urls.terms} className="hover:text-foreground transition-colors">Terms</Link>
+            <Link href={BRAND_CONFIG.urls.privacy} className="hover:text-foreground transition-colors">Privacy</Link>
+            <a
+              href={BRAND_CONFIG.organization.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-foreground transition-colors font-semibold text-primary"
+            >
+              {BRAND_CONFIG.organization.name} Official
+            </a>
             <Link href="/login" className="hover:text-foreground transition-colors">Sign In</Link>
           </div>
         </div>

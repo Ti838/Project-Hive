@@ -2,8 +2,9 @@
 // ─── ProjectHive — Reusable Hive AI Icon & Avatar ────────────────────────────
 // Minimal, professional, recognizable, ProjectHive-branded AI marks
 
-import React from 'react';
+import React, { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 interface HiveAIIconProps {
   className?: string;
@@ -12,12 +13,34 @@ interface HiveAIIconProps {
 
 export function HiveAIIcon({ className, size = 18 }: HiveAIIconProps) {
   const pixelSize = typeof size === 'number' ? `${size}px` : size;
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        style={{ width: pixelSize, height: pixelSize }}
+        className={cn('shrink-0 text-primary', className)}
+      >
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+    );
+  }
+
   return (
     <img
-      src="/logo.png"
-      alt="ProjectHive AI"
+      src={BRAND_CONFIG.assets.logoIcon}
+      alt={`${BRAND_CONFIG.name} AI`}
       style={{ width: pixelSize, height: pixelSize }}
       className={cn('shrink-0 object-contain', className)}
+      onError={() => setHasError(true)}
     />
   );
 }
@@ -35,6 +58,8 @@ export function HiveAIAvatar({ className, size = 'sm' }: HiveAIAvatarProps) {
     lg: 'w-12 h-12 rounded-2xl p-2',
   }[size];
 
+  const [hasError, setHasError] = useState(false);
+
   return (
     <div
       className={cn(
@@ -44,11 +69,28 @@ export function HiveAIAvatar({ className, size = 'sm' }: HiveAIAvatarProps) {
         className
       )}
     >
-      <img
-        src="/logo.png"
-        alt="ProjectHive AI"
-        className="w-full h-full object-contain"
-      />
+      {!hasError ? (
+        <img
+          src={BRAND_CONFIG.assets.logoIcon}
+          alt={`${BRAND_CONFIG.name} AI`}
+          className="w-full h-full object-contain"
+          onError={() => setHasError(true)}
+        />
+      ) : (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="w-full h-full text-primary"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      )}
     </div>
   );
 }

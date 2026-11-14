@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -24,6 +24,7 @@ import {
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { getExactDeviceDetails } from '@/lib/deviceFingerprint';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid university or personal email'),
@@ -41,8 +42,19 @@ export default function LoginPage() {
   const [resendMsg, setResendMsg] = useState('');
   const [resendCooldown, setResendCooldown] = useState(0);
 
-  const { login } = useAuthStore();
+  const { login, user, isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      if (user?.role === 'admin' || user?.role === 'super_admin') {
+        router.replace('/admin');
+      } else {
+        router.replace('/dashboard');
+      }
+    }
+  }, [isAuthenticated, isLoading, user, router]);
 
   const {
     register,
@@ -85,6 +97,13 @@ export default function LoginPage() {
       setServerError(res.error ?? 'Invalid email or password');
       return;
     }
+
+    // Isolate Admin from Student Login
+    if (res.user && (res.user.role === 'admin' || res.user.role === 'super_admin' || res.user.role === 'moderator')) {
+      setServerError('Access restricted: Administrator accounts cannot sign in through the student portal. Please use your designated Administrator URL.');
+      return;
+    }
+
     login(res.user, res.accessToken, res.refreshToken);
     router.push('/dashboard');
   };
@@ -142,14 +161,7 @@ export default function LoginPage() {
           <span>Back to Home</span>
         </Link>
 
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center p-1.5 shadow-inner">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight text-foreground">
-            Project<span className="text-primary">Hive</span>
-          </span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       {/* ── Main Login Layout ────────────────────────────────────────── */}
@@ -160,9 +172,7 @@ export default function LoginPage() {
           <div className="hidden lg:flex lg:col-span-5 flex-col justify-between p-8 rounded-2xl bg-gradient-to-br from-primary/10 via-card to-background border border-primary/20 relative overflow-hidden">
             <div>
               <div className="flex items-center justify-between mb-8">
-                <div className="w-12 h-12 rounded-2xl bg-primary/20 border border-primary/40 flex items-center justify-center p-2.5 shadow-inner">
-                  <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-                </div>
+                <BrandLogo variant="mark" size="lg" />
                 <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 dark:text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   Live Incubation Mesh
@@ -199,7 +209,7 @@ export default function LoginPage() {
 
             <div className="pt-6 border-t border-border text-xs text-muted-foreground flex items-center justify-between">
               <span>Verified student network</span>
-              <span className="text-primary font-semibold">ProjectHive 2.0</span>
+              <span className="text-primary font-semibold">{BRAND_CONFIG.name} {BRAND_CONFIG.version}</span>
             </div>
           </div>
 
@@ -344,21 +354,13 @@ export default function LoginPage() {
             </form>
 
             {/* Bottom Links */}
-            <div className="mt-6 text-center space-y-3">
+            <div className="mt-6 text-center">
               <p className="text-xs text-muted-foreground">
                 Don&apos;t have an account?{' '}
                 <Link href="/register" className="font-semibold text-primary hover:underline underline-offset-4">
                   Create Account
                 </Link>
               </p>
-              <div>
-                <Link
-                  href="/admin/login"
-                  className="text-[11px] text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Institutional Administrator? Sign In Here &rarr;
-                </Link>
-              </div>
             </div>
           </div>
 
@@ -368,15 +370,15 @@ export default function LoginPage() {
       {/* ── Footer ─────────────────────────────────────────────────── */}
       <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border flex items-center justify-center gap-2">
         <a
-          href="https://bita-studio.vercel.app/"
+          href={BRAND_CONFIG.organization.url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-          title="BITA — Building Ideas. Engineering the Future."
+          title={`${BRAND_CONFIG.organization.name} — ${BRAND_CONFIG.organization.tagline}`}
         >
-          <img src="/bita-logo.png" alt="BITA" className="w-4 h-4 object-contain inline-block rounded-xs" />
+          <BrandLogo variant="org" size="xs" />
         </a>
-        <span>&copy; {new Date().getFullYear()} ProjectHive. A flagship product of <a href="https://bita-studio.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">BITA</a>.</span>
+        <span>&copy; {new Date().getFullYear()} {BRAND_CONFIG.name}. A flagship product of <a href={BRAND_CONFIG.organization.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">{BRAND_CONFIG.organization.name}</a>.</span>
       </footer>
     </div>
   );

@@ -2,10 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowLeft, Scale } from 'lucide-react';
 import { TermsContent } from '@/components/legal/TermsContent';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service - ProjectHive',
-  description: 'Terms and conditions governing the use of the ProjectHive developer collaboration platform.',
+  title: `Terms of Service - ${BRAND_CONFIG.name}`,
+  description: `Terms and conditions governing the use of the ${BRAND_CONFIG.name} developer collaboration platform.`,
 };
 
 export default function TermsPage() {
@@ -20,12 +21,7 @@ export default function TermsPage() {
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Home</span>
         </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       {/* Main Legal Content */}
@@ -44,7 +40,7 @@ export default function TermsPage() {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border flex items-center justify-between text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} ProjectHive. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} {BRAND_CONFIG.name}. All rights reserved.</span>
           <Link href="/privacy" className="hover:text-foreground underline">Privacy Policy</Link>
         </div>
       </main>

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 export default function AdminSupportCenterPage() {
   const [tickets, setTickets] = useState<any[]>([]);
@@ -316,7 +317,7 @@ export default function AdminSupportCenterPage() {
                         <span className="font-bold flex items-center gap-1.5">
                           {isInternal && <Lock className="w-3 h-3 text-amber-500" />}
                           <span className={isInternal ? 'text-amber-600 dark:text-amber-400' : isAdmin ? 'text-primary' : 'text-foreground'}>
-                            {isInternal ? 'Internal Staff Note' : isAdmin ? 'ProjectHive Staff' : m.sender?.first_name || 'Student'}
+                            {isInternal ? 'Internal Staff Note' : isAdmin ? `${BRAND_CONFIG.name} Staff` : m.sender?.first_name || 'Student'}
                           </span>
                         </span>
                         <span className="font-mono text-muted-foreground">

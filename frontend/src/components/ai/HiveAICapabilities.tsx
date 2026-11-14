@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // ─── Hive AI Capabilities Selector & Modal Command Picker ───────────────────
 // Minimal, glassmorphism mode selector with categorized matrix & instant switching
 
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType } from '@/types';
+import { HiveAIAvatar } from './HiveAIIcon';
 
 export const CAPABILITY_ITEMS: Array<{
   id: HiveAICapabilityType;
@@ -156,9 +157,7 @@ export function HiveAICapabilitiesModal({
           {/* Modal Header */}
           <div className="p-4 sm:p-5 border-b border-border/70 flex items-center justify-between gap-3 bg-muted/20">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 shadow-inner p-1 overflow-hidden">
-                <img src="/logo.png" alt="Hive AI" className="w-full h-full object-contain" />
-              </div>
+              <HiveAIAvatar size="sm" />
               <div>
                 <h3 className="font-extrabold text-sm sm:text-base text-foreground tracking-tight">
                   Select Hive AI Mode

@@ -30,6 +30,7 @@ graph TD
     Setup --> Set2["LIVEKIT_SFU_GUIDE.md"]
 
     UIUX --> UI1["DESIGN_SYSTEM.md"]
+    UIUX --> UI2["3D_AND_AUTH_EXPERIENCE.md (Workspace & Auth Report)"]
 
     Acad --> Acad1["SYSTEM_ANALYSIS_LAB_MANUAL.md"]
 ```
@@ -39,7 +40,7 @@ graph TD
 ## 🗂️ Document Catalog
 
 ### 1. Architecture & System Design
-- [**System Architecture Blueprint**](./architecture/SYSTEM_ARCHITECTURE.md): Complete system topologies, 3D WebGL canvases, real-time media SFU calling, cascading AI router, and request lifecycle diagrams.
+- [**System Architecture Blueprint**](./architecture/SYSTEM_ARCHITECTURE.md): Complete system topologies, interactive workspace engine, real-time media SFU calling, cascading AI router, and request lifecycle diagrams.
 - [**Data Models & ERD Specifications**](./architecture/DATA_MODELS_AND_ERD.md): PostgreSQL entity-relationship diagrams, schema definitions, Row Level Security (RLS) policies, and performance indexes.
 
 ### 2. Security & Compliance
@@ -55,7 +56,8 @@ graph TD
 - [**LiveKit Cloud SFU Setup Guide**](./setup/LIVEKIT_SFU_GUIDE.md): Managed WebRTC SFU configuration, token minting implementation, dynacast, and NAT traversal.
 
 ### 5. Design System & Visual Experience
-- [**Design System & 3D WebGL Specifications**](./ui-ux/DESIGN_SYSTEM.md): Obsidian dark slate and amber color tokens, 3D canvas physics, and zero-FOUC theme auto-sync mechanics.
+- [**Design System Specifications**](./ui-ux/DESIGN_SYSTEM.md): Obsidian dark slate and amber color tokens, centralized brand architecture, dynamic `<BrandLogo />` tokens, and zero-FOUC theme mechanics.
+- [**Workspace & Auth Experience Report**](./ui-ux/3D_AND_AUTH_EXPERIENCE.md): Reference-based design matrix (Linear, Slack, LiveKit), 4-mode workspace preview, and student vs admin portal isolation.
 
 ### 6. Academic Research & Defense
 - [**System Analysis & Design Lab Manual**](./academic/SYSTEM_ANALYSIS_LAB_MANUAL.md): Complete academic presentation slides, defense scripts in English & Bengali, competitor breakdown, and Work Breakdown Structure (WBS).

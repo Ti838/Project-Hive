@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { useSocket } from './useSocket';
 import { useAuthStore, useUIStore } from '@/lib/store';
 import { soundEngine } from '@/lib/soundEngine';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 export function useNotificationSounds() {
   const { user } = useAuthStore();
@@ -58,7 +59,7 @@ export function useNotificationSounds() {
 
     if (titleIntervalRef.current) clearInterval(titleIntervalRef.current);
 
-    const baseTitle = originalTitleRef.current || 'ProjectHive';
+    const baseTitle = originalTitleRef.current || BRAND_CONFIG.name;
     let toggle = false;
 
     document.title = alertText;
@@ -82,7 +83,7 @@ export function useNotificationSounds() {
         } catch {}
       }
 
-      const title = notif?.title ? `🔔 ${notif.title}` : '🔔 New Notification • ProjectHive';
+      const title = notif?.title ? `🔔 ${notif.title}` : `🔔 New Notification • ${BRAND_CONFIG.name}`;
       flashBackgroundTitle(title);
     },
 
@@ -109,7 +110,7 @@ export function useNotificationSounds() {
       if (soundEngine) {
         soundEngine.play('call');
       }
-      flashBackgroundTitle('📞 Incoming Call • ProjectHive');
+      flashBackgroundTitle(`📞 Incoming Call • ${BRAND_CONFIG.name}`);
     },
 
     onReaction: (data: any) => {
@@ -124,7 +125,7 @@ export function useNotificationSounds() {
       if (soundEngine) {
         soundEngine.play('friend');
       }
-      flashBackgroundTitle('🤝 New Connection • ProjectHive');
+      flashBackgroundTitle(`🤝 New Connection • ${BRAND_CONFIG.name}`);
     },
   });
 

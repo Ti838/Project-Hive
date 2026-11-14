@@ -21,7 +21,8 @@ graph TD
 
         subgraph Client_Engines ["Client-Side Subsystems"]
             Zustand["Global Zustand Stores (Auth, UI, Call, Socket)"]
-            ThreeEngine["Three.js / WebGL 3D Engines (Hero & Auth Canvases)"]
+            BrandEngine["Centralized Brand Engine & Dynamic Logo Tokens (brandConfig.ts)"]
+            WorkspaceEngine["Interactive Workspace Engine (Squad Hub, Kanban, LiveKit, AI)"]
             ThemeEngine["Theme Auto-Sync Engine (OS MatchMedia + FOUC Guard)"]
             LiveKitSDK["LiveKit WebRTC Client SDK (Dynacast / Simulcast)"]
             SocketClient["Socket.IO Client (Bi-directional Signaling)"]
@@ -29,7 +30,8 @@ graph TD
         end
 
         WebUser --> Zustand
-        WebUser --> ThreeEngine
+        WebUser --> WorkspaceEngine
+        WebUser --> BrandEngine
         AdminUser --> Zustand
     end
 
@@ -125,34 +127,35 @@ graph TD
 
 ---
 
-## 2. Interactive 3D WebGL Rendering Subsystem
+## 2. Interactive Workspace Architecture & Zero-Hardcoded Brand System
 
-ProjectHive features custom, lightweight Three.js/WebGL canvases built to evoke deep technical elegance while maintaining 60 FPS performance across mobile and low-power hardware.
+ProjectHive provides a unified, production-grade collaboration experience inspired by Linear, Slack, LiveKit, and Notion. The interface strictly decouples brand presentation through a centralized single source of truth, ensuring white-label reconfigurability without hardcoded assets.
 
 ```mermaid
 flowchart TD
-    subgraph Hero_3D ["Landing Page: Hero3DEnvironment.tsx"]
-        Canvas3D["React Three Fiber Canvas"]
-        OuterLattice["Amber Dodecahedron Geodesic Lattice (#f59e0b)"]
-        InnerCrystal["Indigo Icosahedron Energy Core (#6366f1)"]
-        OrbitalRings["3 Concentric Torus Squad Orbit Rings"]
-        Constellation["260 Point Particle Cloud (Talent Stars)"]
-        PointerPhysics["Damped Inertia Raycasting & Parallax Tilt"]
+    subgraph Hero_Workspace ["Interactive Landing Preview (Hero.tsx)"]
+        WorkspaceStage["Dynamic 4-Mode Interactive Canvas"]
+        SquadHub["Squad Hub: Live Capstone Roster (BUET CSE 499) & Recruitment Drawer"]
+        KanbanBoard["Sprint Kanban: Interactive Story Points, Priorities & Task Toggles"]
+        LiveKitStage["LiveKit SFU 4K Stage: Dynamic Waveform Meters & Gazebo Screen Share"]
+        HiveMindStudio["HiveMind AI Copilot: PRD & Architecture Spec Generator"]
 
-        Canvas3D --> OuterLattice
-        Canvas3D --> InnerCrystal
-        Canvas3D --> OrbitalRings
-        Canvas3D --> Constellation
-        PointerPhysics -->|"Mouse / Gyro Delta"| Canvas3D
+        WorkspaceStage --> SquadHub
+        WorkspaceStage --> KanbanBoard
+        WorkspaceStage --> LiveKitStage
+        WorkspaceStage --> HiveMindStudio
     end
 
-    subgraph Auth_3D ["Authentication Pages: Auth3DCanvas.tsx"]
-        AuthCanvas["Dual-Mode Adaptive Canvas"]
-        SignInMode["Sign In Mode: Gyroscopic Security Octahedron + Gimbal Rings"]
-        SignUpMode["Sign Up Mode: Neural Collaboration Mesh (9 Student Nodes)"]
+    subgraph Brand_Engine ["Centralized Branding Architecture (brandConfig.ts)"]
+        Config["BRAND_CONFIG Single Source of Truth"]
+        LogoComponent["Reusable <BrandLogo /> Component"]
+        Tokens["Tokens: App Name, Highlight, Tagline, Favicon, Org Credits"]
 
-        AuthCanvas -->|mode='signin'| SignInMode
-        AuthCanvas -->|mode='signup'| SignUpMode
+        Config --> Tokens
+        Tokens --> LogoComponent
+        LogoComponent -->|"Dynamic Rendering"| AuthPages["Auth Portals (/login, /register)"]
+        LogoComponent -->|"Dynamic Rendering"| UserApp["Student Dashboard & Topbar"]
+        LogoComponent -->|"Dynamic Rendering"| AdminPortal["SecOps Admin Console"]
     end
 ```
 

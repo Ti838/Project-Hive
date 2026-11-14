@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 // ─── Hive AI Message Component (Obsidian Code Blocks & Refined Typography) ───────
 
 import { useState } from 'react';
@@ -6,6 +6,7 @@ import { Copy, Check, Volume2, VolumeX, Sparkles, User as UserIcon } from 'lucid
 import { voiceEngine } from '@/lib/voiceEngine';
 import { cn } from '@/lib/utils';
 import type { HiveAIMessageItem } from '@/types';
+import { HiveAIAvatar } from './HiveAIIcon';
 
 interface HiveAIMessageProps {
   message: HiveAIMessageItem;
@@ -72,20 +73,13 @@ export function HiveAIMessage({ message, className }: HiveAIMessageProps) {
       )}
     >
       {/* Avatar Icon */}
-      <div
-        className={cn(
-          'w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-inner select-none mt-0.5 overflow-hidden',
-          isAssistant
-            ? 'bg-amber-500/10 border border-amber-500/25 p-1'
-            : 'bg-primary text-primary-foreground shadow-xs'
-        )}
-      >
-        {isAssistant ? (
-          <img src="/logo.png" alt="Hive AI" className="w-full h-full object-contain" />
-        ) : (
+      {isAssistant ? (
+        <HiveAIAvatar size="sm" className="mt-0.5" />
+      ) : (
+        <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 bg-primary text-primary-foreground shadow-xs select-none mt-0.5">
           <UserIcon className="w-4 h-4" />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Message Body */}
       <div className="flex-1 min-w-0 space-y-2.5">

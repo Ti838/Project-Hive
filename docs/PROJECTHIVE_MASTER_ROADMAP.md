@@ -10,27 +10,27 @@
 
 | Phase | Milestone Name | Status | Verified Deliverables & Artifacts |
 | :--- | :--- | :---: | :--- |
-| **Phase 1** | Full Repository & Route Inventory | ✅ COMPLETE | 40/40 Next.js App Router routes mapped, zero orphaned pages |
+| **Phase 1** | Full Repository & Route Inventory | ✅ COMPLETE | 41/41 Next.js App Router routes mapped, zero orphaned pages |
 | **Phase 2** | UI/UX Reverse Engineering & Design System | ✅ COMPLETE | Obsidian slate surfaces (`#07090e`, `#0d1117`), amber accents (`#f59e0b`), Tailwind v4 tokens |
-| **Phase 3** | Public Website & 3D Auth Experience | ✅ COMPLETE | `Hero3DEnvironment` (Lusion/Active Theory), `Auth3DCanvas` (Clerk/Spline), Landing, Auth subroutes |
+| **Phase 3** | Public Website & Workspace Experience | ✅ COMPLETE | Interactive Linear/LiveKit/Slack workspace preview, centralized brand engine (`brandConfig.ts`), isolated auth subroutes |
 | **Phase 4** | User Application Ecosystem | ✅ COMPLETE | Dashboard, ProfileView, Teams Workspace, Projects Dev Hub, Messages, Feed, People, Help, Settings |
 | **Phase 5** | Separate Admin Command Center | ✅ COMPLETE | `/admin/login`, `/admin/security`, `/admin/users`, `/admin/support`, `/admin/audit`, `DesktopGate` |
 | **Phase 6** | Real-Time Interactions & Business Logic | ✅ COMPLETE | Socket.IO signaling, LiveKit 4K video calling, Voice Notes, Upvotes, Team invitations |
 | **Phase 7** | Backend Architecture & Micro-Gateways | ✅ COMPLETE | Express 4.x, LiveKit Server SDK, Brevo SMTP mail relay, Groq & Google Gemini AI cascade |
 | **Phase 8** | Database & Supabase Data Integrity | ✅ COMPLETE | 35 PostgreSQL tables, RLS policies, immutable audit logs, zero data reset |
 | **Phase 9** | Industrial Security & OWASP Hardening | ✅ COMPLETE | NIST zero-trust, bcrypt 12 salt rounds, timing-safe secrets, SecOps break-glass kill switch |
-| **Phase 10** | Performance & Adaptive Responsiveness | ✅ COMPLETE | IntersectionObserver 3D throttling, DPR capped at 1.75, touch targets $\ge$ 44px, 320px–1920px verified |
-| **Phase 11** | End-to-End Test Suite Verification | ✅ COMPLETE | 12/12 Backend tests passed (`12 pass, 0 fail`), 40/40 routes compiled (`Exit code 0`) |
-| **Phase 12** | Documentation & Production Audit | ✅ COMPLETE | 8 Master Technical Dossiers in `docs/`, synced to GitHub `main` |
+| **Phase 10** | Performance & Adaptive Responsiveness | ✅ COMPLETE | Zero-hardcoded branding, dynamic `<BrandLogo />`, touch targets $\ge$ 44px, 320px–1920px verified |
+| **Phase 11** | End-to-End Test Suite Verification | ✅ COMPLETE | 7/7 Backend security tests passed (`7 pass, 0 fail`), 41/41 routes compiled (`Exit code 0`) |
+| **Phase 12** | Documentation & Production Audit | ✅ COMPLETE | Master Technical Dossiers in `docs/`, synced to GitHub `main` |
 
 ---
 
 ## 2. Complete Route-by-Route Verification Matrix
 
 ### Public Website
-- [x] `/` — High-conversion landing page with `Hero3DEnvironment`, BentoGrid, Feature Showcase, Testimonials, FAQ, CTA, and Footer.
-- [x] `/login` — Sign In portal with interactive 3D Security Core (`Auth3DCanvas mode="signin"`), Google OAuth, and validation.
-- [x] `/register` — Sign Up portal with interactive 3D Neural Mesh (`Auth3DCanvas mode="signup"`), BD University picker, password meter.
+- [x] `/` — High-conversion landing page with interactive 4-stage Workspace Preview (Squad Hub, Sprint Kanban, LiveKit SFU, HiveMind AI), BentoGrid, Showcase, Testimonials, FAQ, CTA, and Footer.
+- [x] `/login` — Student Sign In portal with dynamic `<BrandLogo />`, Google OAuth, and strict admin redirection security gates.
+- [x] `/register` — Sign Up portal with dynamic `<BrandLogo />`, BD University picker, and password meter.
 - [x] `/forgot-password` — Password recovery flow with single-use token dispatch and spam-prevention timer.
 - [x] `/reset-password` — Password reset form with cryptographic token verification.
 - [x] `/verify-email` — Transactional email verification landing with Brevo SMTP resend mechanism.

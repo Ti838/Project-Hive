@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { Sun, Moon, Monitor, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BrandLogo } from '@/components/brand';
 
 const NAV_LINKS = [
   { label: 'Discover', href: '/teams' },
@@ -106,24 +107,14 @@ export function Navbar() {
         <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between">
           
           {/* LEFT: Logo */}
-          <Link href="/" className="flex items-center gap-3 group relative z-[60]" onClick={() => setMobileMenuOpen(false)}>
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              className="w-9 h-9 rounded-xl bg-foreground/5 border border-foreground/10 flex items-center justify-center p-2 backdrop-blur-md transition-transform duration-300 group-hover:scale-105"
-            >
-              <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain drop-shadow-md" />
-            </motion.div>
-            <motion.span 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-              className="font-semibold text-lg tracking-wide hidden sm:block text-foreground/90"
-            >
-              ProjectHive
-            </motion.span>
-          </Link>
+          <div className="relative z-[60]">
+            <BrandLogo
+              variant="full"
+              size="md"
+              linkTo="/"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+          </div>
 
           {/* CENTER: Navigation Links (Desktop) */}
           <motion.nav 
@@ -165,12 +156,12 @@ export function Navbar() {
             {mounted && isAuthenticated ? (
               <div className="flex items-center gap-4">
                 <Link
-                  href="/dashboard"
+                  href={user?.role === 'admin' || user?.role === 'super_admin' ? '/admin' : '/dashboard'}
                   className="px-5 py-2.5 rounded-full bg-foreground/5 border border-foreground/10 hover:bg-foreground/10 hover:border-foreground/20 transition-all text-sm font-medium backdrop-blur-md hover:shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)]"
                 >
-                  Dashboard
+                  {user?.role === 'admin' || user?.role === 'super_admin' ? 'Admin Console' : 'Dashboard'}
                 </Link>
-                <Link href="/profile" className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border border-foreground/20 transition-transform hover:scale-105">
+                <Link href={user?.role === 'admin' || user?.role === 'super_admin' ? '/admin' : '/profile'} className="flex items-center justify-center w-9 h-9 rounded-full overflow-hidden border border-foreground/20 transition-transform hover:scale-105">
                   {user?.avatar ? (
                     <img src={user.avatar} alt={userName} className="w-full h-full object-cover" />
                   ) : (
@@ -257,18 +248,18 @@ export function Navbar() {
               {mounted && isAuthenticated ? (
                 <motion.div variants={mobileLinkVariants} className="flex flex-col gap-4">
                   <Link
-                    href="/dashboard"
+                    href={user?.role === 'admin' || user?.role === 'super_admin' ? '/admin' : '/dashboard'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-2xl font-medium text-foreground"
                   >
-                    Dashboard
+                    {user?.role === 'admin' || user?.role === 'super_admin' ? 'Admin Console' : 'Dashboard'}
                   </Link>
                   <Link
-                    href="/profile"
+                    href={user?.role === 'admin' || user?.role === 'super_admin' ? '/admin' : '/profile'}
                     onClick={() => setMobileMenuOpen(false)}
                     className="text-xl font-medium text-foreground/70"
                   >
-                    Profile Settings
+                    {user?.role === 'admin' || user?.role === 'super_admin' ? 'Admin Controls' : 'Profile Settings'}
                   </Link>
                 </motion.div>
               ) : (

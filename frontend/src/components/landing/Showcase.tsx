@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 import { 
   Users, 
   Video, 
@@ -46,7 +47,7 @@ export function Showcase() {
           </span>
         </h2>
         <p className="mt-4 text-base sm:text-lg text-muted-foreground">
-          Explore how ProjectHive unifies team recruitment, real-time communication, and AI-powered project incubation in one cohesive experience.
+          Explore how {BRAND_CONFIG.name} unifies team recruitment, real-time communication, and AI-powered project incubation in one cohesive experience.
         </p>
       </div>
 

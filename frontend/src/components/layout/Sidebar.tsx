@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { cn, displayName, getInitials, getAvatarColor } from '@/lib/utils';
 import { HiveAIIcon } from '@/components/ai/HiveAIIcon';
 import { UserAvatar } from '@/components/ui/UserAvatar';
+import { BrandLogo } from '@/components/brand';
 
 interface NavItem {
   href: string;
@@ -152,12 +153,7 @@ export function Sidebar() {
             >
               {/* Mobile Header */}
               <div className="flex items-center justify-between px-4 py-4 border-b border-border">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
-                    <img src="/logo.png" alt="ProjectHive" className="w-6 h-6 object-contain rounded-lg" />
-                  </div>
-                  <span className="font-bold text-lg">ProjectHive</span>
-                </div>
+                <BrandLogo variant="full" size="md" linkTo="/dashboard" />
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
@@ -167,20 +163,6 @@ export function Sidebar() {
                   <X className="w-5 h-5" />
                 </button>
               </div>
-
-              {/* Mobile Admin Link */}
-              {user?.role === 'admin' && (
-                <div className="px-3 pt-3">
-                  <Link
-                    href="/admin"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/25 shadow-xs transition-colors"
-                  >
-                    <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>ADMIN CONSOLE</span>
-                  </Link>
-                </div>
-              )}
 
               {/* Mobile Nav Links */}
               <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
@@ -274,24 +256,13 @@ export function Sidebar() {
               type="button"
               onClick={toggleSidebar}
               title="Expand sidebar (Ctrl+B)"
-              className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs hover:bg-primary/25 hover:border-primary/40 transition-all cursor-pointer tap-press group relative"
+              className="flex items-center justify-center p-1 rounded-xl hover:bg-muted/60 transition-all cursor-pointer tap-press group"
             >
-              <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg group-hover:scale-105 transition-transform" />
-              <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
-                <ChevronRight className="w-4 h-4 text-primary" />
-              </div>
+              <BrandLogo variant="mark" size="md" />
             </button>
           ) : (
             <>
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 shrink-0 overflow-hidden shadow-xs">
-                  <img src="/logo.png" alt="ProjectHive Logo" className="w-6 h-6 object-contain rounded-lg" />
-                </div>
-                <span className="font-bold text-lg tracking-tight whitespace-nowrap truncate text-foreground">
-                  ProjectHive
-                </span>
-              </div>
-
+              <BrandLogo variant="full" size="md" linkTo="/dashboard" />
               <button
                 type="button"
                 onClick={toggleSidebar}
@@ -303,28 +274,6 @@ export function Sidebar() {
             </>
           )}
         </div>
-
-        {/* Admin Navigation Banner (if user is admin) */}
-        {user?.role === 'admin' && (
-          <div className="p-2 border-b border-border/60 relative group">
-            <Link
-              href="/admin"
-              className={cn(
-                'flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold text-amber-500 bg-amber-500/10 border border-amber-500/25 hover:bg-amber-500/20 transition-all tap-press',
-                sidebarCollapsed && 'justify-center px-0'
-              )}
-              title="Admin Console"
-            >
-              <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
-              {!sidebarCollapsed && <span className="truncate">ADMIN CONSOLE</span>}
-            </Link>
-            {sidebarCollapsed && (
-              <div className="absolute left-full ml-3 px-3 py-1.5 surface-floating text-amber-500 text-xs font-bold rounded-xl shadow-xl border border-foreground/10 opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-all duration-150 transform -translate-x-1 group-hover:translate-x-0 z-50">
-                Admin Console
-              </div>
-            )}
-          </div>
-        )}
 
         {/* Navigation Items */}
         <nav className={cn(

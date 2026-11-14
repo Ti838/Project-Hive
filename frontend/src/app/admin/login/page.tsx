@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -20,6 +20,7 @@ import {
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
 import { getExactDeviceDetails } from '@/lib/deviceFingerprint';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 const schema = z.object({
   email: z.string().email('Please enter a valid administrator email'),
@@ -31,8 +32,15 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState('');
 
-  const { login } = useAuthStore();
+  const { login, user, isAuthenticated, isLoading } = useAuthStore();
   const router = useRouter();
+
+  // Redirect if already logged in as administrator
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && (user?.role === 'admin' || user?.role === 'super_admin')) {
+      router.replace('/admin');
+    }
+  }, [isAuthenticated, isLoading, user, router]);
 
   const {
     register,
@@ -53,7 +61,7 @@ export default function AdminLoginPage() {
       const adminToken = (superRes as any)?.token || (superRes as any)?.accessToken;
       if (superRes.ok && adminToken && adminUser) {
         login(adminUser, adminToken, adminToken);
-        router.push('/admin/dashboard');
+        router.push('/admin');
         return;
       }
     } catch (_) {}
@@ -63,11 +71,11 @@ export default function AdminLoginPage() {
       const res = await api.auth.login(data.email, data.password, deviceMeta);
       if (res.ok && res.user && (res.user.role === 'admin' || res.user.role === 'super_admin' || res.user.role === 'moderator')) {
         login(res.user, res.accessToken, res.refreshToken);
-        router.push('/admin/dashboard');
+        router.push('/admin');
         return;
       }
 
-      if (res.ok && res.user && res.user.role !== 'admin') {
+      if (res.ok && res.user && res.user.role !== 'admin' && res.user.role !== 'super_admin') {
         setServerError('Access denied: Your account does not have administrative privileges.');
         return;
       }
@@ -90,14 +98,7 @@ export default function AdminLoginPage() {
           <span>Back to Student Portal</span>
         </Link>
 
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center p-1.5 shadow-inner">
-            <Shield className="w-4 h-4 text-primary" />
-          </div>
-          <span className="font-bold text-sm tracking-tight text-foreground">
-            Project<span className="text-primary">Hive</span> <span className="text-muted-foreground font-normal">Admin</span>
-          </span>
-        </div>
+        <BrandLogo variant="full" size="sm" subtext="Admin Workstation" />
       </header>
 
       {/* ── Center Login Card ────────────────────────────────────────── */}
@@ -113,6 +114,21 @@ export default function AdminLoginPage() {
               Enter master administrative credentials to access moderation queues, user roles, and security audits.
             </p>
           </div>
+
+          {/* Logged in as student warning */}
+          {isAuthenticated && user && user.role !== 'admin' && user.role !== 'super_admin' && (
+            <div className="mb-5 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs">
+              <p className="font-semibold text-amber-600 dark:text-amber-400 mb-1">Signed in as Student ({user.email})</p>
+              <p className="text-[11px] text-muted-foreground mb-2">This workstation is strictly restricted to verified administrators.</p>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 font-semibold text-[11px] transition-colors"
+              >
+                <span>Return to Student Workspace</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+          )}
 
           {/* Server Error Alert */}
           {serverError && (
@@ -204,15 +220,15 @@ export default function AdminLoginPage() {
       {/* ── Footer ─────────────────────────────────────────────────── */}
       <footer className="w-full py-4 text-center text-xs text-muted-foreground border-t border-border flex items-center justify-center gap-2">
         <a
-          href="https://bita-studio.vercel.app/"
+          href={BRAND_CONFIG.organization.url}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 hover:opacity-80 transition-opacity"
-          title="BITA — Building Ideas. Engineering the Future."
+          title={`${BRAND_CONFIG.organization.name} — ${BRAND_CONFIG.organization.tagline}`}
         >
-          <img src="/bita-logo.png" alt="BITA" className="w-4 h-4 object-contain inline-block rounded-xs" />
+          <BrandLogo variant="org" size="xs" />
         </a>
-        <span>&copy; {new Date().getFullYear()} ProjectHive. A flagship product of <a href="https://bita-studio.vercel.app/" target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">BITA</a>. All rights reserved.</span>
+        <span>&copy; {new Date().getFullYear()} {BRAND_CONFIG.name}. A flagship product of <a href={BRAND_CONFIG.organization.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-foreground hover:text-primary transition-colors">{BRAND_CONFIG.organization.name}</a>. All rights reserved.</span>
       </footer>
     </div>
   );

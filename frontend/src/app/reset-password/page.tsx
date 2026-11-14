@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { ArrowLeft, Loader2, KeyRound, CheckCircle2, Eye, EyeOff, AlertCircle, ShieldCheck } from 'lucide-react';
 import { api } from '@/lib/api';
 import { cn } from '@/lib/utils';
+import { BrandLogo, BRAND_CONFIG } from '@/components/brand';
 
 const schema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters long'),
@@ -122,7 +123,7 @@ function ResetPasswordContent() {
           <div className="space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Set new password</h1>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Create a strong password of at least 8 characters for your ProjectHive account.
+              Create a strong password of at least 8 characters for your {BRAND_CONFIG.name} account.
             </p>
           </div>
 
@@ -232,12 +233,7 @@ export default function ResetPasswordPage() {
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Sign In</span>
         </Link>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center p-1.5 shadow-2xs">
-            <img src="/logo.png" alt="ProjectHive" className="w-full h-full object-contain" />
-          </div>
-          <span className="font-extrabold text-base tracking-tight hidden sm:inline">ProjectHive</span>
-        </Link>
+        <BrandLogo variant="full" size="sm" linkTo="/" />
       </header>
 
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6">

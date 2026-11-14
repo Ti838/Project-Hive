@@ -6,6 +6,7 @@ import { Sparkles, Lightbulb, AlertCircle, RefreshCw, ChevronRight, Compass, Arr
 import { cn } from '@/lib/utils';
 import type { HiveAICapabilityType } from '@/types';
 import { CAPABILITY_ITEMS, HiveAICapabilitiesModal } from './HiveAICapabilities';
+import { HiveAIAvatar } from './HiveAIIcon';
 
 interface HiveAIEmptyStateProps {
   capability: HiveAICapabilityType;
@@ -90,7 +91,7 @@ const CAPABILITY_SUGGESTIONS: Record<HiveAICapabilityType, { title: string; desc
     title: 'Elevate Your Technical Portfolio',
     desc: 'Convert student hackathon builds into high-converting YC pitches and STAR-format resume bullets.',
     prompts: [
-      'Draft a 30-second elevator pitch and 3 resume bullet points for my ProjectHive application',
+      'Draft a 30-second elevator pitch and 3 resume bullet points for my capstone application',
     ],
   },
   copilot_chat: {
@@ -125,9 +126,7 @@ export function HiveAIEmptyState({
       <div className={cn('py-6 sm:py-10 px-4 max-w-3xl mx-auto space-y-6 select-none', className)}>
         {/* Brand Logo & Current Mode Header */}
         <div className="text-center space-y-3">
-          <div className="w-14 h-14 rounded-3xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center mx-auto shadow-inner p-2.5 overflow-hidden">
-            <img src="/logo.png" alt="Hive AI" className="w-full h-full object-contain" />
-          </div>
+          <HiveAIAvatar size="lg" className="mx-auto" />
 
           <div className="space-y-1.5">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold">

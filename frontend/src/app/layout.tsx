@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { BRAND_CONFIG } from '@/lib/brandConfig';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -22,25 +23,25 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'ProjectHive — The University Collaboration Mesh by BITA',
-  description: 'Discover teammates, collaborate on projects, and showcase your work in real-time. A flagship product of BITA.',
+  title: `${BRAND_CONFIG.name} — ${BRAND_CONFIG.tagline} by ${BRAND_CONFIG.organization.name}`,
+  description: `${BRAND_CONFIG.description} A flagship product of ${BRAND_CONFIG.organization.name}.`,
   manifest: '/manifest.json',
-  applicationName: 'ProjectHive',
-  authors: [{ name: 'BITA', url: 'https://bita-studio.vercel.app/' }],
-  creator: 'BITA',
-  publisher: 'BITA',
+  applicationName: BRAND_CONFIG.name,
+  authors: [{ name: BRAND_CONFIG.organization.name, url: BRAND_CONFIG.organization.url }],
+  creator: BRAND_CONFIG.organization.name,
+  publisher: BRAND_CONFIG.organization.name,
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'ProjectHive by BITA',
+    title: `${BRAND_CONFIG.name} by ${BRAND_CONFIG.organization.name}`,
   },
   formatDetection: {
     telephone: false,
   },
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
-    apple: '/logo.png',
+    icon: BRAND_CONFIG.assets.favicon,
+    shortcut: BRAND_CONFIG.assets.favicon,
+    apple: BRAND_CONFIG.assets.appleTouchIcon,
   },
 };
 
