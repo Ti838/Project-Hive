@@ -49,7 +49,7 @@ export interface User {
   isPublic?: boolean;
   hours_per_week?: number;
   hoursPerWeek?: number;
-  role?: 'user' | 'admin' | 'student';
+  role?: 'user' | 'admin' | 'student' | 'moderator' | 'super_admin';
   profile_completion?: number;
   profileCompletion?: number;
   completion_percentage?: number;

@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 interface Auth3DCanvasProps {
-  mode: 'signin' | 'signup';
+  mode: 'signin' | 'signup' | 'admin';
   className?: string;
 }
 
@@ -58,7 +58,63 @@ export function Auth3DCanvas({ mode, className }: Auth3DCanvasProps) {
     // 3. Mode-Specific 3D Assets
     const disposables: { dispose: () => void }[] = [];
 
-    if (mode === 'signin') {
+    if (mode === 'admin') {
+      // ── ADMIN MODE: "The Institutional Cryptographic Core" ──
+      // Central high-security Icosahedron core
+      const coreGeo = new THREE.IcosahedronGeometry(2.5, 0);
+      const coreMat = new THREE.MeshPhysicalMaterial({
+        color: 0x0f172a, // Slate-900 titanium
+        emissive: 0xd97706, // Amber glow
+        emissiveIntensity: 0.45,
+        roughness: 0.1,
+        metalness: 0.95,
+        wireframe: false,
+        flatShading: true,
+      });
+      const core = new THREE.Mesh(coreGeo, coreMat);
+      rootGroup.add(core);
+      disposables.push(coreGeo, coreMat);
+
+      // Wireframe overlay for tactical lattice
+      const wireMat = new THREE.MeshBasicMaterial({ color: 0xf59e0b, wireframe: true, transparent: true, opacity: 0.6 });
+      const wireCore = new THREE.Mesh(coreGeo, wireMat);
+      wireCore.scale.setScalar(1.02);
+      rootGroup.add(wireCore);
+      disposables.push(wireMat);
+
+      // Dual rotating radar rings (Emerald & Amber)
+      const radarGeo1 = new THREE.TorusGeometry(4.6, 0.04, 16, 100);
+      const radarMat1 = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.55 });
+      const radar1 = new THREE.Mesh(radarGeo1, radarMat1);
+      radar1.rotation.x = Math.PI / 3;
+      rootGroup.add(radar1);
+      disposables.push(radarGeo1, radarMat1);
+
+      const radarGeo2 = new THREE.TorusGeometry(5.4, 0.035, 16, 100);
+      const radarMat2 = new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.45 });
+      const radar2 = new THREE.Mesh(radarGeo2, radarMat2);
+      radar2.rotation.y = Math.PI / 4;
+      rootGroup.add(radar2);
+      disposables.push(radarGeo2, radarMat2);
+
+      // Floating security telemetry nodes
+      const pCount = 90;
+      const pGeo = new THREE.BufferGeometry();
+      const pPos = new Float32Array(pCount * 3);
+      for (let i = 0; i < pCount; i++) {
+        const rad = 3.4 + Math.random() * 3.0;
+        const ang = Math.random() * Math.PI * 2;
+        const elevation = (Math.random() - 0.5) * 2.8;
+        pPos[i * 3] = rad * Math.cos(ang);
+        pPos[i * 3 + 1] = elevation;
+        pPos[i * 3 + 2] = rad * Math.sin(ang);
+      }
+      pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+      const pMat = new THREE.PointsMaterial({ color: 0x10b981, size: 0.16, transparent: true, opacity: 0.85 });
+      const pField = new THREE.Points(pGeo, pMat);
+      rootGroup.add(pField);
+      disposables.push(pGeo, pMat);
+    } else if (mode === 'signin') {
       // ── SIGN IN MODE: "The Key of Knowledge" ──
       // Central multifaceted amber crystal
       const crystalGeo = new THREE.OctahedronGeometry(2.8, 0);
